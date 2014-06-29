@@ -134,6 +134,11 @@ function cauchy(s::Bool,u::SingFun,z)
     ret
 end
 
+function hilbert(u::SingFun)
+    @assert u.α == u.β == .5 
+    Fun([0.,-coefficients(u.fun,1)])
+end
+
 
 
 end #module
