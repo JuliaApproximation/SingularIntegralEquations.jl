@@ -91,6 +91,51 @@ function cauchy(s::Integer,f,z)
     cauchy(s==1,f,z)
 end
 
+## SingFun cauchy
+
+intervaloffcircle(s::Bool,x)=x.-(s?1:-1).*sqrt(x.-1).*sqrt(x.+1)
+intervaloncircle(s::Bool,x)=x.+1.im*(s?1:-1).*sqrt(1.-x).*sqrt(x.+1)
+intervaloffcircle(s::Int,x)=intervaloffcircle(s==1,x)
+intervaloncircle(s::Int,x)=intervaloncircle(s==1,x)
+
+
+function cauchy(u::SingFun,z)
+    @assert u.α == u.β == .5
+    
+    y0=intervaloffcircle(true,z)
+    ret=zero(z)
+    cfs = coefficients(u.fun,1)
+    
+    y=one(z)
+    
+    for k=1:length(cfs)
+        y*=y0
+        ret+=.5im*cfs[k]*y
+    end
+    
+    ret
+end
+
+
+function cauchy(s::Bool,u::SingFun,z)
+    @assert u.α == u.β == .5
+    
+    y0=intervaloncircle(!s,z)
+    ret=zero(z)
+    cfs = coefficients(u.fun,1)
+    
+    y=one(z)
+    
+    for k=1:length(cfs)
+        y*=y0
+        ret+=.5im*cfs[k]*y
+    end
+    
+    ret
+end
+
+
+
 end #module
 
 
