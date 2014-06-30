@@ -6,6 +6,7 @@ import ApproxFun
 import ApproxFun.PeriodicDomain
 import ApproxFun.BandedShiftOperator
 import ApproxFun.bandrange
+import ApproxFun.dirichlettransform
 
 type CauchyOperator{D<:PeriodicDomain} <: BandedShiftOperator{Complex{Float64}}
     sign::Bool
@@ -100,38 +101,80 @@ intervaloncircle(s::Int,x)=intervaloncircle(s==1,x)
 
 
 function cauchy(u::SingFun,z)
-    @assert u.α == u.β == .5
-    
-    y0=intervaloffcircle(true,z)
-    ret=zero(z)
-    cfs = coefficients(u.fun,1)
-    
-    y=one(z)
-    
-    for k=1:length(cfs)
-        y*=y0
-        ret+=.5im*cfs[k]*y
+    if u.α == u.β == .5    
+        y0=intervaloffcircle(true,z)
+        ret=zero(z)
+        cfs = coefficients(u.fun,1)
+        
+        y=one(z)
+        
+        for k=1:length(cfs)
+            y*=y0
+            ret+=.5im*cfs[k]*y
+        end
+        
+        ret
+    elseif u.α == u.β == -.5
+        cfs = dirichlettransform(u.fun.coefficients)
+        
+        if length(cfs) >=1
+            ret = cfs[1]*0.5im/sqrt(z^2 - 1)
+        end
+        if length(cfs) >=2
+            ret += cfs[2]*(0.5im*z/sqrt(z^2 - 1)-.5im)
+        end
+        
+        y=one(z)
+        y0=intervaloffcircle(true,z)        
+        
+        for k=3:length(cfs)
+            y*=y0
+            ret+=-1.im*cfs[k]*y
+        end
+        
+        ret        
+    else
+        error("Cauchy only implemented for Chebyshev weights")
     end
-    
-    ret
 end
 
 
-function cauchy(s::Bool,u::SingFun,z)
-    @assert u.α == u.β == .5
-    
-    y0=intervaloncircle(!s,z)
-    ret=zero(z)
-    cfs = coefficients(u.fun,1)
-    
-    y=one(z)
-    
-    for k=1:length(cfs)
-        y*=y0
-        ret+=.5im*cfs[k]*y
+function cauchy(s::Bool,u::SingFun,x)
+    if u.α == u.β == .5
+        y0=intervaloncircle(!s,x)
+        ret=zero(x)
+        cfs = coefficients(u.fun,1)
+        
+        y=one(x)
+        
+        for k=1:length(cfs)
+            y*=y0
+            ret+=.5im*cfs[k]*y
+        end
+        
+        ret
+    elseif u.α == u.β == -.5
+        cfs = dirichlettransform(u.fun.coefficients)
+        
+        if length(cfs) >=1
+            ret = cfs[1]*0.5*(s?1:-1)/sqrt(1-x^2 )
+        end
+        if length(cfs) >=2
+            ret += cfs[2]*(0.5*(s?1:-1)*x/sqrt(1-x^2)-.5im)
+        end
+        
+        y=one(x)
+        y0=intervaloncircle(!s,x)        
+        
+        for k=3:length(cfs)
+            y*=y0
+            ret+=-1.im*cfs[k]*y
+        end
+        
+        ret      
+    else
+        error("Cauchy only implemented for Chebyshev weights")
     end
-    
-    ret
 end
 
 function hilbert(u::SingFun)
