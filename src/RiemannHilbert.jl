@@ -1,7 +1,7 @@
 module RiemannHilbert
     using Base, ApproxFun
 
-export CauchyOperator, cauchy
+export CauchyOperator, cauchy, hilbert
 import ApproxFun
 import ApproxFun.PeriodicDomain
 import ApproxFun.BandedShiftOperator
@@ -101,8 +101,9 @@ intervaloncircle(s::Int,x)=intervaloncircle(s==1,x)
 
 function cauchy(u::SingFun,z)
     @assert u.α == u.β == .5
+    @assert typeof(u.fun.domain) <: Interval
     
-    y0=intervaloffcircle(true,z)
+    y0=intervaloffcircle(true,tocanonical(u,z))
     ret=zero(z)
     cfs = coefficients(u.fun,1)
     
@@ -119,8 +120,9 @@ end
 
 function cauchy(s::Bool,u::SingFun,z)
     @assert u.α == u.β == .5
+    @assert typeof(u.fun.domain) <: Interval    
     
-    y0=intervaloncircle(!s,z)
+    y0=intervaloncircle(!s,tocanonical(u,z))
     ret=zero(z)
     cfs = coefficients(u.fun,1)
     
@@ -134,9 +136,11 @@ function cauchy(s::Bool,u::SingFun,z)
     ret
 end
 
+## hilbert is equal to im*(C^+ + C^-)
+
 function hilbert(u::SingFun)
     @assert u.α == u.β == .5 
-    Fun([0.,-coefficients(u.fun,1)])
+    IFun([0.,-coefficients(u.fun,1)],u.fun.domain)
 end
 
 
