@@ -189,8 +189,15 @@ end
 ## hilbert is equal to im*(C^+ + C^-)
 
 function hilbert(u::SingFun)
-    @assert u.α == u.β == .5 
-    IFun([0.,-coefficients(u.fun,1)],u.fun.domain)
+    if u.α == u.β == .5 
+        IFun([0.,-coefficients(u.fun,1)],u.fun.domain)
+    elseif u.α == u.β == -.5 
+        cfs = dirichlettransform(u.fun.coefficients)
+        
+        IFun([cfs[2],2cfs[3:end]],u.fun.domain)
+    else
+        error("Cauchy only implemented for Chebyshev weights")    
+    end
 end
 
 
