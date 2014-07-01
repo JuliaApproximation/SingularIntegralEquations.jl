@@ -1,12 +1,14 @@
 module RiemannHilbert
     using Base, ApproxFun
 
-export CauchyOperator, cauchy, hilbert
+export CauchyOperator, cauchy, hilbert, hilbertinverse
 import ApproxFun
 import ApproxFun.PeriodicDomain
 import ApproxFun.BandedShiftOperator
 import ApproxFun.bandrange
 import ApproxFun.dirichlettransform
+import ApproxFun.idirichlettransform!
+
 
 type CauchyOperator{D<:PeriodicDomain} <: BandedShiftOperator{Complex{Float64}}
     sign::Bool
@@ -200,6 +202,15 @@ function hilbert(u::SingFun)
     end
 end
 
+
+function hilbertinverse(u::IFun)
+    if abs(u.coefficients[1]) < 100eps()
+        ## no singularity
+        SingFun(IFun(ultraiconversion!(u.coefficients[2:end]),u.domain),.5,.5)
+    else
+        SingFun(IFun(idirichlettransform!([0.,u.coefficients[1],.5*u.coefficients[2:end]]),u.domain),-.5,-.5)
+    end
+end
 
 
 end #module
