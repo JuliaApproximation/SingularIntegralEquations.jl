@@ -119,17 +119,29 @@ function divkholdersum(cfs,y0,ys,s)
 end
 
 function cauchyintegral(u::SingFun,z)
-    @assert u.α == u.β == .5     
-    
     a,b=u.fun.domain.a,u.fun.domain.b
     
-    @assert a==-1.&&b==1.
-    
-    cfs=coefficients(u.fun,1)
-    
-    y=intervaloffcircle(true,z)
-    
-    .25im*(-cfs[1]*log(y)+ divkholdersum(cfs,y,y,1)-divkholdersum(cfs[2:end],y,one(z),0))
+    if u.α == u.β == .5     
+        cfs=coefficients(u.fun,1)
+        y=intervaloffcircle(true,tocanonical(u,z))
+        
+        .125im*(b-a)*(-cfs[1]*log(y)+ divkholdersum(cfs,y,y,1)-divkholdersum(cfs[2:end],y,one(z),0))
+    elseif  u.α == u.β == .5     
+
+        cfs = dirichlettransform(u.fun.coefficients)        
+        z=tocanonical(u,z)
+        
+        
+        if length(cfs) >=1
+            ret = cfs[1]*0.5im/sqrt(z^2 - 1)
+        
+            if length(cfs) >=2
+                ret += cfs[2]*(0.5im*z/sqrt(z^2 - 1)-.5im)
+            end
+        
+            .125im*(b-a)*(ret - 1.im*holdersum(cfs[3:end],intervaloffcircle(true,z))   )
+        end
+    end
 end
 
 
