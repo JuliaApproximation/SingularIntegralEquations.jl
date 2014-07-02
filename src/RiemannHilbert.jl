@@ -1,7 +1,7 @@
 module RiemannHilbert
     using Base, ApproxFun
 
-export CauchyOperator, cauchy, hilbert, hilbertinverse
+export CauchyOperator, cauchy, hilbert, hilbertinverse, cauchyintegral
 import ApproxFun
 import ApproxFun.PeriodicDomain
 import ApproxFun.BandedShiftOperator
@@ -94,124 +94,8 @@ function cauchy(s::Integer,f,z)
     cauchy(s==1,f,z)
 end
 
-## SingFun cauchy
 
-intervaloffcircle(s::Bool,x)=x.-(s?1:-1).*sqrt(x.-1).*sqrt(x.+1)
-intervaloncircle(s::Bool,x)=x.+1.im*(s?1:-1).*sqrt(1.-x).*sqrt(x.+1)
-intervaloffcircle(s::Int,x)=intervaloffcircle(s==1,x)
-intervaloncircle(s::Int,x)=intervaloncircle(s==1,x)
-
-
-function cauchy(u::SingFun,z)
-    @assert typeof(u.fun.domain) <: Interval
-    
-    if u.α == u.β == .5    
-        y0=intervaloffcircle(true,tocanonical(u,z))
-        ret=zero(z)
-        cfs = coefficients(u.fun,1)
-        
-        y=one(z)
-        
-        for k=1:length(cfs)
-            y*=y0
-            ret+=.5im*cfs[k]*y
-        end
-        
-        ret
-    elseif u.α == u.β == -.5
-        cfs = dirichlettransform(u.fun.coefficients)
-        
-        z=tocanonical(u,z)
-        
-        if length(cfs) >=1
-            ret = cfs[1]*0.5im/sqrt(z^2 - 1)
-        end
-        if length(cfs) >=2
-            ret += cfs[2]*(0.5im*z/sqrt(z^2 - 1)-.5im)
-        end
-        
-        y=one(z)
-        y0=intervaloffcircle(true,z)        
-        
-        for k=3:length(cfs)
-            y*=y0
-            ret+=-1.im*cfs[k]*y
-        end
-        
-        ret        
-    else
-        error("Cauchy only implemented for Chebyshev weights")
-    end
-end
-
-
-
-function cauchy(s::Bool,u::SingFun,x)
-    @assert typeof(u.fun.domain) <: Interval    
-
-    if u.α == u.β == .5
-        y0=intervaloncircle(!s,x)
-        ret=zero(x)
-        cfs = coefficients(u.fun,1)
-        
-        y=one(x)
-        
-        for k=1:length(cfs)
-            y*=y0
-            ret+=.5im*cfs[k]*y
-        end
-        
-        ret
-    elseif u.α == u.β == -.5
-        cfs = dirichlettransform(u.fun.coefficients)
-        
-        x=tocanonical(u,x)
-        
-        if length(cfs) >=1
-            ret = cfs[1]*0.5*(s?1:-1)/sqrt(1-x^2 )
-        end
-        if length(cfs) >=2
-            ret += cfs[2]*(0.5*(s?1:-1)*x/sqrt(1-x^2)-.5im)
-        end
-        
-        y=one(x)
-        y0=intervaloncircle(!s,x)        
-        
-        for k=3:length(cfs)
-            y*=y0
-            ret+=-1.im*cfs[k]*y
-        end
-        
-        ret      
-    else
-        error("Cauchy only implemented for Chebyshev weights")
-    end
-end
-
-## hilbert is equal to im*(C^+ + C^-)
-
-function hilbert(u::SingFun)
-    if u.α == u.β == .5 
-        IFun([0.,-coefficients(u.fun,1)],u.fun.domain)
-    elseif u.α == u.β == -.5 
-        cfs = dirichlettransform(u.fun.coefficients)
-        
-        IFun([cfs[2],2cfs[3:end]],u.fun.domain)
-    else
-        error("Cauchy only implemented for Chebyshev weights")    
-    end
-end
-
-
-function hilbertinverse(u::IFun)
-    if abs(u.coefficients[1]) < 100eps()
-        ## no singularity
-        SingFun(IFun(ultraiconversion!(u.coefficients[2:end]),u.domain),.5,.5)
-    else
-        SingFun(IFun(idirichlettransform!([0.,u.coefficients[1],.5*u.coefficients[2:end]]),u.domain),-.5,-.5)
-    end
-end
-
+include("singfuncauchy.jl")
 
 end #module
 
