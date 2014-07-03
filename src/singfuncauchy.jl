@@ -21,6 +21,10 @@ function holdersum(cfs,y0)
     ret
 end
 
+absqrt(a,b,z::Complex)=sqrt(z-a)*sqrt(z-b)
+absqrt(a,b,x::Real)=x<a?-sqrt(a-x)*sqrt(b-x):sqrt(x-a)*sqrt(x-b)
+absqrt(s::Bool,a,b,z)=(s?1:-1)*im*sqrt(z-a)*sqrt(b-z)
+absqrt(s::Int,a,b,z)=absqrt(s==1,a,b,z)
 
 
 function cauchy(u::SingFun,z)
@@ -35,10 +39,10 @@ function cauchy(u::SingFun,z)
         
         
         if length(cfs) >=1
-            ret = cfs[1]*0.5im/sqrt(z^2 - 1) ##TODO: fix branch cuts
+            ret = cfs[1]*0.5im/absqrt(-1,1,z)
         
             if length(cfs) >=2
-                ret += cfs[2]*(0.5im*z/sqrt(z^2 - 1)-.5im)
+                ret += cfs[2]*(0.5im*z/absqrt(-1,1,z)-.5im)
             end
         
             ret - 1.im*holdersum(cfs[3:end],intervaloffcircle(true,z))  
@@ -119,6 +123,8 @@ function divkholdersum(cfs,y0,ys,s)
     ret
 end
 
+integratejin(cfs,y)=.5*(-cfs[1]*log(y)+divkholdersum(cfs,y,y,1)-divkholdersum(cfs[2:end],y,one(y),0))
+
 function cauchyintegral(u::SingFun,z)
     a,b=u.fun.domain.a,u.fun.domain.b
     
@@ -126,21 +132,26 @@ function cauchyintegral(u::SingFun,z)
         cfs=coefficients(u.fun,1)
         y=intervaloffcircle(true,tocanonical(u,z))
         
-        .125im*(b-a)*(-cfs[1]*log(y)+ divkholdersum(cfs,y,y,1)-divkholdersum(cfs[2:end],y,one(z),0))
+        0.25im*(b-a)*integratejin(cfs,y)
     elseif  u.α == u.β == -.5     
-
         cfs = dirichlettransform(u.fun.coefficients)        
         z=tocanonical(u,z)
-        
+        y=intervaloffcircle(true,z)
         
         if length(cfs) >=1
-            ret = cfs[1]*0.5im/sqrt(z^2 - 1)
+            ret = -cfs[1]*0.25im*(b-a)*log(y)
         
             if length(cfs) >=2
-                ret += cfs[2]*(0.5im*z/sqrt(z^2 - 1)-.5im)
+                ret += 0.25im*(b-a)*cfs[2]*(absqrt(-1,1,z)-z)
             end
         
-            .125im*(b-a)*(ret - 1.im*holdersum(cfs[3:end],intervaloffcircle(true,z))   )
+            if length(cfs) >= 3
+                ret - 0.5im*(b-a)*integratejin(cfs[3:end],y)  
+            else
+                ret
+            end
+        else
+            0.
         end
     end
 end
