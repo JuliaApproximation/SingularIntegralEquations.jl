@@ -2,7 +2,8 @@
 
 ## SingFun cauchy
 
-intervaloffcircle(s::Bool,x)=x.-(s?1:-1).*sqrt(x.-1).*sqrt(x.+1)
+intervaloffcircle(s::Bool,z::Complex)=z.-(s?1:-1).*sqrt(z.-1).*sqrt(z.+1)
+intervaloffcircle(s::Bool,x::Real)=x<0?x.+(s?1:-1).*sqrt(x.^2-1):x.-(s?1:-1).*sqrt(x.^2-1)
 intervaloncircle(s::Bool,x)=x.+1.im*(s?1:-1).*sqrt(1.-x).*sqrt(x.+1)
 intervaloffcircle(s::Int,x)=intervaloffcircle(s==1,x)
 intervaloncircle(s::Int,x)=intervaloncircle(s==1,x)
@@ -34,7 +35,7 @@ function cauchy(u::SingFun,z)
         
         
         if length(cfs) >=1
-            ret = cfs[1]*0.5im/sqrt(z^2 - 1)
+            ret = cfs[1]*0.5im/sqrt(z^2 - 1) ##TODO: fix branch cuts
         
             if length(cfs) >=2
                 ret += cfs[2]*(0.5im*z/sqrt(z^2 - 1)-.5im)
@@ -126,7 +127,7 @@ function cauchyintegral(u::SingFun,z)
         y=intervaloffcircle(true,tocanonical(u,z))
         
         .125im*(b-a)*(-cfs[1]*log(y)+ divkholdersum(cfs,y,y,1)-divkholdersum(cfs[2:end],y,one(z),0))
-    elseif  u.α == u.β == .5     
+    elseif  u.α == u.β == -.5     
 
         cfs = dirichlettransform(u.fun.coefficients)        
         z=tocanonical(u,z)
