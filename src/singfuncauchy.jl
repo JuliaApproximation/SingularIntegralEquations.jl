@@ -123,7 +123,7 @@ function divkholdersum(cfs,y0,ys,s)
     ret
 end
 
-integratejin(cfs,y)=.5*(-cfs[1]*log(y)+divkholdersum(cfs,y,y,1)-divkholdersum(cfs[2:end],y,one(y),0))
+integratejin(cfs,y)=.5*(-cfs[1]*log(y)+divkholdersum(cfs,y,y,1)-divkholdersum(slice(cfs,2:length(cfs)),y,one(y),0))
 
 function cauchyintegral(u::SingFun,z)
     a,b=u.fun.domain.a,u.fun.domain.b
@@ -146,7 +146,7 @@ function cauchyintegral(u::SingFun,z)
             end
         
             if length(cfs) >= 3
-                ret - 0.5im*(b-a)*integratejin(cfs[3:end],y)  
+                ret - 0.5im*(b-a)*integratejin(slice(cfs,3:length(cfs)),y)  
             else
                 ret
             end
