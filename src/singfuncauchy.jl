@@ -151,7 +151,7 @@ function cauchyintegral(u::SingFun,z)
                 ret
             end
         else
-            0.
+            0.0+0.0im
         end
     end
 end
