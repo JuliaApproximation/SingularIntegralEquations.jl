@@ -11,7 +11,7 @@ end
 
 CauchyOperator(s)=CauchyOperator(s,Circle())
 
-bandrange(::CauchyOperator)=0:0
+bandinds(::CauchyOperator)=0,0
 domainspace(D::CauchyOperator)=FourierSpace(D.domain)
 rangespace(D::CauchyOperator)=FourierSpace(D.domain)
 
