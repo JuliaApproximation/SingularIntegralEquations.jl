@@ -131,14 +131,15 @@ integratejin(cfs,y)=.5*(-cfs[1]*log(y)+divkholdersum(cfs,y,y,1)-divkholdersum(sl
 function cauchyintegral(u::Fun{JacobiWeightSpace{ChebyshevSpace}},z)
     d=domain(u)
     a,b=d.a,d.b
+    sp=space(u)
     
-    if u.α == u.β == .5     
+    if sp.α == sp.β == .5     
         uf=Fun(u.coefficients,ChebyshevSpace(d))        
         cfs=coefficients(uf,UltrasphericalSpace{1})
         y=intervaloffcircle(true,tocanonical(u,z))
         
         0.25im*(b-a)*integratejin(cfs,y)
-    elseif  u.α == u.β == -.5     
+    elseif  sp.α == sp.β == -.5     
         cfs = dirichlettransform(u.coefficients)        
         z=tocanonical(u,z)
         y=intervaloffcircle(true,z)
