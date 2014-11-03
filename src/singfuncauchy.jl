@@ -27,14 +27,15 @@ absqrt(s::Bool,a,b,z)=(s?1:-1)*im*sqrt(z-a)*sqrt(b-z)
 absqrt(s::Int,a,b,z)=absqrt(s==1,a,b,z)
 
 
-function cauchy(u::SingFun,z)
-    @assert typeof(u.fun.domain) <: Interval
+function cauchy(u::Fun{JacobiWeightSpace{ChebyshevSpace}},z)
+    d=domain(u);sp=space(u)
     
-    if u.α == u.β == .5    
-        0.5im*holdersum(coefficients(u.fun,1),
+    if sp.α == sp.β == .5    
+        uf=Fun(u.coefficients,ChebyshevSpace(d))
+        0.5im*holdersum(coefficients(uf,UltrasphericalSpace{1}),
                         intervaloffcircle(true,tocanonical(u,z)))
-    elseif u.α == u.β == -.5
-        cfs = dirichlettransform(u.fun.coefficients)        
+    elseif sp.α == sp.β == -.5
+        cfs = dirichlettransform(u.coefficients)        
         z=tocanonical(u,z)
         
         
@@ -56,14 +57,15 @@ end
 
 
 
-function cauchy(s::Bool,u::SingFun,x)
-    @assert typeof(u.fun.domain) <: Interval    
+function cauchy(s::Bool,u::Fun{JacobiWeightSpace{ChebyshevSpace}},x)
+    d=domain(u);sp=space(u)
 
     if u.α == u.β == .5
-        0.5im*holdersum(coefficients(u.fun,1),
+        uf=Fun(u.coefficients,ChebyshevSpace(d))    
+        0.5im*holdersum(coefficients(uf,UltrasphericalSpace{1}),
                         intervaloncircle(!s,tocanonical(u,x)))    
     elseif u.α == u.β == -.5
-        cfs = dirichlettransform(u.fun.coefficients)
+        cfs = dirichlettransform(u.coefficients)
         x=tocanonical(u,x)
         
         if length(cfs) >=1
@@ -84,9 +86,10 @@ end
 
 ## hilbert is equal to im*(C^+ + C^-)
 
-function hilbert(u::SingFun)
+function hilbert(u::Fun{JacobiWeightSpace{ChebyshevSpace}})
     if u.α == u.β == .5 
-        IFun([0.,-coefficients(u.fun,1)],u.fun.domain)
+        uf=Fun(u.coefficients,ChebyshevSpace(d))        
+        IFun([0.,-coefficients(uf,UltrasphericalSpace{1})],u.fun.domain)
     elseif u.α == u.β == -.5 
         cfs = dirichlettransform(u.fun.coefficients)
         
@@ -97,12 +100,12 @@ function hilbert(u::SingFun)
 end
 
 
-function hilbertinverse(u::IFun)
+function hilbertinverse(u::Fun)
     if abs(u.coefficients[1]) < 100eps()
         ## no singularity
-        SingFun(IFun(ultraiconversion!(u.coefficients[2:end]),u.domain),.5,.5)
+        Fun(ultraiconversion!(u.coefficients[2:end]),JacobiWeightSpace(.5,.5,u.domain))
     else
-        SingFun(IFun(idirichlettransform!([0.,u.coefficients[1],.5*u.coefficients[2:end]]),u.domain),-.5,-.5)
+        Fun(idirichlettransform!([0.,u.coefficients[1],.5*u.coefficients[2:end]]),JacobiWeightSpace(-.5,-.5,u.domain))
     end
 end
 
@@ -125,16 +128,18 @@ end
 
 integratejin(cfs,y)=.5*(-cfs[1]*log(y)+divkholdersum(cfs,y,y,1)-divkholdersum(slice(cfs,2:length(cfs)),y,one(y),0))
 
-function cauchyintegral(u::SingFun,z)
-    a,b=u.fun.domain.a,u.fun.domain.b
+function cauchyintegral(u::Fun{JacobiWeightSpace{ChebyshevSpace}},z)
+    d=domain(u)
+    a,b=d.a,d.b
     
     if u.α == u.β == .5     
-        cfs=coefficients(u.fun,1)
+        uf=Fun(u.coefficients,ChebyshevSpace(d))        
+        cfs=coefficients(uf,UltrasphericalSpace{1})
         y=intervaloffcircle(true,tocanonical(u,z))
         
         0.25im*(b-a)*integratejin(cfs,y)
     elseif  u.α == u.β == -.5     
-        cfs = dirichlettransform(u.fun.coefficients)        
+        cfs = dirichlettransform(u.coefficients)        
         z=tocanonical(u,z)
         y=intervaloffcircle(true,z)
         
