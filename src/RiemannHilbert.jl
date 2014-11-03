@@ -14,6 +14,7 @@ end
 
 include("circlecauchy.jl")
 include("periodiclinecauchy.jl")
+include("intervalcauchy.jl")
 include("singfuncauchy.jl")
 
 end #module
