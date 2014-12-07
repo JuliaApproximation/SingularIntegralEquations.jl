@@ -27,7 +27,7 @@ absqrt(s::Bool,a,b,z)=(s?1:-1)*im*sqrt(z-a)*sqrt(b-z)
 absqrt(s::Int,a,b,z)=absqrt(s==1,a,b,z)
 
 
-function cauchy(u::Fun{JacobiWeightSpace{ChebyshevSpace}},z)
+function cauchy(u::Fun{JacobiWeightSpace{ChebyshevSpace}},z::Number)
     d=domain(u);sp=space(u)
     
     if sp.α == sp.β == .5    
@@ -57,7 +57,7 @@ end
 
 
 
-function cauchy(s::Bool,u::Fun{JacobiWeightSpace{ChebyshevSpace}},x)
+function cauchy(s::Bool,u::Fun{JacobiWeightSpace{ChebyshevSpace}},x::Number)
     d=domain(u);sp=space(u)
 
     if u.α == u.β == .5
@@ -128,7 +128,7 @@ end
 
 integratejin(cfs,y)=.5*(-cfs[1]*log(y)+divkholdersum(cfs,y,y,1)-divkholdersum(slice(cfs,2:length(cfs)),y,one(y),0))
 
-function cauchyintegral(u::Fun{JacobiWeightSpace{ChebyshevSpace}},z)
+function cauchyintegral(u::Fun{JacobiWeightSpace{ChebyshevSpace}},z::Number)
     d=domain(u)
     a,b=d.a,d.b
     sp=space(u)
