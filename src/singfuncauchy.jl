@@ -167,3 +167,13 @@ end
 
 
 
+
+
+## Mapped
+
+function cauchy{M,T}(f::Fun{JacobiWeightSpace{CurveSpace{M}},T},z::Number)
+    #project
+    cs=space(f).space
+    fm=Fun(f.coefficients,JacobiWeightSpace(space(f).α,space(f).β,cs.space))
+    sum(cauchy(fm,complexroots(cs.domain.curve-z)))
+end

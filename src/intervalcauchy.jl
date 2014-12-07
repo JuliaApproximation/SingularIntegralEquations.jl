@@ -11,3 +11,4 @@ function cauchy(f::Fun{JacobiSpace},z::Number)
    m=min(length(f),length(cfs))
    dotu(cfs[1:m],f.coefficients[1:m]) 
 end
+
