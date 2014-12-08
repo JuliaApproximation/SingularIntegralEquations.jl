@@ -3,7 +3,7 @@ module RiemannHilbert
 
 export CauchyOperator, cauchy, hilbert, hilbertinverse, cauchyintegral
 import ApproxFun
-import ApproxFun: PeriodicDomain, BandedShiftOperator, bandinds, dirichlettransform, idirichlettransform!, Curve,CurveSpace,transform,SpaceOperator
+import ApproxFun: PeriodicDomain, BandedShiftOperator, bandinds, dirichlettransform, idirichlettransform!, Curve,CurveSpace,transform,SpaceOperator, rangespace, domainspace
 
 
 function cauchy(s::Integer,f,z)

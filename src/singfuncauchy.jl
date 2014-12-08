@@ -217,10 +217,12 @@ function ApproxFun.Hilbert(S::JacobiWeightSpace{CurveSpace{ChebyshevSpace}},k::I
     Sproj=JacobiWeightSpace(S.α,S.β)
     
     rts=[filter(y->!in(y,Interval()),complexroots(c.curve-c.curve[x])) for x in points(Interval(),n)]
-     M=hcat(Vector{Complex{Float64}}[transform(ChebyshevSpace(),Complex{Float64}[sum(cauchy(Fun([zeros(k-1),1.0],Sproj),rt)) 
+    Hc=Hilbert(Sproj)
+    
+     M=2im*hcat(Vector{Complex{Float64}}[transform(rangespace(Hc),Complex{Float64}[sum(cauchy(Fun([zeros(k-1),1.0],Sproj),rt)) 
         for rt in rts]) for k=1:m]...)   
-          
-    A=SpaceOperator(CompactOperator(2im*M),S,S.space)
-    H=SpaceOperator(Hilbert(Sproj),S,S.space)
-    H+A
+    
+    rs=MappedSpace(c,rangespace(Hc))
+    
+    SpaceOperator(Hc,S,rs)+SpaceOperator(CompactOperator(M),S,rs) 
 end
