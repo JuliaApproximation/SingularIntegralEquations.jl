@@ -48,7 +48,7 @@ function cauchy(u::Fun{JacobiWeightSpace{ChebyshevSpace}},z::Number)
         
             ret - 1.im*holdersum(cfs[3:end],intervaloffcircle(true,z))  
         else
-            0.
+            0.0+0.0im
         end
     else
         error("Cauchy only implemented for Chebyshev weights")
@@ -60,11 +60,11 @@ end
 function cauchy(s::Bool,u::Fun{JacobiWeightSpace{ChebyshevSpace}},x::Number)
     d=domain(u);sp=space(u)
 
-    if u.α == u.β == .5
+    if sp.α == sp.β == .5
         uf=Fun(u.coefficients,ChebyshevSpace(d))    
         0.5im*holdersum(coefficients(uf,UltrasphericalSpace{1}),
                         intervaloncircle(!s,tocanonical(u,x)))    
-    elseif u.α == u.β == -.5
+    elseif sp.α == sp.β == -.5
         cfs = dirichlettransform(u.coefficients)
         x=tocanonical(u,x)
         
@@ -77,25 +77,27 @@ function cauchy(s::Bool,u::Fun{JacobiWeightSpace{ChebyshevSpace}},x::Number)
             
             ret - 1.im*holdersum(cfs[3:end],intervaloncircle(!s,x))          
         else
-            0.
+            0.0+0.0im
         end    
     else
-        error("Cauchy only implemented for Chebyshev weights")
+        error("cauchy only implemented for Chebyshev weights")
     end
 end
 
 ## hilbert is equal to im*(C^+ + C^-)
 
 function hilbert(u::Fun{JacobiWeightSpace{ChebyshevSpace}})
-    if u.α == u.β == .5 
-        uf=Fun(u.coefficients,ChebyshevSpace(d))        
-        IFun([0.,-coefficients(uf,UltrasphericalSpace{1})],u.fun.domain)
-    elseif u.α == u.β == -.5 
-        cfs = dirichlettransform(u.fun.coefficients)
+    d=domain(u);sp=space(u)
+
+    if sp.α == sp.β == .5 
+        uf=Fun(u.coefficients,d)        
+        Fun([0.,-coefficients(uf,UltrasphericalSpace{1})],d)
+    elseif sp.α == sp.β == -.5 
+        cfs = dirichlettransform(u.coefficients)
         
-        IFun([cfs[2],2cfs[3:end]],u.fun.domain)
+        Fun([cfs[2],2cfs[3:end]],d)
     else
-        error("Cauchy only implemented for Chebyshev weights")    
+        error("hilbert only implemented for Chebyshev weights")    
     end
 end
 
@@ -176,4 +178,30 @@ function cauchy{M,T}(f::Fun{JacobiWeightSpace{CurveSpace{M}},T},z::Number)
     cs=space(f).space
     fm=Fun(f.coefficients,JacobiWeightSpace(space(f).α,space(f).β,cs.space))
     sum(cauchy(fm,complexroots(cs.domain.curve-z)))
+end
+
+function cauchy{M,T}(s::Bool,f::Fun{JacobiWeightSpace{CurveSpace{M}},T},z::Number)
+    #project
+    cs=space(f).space
+    fm=Fun(f.coefficients,JacobiWeightSpace(space(f).α,space(f).β,cs.space))
+    rts=complexroots(cs.domain.curve-z)
+    di=Interval()
+    mapreduce(rt->in(rt,di)?cauchy(s,fm,rt):cauchy(fm,rt),+,rts)
+end
+
+
+
+function hilbert{M,T}(f::Fun{JacobiWeightSpace{CurveSpace{M}},T})
+    #project
+    c=space(f).space.domain
+    fm=Fun(f.coefficients,JacobiWeightSpace(space(f).α,space(f).β))
+    q=hilbert(fm)+2im*Fun(x->sum(cauchy(fm,filter(y->!in(y,Interval()),complexroots(c.curve-c.curve[x])))))
+    Fun(q.coefficients,MappedSpace(domain(f),space(q)))
+end
+
+function hilbert{M,T}(f::Fun{JacobiWeightSpace{CurveSpace{M}},T},x::Number)
+    #project
+    c=space(f).space.domain    
+    fm=Fun(f.coefficients,JacobiWeightSpace(space(f).α,space(f).β))
+    hilbert(fm,tocanonical(f,x))+2im*sum(cauchy(fm,filter(y->!in(y,Interval()),complexroots(c.curve-c.curve[x]))))
 end

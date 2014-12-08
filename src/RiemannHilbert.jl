@@ -12,9 +12,9 @@ function cauchy(s::Integer,f,z)
     cauchy(s==1,f,z)
 end
 
-cauchy(f,z::Vector)=[cauchy(f,zk) for zk in z]
-cauchy(s::Integer,f,z::Vector)=[cauchy(s,f,zk) for zk in z]
-cauchy(s,f,z::Vector)=[cauchy(s,f,zk) for zk in z]
+cauchy(f,z::Vector)=Complex{Float64}[cauchy(f,zk) for zk in z]
+cauchy(s::Integer,f,z::Vector)=Complex{Float64}[cauchy(s,f,zk) for zk in z]
+cauchy(s,f,z::Vector)=Complex{Float64}[cauchy(s,f,zk) for zk in z]
 
 
 include("circlecauchy.jl")
