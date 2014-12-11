@@ -1,8 +1,10 @@
 
-export Hilbert
 
+# this macro creates the operators in the ApproxFun namespace, for some reason
 ApproxFun.@calculus_operator(Hilbert,AbstractHilbert,HilbertWrapper)
 
+import ApproxFun: Hilbert, AbstractHilbert, HilbertWrapper
+export Hilbert
 
 Hilbert(d::IntervalDomain,n::Integer)=Hilbert(JacobiWeightSpace(-.5,-.5,ChebyshevSpace(d)),n)
 
