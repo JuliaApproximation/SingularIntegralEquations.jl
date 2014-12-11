@@ -23,6 +23,12 @@ include("intervalcauchy.jl")
 include("singfuncauchy.jl")
 
 include("Hilbert.jl")
+include("Sigma.jl")
+
+# Default composition with Bivariate Funs
+
+Base.getindex(B::BandedOperator,f::LowRankFun) = PlusOperator(BandedOperator[f.A[i]*B[f.B[i]] for i=1:rank(f)])
+Base.getindex(B::BandedOperator,f::TensorFun) = B[LowRankFun(f)]
 
 end #module
 
