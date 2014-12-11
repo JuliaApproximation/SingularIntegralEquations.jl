@@ -3,7 +3,7 @@ module SIE
 
 export CauchyOperator, cauchy, hilbert, hilbertinverse, cauchyintegral
 import ApproxFun
-import ApproxFun: PeriodicDomain, BandedShiftOperator, bandinds, dirichlettransform, idirichlettransform!, Curve,CurveSpace,transform,SpaceOperator, rangespace, domainspace, addentries!
+import ApproxFun: PeriodicDomain, BandedShiftOperator, bandinds, dirichlettransform, idirichlettransform!, Curve,CurveSpace,transform,SpaceOperator, rangespace, domainspace, addentries!, BandedOperator, PeriodicDomainSpace, AnySpace, canonicalspace, domain, promotedomainspace, AnyDomain
 
 
 function cauchy(s::Integer,f,z)
