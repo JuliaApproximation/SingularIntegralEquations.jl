@@ -1,4 +1,4 @@
-using ApproxFun, RiemannHilbert
+using ApproxFun, SIE
 
 function ellipticintegral(a)
     xp=Fun(identity,[a,1.])

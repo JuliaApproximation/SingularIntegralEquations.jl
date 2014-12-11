@@ -1,4 +1,4 @@
-using ApproxFun, RiemannHilbert
+using ApproxFun, SIE
 
 f=FFun(z->2exp(z.^2),[-Inf*im,Inf*im])
 

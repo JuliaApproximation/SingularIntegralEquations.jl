@@ -1,4 +1,4 @@
-module RiemannHilbert
+module SIE
     using Base, ApproxFun
 
 export CauchyOperator, cauchy, hilbert, hilbertinverse, cauchyintegral
@@ -21,6 +21,8 @@ include("circlecauchy.jl")
 include("periodiclinecauchy.jl")
 include("intervalcauchy.jl")
 include("singfuncauchy.jl")
+
+include("Hilbert.jl")
 
 end #module
 

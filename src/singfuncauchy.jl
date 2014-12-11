@@ -205,24 +205,3 @@ function hilbert{M,T}(f::Fun{JacobiWeightSpace{CurveSpace{M}},T},x::Number)
     fm=Fun(f.coefficients,JacobiWeightSpace(space(f).α,space(f).β))
     hilbert(fm,tocanonical(f,x))+2im*sum(cauchy(fm,filter(y->!in(y,Interval()),complexroots(c.curve-c.curve[x]))))
 end
-
-
-## Operators
-
-function ApproxFun.Hilbert(S::JacobiWeightSpace{CurveSpace{ChebyshevSpace}},k::Integer)
-    @assert k==1
-    #TODO: choose dimensions
-    m,n=40,40
-    c=domain(S)
-    Sproj=JacobiWeightSpace(S.α,S.β)
-    
-    rts=[filter(y->!in(y,Interval()),complexroots(c.curve-c.curve[x])) for x in points(Interval(),n)]
-    Hc=Hilbert(Sproj)
-    
-     M=2im*hcat(Vector{Complex{Float64}}[transform(rangespace(Hc),Complex{Float64}[sum(cauchy(Fun([zeros(k-1),1.0],Sproj),rt)) 
-        for rt in rts]) for k=1:m]...)   
-    
-    rs=MappedSpace(c,rangespace(Hc))
-    
-    SpaceOperator(Hc,S,rs)+SpaceOperator(CompactOperator(M),S,rs) 
-end
