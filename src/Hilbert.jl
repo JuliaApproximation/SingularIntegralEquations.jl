@@ -1,5 +1,6 @@
 export Hilbert
 
+abstract AbstractHilbert{T} <: CalculusOperator{T}
 ApproxFun.@calculus_operator(Hilbert,AbstractHilbert,HilbertWrapper)
 
 
