@@ -173,14 +173,14 @@ end
 
 ## Mapped
 
-function cauchy{M,T}(f::Fun{JacobiWeightSpace{CurveSpace{M}},T},z::Number)
+function cauchy{M,T}(f::Fun{JacobiWeightSpace{OpenCurveSpace{M}},T},z::Number)
     #project
     cs=space(f).space
     fm=Fun(f.coefficients,JacobiWeightSpace(space(f).α,space(f).β,cs.space))
     sum(cauchy(fm,complexroots(cs.domain.curve-z)))
 end
 
-function cauchy{M,T}(s::Bool,f::Fun{JacobiWeightSpace{CurveSpace{M}},T},z::Number)
+function cauchy{M,T}(s::Bool,f::Fun{JacobiWeightSpace{OpenCurveSpace{M}},T},z::Number)
     #project
     cs=space(f).space
     fm=Fun(f.coefficients,JacobiWeightSpace(space(f).α,space(f).β,cs.space))
@@ -191,7 +191,7 @@ end
 
 
 
-function hilbert{M,T}(f::Fun{JacobiWeightSpace{CurveSpace{M}},T})
+function hilbert{M,T}(f::Fun{JacobiWeightSpace{OpenCurveSpace{M}},T})
     #project
     c=space(f).space.domain
     fm=Fun(f.coefficients,JacobiWeightSpace(space(f).α,space(f).β))
@@ -199,7 +199,7 @@ function hilbert{M,T}(f::Fun{JacobiWeightSpace{CurveSpace{M}},T})
     Fun(q.coefficients,MappedSpace(domain(f),space(q)))
 end
 
-function hilbert{M,T}(f::Fun{JacobiWeightSpace{CurveSpace{M}},T},x::Number)
+function hilbert{M,T}(f::Fun{JacobiWeightSpace{OpenCurveSpace{M}},T},x::Number)
     #project
     c=space(f).space.domain    
     fm=Fun(f.coefficients,JacobiWeightSpace(space(f).α,space(f).β))
