@@ -1,37 +1,41 @@
 
-type CauchyOperator{D<:PeriodicDomain} <: BandedShiftOperator{Complex{Float64}}
+type Cauchy{D<:PeriodicDomain} <: BandedOperator{Complex{Float64}}
     sign::Bool
     domain::D
 end
 
-function CauchyOperator(s::Integer,d)
+function Cauchy(s::Integer,d)
     @assert abs(s) == 1
-    CauchyOperator(s==1,d)
+    Cauchy(s==1,d)
 end
 
-CauchyOperator(s)=CauchyOperator(s,Circle())
+Cauchy(s)=Cauchy(s,Circle())
 
-bandinds(::CauchyOperator)=0,0
-domainspace(D::CauchyOperator)=FourierSpace(D.domain)
-rangespace(D::CauchyOperator)=FourierSpace(D.domain)
+bandinds(::Cauchy)=0,0
+domainspace(D::Cauchy)=FourierSpace(D.domain)
+rangespace(D::Cauchy)=FourierSpace(D.domain)
 
 function cauchy_pos_addentries!(A::ShiftArray,kr::Range1)
-    for k=max(0,kr[1]):kr[end]
-        A[k,0]+=1.
+    for k=kr
+        if isodd(k)
+            A[k,0]+=1.
+        end
     end
     
     A
 end
 
 function cauchy_neg_addentries!(A::ShiftArray,kr::Range1)
-    for k=kr[1]:min(-1,kr[end])
-        A[k,0]+=-1.
+    for k=kr
+        if isoeven(k)
+            A[k,0]+=-1.
+        end
     end
     
     A
 end
 
-ApproxFun.addentries!(C::CauchyOperator,A::ShiftArray,kr::Range1)=C.sign?
+ApproxFun.addentries!(C::Cauchy,A::ShiftArray,kr::Range1)=C.sign?
     cauchy_pos_addentries!(A,kr):
     cauchy_neg_addentries!(A,kr)
         
