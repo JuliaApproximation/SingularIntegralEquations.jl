@@ -1,5 +1,6 @@
 using ApproxFun, SIE
 
+f=Fun(z->2+cos(z+1/z),Circle());
 T=ToeplitzOperator(f)
 C=Cauchy(-1,domain(f))
 @time u=(I+(1-f)*C)\(f-1)
