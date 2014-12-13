@@ -12,8 +12,8 @@ end
 Cauchy(s)=Cauchy(s,Circle())
 
 bandinds(::Cauchy)=0,0
-domainspace(D::Cauchy)=FourierSpace(D.domain)
-rangespace(D::Cauchy)=FourierSpace(D.domain)
+domainspace(D::Cauchy)=LaurentSpace(D.domain)
+rangespace(D::Cauchy)=LaurentSpace(D.domain)
 
 function cauchy_pos_addentries!(A::ShiftArray,kr::Range1)
     for k=kr
