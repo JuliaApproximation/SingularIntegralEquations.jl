@@ -27,7 +27,7 @@ end
 
 function cauchy_neg_addentries!(A::ShiftArray,kr::Range1)
     for k=kr
-        if isoeven(k)
+        if iseven(k)
             A[k,0]+=-1.
         end
     end
