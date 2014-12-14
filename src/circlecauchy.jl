@@ -1,43 +1,4 @@
 
-type Cauchy{D<:PeriodicDomain} <: BandedOperator{Complex{Float64}}
-    sign::Bool
-    domain::D
-end
-
-function Cauchy(s::Integer,d)
-    @assert abs(s) == 1
-    Cauchy(s==1,d)
-end
-
-Cauchy(s)=Cauchy(s,Circle())
-
-bandinds(::Cauchy)=0,0
-domainspace(D::Cauchy)=LaurentSpace(D.domain)
-rangespace(D::Cauchy)=LaurentSpace(D.domain)
-
-function cauchy_pos_addentries!(A::ShiftArray,kr::Range1)
-    for k=kr
-        if isodd(k)
-            A[k,0]+=1.
-        end
-    end
-    
-    A
-end
-
-function cauchy_neg_addentries!(A::ShiftArray,kr::Range1)
-    for k=kr
-        if iseven(k)
-            A[k,0]+=-1.
-        end
-    end
-    
-    A
-end
-
-ApproxFun.addentries!(C::Cauchy,A::ShiftArray,kr::Range1)=C.sign?
-    cauchy_pos_addentries!(A,kr):
-    cauchy_neg_addentries!(A,kr)
         
         
 ## cauchy
