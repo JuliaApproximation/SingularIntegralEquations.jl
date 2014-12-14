@@ -3,7 +3,7 @@ module SIE
 
 export Cauchy, cauchy, hilbert, hilbertinverse, cauchyintegral
 import ApproxFun
-import ApproxFun: PeriodicDomain, BandedShiftOperator, bandinds, dirichlettransform, idirichlettransform!, Curve,CurveSpace, OpenCurveSpace, ClosedCurveSpace,transform,SpaceOperator, rangespace, domainspace, addentries!, BandedOperator, PeriodicDomainSpace, AnySpace, canonicalspace, domain, promotedomainspace, AnyDomain, CalculusOperator,SumSpace
+import ApproxFun: PeriodicDomain, BandedShiftOperator, bandinds, dirichlettransform, idirichlettransform!, Curve,CurveSpace, OpenCurveSpace, ClosedCurveSpace,transform,SpaceOperator, rangespace, domainspace, addentries!, BandedOperator, PeriodicDomainSpace, AnySpace, canonicalspace, domain, promotedomainspace, AnyDomain, CalculusOperator,SumSpace,PiecewiseSpace
 
 
 function cauchy(s::Integer,f,z)
@@ -12,9 +12,6 @@ function cauchy(s::Integer,f,z)
     cauchy(s==1,f,z)
 end
 
-cauchy(f,z::Vector)=Complex{Float64}[cauchy(f,zk) for zk in z]
-cauchy(s::Integer,f,z::Vector)=Complex{Float64}[cauchy(s,f,zk) for zk in z]
-cauchy(s,f,z::Vector)=Complex{Float64}[cauchy(s,f,zk) for zk in z]
 
 
 include("circlecauchy.jl")
@@ -23,6 +20,8 @@ include("intervalcauchy.jl")
 include("singfuncauchy.jl")
 
 include("Hilbert.jl")
+
+include("vectorcauchy.jl")
 
 end #module
 
