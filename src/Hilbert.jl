@@ -3,9 +3,31 @@ export Hilbert
 abstract AbstractHilbert{T} <: CalculusOperator{T}
 ApproxFun.@calculus_operator(Hilbert,AbstractHilbert,HilbertWrapper)
 
+#TODO: do in @calculus_operator?
+Hilbert(S::SumSpace,k::Integer)=HilbertWrapper(sumblkdiagm([Hilbert(S.spaces[1],k),Hilbert(S.spaces[2],k)]),k)
 
 
 Hilbert(d::IntervalDomain,n::Integer)=Hilbert(JacobiWeightSpace(-.5,-.5,ChebyshevSpace(d)),n)
+Hilbert(d::IntervalDomain)=Hilbert(JacobiWeightSpace(-.5,-.5,ChebyshevSpace(d)))
+Hilbert(d::PeriodicDomain,n::Integer)=Hilbert(LaurentSpace(d),n)
+Hilbert(d::PeriodicDomain)=Hilbert(LaurentSpace(d))
+
+
+## Circle
+
+bandinds{s}(::Hilbert{HardySpace{s}})=0,0
+domainspace{s}(H::Hilbert{HardySpace{s}})=H.space
+rangespace{s}(H::Hilbert{HardySpace{s}})=H.space
+
+function addentries!{s}(H::Hilbert{HardySpace{s}},A::ShiftArray,kr::Range1)
+    @assert isa(domain(H),Circle) && H.order == 1
+    for k=kr
+        A[k,0]+=s?1.im:-1.im
+    end
+    
+    A
+end
+
 
 ## JacobiWeightSpace
 
