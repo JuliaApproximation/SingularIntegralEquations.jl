@@ -1,6 +1,6 @@
 export Hilbert
 
-abstract AbstractHilbert{T} <: CalculusOperator{T}
+abstract AbstractHilbert{S,T} <: CalculusOperator{S,T}
 ApproxFun.@calculus_operator(Hilbert,AbstractHilbert,HilbertWrapper)
 
 #TODO: do in @calculus_operator?
@@ -101,7 +101,7 @@ end
 bandinds(H::Hilbert{JacobiWeightSpace{ChebyshevSpace}})=0,H.order
 bandinds(H::Hilbert{JacobiWeightSpace{UltrasphericalSpace{1}}})=-1,0
 
-function getindex{S<:UltrasphericalSpace}(H::Hilbert{JacobiWeightSpace{S}},w::Fun{JacobiWeightSpace{ChebyshevSpace}})
+function getindex{S<:UltrasphericalSpace}(H::AbstractHilbert{JacobiWeightSpace{S}},w::Fun{JacobiWeightSpace{ChebyshevSpace}})
     @assert domainspace(H)==space(w)
 
    H*Multiplication(w,space(w).space)
