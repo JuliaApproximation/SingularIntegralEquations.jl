@@ -1,11 +1,9 @@
 
-        
+import ApproxFun:mappoint
         
 ## cauchy
 
-function cauchyS(s::Bool,d::Circle,cfs::Vector,z::Number)
-    @assert d.center == 0 && d.radius == 1
-    
+function cauchyS(s::Bool,cfs::Vector,z::Number)    
     ret=zero(Complex{Float64})
     
     if s
@@ -30,18 +28,18 @@ function cauchyS(s::Bool,d::Circle,cfs::Vector,z::Number)
     ret
 end
 
+cauchyS(s::Bool,d::Circle,cfs::Vector,z::Number)=cauchyS(s,cfs,mappoint(d,Circle(),z))
+
 
 function cauchy(d::Circle,cfs::Vector,z::Number)
-    @assert d.center == 0 && d.radius == 1
-    
-    cauchyS(abs(z) < 1,d,cfs,z)
+    z=mappoint(d,Circle(),z)
+    cauchyS(abs(z) < 1,cfs,z)
 end
 
 cauchy(d::Circle,cfs::Vector,z::Vector)=[cauchy(d,cfs,zk) for zk in z]
 
 function cauchy(s::Bool,d::Circle,cfs::Vector,z::Number)
-    @assert d.center == 0 && d.radius == 1
-    @assert abs(abs(z)-1.) < 100eps()
+    @assert in(z,d)
     
     cauchyS(s,d,cfs,z)
 end
