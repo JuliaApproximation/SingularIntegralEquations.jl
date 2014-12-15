@@ -19,3 +19,5 @@ function Hilbert(S::PiecewiseSpace,k::Integer)
     C=BandedOperator[k==j?Hilbert(sp[k]):2im*Cauchy(sp[k],sp[j]) for j=1:length(sp),k=1:length(sp)]
     HilbertWrapper(interlace(C))
 end
+
+cauchy{S<:VectorDomainSpace,T}(v::Fun{S,T},z::Number)=Complex{Float64}[cauchy(fk,z) for fk in vec(v)]

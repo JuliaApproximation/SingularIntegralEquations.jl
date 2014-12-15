@@ -12,6 +12,8 @@ Hilbert(d::IntervalDomain)=Hilbert(JacobiWeightSpace(-.5,-.5,ChebyshevSpace(d)))
 Hilbert(d::PeriodicDomain,n::Integer)=Hilbert(LaurentSpace(d),n)
 Hilbert(d::PeriodicDomain)=Hilbert(LaurentSpace(d))
 
+Hilbert(d::Domain)=Hilbert(Space(d))
+
 ## Cauchy
 
 immutable Cauchy{D<:FunctionSpace,R<:FunctionSpace} <: BandedOperator{Complex{Float64}}
@@ -56,6 +58,7 @@ end
 Cauchy(s::Bool,d)=(s?0.5:-0.5)*I -0.5im*Hilbert(d)
 Cauchy(s::Int,d)=Cauchy(s==1,d)
 Cauchy(s::Union(Int,Bool))=Cauchy(s,AnySpace())
+
 
 ## Circle
 
