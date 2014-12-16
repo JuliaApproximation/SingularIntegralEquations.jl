@@ -104,11 +104,11 @@ end
 bandinds(H::Hilbert{JacobiWeightSpace{ChebyshevSpace}})=0,H.order
 bandinds(H::Hilbert{JacobiWeightSpace{UltrasphericalSpace{1}}})=-1,0
 
-function getindex{S<:UltrasphericalSpace}(H::AbstractHilbert{JacobiWeightSpace{S}},w::Fun{JacobiWeightSpace{ChebyshevSpace}})
-    @assert domainspace(H)==space(w)
-
-   H*Multiplication(w,space(w).space)
-end
+#function getindex{S<:UltrasphericalSpace}#(H::AbstractHilbert{JacobiWeightSpace{S}},w::Fun{JacobiWeightSpace{ChebyshevSpace}})
+#    @assert domainspace(H)==space(w)
+#
+#   H*Multiplication(w,space(w).space)
+#end
 
 function addentries!(H::Hilbert{JacobiWeightSpace{ChebyshevSpace}},A::ShiftArray,kr::Range1)
     m=H.order
