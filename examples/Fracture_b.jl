@@ -50,16 +50,16 @@ len=int(m/2)
 err = zeros(len)
 Cn = zeros(len)
 for i=1:len
-	n=2i+3
-	An = [sparse(B[1][1:n]');sparse(B[2][1:n]');L[1:n-2,1:n]]
-	fn = [0.0,0.0,pad(p.coefficients,n-2)]
-	un = An\fn
-	n1 = int(ceil(1.01n))
-	An1 = [sparse(B[1][1:n1]');sparse(B[2][1:n1]');L[1:n1-2,1:n1]]
-	fn1 = [0.0,0.0,pad(p.coefficients,n1-2)]
-	un1 = An1\fn1
-	err[i] = norm(pad(un,n1)-un1)
-	Cn[i] = cond(full(An))
+    n=2i+3
+    An = [sparse(B[1][1:n]');sparse(B[2][1:n]');L[1:n-2,1:n]]
+    fn = [0.0,0.0,pad(p.coefficients,n-2)]
+    un = An\fn
+    n1 = int(ceil(1.01n))
+    An1 = [sparse(B[1][1:n1]');sparse(B[2][1:n1]');L[1:n1-2,1:n1]]
+    fn1 = [0.0,0.0,pad(p.coefficients,n1-2)]
+    un1 = An1\fn1
+    err[i] = norm(pad(un,n1)-un1)
+    Cn[i] = cond(full(An))
 end
 ax = gca()
 ax[:spines][:"left"][:set_color]("r")
