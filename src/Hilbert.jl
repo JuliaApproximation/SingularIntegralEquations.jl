@@ -52,11 +52,10 @@ function rangespace(H::Hilbert{JacobiWeightSpace{ChebyshevSpace}})
 end
 function rangespace(H::Hilbert{JacobiWeightSpace{UltrasphericalSpace{1}}})
     @assert domainspace(H).α==domainspace(H).β==0.5
-    @assert H.order==1
-    ChebyshevSpace(domain(H))
+    UltrasphericalSpace{max(H.order-1,0)}(domain(H))
 end
-bandinds(H::Hilbert{JacobiWeightSpace{ChebyshevSpace}})=0,H.order
-bandinds(H::Hilbert{JacobiWeightSpace{UltrasphericalSpace{1}}})=-1,0
+bandinds{λ}(H::Hilbert{JacobiWeightSpace{UltrasphericalSpace{λ}}})=-λ,H.order-λ
+
 
 #function getindex{S<:UltrasphericalSpace}#(H::AbstractHilbert{JacobiWeightSpace{S}},w::Fun{JacobiWeightSpace{ChebyshevSpace}})
 #    @assert domainspace(H)==space(w)
@@ -90,14 +89,22 @@ end
 function addentries!(H::Hilbert{JacobiWeightSpace{UltrasphericalSpace{1}}},A::ShiftArray,kr::Range1)
     m=H.order
     d=domain(H)
+    sp=domainspace(H)
 
     @assert isa(d,Interval)
-    @assert domainspace(H).α==domainspace(H).β==0.5    
-    @assert m==1 
-    for k=max(kr[1],2):kr[end]
-        A[k,-1] -= 1.
+    @assert sp.α==sp.β==0.5    
+
+    if m == 1
+        for k=max(kr[1],2):kr[end]
+            A[k,-1] -= 1.
+        end
+    else
+        C=(4./(d.b-d.a))^(m-1)
+        for k=kr
+            A[k,m-2] -= .5C*k/(m-1)
+        end
     end
-    
+
     A
 end
 
