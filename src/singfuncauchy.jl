@@ -27,12 +27,12 @@ absqrt(s::Bool,a,b,z)=(s?1:-1)*im*sqrt(z-a)*sqrt(b-z)
 absqrt(s::Int,a,b,z)=absqrt(s==1,a,b,z)
 
 
-function cauchy(u::Fun{JacobiWeightSpace{ChebyshevSpace}},z::Number)
+function cauchy(u::Fun{JacobiWeight{Chebyshev}},z::Number)
     d=domain(u);sp=space(u)
     
     if sp.α == sp.β == .5    
-        uf=Fun(u.coefficients,ChebyshevSpace(d))
-        0.5im*holdersum(coefficients(uf,UltrasphericalSpace{1}),
+        uf=Fun(u.coefficients,Chebyshev(d))
+        0.5im*holdersum(coefficients(uf,Ultraspherical{1}),
                         intervaloffcircle(true,tocanonical(u,z)))
     elseif sp.α == sp.β == -.5
         cfs = dirichlettransform(u.coefficients)        
@@ -57,12 +57,12 @@ end
 
 
 
-function cauchy(s::Bool,u::Fun{JacobiWeightSpace{ChebyshevSpace}},x::Number)
+function cauchy(s::Bool,u::Fun{JacobiWeight{Chebyshev}},x::Number)
     d=domain(u);sp=space(u)
 
     if sp.α == sp.β == .5
-        uf=Fun(u.coefficients,ChebyshevSpace(d))    
-        0.5im*holdersum(coefficients(uf,UltrasphericalSpace{1}),
+        uf=Fun(u.coefficients,Chebyshev(d))    
+        0.5im*holdersum(coefficients(uf,Ultraspherical{1}),
                         intervaloncircle(!s,tocanonical(u,x)))    
     elseif sp.α == sp.β == -.5
         cfs = dirichlettransform(u.coefficients)
@@ -86,12 +86,12 @@ end
 
 ## hilbert is equal to im*(C^+ + C^-)
 
-function hilbert(u::Fun{JacobiWeightSpace{ChebyshevSpace}})
+function hilbert(u::Fun{JacobiWeight{Chebyshev}})
     d=domain(u);sp=space(u)
 
     if sp.α == sp.β == .5 
         uf=Fun(u.coefficients,d)        
-        Fun([0.,-coefficients(uf,UltrasphericalSpace{1})],d)
+        Fun([0.,-coefficients(uf,Ultraspherical{1})],d)
     elseif sp.α == sp.β == -.5 
         cfs = dirichlettransform(u.coefficients)
         
@@ -105,9 +105,9 @@ end
 function hilbertinverse(u::Fun)
     if abs(u.coefficients[1]) < 100eps()
         ## no singularity
-        Fun(ultraiconversion!(u.coefficients[2:end]),JacobiWeightSpace(.5,.5,u.domain))
+        Fun(ultraiconversion!(u.coefficients[2:end]),JacobiWeight(.5,.5,u.domain))
     else
-        Fun(idirichlettransform!([0.,u.coefficients[1],.5*u.coefficients[2:end]]),JacobiWeightSpace(-.5,-.5,u.domain))
+        Fun(idirichlettransform!([0.,u.coefficients[1],.5*u.coefficients[2:end]]),JacobiWeight(-.5,-.5,u.domain))
     end
 end
 
@@ -130,14 +130,14 @@ end
 
 integratejin(cfs,y)=.5*(-cfs[1]*log(y)+divkholdersum(cfs,y,y,1)-divkholdersum(slice(cfs,2:length(cfs)),y,one(y),0))
 
-function cauchyintegral(u::Fun{JacobiWeightSpace{ChebyshevSpace}},z::Number)
+function cauchyintegral(u::Fun{JacobiWeight{Chebyshev}},z::Number)
     d=domain(u)
     a,b=d.a,d.b
     sp=space(u)
     
     if sp.α == sp.β == .5     
-        uf=Fun(u.coefficients,ChebyshevSpace(d))        
-        cfs=coefficients(uf,UltrasphericalSpace{1})
+        uf=Fun(u.coefficients,Chebyshev(d))        
+        cfs=coefficients(uf,Ultraspherical{1})
         y=intervaloffcircle(true,tocanonical(u,z))
         
         0.25im*(b-a)*integratejin(cfs,y)
@@ -173,17 +173,17 @@ end
 
 ## Mapped
 
-function cauchy{M,T}(f::Fun{JacobiWeightSpace{OpenCurveSpace{M}},T},z::Number)
+function cauchy{M,T}(f::Fun{JacobiWeight{OpenCurveSpace{M}},T},z::Number)
     #project
     cs=space(f).space
-    fm=Fun(f.coefficients,JacobiWeightSpace(space(f).α,space(f).β,cs.space))
+    fm=Fun(f.coefficients,JacobiWeight(space(f).α,space(f).β,cs.space))
     sum(cauchy(fm,complexroots(cs.domain.curve-z)))
 end
 
-function cauchy{M,T}(s::Bool,f::Fun{JacobiWeightSpace{OpenCurveSpace{M}},T},z::Number)
+function cauchy{M,T}(s::Bool,f::Fun{JacobiWeight{OpenCurveSpace{M}},T},z::Number)
     #project
     cs=space(f).space
-    fm=Fun(f.coefficients,JacobiWeightSpace(space(f).α,space(f).β,cs.space))
+    fm=Fun(f.coefficients,JacobiWeight(space(f).α,space(f).β,cs.space))
     rts=complexroots(cs.domain.curve-z)
     di=Interval()
     mapreduce(rt->in(rt,di)?cauchy(s,fm,rt):cauchy(fm,rt),+,rts)
@@ -191,17 +191,17 @@ end
 
 
 
-function hilbert{M,T}(f::Fun{JacobiWeightSpace{OpenCurveSpace{M}},T})
+function hilbert{M,T}(f::Fun{JacobiWeight{OpenCurveSpace{M}},T})
     #project
     c=space(f).space.domain
-    fm=Fun(f.coefficients,JacobiWeightSpace(space(f).α,space(f).β))
+    fm=Fun(f.coefficients,JacobiWeight(space(f).α,space(f).β))
     q=hilbert(fm)+2im*Fun(x->sum(cauchy(fm,filter(y->!in(y,Interval()),complexroots(c.curve-c.curve[x])))))
     Fun(q.coefficients,MappedSpace(domain(f),space(q)))
 end
 
-function hilbert{M,T}(f::Fun{JacobiWeightSpace{OpenCurveSpace{M}},T},x::Number)
+function hilbert{M,T}(f::Fun{JacobiWeight{OpenCurveSpace{M}},T},x::Number)
     #project
     c=space(f).space.domain    
-    fm=Fun(f.coefficients,JacobiWeightSpace(space(f).α,space(f).β))
+    fm=Fun(f.coefficients,JacobiWeight(space(f).α,space(f).β))
     hilbert(fm,tocanonical(f,x))+2im*sum(cauchy(fm,filter(y->!in(y,Interval()),complexroots(c.curve-c.curve[x]))))
 end

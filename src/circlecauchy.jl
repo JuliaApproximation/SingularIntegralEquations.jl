@@ -46,8 +46,8 @@ end
 
 
 
-cauchy(s::Bool,f::Fun{LaurentSpace},z::Number)=cauchy(s,domain(f),coefficients(f),z)
-cauchy(f::Fun{LaurentSpace},z::Number)=cauchy(domain(f),coefficients(f),z)
+cauchy(s::Bool,f::Fun{Laurent},z::Number)=cauchy(s,domain(f),coefficients(f),z)
+cauchy(f::Fun{Laurent},z::Number)=cauchy(domain(f),coefficients(f),z)
 
 
 
@@ -56,7 +56,7 @@ cauchy(f::Fun{LaurentSpace},z::Number)=cauchy(domain(f),coefficients(f),z)
 
 ## mapped Cauchy
 
-function cauchy(f::Fun{CurveSpace{LaurentSpace}},z::Number)
+function cauchy(f::Fun{CurveSpace{Laurent}},z::Number)
     fcirc=Fun(f.coefficients,f.space.space)  # project to circle
     c=domain(f)  # the curve that f lives on
     @assert domain(fcirc)==Circle()

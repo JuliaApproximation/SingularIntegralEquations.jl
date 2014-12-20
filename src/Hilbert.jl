@@ -7,21 +7,21 @@ ApproxFun.@calculus_operator(Hilbert,AbstractHilbert,HilbertWrapper)
 Hilbert(S::SumSpace,k::Integer)=HilbertWrapper(sumblkdiagm([Hilbert(S.spaces[1],k),Hilbert(S.spaces[2],k)]),k)
 
 
-Hilbert(d::IntervalDomain,n::Integer)=Hilbert(JacobiWeightSpace(-.5,-.5,ChebyshevSpace(d)),n)
-Hilbert(d::IntervalDomain)=Hilbert(JacobiWeightSpace(-.5,-.5,ChebyshevSpace(d)))
-Hilbert(d::PeriodicDomain,n::Integer)=Hilbert(LaurentSpace(d),n)
-Hilbert(d::PeriodicDomain)=Hilbert(LaurentSpace(d))
+Hilbert(d::IntervalDomain,n::Integer)=Hilbert(JacobiWeight(-.5,-.5,Chebyshev(d)),n)
+Hilbert(d::IntervalDomain)=Hilbert(JacobiWeight(-.5,-.5,Chebyshev(d)))
+Hilbert(d::PeriodicDomain,n::Integer)=Hilbert(Laurent(d),n)
+Hilbert(d::PeriodicDomain)=Hilbert(Laurent(d))
 
 Hilbert(d::Domain)=Hilbert(Space(d))
 
 
 ## Circle
 
-bandinds{s}(::Hilbert{HardySpace{s}})=0,0
-domainspace{s}(H::Hilbert{HardySpace{s}})=H.space
-rangespace{s}(H::Hilbert{HardySpace{s}})=H.space
+bandinds{s}(::Hilbert{Hardy{s}})=0,0
+domainspace{s}(H::Hilbert{Hardy{s}})=H.space
+rangespace{s}(H::Hilbert{Hardy{s}})=H.space
 
-function addentries!{s}(H::Hilbert{HardySpace{s}},A::ShiftArray,kr::Range1)
+function addentries!{s}(H::Hilbert{Hardy{s}},A::ShiftArray,kr::Range1)
     @assert isa(domain(H),Circle) && H.order == 1
     for k=kr
         A[k,0]+=s?1.im:-1.im
@@ -31,39 +31,39 @@ function addentries!{s}(H::Hilbert{HardySpace{s}},A::ShiftArray,kr::Range1)
 end
 
 
-## JacobiWeightSpace
+## JacobiWeight
 
-function Hilbert(S::JacobiWeightSpace{ChebyshevSpace},k::Integer)
+function Hilbert(S::JacobiWeight{Chebyshev},k::Integer)
     if S.α==S.β==-0.5
-        Hilbert{JacobiWeightSpace{ChebyshevSpace},Float64}(S,k)
+        Hilbert{JacobiWeight{Chebyshev},Float64}(S,k)
     elseif S.α==S.β==0.5
         @assert k==1
         HilbertWrapper(
-            Hilbert(JacobiWeightSpace(0.5,0.5,UltrasphericalSpace{1}(domain(S))),k)*Conversion(S,JacobiWeightSpace(0.5,0.5,UltrasphericalSpace{1}(domain(S)))),
+            Hilbert(JacobiWeight(0.5,0.5,Ultraspherical{1}(domain(S))),k)*Conversion(S,JacobiWeight(0.5,0.5,Ultraspherical{1}(domain(S)))),
             k)
     else
         error("Hilbert not implemented")
     end
 end
 
-function rangespace(H::Hilbert{JacobiWeightSpace{ChebyshevSpace}})
+function rangespace(H::Hilbert{JacobiWeight{Chebyshev}})
     @assert domainspace(H).α==domainspace(H).β==-0.5
-    UltrasphericalSpace{H.order}(domain(H))
+    Ultraspherical{H.order}(domain(H))
 end
-function rangespace(H::Hilbert{JacobiWeightSpace{UltrasphericalSpace{1}}})
+function rangespace(H::Hilbert{JacobiWeight{Ultraspherical{1}}})
     @assert domainspace(H).α==domainspace(H).β==0.5
-    UltrasphericalSpace{max(H.order-1,0)}(domain(H))
+    Ultraspherical{max(H.order-1,0)}(domain(H))
 end
-bandinds{λ}(H::Hilbert{JacobiWeightSpace{UltrasphericalSpace{λ}}})=-λ,H.order-λ
+bandinds{λ}(H::Hilbert{JacobiWeight{Ultraspherical{λ}}})=-λ,H.order-λ
 
 
-#function getindex{S<:UltrasphericalSpace}#(H::AbstractHilbert{JacobiWeightSpace{S}},w::Fun{JacobiWeightSpace{ChebyshevSpace}})
+#function getindex{S<:Ultraspherical}#(H::AbstractHilbert{JacobiWeight{S}},w::Fun{JacobiWeight{Chebyshev}})
 #    @assert domainspace(H)==space(w)
 #
 #   H*Multiplication(w,space(w).space)
 #end
 
-function addentries!(H::Hilbert{JacobiWeightSpace{ChebyshevSpace}},A::ShiftArray,kr::Range1)
+function addentries!(H::Hilbert{JacobiWeight{Chebyshev}},A::ShiftArray,kr::Range1)
     m=H.order
     d=domain(H)
     sp=domainspace(H)
@@ -86,7 +86,7 @@ function addentries!(H::Hilbert{JacobiWeightSpace{ChebyshevSpace}},A::ShiftArray
     A
 end
 
-function addentries!(H::Hilbert{JacobiWeightSpace{UltrasphericalSpace{1}}},A::ShiftArray,kr::Range1)
+function addentries!(H::Hilbert{JacobiWeight{Ultraspherical{1}}},A::ShiftArray,kr::Range1)
     m=H.order
     d=domain(H)
     sp=domainspace(H)
@@ -111,12 +111,12 @@ end
 
 ## CurveSpace
 
-function Hilbert(S::JacobiWeightSpace{OpenCurveSpace{ChebyshevSpace}},k::Integer)
+function Hilbert(S::JacobiWeight{OpenCurveSpace{Chebyshev}},k::Integer)
     @assert k==1
     #TODO: choose dimensions
     m,n=40,40
     c=domain(S)
-    Sproj=JacobiWeightSpace(S.α,S.β)
+    Sproj=JacobiWeight(S.α,S.β)
     
     rts=[filter(y->!in(y,Interval()),complexroots(c.curve-c.curve[x])) for x in points(Interval(),n)]
     Hc=Hilbert(Sproj)

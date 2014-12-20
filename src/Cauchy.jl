@@ -5,12 +5,12 @@ immutable Cauchy{D<:FunctionSpace,R<:FunctionSpace} <: BandedOperator{Complex{Fl
     rangespace::R
 end
 
-Cauchy(ds::PeriodicDomain,rs::PeriodicDomain)=Cauchy(LaurentSpace(ds),LaurentSpace(rs))
+Cauchy(ds::PeriodicDomain,rs::PeriodicDomain)=Cauchy(Laurent(ds),Laurent(rs))
 
 domainspace(C::Cauchy)=C.domainspace
 rangespace(C::Cauchy)=C.rangespace
 
-function bandinds(C::Cauchy{LaurentSpace,LaurentSpace})
+function bandinds(C::Cauchy{Laurent,Laurent})
     ds=domain(domainspace(C));rs=domain(rangespace(C))
     @assert isa(ds,Circle)
     @assert isa(rs,Circle)    
@@ -18,7 +18,7 @@ function bandinds(C::Cauchy{LaurentSpace,LaurentSpace})
     0,0
 end
 
-function addentries!(C::Cauchy{LaurentSpace,LaurentSpace},A::ShiftArray,kr::Range)
+function addentries!(C::Cauchy{Laurent,Laurent},A::ShiftArray,kr::Range)
     ds=domain(domainspace(C));rs=domain(rangespace(C))
     @assert isa(ds,Circle)
     @assert isa(rs,Circle)    

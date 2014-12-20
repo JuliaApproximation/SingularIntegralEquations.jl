@@ -5,7 +5,7 @@ function cauchylegendre(z::Number)
         (JacobiRecurrenceOperator(0.,0.)-z)[2:end,:]]\[(log(z-1)-log(z+1))/(2π*im)]
 end
 
-function cauchy(f::Fun{JacobiSpace},z::Number)
+function cauchy(f::Fun{Jacobi},z::Number)
     @assert space(f).a==0 && space(f).b==0
    cfs=cauchylegendre(z)
    m=min(length(f),length(cfs))
