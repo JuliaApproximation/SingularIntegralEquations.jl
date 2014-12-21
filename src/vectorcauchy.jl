@@ -20,4 +20,4 @@ function Hilbert(S::PiecewiseSpace,k::Integer)
     HilbertWrapper(interlace(C))
 end
 
-cauchy{S<:VectorFunctionSpace,T}(v::Fun{S,T},z::Number)=Complex{Float64}[cauchy(fk,z) for fk in vec(v)]
+cauchy{S<:ArraySpace,T}(v::Fun{S,T},z::Number)=Complex{Float64}[cauchy(fk,z) for fk in mat(v)]
