@@ -15,6 +15,11 @@ Hilbert(d::PeriodicDomain)=Hilbert(Laurent(d))
 Hilbert(d::Domain)=Hilbert(Space(d))
 
 
+## ArraySpace
+
+#TODO: incorporate into @calculus_operator
+Hilbert(AS::ArraySpace,k::Integer)=HilbertWrapper(DiagonalArrayOperator(Hilbert(AS.space,k),size(AS)),k)
+
 ## Circle
 
 bandinds{s}(::Hilbert{Hardy{s}})=0,0
