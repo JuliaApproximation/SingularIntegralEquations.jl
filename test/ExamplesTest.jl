@@ -1,0 +1,7 @@
+include("../examples/ellipticintegral.jl")
+include("../examples/erfc.jl")
+include("../examples/Wiener-Hopf.jl")
+include("../examples/Fracture_a.jl")
+include("../examples/Fracture_b.jl")
+include("../examples/Fracture_c.jl")
+include("../examples/Scattering.jl")

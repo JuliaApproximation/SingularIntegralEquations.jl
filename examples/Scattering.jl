@@ -17,7 +17,7 @@ d = d[1]/hypot(d[1],d[2]),d[2]/hypot(d[1],d[2])
 ui(x,y) = exp(im*k*(d⋅(x,y)))
 
     dom = Interval(-1.,1.)
-    sp = UltrasphericalSpace{0}(dom)
+    sp = Ultraspherical{0}(dom)
     x = Fun(identity,dom)
     w = 1/sqrt((dom.b-x)*(x-dom.a))
     uiΓ,H0,S = Fun(x->ui(x,0),sp),Hilbert(dom,0),Σ(dom)
@@ -33,22 +33,4 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     @time ∂u∂n = L\f
     println("The length of ∂u∂n is: ",length(∂u∂n))
 
-    us(x,y) = Fun(t->-im/4.*hankelh1(0,k.*sqrt((x.-t).^2.+y.^2))*∂u∂n[t],ApproxFun.VectorDomainSpace(sp,length(x)),length(∂u∂n)).coefficients[1:length(x)]
-
-
-using PyCall
-pygui(:tk)
-using PyPlot
-
-clf()
-x = linspace(-3,3,101);y = [linspace(-2,-.02,51),linspace(.02,2,51)]
-xx,yy = x.+0.*y',0.*x.+y'
-
-@time u = ui(xx,yy) + reshape(us(xx[:],yy[:]),size(xx))
-
-line = [dom.a,dom.b]
-plot(line,0line,"-k",linewidth=2.0)
-contourf(xx,yy,real(u),25)
-xlabel("\$x\$");ylabel("\$y\$")
-savefig("ScatteringPDEplot.pdf")
-tomovie(xx,yy,u,20;plotfunction=contourf,seconds=1)
+    us(x,y) = Fun(t->-im/4.*hankelh1(0,k.*sqrt((x.-t).^2.+y.^2))*∂u∂n[t],ApproxFun.ArraySpace(sp,length(x)),length(∂u∂n)).coefficients[1:length(x)]

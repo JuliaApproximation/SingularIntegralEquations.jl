@@ -23,19 +23,3 @@ println("The rank of K is: ",rank(K))
 println("The length of uSIE is: ",length(uSIE))
 println("The extrema of uSIE are: ",extrema(uSIE))
 println("The normalized Stress Intensify Factors are: ",(uSIE/(1-x^2))[-1],"  ",(uSIE/(1-x^2))[1])
-
-
-using PyCall
-pygui(:tk)
-using PyPlot
-
-clf();m=length(uSIE)
-spy([sparse(B[1][1:m]'),sparse(B[2][1:m]'),L[1:m-2,1:m]])
-xlim([-.5,m-.5]);ylim([m-.5,-.5]);xlabel("j");ylabel("i")
-savefig("Fracture_aspy.pdf")
-
-uSIE *= w
-clf();xx = linspace(-1,1,5001)
-plot(xx,uSIE[xx],"-k")
-xlabel("x");ylabel("u")
-savefig("Fracture_aplot.pdf")
