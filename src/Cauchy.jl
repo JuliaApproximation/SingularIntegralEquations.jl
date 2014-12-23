@@ -19,13 +19,13 @@ function bandinds(C::Cauchy{Laurent,Laurent})
     
     if isapprox(c2,c1)
         0,0   # special form when centers coincide
-    elseif abs(c1-c2)<r1  # we are inside the circle, use Taylor series
+    elseif r1>r2&&abs(c1-c2)<r1  # we are inside the circle, use Taylor series
         mx=abs(c2-c1)/r1+r2/r1    
         @assert mx < 1 ## rs is inside ds    
         b=int(log(100eps())/log(mx))
         0,2b
         # polys like in the space of polys, so upper triangular
-    elseif abs(c1-c2)<r2 # we surround the domain, use Hardy{False} series
+    elseif r1<r2&&abs(c1-c2)<r2 # we surround the domain, use Hardy{False} series
         mx=r2/r1-abs(c1-c2)/r1
         @assert mx>1
         b=int(log(100eps())/log(1/mx))
@@ -39,6 +39,8 @@ function bandinds(C::Cauchy{Laurent,Laurent})
         -2b,2b
     end
 end
+
+binomialf(x,y)=1.0/((x+1)*beta(x-y+1.0,y+1.0))
 
 function addentries!(C::Cauchy{Laurent,Laurent},A::ShiftArray,kr::Range)
     ds=domain(domainspace(C));rs=domain(rangespace(C))
@@ -61,7 +63,7 @@ function addentries!(C::Cauchy{Laurent,Laurent},A::ShiftArray,kr::Range)
                 A[k,0]+=(s?1:-1)*r^(div(k,2))
             end
         end
-    elseif abs(c1-c2)<r1  # we are inside the circle, use Taylor series
+    elseif r1>r2&&abs(c1-c2)<r1  # we are inside the circle, use Taylor series
         mx=abs(c2-c1)/r1+r2/r1     
         b=int(log(100eps())/log(mx))
         @assert mx < 1 ## rs is inside ds, need to implement other direction
@@ -72,11 +74,11 @@ function addentries!(C::Cauchy{Laurent,Laurent},A::ShiftArray,kr::Range)
                 for k=0:2:2b
                     j2=div(j-1,2)
                     k2=div(k,2)+j2                    
-                    A[j,k]+=binomial(k2,j2)*cm^(k2-j2)*r2^j2/r1^k2
+                    A[j,k]+=binomialf(k2,j2)*cm^(k2-j2)*r2^j2/r1^k2
                 end
             end
         end
-    elseif abs(c1-c2)<r2 # we surround the domain, use Hardy{False} series
+    elseif r1<r2&&abs(c1-c2)<r2 # we surround the domain, use Hardy{False} series
         mx=r2/r1-abs(c2-c1)/r1
         @assert mx>1
         b=int(log(100eps())/log(1/mx))
@@ -86,7 +88,7 @@ function addentries!(C::Cauchy{Laurent,Laurent},A::ShiftArray,kr::Range)
                 for j=max(-2b,2-k):2:0
                     k2=div(k,2)-1   
                     j2=div(j,2)+k2
-                    A[k,j]-=binomial(k2,j2)*cm^(k2-j2)*r1^(j2+1)/r2^(k2+1)
+                    A[k,j]-=binomialf(k2,j2)*cm^(k2-j2)*r1^(j2+1)/r2^(k2+1)
                 end
             end
         end            
@@ -101,7 +103,7 @@ function addentries!(C::Cauchy{Laurent,Laurent},A::ShiftArray,kr::Range)
                 for j=2-k:2:2b-k
                     k2=div(k+1,2)
                     j2=div(j+k,2)
-                    A[k,j]+=r2^(k2-1)/cm^(k2-1)*(-1)^(j2+1)*r1^j2/cm^j2*binomial(k2+j2-2,j2-1)
+                    A[k,j]+=r2^(k2-1)/cm^(k2-1)*(-1)^(j2+1)*r1^j2/cm^j2*binomialf(k2+j2-2,j2-1)
                 end
             end
         end 
