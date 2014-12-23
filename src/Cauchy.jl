@@ -31,8 +31,12 @@ function bandinds(C::Cauchy{Laurent,Laurent})
         b=int(log(100eps())/log(1/mx))
         -2b,0
         # inverse polys decay at the same rate, so lower triangular      
-    else  # We go from Hardy{false}->Taylor
-        error("Implement")
+    else  # There are two disjoint circles, map from Hardy{false}->Taylor
+        mx=abs(c2-c1)/r1-r2/r1
+        @assert mx > 1
+        b=int(log(100eps())/log(1/mx))
+        # we have 2bx2b coefficients
+        -2b,2b
     end
 end
 
@@ -82,12 +86,25 @@ function addentries!(C::Cauchy{Laurent,Laurent},A::ShiftArray,kr::Range)
                 for j=max(-2b,2-k):2:0
                     k2=div(k,2)-1   
                     j2=div(j,2)+k2
-                    A[k,j]+=binomial(k2,j2)*cm^(k2-j2)*r1^(j2+1)/r2^(k2+1)
+                    A[k,j]-=binomial(k2,j2)*cm^(k2-j2)*r1^(j2+1)/r2^(k2+1)
                 end
             end
         end            
     else
-        error("Implement")    
+        mx=abs(c2-c1)/r1-r2/r1
+        @assert mx > 1
+        b=int(log(100eps())/log(1/mx))
+        cm=c1-c2        
+        # we have 2bx2b coefficients
+        for k=kr[1]:min(2b,kr[end])
+            if isodd(k)
+                for j=2-k:2:2b-k
+                    k2=div(k+1,2)
+                    j2=div(j+k,2)
+                    A[k,j]+=r2^(k2-1)/cm^(k2-1)*(-1)^(j2+1)*r1^j2/cm^j2*binomial(k2+j2-2,j2-1)
+                end
+            end
+        end 
     end
     A
 end
