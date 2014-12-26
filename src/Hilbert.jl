@@ -26,7 +26,7 @@ bandinds{s}(::Hilbert{Hardy{s}})=0,0
 domainspace{s}(H::Hilbert{Hardy{s}})=H.space
 rangespace{s}(H::Hilbert{Hardy{s}})=H.space
 
-function addentries!{s}(H::Hilbert{Hardy{s}},A::ShiftArray,kr::Range1)
+function addentries!{s}(H::Hilbert{Hardy{s}},A,kr::Range)
     @assert isa(domain(H),Circle) && H.order == 1
     for k=kr
         A[k,0]+=s?1.im:-1.im
@@ -68,7 +68,7 @@ bandinds{λ}(H::Hilbert{JacobiWeight{Ultraspherical{λ}}})=-λ,H.order-λ
 #   H*Multiplication(w,space(w).space)
 #end
 
-function addentries!(H::Hilbert{JacobiWeight{Chebyshev}},A::ShiftArray,kr::Range1)
+function addentries!(H::Hilbert{JacobiWeight{Chebyshev}},A,kr::Range)
     m=H.order
     d=domain(H)
     sp=domainspace(H)
@@ -91,7 +91,7 @@ function addentries!(H::Hilbert{JacobiWeight{Chebyshev}},A::ShiftArray,kr::Range
     A
 end
 
-function addentries!(H::Hilbert{JacobiWeight{Ultraspherical{1}}},A::ShiftArray,kr::Range1)
+function addentries!(H::Hilbert{JacobiWeight{Ultraspherical{1}}},A,kr::UnitRange)
     m=H.order
     d=domain(H)
     sp=domainspace(H)

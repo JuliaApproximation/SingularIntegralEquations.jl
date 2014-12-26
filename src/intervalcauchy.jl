@@ -1,4 +1,4 @@
-import ApproxFun: JacobiRecurrenceOperator,dotu
+import ApproxFun: dotu
 
 function cauchylegendre(z::Number)
     [BasisFunctional(1),

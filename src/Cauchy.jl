@@ -42,7 +42,7 @@ end
 
 binomialf(x,y)=1.0/((x+1)*beta(x-y+1.0,y+1.0))
 
-function addentries!(C::Cauchy{Laurent,Laurent},A::ShiftArray,kr::Range)
+function addentries!(C::Cauchy{Laurent,Laurent},A,kr::Range)
     ds=domain(domainspace(C));rs=domain(rangespace(C))
     @assert isa(ds,Circle)
     @assert isa(rs,Circle)
