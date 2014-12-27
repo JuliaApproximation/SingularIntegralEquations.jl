@@ -29,7 +29,7 @@ rangespace{s}(H::Hilbert{Hardy{s}})=H.space
 function addentries!{s}(H::Hilbert{Hardy{s}},A,kr::Range)
     @assert isa(domain(H),Circle) && H.order == 1
     for k=kr
-        A[k,0]+=s?1.im:-1.im
+        A[k,k]+=s?1.im:-1.im
     end
     
     A
@@ -79,12 +79,12 @@ function addentries!(H::Hilbert{JacobiWeight{Chebyshev}},A,kr::Range)
     if m == 0
         C=(d.b-d.a)/2.
         for k=kr
-            k == 1? A[k,0] += C*log(.5abs(C)) : A[k,0] += -C/(k-1)
+            A[k,k] += k==1?C*log(.5abs(C)):-C/(k-1)
         end
     else
         C=(4./(d.b-d.a))^(m-1)
         for k=kr
-            A[k,m] += C
+            A[k,k+m] += C
         end
     end
     
@@ -101,12 +101,12 @@ function addentries!(H::Hilbert{JacobiWeight{Ultraspherical{1}}},A,kr::UnitRange
 
     if m == 1
         for k=max(kr[1],2):kr[end]
-            A[k,-1] -= 1.
+            A[k,k-1] -= 1.
         end
     else
         C=(4./(d.b-d.a))^(m-1)
         for k=kr
-            A[k,m-2] -= .5C*k/(m-1)
+            A[k,k+m-2] -= .5C*k/(m-1)
         end
     end
 

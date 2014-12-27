@@ -60,7 +60,7 @@ function addentries!(C::Cauchy{Laurent,Laurent},A,kr::Range)
         
         for k=kr
             if isodd(k)==s
-                A[k,0]+=(s?1:-1)*r^(div(k,2))
+                A[k,k]+=(s?1:-1)*r^(div(k,2))
             end
         end
     elseif r1>r2&&abs(c1-c2)<r1  # we are inside the circle, use Taylor series
@@ -74,7 +74,7 @@ function addentries!(C::Cauchy{Laurent,Laurent},A,kr::Range)
                 for k=0:2:2b
                     j2=div(j-1,2)
                     k2=div(k,2)+j2                    
-                    A[j,k]+=binomialf(k2,j2)*cm^(k2-j2)*r2^j2/r1^k2
+                    A[j,k+j]+=binomialf(k2,j2)*cm^(k2-j2)*r2^j2/r1^k2
                 end
             end
         end
@@ -88,7 +88,7 @@ function addentries!(C::Cauchy{Laurent,Laurent},A,kr::Range)
                 for j=max(-2b,2-k):2:0
                     k2=div(k,2)-1   
                     j2=div(j,2)+k2
-                    A[k,j]-=binomialf(k2,j2)*cm^(k2-j2)*r1^(j2+1)/r2^(k2+1)
+                    A[k,k+j]-=binomialf(k2,j2)*cm^(k2-j2)*r1^(j2+1)/r2^(k2+1)
                 end
             end
         end            
@@ -103,7 +103,7 @@ function addentries!(C::Cauchy{Laurent,Laurent},A,kr::Range)
                 for j=2-k:2:2b-k
                     k2=div(k+1,2)
                     j2=div(j+k,2)
-                    A[k,j]+=r2^(k2-1)/cm^(k2-1)*(-1)^(j2+1)*r1^j2/cm^j2*binomialf(k2+j2-2,j2-1)
+                    A[k,k+j]+=r2^(k2-1)/cm^(k2-1)*(-1)^(j2+1)*r1^j2/cm^j2*binomialf(k2+j2-2,j2-1)
                 end
             end
         end 
