@@ -3,29 +3,34 @@ export Hilbert
 abstract AbstractHilbert{S,T} <: CalculusOperator{S,T}
 ApproxFun.@calculus_operator(Hilbert,AbstractHilbert,HilbertWrapper)
 
-#TODO: do in @calculus_operator?
-Hilbert(S::SumSpace,k::Integer)=HilbertWrapper(sumblkdiagm([Hilbert(S.spaces[1],k),Hilbert(S.spaces[2],k)]),k)
-
+## Convenience routines
 
 Hilbert(d::IntervalDomain,n::Integer)=Hilbert(JacobiWeight(-.5,-.5,Chebyshev(d)),n)
 Hilbert(d::IntervalDomain)=Hilbert(JacobiWeight(-.5,-.5,Chebyshev(d)))
 Hilbert(d::PeriodicDomain,n::Integer)=Hilbert(Laurent(d),n)
 Hilbert(d::PeriodicDomain)=Hilbert(Laurent(d))
-
 Hilbert(d::Domain)=Hilbert(Space(d))
 
 
-## ArraySpace
+## Modifiers including SumSpace and ArraySpace
 
-#TODO: incorporate into @calculus_operator
+#TODO: do in @calculus_operator?
+Hilbert(S::SumSpace,k::Integer)=HilbertWrapper(sumblkdiagm([Hilbert(S.spaces[1],k),Hilbert(S.spaces[2],k)]),k)
 Hilbert(AS::ArraySpace,k::Integer)=HilbertWrapper(DiagonalArrayOperator(Hilbert(AS.space,k),size(AS)),k)
 
 ## PiecewiseSpace
 
-function Hilbert(S::PiecewiseSpace,k::Integer)
+function Hilbert{V<:JacobiWeight}(S::PiecewiseSpace{V},k::Integer)
     @assert k==1 #TODO: Shouldn't need assertion.
     sp=vec(S)
     C=BandedOperator[k==j?Hilbert(sp[k]):2im*Cauchy(sp[k],sp[j].space) for j=1:length(sp),k=1:length(sp)]
+    HilbertWrapper(interlace(C))
+end
+
+function Hilbert{s}(S::PiecewiseSpace{Hardy{s}},k::Integer)
+    @assert k==1
+    sp=vec(S)
+    C=BandedOperator[k==j?Hilbert(sp[k]):2im*Cauchy(sp[k],sp[j]) for j=1:length(sp),k=1:length(sp)]
     HilbertWrapper(interlace(C))
 end
 
