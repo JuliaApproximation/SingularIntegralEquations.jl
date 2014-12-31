@@ -20,6 +20,15 @@ Hilbert(d::Domain)=Hilbert(Space(d))
 #TODO: incorporate into @calculus_operator
 Hilbert(AS::ArraySpace,k::Integer)=HilbertWrapper(DiagonalArrayOperator(Hilbert(AS.space,k),size(AS)),k)
 
+## PiecewiseSpace
+
+function Hilbert(S::PiecewiseSpace,k::Integer)
+    @assert k==1 #TODO: Shouldn't need assertion.
+    sp=vec(S)
+    C=BandedOperator[k==j?Hilbert(sp[k]):2im*Cauchy(sp[k],sp[j].space) for j=1:length(sp),k=1:length(sp)]
+    HilbertWrapper(interlace(C))
+end
+
 ## Circle
 
 bandinds{s}(::Hilbert{Hardy{s}})=0,0
