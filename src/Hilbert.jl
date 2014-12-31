@@ -31,7 +31,7 @@ function addentries!{s}(H::Hilbert{Hardy{s}},A,kr::Range)
     for k=kr
         A[k,k]+=s?1.im:-1.im
     end
-    
+
     A
 end
 
@@ -62,19 +62,13 @@ end
 bandinds{λ}(H::Hilbert{JacobiWeight{Ultraspherical{λ}}})=-λ,H.order-λ
 
 
-#function getindex{S<:Ultraspherical}#(H::AbstractHilbert{JacobiWeight{S}},w::Fun{JacobiWeight{Chebyshev}})
-#    @assert domainspace(H)==space(w)
-#
-#   H*Multiplication(w,space(w).space)
-#end
-
 function addentries!(H::Hilbert{JacobiWeight{Chebyshev}},A,kr::Range)
     m=H.order
     d=domain(H)
     sp=domainspace(H)
 
     @assert isa(d,Interval)
-    @assert sp.α==sp.β==-0.5    
+    @assert sp.α==sp.β==-0.5
 
     if m == 0
         C=(d.b-d.a)/2.
@@ -87,7 +81,7 @@ function addentries!(H::Hilbert{JacobiWeight{Chebyshev}},A,kr::Range)
             A[k,k+m] += C
         end
     end
-    
+
     A
 end
 
@@ -97,7 +91,7 @@ function addentries!(H::Hilbert{JacobiWeight{Ultraspherical{1}}},A,kr::UnitRange
     sp=domainspace(H)
 
     @assert isa(d,Interval)
-    @assert sp.α==sp.β==0.5    
+    @assert sp.α==sp.β==0.5
 
     if m == 1
         for k=max(kr[1],2):kr[end]
@@ -122,14 +116,14 @@ function Hilbert(S::JacobiWeight{OpenCurveSpace{Chebyshev}},k::Integer)
     m,n=40,40
     c=domain(S)
     Sproj=JacobiWeight(S.α,S.β)
-    
+
     rts=[filter(y->!in(y,Interval()),complexroots(c.curve-c.curve[x])) for x in points(Interval(),n)]
     Hc=Hilbert(Sproj)
-    
-     M=2im*hcat(Vector{Complex{Float64}}[transform(rangespace(Hc),Complex{Float64}[sum(cauchy(Fun([zeros(k-1),1.0],Sproj),rt)) 
-        for rt in rts]) for k=1:m]...)   
-    
+
+     M=2im*hcat(Vector{Complex{Float64}}[transform(rangespace(Hc),Complex{Float64}[sum(cauchy(Fun([zeros(k-1),1.0],Sproj),rt))
+        for rt in rts]) for k=1:m]...)
+
     rs=MappedSpace(c,rangespace(Hc))
-    
-    SpaceOperator(Hc,S,rs)+SpaceOperator(CompactOperator(M),S,rs) 
+
+    SpaceOperator(Hc,S,rs)+SpaceOperator(CompactOperator(M),S,rs)
 end
