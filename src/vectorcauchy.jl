@@ -16,7 +16,7 @@ cauchy{P<:PiecewiseSpace,T}(v::Fun{P,T},z::Number)=cauchy(vec(v),z)
 function Hilbert(S::PiecewiseSpace,k::Integer)
     @assert k==1
     sp=vec(S)
-    C=BandedOperator[k==j?Hilbert(sp[k]):2im*Cauchy(sp[k],sp[j]) for j=1:length(sp),k=1:length(sp)]
+    C=BandedOperator[k==j?Hilbert(sp[k]):2im*Cauchy(sp[k],sp[j].space) for j=1:length(sp),k=1:length(sp)]
     HilbertWrapper(interlace(C))
 end
 
