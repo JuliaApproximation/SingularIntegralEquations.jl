@@ -10,8 +10,8 @@ function cauchyS(s::Bool,cfs::Vector,z::Number)
         zm = one(Complex{Float64})
         
         #odd coefficients are pos
-        for k=1:2:length(cfs)
-            ret += cfs[k]*zm
+        @simd for k=1:2:length(cfs)
+            @inbounds ret += cfs[k]*zm
             zm *= z
         end
     else
@@ -19,8 +19,8 @@ function cauchyS(s::Bool,cfs::Vector,z::Number)
         zm = z
 
         #even coefficients are neg
-        for k=2:2:length(cfs)
-            ret -= cfs[k]*zm
+        @simd for k=2:2:length(cfs)
+            @inbounds ret -= cfs[k]*zm
             zm *= z
         end
     end
