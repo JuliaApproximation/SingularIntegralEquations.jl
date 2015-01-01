@@ -20,17 +20,11 @@ Hilbert(AS::ArraySpace,k::Integer)=HilbertWrapper(DiagonalArrayOperator(Hilbert(
 
 ## PiecewiseSpace
 
-function Hilbert{V<:JacobiWeight}(S::PiecewiseSpace{V},k::Integer)
+
+function Hilbert(S::PiecewiseSpace,k::Integer)
     @assert k==1 #TODO: Shouldn't need assertion.
     sp=vec(S)
-    C=BandedOperator[k==j?Hilbert(sp[k]):2im*Cauchy(sp[k],sp[j].space) for j=1:length(sp),k=1:length(sp)]
-    HilbertWrapper(interlace(C))
-end
-
-function Hilbert{s}(S::PiecewiseSpace{Hardy{s}},k::Integer)
-    @assert k==1
-    sp=vec(S)
-    C=BandedOperator[k==j?Hilbert(sp[k]):2im*Cauchy(sp[k],sp[j]) for j=1:length(sp),k=1:length(sp)]
+    C=BandedOperator[k==j?Hilbert(sp[k]):2im*Cauchy(sp[k],rangespace(Hilbert(sp[j]))) for j=1:length(sp),k=1:length(sp)]
     HilbertWrapper(interlace(C))
 end
 

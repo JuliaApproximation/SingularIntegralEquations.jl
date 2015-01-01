@@ -5,8 +5,11 @@ export cauchy, cauchyintegral
 import ApproxFun
 import ApproxFun: PeriodicDomain, bandinds, dirichlettransform, idirichlettransform!, Curve,CurveSpace, OpenCurveSpace, ClosedCurveSpace,transform,SpaceOperator, rangespace, domainspace, addentries!, BandedOperator, PeriodicSpace, AnySpace, canonicalspace, domain, promotedomainspace, AnyDomain, CalculusOperator,SumSpace,PiecewiseSpace, interlace,Multiplication,ArraySpace,DiagonalArrayOperator
 
-
-function cauchy(s::Integer,f,z)
+function cauchy(s,f,z)
+    if isa(s,Bool)
+        error("Override cauchy for "*string(typeof(f)))
+    end
+    
     @assert abs(s) == 1
 
     cauchy(s==1,f,z)
