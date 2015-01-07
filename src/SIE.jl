@@ -15,6 +15,9 @@ function cauchy(s,f,z)
     cauchy(s==1,f,z)
 end
 
+hilbert(f)=Hilbert()*f
+hilbert(f,z)=hilbert(f)[z]
+
 
 include("Hilbert.jl")
 include("Cauchy.jl")

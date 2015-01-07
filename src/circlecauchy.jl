@@ -50,17 +50,26 @@ cauchy(s::Bool,f::Fun{Laurent},z::Number)=cauchy(s,domain(f),coefficients(f),z)
 cauchy(f::Fun{Laurent},z::Number)=cauchy(domain(f),coefficients(f),z)
 
 
-
+# we implement cauchy ±1 as canonical
+hilbert(f::Fun{Laurent},z)=im*(cauchy(true,f,z)+cauchy(false,f,z))
 
 
 
 ## mapped Cauchy
 
-function cauchy(f::Fun{CurveSpace{Laurent}},z::Number)
+
+# pseudo cauchy is not normalized at infinity
+function pseudocauchy(f::Fun{CurveSpace{Laurent}},z::Number)
     fcirc=Fun(f.coefficients,f.space.space)  # project to circle
     c=domain(f)  # the curve that f lives on
     @assert domain(fcirc)==Circle()
+
+    sum(cauchy(fcirc,complexroots(c.curve-z)))
+end
+
+function cauchy(f::Fun{CurveSpace{Laurent}},z::Number)
     # subtract out value at infinity, determined by the fact that leading term is poly
-    sum(cauchy(fcirc,complexroots(c.curve-z)))-div(length(c.curve),2)*cauchy(fcirc,0.)
+    # we find the 
+    pseudocauchy(f,z)-div(length(domain(f).curve),2)*cauchy(fcirc,0.)
 end
 

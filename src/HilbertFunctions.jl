@@ -1,6 +1,9 @@
 export hilbert, hilbertinverse
 
 ## hilbert is equal to im*(C^+ + C^-)
+
+#hilbert(f,z)=im*(cauchy(true,f,z)+cauchy(false,f,z))
+
 ## hilbert and hilbertinverse on JacobiWeight space
 
 function hilbert(u::Fun{JacobiWeight{Chebyshev}})
