@@ -93,9 +93,9 @@ function interior_cauchy(a::Circle,b::Circle)
         n+=1
         if n > length(ret)
             # double preallocated ret
-                newret=Array(Fun{Laurent,Complex{Float64}},2length(ret))
-                newret[1:length(ret)]=ret
-                newret=ret
+            newret=Array(Fun{Laurent,Complex{Float64}},2length(ret))
+            newret[1:length(ret)]=ret
+            ret=newret
         end
         ret[n]=z*ret[n-1]  #will be length 2n-1
 
