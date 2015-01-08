@@ -31,6 +31,10 @@ include("singfuncauchy.jl")
 
 include("vectorcauchy.jl")
 
+if isdir(Pkg.dir("TikzGraphs"))
+    include("introspect.jl")
+end
+
 end #module
 
 
