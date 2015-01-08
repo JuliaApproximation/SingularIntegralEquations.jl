@@ -10,7 +10,7 @@ end
     ## Cauchy(s,d)
 #C^+-C^- = I
 #C^+ + C^- = -im*H
-Cauchy(s::Bool,d)=(s?0.5:-0.5)*I -0.5im*Hilbert(d)
+Cauchy(s::Bool,d)=(s?0.5:-0.5)*I +(-0.5im)*Hilbert(d)
 Cauchy(s::Int,d)=Cauchy(s==1,d)
 Cauchy(s::Union(Int,Bool))=Cauchy(s,AnySpace())
 Cauchy(ds::PeriodicDomain,rs::PeriodicDomain)=Cauchy(Laurent(ds),Laurent(rs))
