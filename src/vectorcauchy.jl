@@ -1,7 +1,25 @@
 
-cauchy{S,T}(f::Fun{S,T},z::Vector)=Complex{Float64}[cauchy(f,zk) for zk in z]
-cauchy{S,T}(s::Int,f::Fun{S,T},z::Vector)=Complex{Float64}[cauchy(s,f,zk) for zk in z]
-cauchy{S,T}(s,f::Fun{S,T},z::Vector)=Complex{Float64}[cauchy(s,f,zk) for zk in z]
+function cauchy{S,T}(f::Fun{S,T},z::Array)
+    ret=Array(Complex{Float64},size(z)...)
+    for k=1:size(z,1),j=1:size(z,2)
+        @inbounds ret[k,j]=cauchy(f,z[k,j])
+    end
+    ret
+end
+function cauchy{S,T}(s::Int,f::Fun{S,T},z::Array)
+    ret=Array(Complex{Float64},size(z)...)
+    for k=1:size(z,1),j=1:size(z,2)
+        @inbounds ret[k,j]=cauchy(s,f,z[k,j])
+    end
+    ret
+end
+function cauchy{S,T}(s,f::Fun{S,T},z::Array)
+    ret=Array(Complex{Float64},size(z)...)
+    for k=1:size(z,1),j=1:size(z,2)
+        @inbounds ret[k,j]=cauchy(s,f,z[k,j])
+    end
+    ret
+end
 
 
 
