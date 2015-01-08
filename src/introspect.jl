@@ -1,13 +1,13 @@
 
 
-ApproxFun.opcount(::Union(Hilbert,Cauchy))=1
-ApproxFun.opcount(M::HilbertWrapper)=1+ApproxFun.opcount(M.op)
+ApproxFun.treecount(::Union(Hilbert,Cauchy))=1
+ApproxFun.treecount(M::HilbertWrapper)=1+ApproxFun.opcount(M.op)
 
 
-ApproxFun.add_edges!(D::Hilbert,nd,M,labels)=(labels[nd]=string(nd)*":"*(D.order==1?"\$H":"\$H\^"*string(D.order))*"\$")
-ApproxFun.add_edges!(D::Cauchy,nd,M,labels)=(labels[nd]=string(nd)*":\$C\$")
+ApproxFun.texname(D::Hilbert)=(labels[nd]=string(nd)*":"*(D.order==1?"\${\\cal H}":"\${\\cal H}\^"*string(D.order))*"\$")
+ApproxFun.texname(D::Cauchy)=(labels[nd]=string(nd)*":\${\\cal C}\$")
+ApproxFun.texname(D::HilbertWrapper)=(D.order==1?"\$({\\cal H}":"\$({\\cal H}\^"*string(D.order))*")\$"
 
 
-for (WRAP,STR) in ((:HilbertWrapper,:"Hw"),)
-    @eval ApproxFun.add_edges!(A::$WRAP,nd,M,labels)=ApproxFun.treeadd_edges!(string(nd)*":"*$STR,[A.op],nd,M,labels)
-end
+
+@eval ApproxFun.add_edges!(A::HilbertWrapper,nd,M,labels)=treeadd_edges!(string(nd)*":"*texname(A),[A.op],nd,M,labels)
