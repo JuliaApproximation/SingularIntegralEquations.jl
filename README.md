@@ -3,8 +3,8 @@ RiemannHilbert.jl
 
 Usage
 
-`Cp=CauchyOperator(1)
-Cm=CauchyOperator(-1)
+`Cp=Cauchy(1)
+Cm=Cauchy(-1)
 
 g=FFun(z->1.+.1z-.1z.^(-2),Circle())
 u=(Cp-g*Cm)\g-1.
