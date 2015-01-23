@@ -12,7 +12,7 @@ end
 #C^+ + C^- = -im*H
 Cauchy(s::Bool,d)=(s?0.5:-0.5)*I +(-0.5im)*Hilbert(d)
 Cauchy(s::Int,d)=Cauchy(s==1,d)
-Cauchy(s::Union(Int,Bool))=Cauchy(s,AnySpace())
+Cauchy(s::Union(Int,Bool))=Cauchy(s,UnsetSpace())
 Cauchy(ds::PeriodicDomain,rs::PeriodicDomain)=Cauchy(Laurent(ds),Laurent(rs))
 
 
@@ -51,7 +51,7 @@ function exterior_cauchy(b::Circle,a::Circle)
     c=b.center
     r=b.radius
 
-    S=Fun([0,0,1],a)  # Shift to use bandedness
+    S=Fun([0.0,0,1],a)  # Shift to use bandedness
     ret=Array(Fun{Laurent,Complex{Float64}},300)
     ret[1]=Fun(z->(r/(z-c)),a)
     n=1
