@@ -25,6 +25,7 @@ end
 
 
 cauchy{F<:Fun}(v::Vector{F},z)=mapreduce(f->cauchy(f,z),+,v)
+cauchy(v::Vector{Any},z)=mapreduce(f->cauchy(f,z),+,v)
 cauchy{P<:PiecewiseSpace,T}(v::Fun{P,T},z::Number)=cauchy(vec(v),z)
 
 

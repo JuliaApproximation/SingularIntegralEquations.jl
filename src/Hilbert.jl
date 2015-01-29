@@ -16,6 +16,7 @@ Hilbert(d::Domain)=Hilbert(Space(d))
 #TODO: do in @calculus_operator?
 Hilbert(S::SumSpace,k::Integer)=HilbertWrapper(sumblkdiagm([Hilbert(S.spaces[1],k),Hilbert(S.spaces[2],k)]),k)
 Hilbert(AS::ArraySpace,k::Integer)=HilbertWrapper(DiagonalArrayOperator(Hilbert(AS.space,k),size(AS)),k)
+Hilbert(AS::ReImSpace,k::Integer)=HilbertWrapper(ReImOperator(Hilbert(AS.space,k)),k)
 
 ## PiecewiseSpace
 
@@ -41,6 +42,43 @@ function addentries!{s}(H::Hilbert{Hardy{s}},A,kr::Range)
 
     A
 end
+
+bandinds{s}(::Hilbert{Hardy{s}})=0,0
+domainspace{s}(H::Hilbert{Hardy{s}})=H.space
+rangespace{s}(H::Hilbert{Hardy{s}})=H.space
+
+function addentries!{s}(H::Hilbert{Hardy{s}},A,kr::Range)
+    @assert isa(domain(H),Circle) && H.order == 1
+    for k=kr
+        A[k,k]+=s?1.im:-1.im
+    end
+
+    A
+end
+
+# Override sumspace
+Hilbert(F::Fourier,k::Integer)=Hilbert{typeof(F),Complex{Float64}}(F,k)
+
+bandinds{F<:Fourier}(::Hilbert{F})=-1,1
+domainspace{F<:Fourier}(H::Hilbert{F})=H.space
+rangespace{F<:Fourier}(H::Hilbert{F})=H.space
+
+function addentries!{F<:Fourier}(H::Hilbert{F},A,kr::Range)
+    @assert isa(domain(H),Circle) && H.order == 1
+    for k=kr
+        if k==1
+            A[1,1]+=1.0im
+        elseif iseven(k)
+            A[k,k+1]-=1
+        else   #isodd(k)
+            A[k,k-1]+=1
+        end
+    end
+
+    A
+end
+
+
 
 
 ## JacobiWeight
