@@ -8,7 +8,6 @@
 #
 function ProductFun{S<:Chebyshev,T,U<:Union(Chebyshev,JacobiWeight{Chebyshev}),V<:Union(Chebyshev,JacobiWeight{Chebyshev})}(f::Fun{S,T},u::U,v::V)
     ## TODO: Can the complexity be reduced from O(n^3)?
-    ## TODO: generalize for more intervals & spaces.
     df,du,dv = domain(f),domain(u),domain(v)
     @assert length(df) == 2length(du) && length(df) == 2length(dv)
     c = chop(coefficients(f),maxabs(coefficients(f))*100eps(T))
@@ -83,22 +82,23 @@ function ProductFun{S<:Chebyshev,T,U<:Union(Chebyshev,JacobiWeight{Chebyshev}),V
 end
 
 #
-# A new ProductFun constructor for bivariate functions on PeriodicIntervals
-# defined as the difference of their arguments.
-#
-# This method takes as input a 1D Fun which is the antidiagonal of the
-# bivariate function, then forms the diagonal matrix of ProductFun coefficients.
+# ProductFun constructors for functions on periodic intervals.
 #
 function ProductFun{S<:Fourier,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V)
-    ## TODO: Can the complexity be reduced from O(n^3)?
-    ## TODO: generalize for more intervals & spaces.
+    #Are these first lines necessary?
     df,du,dv = domain(f),domain(u),domain(v)
     @assert length(df) == length(du) == length(dv)
-    c = chop(coefficients(f),maxabs(coefficients(f))*100eps(T))
+    #So cheap we don't need to chop.
+    c = coefficients(f)
     N = length(c)
-
-    un = one(T)
-    C1,C2,X = zeros(T,N,N),zeros(T,N,N),zeros(T,N,N)
-
+    X = zeros(T,N,N)
+    X[1,1] += c[1]
+    for i=2:2:N-1
+        X[i,i] += c[i+1]
+        X[i+1,i] += c[i]
+        X[i,i+1] -= c[i]
+        X[i+1,i+1] += c[i+1]
+    end
+    if mod(N,2)==0 X[N,N-1],X[N-1,N] = c[N],-c[N] end
     ProductFun(X,u⊗v)
 end

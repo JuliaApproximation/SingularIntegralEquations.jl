@@ -38,7 +38,7 @@ include("singfuncauchy.jl")
 
 include("vectorcauchy.jl")
 
-include("Kernels.jl")
+include("KernelFun.jl")
 
 if isdir(Pkg.dir("TikzGraphs"))
     include("introspect.jl")
