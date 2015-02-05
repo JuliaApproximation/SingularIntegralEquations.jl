@@ -3,8 +3,14 @@ module SIE
 
 export cauchy, cauchyintegral
 import ApproxFun
-import ApproxFun: PeriodicDomain, bandinds, dirichlettransform, idirichlettransform!, Curve,CurveSpace, OpenCurveSpace, ClosedCurveSpace,transform,SpaceOperator, rangespace, domainspace, addentries!, BandedOperator, PeriodicSpace, AnySpace,UnsetSpace, canonicalspace, domain, promotedomainspace, AnyDomain, CalculusOperator,SumSpace,PiecewiseSpace, interlace,Multiplication,ArraySpace,DiagonalArrayOperator,BandedMatrix,bazeros
-import ApproxFun: RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator
+import ApproxFun: PeriodicDomain, bandinds, dirichlettransform, idirichlettransform!,
+                  Curve,CurveSpace, OpenCurveSpace, ClosedCurveSpace,transform,SpaceOperator,
+                  rangespace, domainspace, addentries!, BandedOperator, PeriodicSpace, AnySpace,
+                  canonicalspace, domain, promotedomainspace, AnyDomain, CalculusOperator,
+                  SumSpace,PiecewiseSpace, interlace,Multiplication,ArraySpace,DiagonalArrayOperator,
+                  BandedMatrix,bazeros,
+                  RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,
+                  ProductFun
 
 function cauchy(s,f,z)
     if isa(s,Bool)
@@ -31,6 +37,8 @@ include("intervalcauchy.jl")
 include("singfuncauchy.jl")
 
 include("vectorcauchy.jl")
+
+include("Kernels.jl")
 
 if isdir(Pkg.dir("TikzGraphs"))
     include("introspect.jl")
