@@ -34,25 +34,33 @@ bandinds{s}(::Hilbert{Hardy{s}})=0,0
 domainspace{s}(H::Hilbert{Hardy{s}})=H.space
 rangespace{s}(H::Hilbert{Hardy{s}})=H.space
 
-function addentries!{s}(H::Hilbert{Hardy{s}},A,kr::Range)
-    @assert isa(domain(H),Circle) && H.order == 1
-    for k=kr
-        A[k,k]+=s?1.im:-1.im
+function addentries!(H::Hilbert{Hardy{true}},A,kr::Range)
+##TODO: Add scale for different radii.
+    m=H.order
+    d=domain(H)
+    sp=domainspace(H)
+    @assert isa(d,Circle)
+    if m == 0
+        for k=kr
+            A[k,k] += k==1?-2log(2):1./(k-1)
+        end
+    else
+        for k=kr
+            A[k,k] += k==1?0.0:1.im*(1.im*(k-1))^(m-1)
+        end
     end
-
     A
 end
 
-bandinds{s}(::Hilbert{Hardy{s}})=0,0
-domainspace{s}(H::Hilbert{Hardy{s}})=H.space
-rangespace{s}(H::Hilbert{Hardy{s}})=H.space
-
-function addentries!{s}(H::Hilbert{Hardy{s}},A,kr::Range)
-    @assert isa(domain(H),Circle) && H.order == 1
+function addentries!(H::Hilbert{Hardy{false}},A,kr::Range)
+##TODO: Add scale for different radii.
+    m=H.order
+    d=domain(H)
+    sp=domainspace(H)
+    @assert isa(d,Circle)
     for k=kr
-        A[k,k]+=s?1.im:-1.im
+        A[k,k]-=1.im*(1.im*k)^(m-1)
     end
-
     A
 end
 
