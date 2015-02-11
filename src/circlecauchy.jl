@@ -1,5 +1,4 @@
 
-import ApproxFun:mappoint
         
 ## cauchy
 
@@ -48,6 +47,10 @@ end
 
 cauchy(s::Bool,f::Fun{Laurent},z::Number)=cauchy(s,domain(f),coefficients(f),z)
 cauchy(f::Fun{Laurent},z::Number)=cauchy(domain(f),coefficients(f),z)
+
+cauchy(s::Bool,f::Fun{Fourier},z::Number)=cauchy(s,Fun(f,Laurent(domain(f))),z)
+cauchy(f::Fun{Fourier},z::Number)=cauchy(Fun(f,Laurent(domain(f))),z)
+
 
 
 # we implement cauchy ±1 as canonical

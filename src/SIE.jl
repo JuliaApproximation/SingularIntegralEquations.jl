@@ -10,7 +10,7 @@ import ApproxFun: PeriodicDomain, bandinds, dirichlettransform, idirichlettransf
                   SumSpace,PiecewiseSpace, interlace,Multiplication,ArraySpace,DiagonalArrayOperator,
                   BandedMatrix,bazeros,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,
-                  ProductFun, mappoint
+                  ProductFun, mappoint, PeriodicLineSpace, PeriodicLineDirichlet
 
 function cauchy(s,f,z)
     if isa(s,Bool)
