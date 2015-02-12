@@ -35,3 +35,25 @@ end
 cauchy{S}(f::Fun{PeriodicLineDirichlet{S}},z::Number)=cauchy(Fun(f,domain(f)),z)
 cauchy{S}(s::Bool,f::Fun{PeriodicLineDirichlet{S}},z::Number)=cauchy(s,Fun(f,domain(f)),z)
 
+
+# we use the fact that C^± (z^k + z^(k-1)) = z^k + z^(k-1) and 0
+# for k > 0 and 
+# C^± (z^k + z^(k-1)) = 0 and -z^k - z^(k-1)
+# for k < 0, the formula H = im*C^+  +  im*C^-
+# and C± 1 = ±1/2  (understood as a PV integral) so that H 1 = 0
+
+
+bandinds{S}(H::Hilbert{PeriodicLineDirichlet{S}})=0,0
+rangespace{S}(H::Hilbert{PeriodicLineDirichlet{S}})=domainspace(H)
+
+
+function addentries!(H::Hilbert{PeriodicLineDirichlet{false}},A,kr::Range)
+    for k=kr
+        if iseven(k)  # negative terms
+            A[k,k] += -im
+        elseif k > 0 # positive terms
+            A[k,k] += im
+        end 
+    end
+    A
+end

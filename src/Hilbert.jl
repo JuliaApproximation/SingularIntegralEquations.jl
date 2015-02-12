@@ -1,5 +1,14 @@
 export Hilbert
 
+################################################
+# Hilbert implements the Hilbert operator
+# Note that the Hilbert operator can be defined using
+#
+#    H = im*C^+  +  im*C^-
+#
+# where C^± are the left/right limits of the Cauchy transform
+###############################################
+
 ApproxFun.@calculus_operator(Hilbert,AbstractHilbert,HilbertWrapper)
 
 ## Convenience routines

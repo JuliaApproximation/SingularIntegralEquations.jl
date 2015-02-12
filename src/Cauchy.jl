@@ -1,5 +1,21 @@
 export Cauchy
 
+
+#############
+# Cauchy implements the Cauchy operator corresponding to evaluating the Cauchy transform
+#
+#       C f(z) := 1/(2πi)\int_\Gamma f(t)/(t-z) dt
+#
+# note that the domain of domainspace must be different than the domain of rangespace
+# 
+# The notion of C^± for the left/right limits of the Cauchy operator 
+# with the domains matching is represented
+# using the Hilbert operator and the formulae
+#
+#    C^+  -  C^- = I
+#    C^+  +  C^- = -im*H
+############
+
 immutable Cauchy{D<:FunctionSpace,R<:FunctionSpace} <: BandedOperator{Complex{Float64}}
     data::BandedMatrix{Complex{Float64}}
     domainspace::D
@@ -8,8 +24,8 @@ end
 
 
     ## Cauchy(s,d)
-#C^+-C^- = I
-#C^+ + C^- = -im*H
+
+
 Cauchy(s::Bool,d)=(s?0.5:-0.5)*I +(-0.5im)*Hilbert(d)
 Cauchy(s::Int,d)=Cauchy(s==1,d)
 Cauchy(s::Union(Int,Bool))=Cauchy(s,UnsetSpace())

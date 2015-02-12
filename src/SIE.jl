@@ -32,7 +32,6 @@ include("Cauchy.jl")
 include("HilbertFunctions.jl")
 
 include("circlecauchy.jl")
-include("periodiclinecauchy.jl")
 include("intervalcauchy.jl")
 include("singfuncauchy.jl")
 
@@ -40,9 +39,12 @@ include("vectorcauchy.jl")
 
 include("KernelFun.jl")
 
+include("periodicline.jl")
+
 if isdir(Pkg.dir("TikzGraphs"))
     include("introspect.jl")
 end
+
 
 end #module
 
