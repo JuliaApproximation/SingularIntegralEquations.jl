@@ -10,7 +10,7 @@
 using ApproxFun,SIE
 include("Scatteraux.jl")
 
-k = 10.
+k = 50.
 ω = 2π
 d = (1,-1)
 d = d[1]/hypot(d[1],d[2]),d[2]/hypot(d[1],d[2])
@@ -23,8 +23,7 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     uiΓ,H0,S = Fun(x->ui(x,0),sp),Hilbert(dom,0),Σ(dom)
 
     FK0LR = Fun(x->besselj0(k*x),Chebyshev([-length(dom),length(dom)]))
-    FKr = Fun(x->(GK0(k*x)-besselj0(k*x)*(log(abs(k)/2)+γ))/2π,Chebyshev([-length(dom),length(dom)]))
-
+    FKr = Fun(x->1/2π*besselj0(k*x)*log(abs(x))-bessely0(k*abs(x))/4,Chebyshev([-length(dom),length(dom)]))
     K0 = ProductFun(-FK0LR/2π,sp,wsp)
     Kim = ProductFun(FK0LR/4π,sp,wsp)
     Kr = ProductFun(FKr/π,sp,wsp)
