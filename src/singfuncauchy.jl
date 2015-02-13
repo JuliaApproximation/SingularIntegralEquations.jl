@@ -2,11 +2,30 @@
 
 ## SingFun cauchy
 
-intervaloffcircle(s::Bool,z::Complex)=z.-(s?1:-1).*sqrt(z.-1).*sqrt(z.+1)
-intervaloffcircle(s::Bool,x::Real)=x<0?x.+(s?1:-1).*sqrt(x.^2-1):x.-(s?1:-1).*sqrt(x.^2-1)
-intervaloncircle(s::Bool,x)=x.+1.im*(s?1:-1).*sqrt(1.-x).*sqrt(x.+1)
+# intervaloffcircle maps the slit plane to the interior(true)/exterior(false) disk
+# intervaloncircle maps the interval to the upper(true)/lower(false) half circle
+
+intervaloffcircle(s::Bool,z::Complex)=z-(s?1:-1).*sqrt(z-1).*sqrt(z+1)
+intervaloffcircle(s::Bool,x::Real)=x<0?x+(s?1:-1).*sqrt(x.^2-1):x-(s?1:-1).*sqrt(x.^2-1)
+intervaloncircle(s::Bool,x)=x+1.im*(s?1:-1).*sqrt(1-x).*sqrt(x+1)
 intervaloffcircle(s::Int,x)=intervaloffcircle(s==1,x)
 intervaloncircle(s::Int,x)=intervaloncircle(s==1,x)
+
+function intervaloffcircle(s::Bool,x::Fun)
+    d=domain(x)
+    if isa(d,Interval{Float64}) 
+        if 1 ≤ d.a && 1≤ d.b
+            x-(s?1:-1)*sqrt(x^2-1)
+        elseif d.a ≤ -1 && d.b ≤ -1
+            x+(s?1:-1).*sqrt(x.^2-1)
+        else
+            error("intervaloffcircle not defined when overlapping unit interval")
+        end
+    else # complex... 
+        ##TODO: avoid negative real axis
+        x-(s?1:-1).*sqrt(x-1).*sqrt(x+1)
+    end
+end
 
 
 function holdersum(cfs,y0)
@@ -155,3 +174,45 @@ function cauchy{M,T}(s::Bool,f::Fun{JacobiWeight{OpenCurveSpace{M}},T},z::Number
     di=Interval()
     mapreduce(rt->in(rt,di)?cauchy(s,fm,rt):cauchy(fm,rt),+,rts)
 end
+
+
+
+
+
+
+## Cauchy
+
+
+function Cauchy(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace)
+    @assert ds.α==ds.β==0.5
+
+    x=Fun(identity,rs)
+    y=intervaloffcircle(true,tocanonical(ds,x))
+    
+    ret=Array(typeof(y),300)
+    ret[1]=y
+    n=1
+    l=length(y)-1
+    u=0
+    
+    while norm(ret[n].coefficients)>100eps()
+        n+=1
+        if n > length(ret)
+            # double preallocated ret
+            newret=Array(typeof(y),2length(ret))
+            newret[1:length(ret)]=ret
+            newret=ret
+        end
+        ret[n]=chop!(y*ret[n-1],100eps())  #will be length 2n-1
+        u+=1   # upper bandwidth
+        l=max(l,length(ret[n])-n)
+    end
+    
+    M=bazeros(Complex{Float64},n+l,n,l,u)
+    for k=1:n,j=1:length(ret[k])
+        M[j,k]=0.5im*ret[k].coefficients[j]
+    end
+    Cauchy(M,ds,rs)
+end
+
+
