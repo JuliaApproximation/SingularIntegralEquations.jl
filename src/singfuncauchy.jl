@@ -12,7 +12,7 @@ sqrtx2(x::Vector)=map(sqrtx2,x)
 function sqrtx2(f::Fun)
     B=Evaluation(space(f),first(domain(f)))
     A=Derivative(space(f))-f*differentiate(f)/(f^2-1)
-    linsolve([B,A],sqrt(first(f)^2-1);tolerance=length(f)*10E-15)
+    linsolve([B,A],sqrtx2(first(f));tolerance=length(f)*10E-15)
 end
 
 
