@@ -5,27 +5,25 @@
 # intervaloffcircle maps the slit plane to the interior(true)/exterior(false) disk
 # intervaloncircle maps the interval to the upper(true)/lower(false) half circle
 
-intervaloffcircle(s::Bool,z::Complex)=z-(s?1:-1).*sqrt(z-1).*sqrt(z+1)
-intervaloffcircle(s::Bool,x::Real)=x<0?x+(s?1:-1).*sqrt(x.^2-1):x-(s?1:-1).*sqrt(x.^2-1)
+#  analytic continuosation of sqrt(z^2-1)
+sqrtx2(z::Complex)=sqrt(z-1).*sqrt(z+1)
+sqrtx2(x::Real)=sign(x)*sqrt(x^2-1)
+sqrtx2(x::Vector)=map(sqrtx2,x)
+function sqrtx2(f::Fun)
+    B=Evaluation(space(f),first(domain(f)))
+    A=Derivative(space(f))-f*differentiate(f)/(f^2-1)
+    linsolve([B,A],sqrt(first(f)^2-1);tolerance=length(f)*10E-15)
+end
+
+
+
+intervaloffcircle(s::Bool,z)=z-(s?1:-1).*sqrtx2(z)
 intervaloncircle(s::Bool,x)=x+1.im*(s?1:-1).*sqrt(1-x).*sqrt(x+1)
+
 intervaloffcircle(s::Int,x)=intervaloffcircle(s==1,x)
 intervaloncircle(s::Int,x)=intervaloncircle(s==1,x)
 
-function intervaloffcircle(s::Bool,x::Fun)
-    d=domain(x)
-    if isa(d,Interval{Float64}) 
-        if 1 ≤ d.a && 1≤ d.b
-            x-(s?1:-1)*sqrt(x^2-1)
-        elseif d.a ≤ -1 && d.b ≤ -1
-            x+(s?1:-1).*sqrt(x.^2-1)
-        else
-            error("intervaloffcircle not defined when overlapping unit interval")
-        end
-    else # complex... 
-        ##TODO: avoid negative real axis
-        x-(s?1:-1).*sqrt(x-1).*sqrt(x+1)
-    end
-end
+
 
 
 function holdersum(cfs,y0)
