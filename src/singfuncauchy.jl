@@ -2,20 +2,21 @@
 
 ## SingFun cauchy
 
-# intervaloffcircle maps the slit plane to the interior(true)/exterior(false) disk
-# intervaloncircle maps the interval to the upper(true)/lower(false) half circle
 
-#  analytic continuosation of sqrt(z^2-1)
+#  sqrtx2 is analytic continuosation of sqrt(z^2-1)
 sqrtx2(z::Complex)=sqrt(z-1).*sqrt(z+1)
 sqrtx2(x::Real)=sign(x)*sqrt(x^2-1)
-sqrtx2(x::Vector)=map(sqrtx2,x)
 function sqrtx2(f::Fun)
     B=Evaluation(first(domain(f)))
     A=Derivative()-f*differentiate(f)/(f^2-1)
     linsolve([B,A],sqrtx2(first(f));tolerance=length(f)*10E-15)
 end
 
+@vectorize_1arg sqrtx2 Number
 
+
+# intervaloffcircle maps the slit plane to the interior(true)/exterior(false) disk
+# intervaloncircle maps the interval to the upper(true)/lower(false) half circle
 
 intervaloffcircle(s::Bool,z)=z-(s?1:-1).*sqrtx2(z)
 intervaloncircle(s::Bool,x)=x+1.im*(s?1:-1).*sqrt(1-x).*sqrt(x+1)
