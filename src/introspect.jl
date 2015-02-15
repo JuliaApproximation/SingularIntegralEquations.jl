@@ -1,11 +1,11 @@
 
 
-ApproxFun.treecount(::Union(Hilbert,Cauchy))=1
+ApproxFun.treecount(::Union(Hilbert,Stieljes))=1
 ApproxFun.treecount(M::HilbertWrapper)=1+ApproxFun.opcount(M.op)
 
 
 ApproxFun.texname(D::Hilbert)=(labels[nd]=string(nd)*":"*(D.order==1?"\${\\cal H}":"\${\\cal H}\^"*string(D.order))*"\$")
-ApproxFun.texname(D::Cauchy)=(labels[nd]=string(nd)*":\${\\cal C}\$")
+ApproxFun.texname(D::Stieljes)=(labels[nd]=string(nd)*":\${\\cal S}\$")
 ApproxFun.texname(D::HilbertWrapper)=(D.order==1?"\$({\\cal H}":"\$({\\cal H}\^"*string(D.order))*")\$"
 
 

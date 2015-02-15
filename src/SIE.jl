@@ -25,9 +25,12 @@ end
 hilbert(f)=Hilbert()*f
 hilbert(f,z)=hilbert(f)[z]
 
+stieljes(s,f,z)=-2π*im*cauchy(s,f,z)
+stieljes(f,z)=-2π*im*cauchy(f,z)
+
 
 include("Hilbert.jl")
-include("Cauchy.jl")
+include("Stieljes.jl")
 
 include("HilbertFunctions.jl")
 

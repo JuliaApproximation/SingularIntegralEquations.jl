@@ -12,7 +12,7 @@ function sqrtx2(f::Fun)
     linsolve([B,A],sqrtx2(first(f));tolerance=length(f)*10E-15)
 end
 
-@vectorize_1arg sqrtx2 Number
+@vectorize_1arg Number sqrtx2 
 
 
 # intervaloffcircle maps the slit plane to the interior(true)/exterior(false) disk
@@ -69,7 +69,7 @@ function cauchy(u::Fun{JacobiWeight{Chebyshev}},z::Number)
             0.0+0.0im
         end
     else
-        error("Cauchy only implemented for Chebyshev weights")
+        error("cauchy only implemented for Chebyshev weights")
     end
 end
 
@@ -179,10 +179,10 @@ end
 
 
 
-## Cauchy
+## Stieljes
 
 
-function Cauchy(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace)
+function Stieljes(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace)
     @assert ds.α==ds.β==0.5
 
     x=Fun(identity,rs)
@@ -209,9 +209,9 @@ function Cauchy(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace)
     
     M=bazeros(Complex{Float64},n+l,n,l,u)
     for k=1:n,j=1:length(ret[k])
-        M[j,k]=0.5im*ret[k].coefficients[j]
+        M[j,k]=π*ret[k].coefficients[j]
     end
-    Cauchy(M,ds,rs)
+    Stieljes(M,ds,rs)
 end
 
 

@@ -33,7 +33,7 @@ Hilbert(AS::ReImSpace,k::Integer)=HilbertWrapper(ReImOperator(Hilbert(AS.space,k
 function Hilbert(S::PiecewiseSpace,k::Integer)
     @assert k==1 #TODO: Shouldn't need assertion.
     sp=vec(S)
-    C=BandedOperator{Complex{Float64}}[k==j?Hilbert(sp[k]):2im*Cauchy(sp[k],rangespace(Hilbert(sp[j]))) for j=1:length(sp),k=1:length(sp)]
+    C=BandedOperator{Complex{Float64}}[k==j?Hilbert(sp[k]):1/(-π)*Stieljes(sp[k],rangespace(Hilbert(sp[j]))) for j=1:length(sp),k=1:length(sp)]
     HilbertWrapper(interlace(C))
 end
 
