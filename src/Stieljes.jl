@@ -86,9 +86,7 @@ function exterior_cauchy(b::Circle,a::Circle)
     while norm(ret[n].coefficients)>100eps()
         n+=1
         if n > length(ret)
-            newret=Array(Fun{Laurent,Complex{Float64}},2length(ret))
-            newret[1:length(ret)]=ret
-            newret=ret
+            resize!(ret,2length(ret))
         end
         ret[n]=chop!(f1*ret[n-1],100eps())
         m=max(m,length(ret[n])-2)
@@ -119,9 +117,7 @@ function interior_cauchy(a::Circle,b::Circle)
         n+=1
         if n > length(ret)
             # double preallocated ret
-            newret=Array(Fun{Laurent,Complex{Float64}},2length(ret))
-            newret[1:length(ret)]=ret
-            ret=newret
+            resize!(ret,2length(ret))
         end
         ret[n]=z*ret[n-1]  #will be length 2n-1
 
@@ -161,9 +157,7 @@ function disjoint_cauchy(a::Circle,b::Circle)
         n+=1
         if n > length(ret)
             # double preallocated ret
-                newret=Array(Fun{Laurent,Complex{Float64}},2length(ret))
-                newret[1:length(ret)]=ret
-                newret=ret
+            resize!(ret,2length(ret))
         end
     ret[n]=chop!(f*ret[n-1],100eps())  #will be length 2n-1
     u=max(u,length(ret[n])-2n)   # upper bandwidth

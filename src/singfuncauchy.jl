@@ -198,9 +198,7 @@ function Stieljes(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace)
         n+=1
         if n > length(ret)
             # double preallocated ret
-            newret=Array(typeof(y),2length(ret))
-            newret[1:length(ret)]=ret
-            newret=ret
+            resize!(ret,2length(ret))
         end
         ret[n]=chop!(y*ret[n-1],100eps())  #will be length 2n-1
         u+=1   # upper bandwidth
