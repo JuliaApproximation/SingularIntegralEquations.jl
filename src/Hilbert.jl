@@ -53,6 +53,10 @@ function addentries!(H::Hilbert{Hardy{true}},A,kr::Range)
         for k=kr
             A[k,k] += k==1?-2log(2):1./(k-1)
         end
+    elseif m == 1
+        for k=kr
+            A[k,k] += im
+        end    
     else
         for k=kr
             A[k,k] += k==1?0.0:1.im*(1.im*(k-1))^(m-1)
@@ -67,8 +71,14 @@ function addentries!(H::Hilbert{Hardy{false}},A,kr::Range)
     d=domain(H)
     sp=domainspace(H)
     @assert isa(d,Circle)
-    for k=kr
-        A[k,k]-=1.im*(1.im*k)^(m-1)
+    if m== 1
+        for k=kr
+            A[k,k]-= im
+        end    
+    else
+        for k=kr
+            A[k,k]-=1.im*(1.im*k)^(m-1)
+        end
     end
     A
 end
