@@ -90,10 +90,8 @@ end
 # whether it's viewed as bivariate or univariate.
 #
 function ProductFun{S<:Fourier,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V)
-    #Are these first lines necessary?
     df,du,dv = domain(f),domain(u),domain(v)
-    @assert length(df) == length(du) == length(dv)
-    #So cheap we don't need to chop.
+    @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
     N = length(c)
     X = zeros(T,N,N)
@@ -109,10 +107,8 @@ function ProductFun{S<:Fourier,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V)
 end
 
 function ProductFun{S<:CosSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V)
-    #Are these first lines necessary?
     df,du,dv = domain(f),domain(u),domain(v)
-    @assert length(df) == length(du) == length(dv)
-    #So cheap we don't need to chop.
+    @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
     N = 2length(c)-1
     X = zeros(T,N,N)
@@ -125,10 +121,8 @@ function ProductFun{S<:CosSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V)
 end
 
 function ProductFun{S<:SinSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V)
-    #Are these first lines necessary?
     df,du,dv = domain(f),domain(u),domain(v)
-    @assert length(df) == length(du) == length(dv)
-    #So cheap we don't need to chop.
+    @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
     N = 2length(c)+1
     X = zeros(T,N,N)
@@ -139,53 +133,42 @@ function ProductFun{S<:SinSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V)
     ProductFun(X,u⊗v)
 end
 
-# These aren't quite right yet......
-#=
 function ProductFun{S<:Laurent,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V)
-    #Are these first lines necessary?
     df,du,dv = domain(f),domain(u),domain(v)
-    @assert length(df) == length(du) == length(dv)
-    #So cheap we don't need to chop.
+    @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
     N = length(c)
-    X = zeros(T,N,N)
+    X = mod(N,2) == 0 ? zeros(T,N+1,N) : zeros(T,N,N)
     X[1,1] += c[1]
     for i=2:2:N-1
         X[i+1,i] += c[i]
         X[i,i+1] += c[i+1]
     end
-    if mod(N,2)==0 X[N-1,N] = c[N] end
+    if mod(N,2)==0 X[N+1,N] = c[N] end
     ProductFun(X,u⊗v)
 end
 
 function ProductFun{S<:Taylor,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V)
-    #Are these first lines necessary?
     df,du,dv = domain(f),domain(u),domain(v)
-    @assert length(df) == length(du) == length(dv)
-    #So cheap we don't need to chop.
+    @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
     N = 2length(c)-1
-    X = zeros(T,N,N)
+    X = zeros(T,N-1,N)
     X[1,1] += c[1]
-    for i=2:2:N
-        X[i,i] += c[i/2+1]
-        X[i+1,i+1] += c[i/2+1]
+    for i=2:2:N-1
+        X[i,i+1] += c[i/2+1]
     end
     ProductFun(X,u⊗v)
 end
 
 function ProductFun{S<:Hardy{false},T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V)
-    #Are these first lines necessary?
     df,du,dv = domain(f),domain(u),domain(v)
-    @assert length(df) == length(du) == length(dv)
-    #So cheap we don't need to chop.
+    @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
-    N = 2length(c)+1
-    X = zeros(T,N,N)
+    N = 2length(c)
+    X = zeros(T,N+1,N)
     for i=2:2:N
         X[i+1,i] += c[i/2]
-        X[i,i+1] -= c[i/2]
     end
     ProductFun(X,u⊗v)
 end
-=#
