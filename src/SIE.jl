@@ -8,7 +8,7 @@ import ApproxFun: PeriodicDomain, bandinds, dirichlettransform, idirichlettransf
                   rangespace, domainspace, addentries!, BandedOperator, PeriodicSpace, AnySpace,
                   canonicalspace, domain, promotedomainspace, AnyDomain, CalculusOperator,
                   SumSpace,PiecewiseSpace, interlace,Multiplication,ArraySpace,DiagonalArrayOperator,
-                  BandedMatrix,bazeros,
+                  BandedMatrix,bazeros,ChebyshevDirichlet,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,
                   ProductFun, mappoint, PeriodicLineSpace, PeriodicLineDirichlet
 

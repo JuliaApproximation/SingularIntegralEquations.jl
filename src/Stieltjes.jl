@@ -4,15 +4,15 @@ export Stieltjes,Cauchy
 #############
 # Cauchy implements the Cauchy operator corresponding to evaluating the Cauchy transform
 #
-#       C f(z) := 1/(2πi)\int_\Gamma f(t)/(t-z) dt
+#       C f(z) := 1/(2πi)\int_Γ f(t)/(t-z) dt
 #
 # It is given in terms of the Stieltjes operator
 #
-#       S f(z) := \int_\Gamma f(t)/(z-t) dt = -2πi*C f(z)
+#       S f(z) := \int_Γ f(t)/(z-t) dt = -2πi*C f(z)
 #
 # note that the domain of domainspace must be different than the domain of rangespace
-# 
-# The notion of C^± for the left/right limits of the Cauchy operator 
+#
+# The notion of C^± for the left/right limits of the Cauchy operator
 # with the domains matching is represented
 # using the Hilbert operator and the formulae
 #
@@ -47,22 +47,91 @@ rangespace(C::Stieltjes)=C.rangespace
 bandinds(C::Stieltjes)=bandinds(C.data)
 
 
+## Stieltjes
+
+
+function Stieltjes(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace)
+    @assert ds.α==ds.β==0.5
+
+    x=Fun(identity,rs)
+    y=intervaloffcircle(true,tocanonical(ds,x))
+
+    ret=Array(typeof(y),300)
+    ret[1]=y
+    n=1
+    l=length(y)-1
+    u=0
+
+    while norm(ret[n].coefficients)>100eps()
+        n+=1
+        if n > length(ret)
+            # double preallocated ret
+            resize!(ret,2length(ret))
+        end
+        ret[n]=chop!(y*ret[n-1],100eps())  #will be length 2n-1
+        u+=1   # upper bandwidth
+        l=max(l,length(ret[n])-n)
+    end
+
+    M=bazeros(Complex{Float64},n+l,n,l,u)
+    for k=1:n,j=1:length(ret[k])
+        M[j,k]=π*ret[k].coefficients[j]
+    end
+    Stieltjes(M,ds,rs)
+end
+
+
+function Stieltjes(ds::JacobiWeight{ChebyshevDirichlet{1,1}},rs::FunctionSpace)
+    @assert ds.α==ds.β==-0.5
+
+    z=Fun(identity,rs)
+    x=tocanonical(ds,z)
+    y=intervaloffcircle(true,x)
+
+    ret=Array(typeof(y),300)
+    ret[1]=1/sqrtx2(x)
+    ret[2]=x*ret[1]-1
+    ret[3]=-2y
+
+    n=3
+    l=max(length(ret[1])-1,length(ret[2])-1,length(ret[3])-3)
+    u=2
+
+    while norm(ret[n].coefficients)>100eps()
+        n+=1
+        if n > length(ret)
+            # double preallocated ret
+            resize!(ret,2length(ret))
+        end
+        ret[n]=chop!(y*ret[n-1],100eps())  #will be length 2n-1
+        u+=1   # upper bandwidth
+        l=max(l,length(ret[n])-n)
+    end
+
+    M=bazeros(Complex{Float64},n+l,n,l,u)
+    for k=1:n,j=1:length(ret[k])
+        M[j,k]=π*ret[k].coefficients[j]
+    end
+    Stieltjes(M,ds,rs)
+end
+
+
 function Stieltjes(DS::Laurent,RS::Laurent)
     ds=domain(DS);rs=domain(RS)
     @assert isa(ds,Circle)
     @assert isa(rs,Circle)
-    
+
     c2=rs.center;c1=ds.center
     r2=rs.radius;r1=ds.radius
-                
+
     if r1>r2&&abs(c1-c2)<r1  # we are inside the circle, use Taylor series
         M=interior_cauchy(ds,rs)
     elseif r1<r2&&abs(c1-c2)<r2 # we surround the domain, use Hardy{False} series
-        M=exterior_cauchy(ds,rs)       
+        M=exterior_cauchy(ds,rs)
     else
         M=disjoint_cauchy(ds,rs)
     end
-    
+
     Stieltjes(-2π*im*M,DS,RS)
 end
 

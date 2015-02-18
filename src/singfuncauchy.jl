@@ -3,7 +3,7 @@
 ## SingFun cauchy
 
 
-#  sqrtx2 is analytic continuosation of sqrt(z^2-1)
+#  sqrtx2 is analytic continuation of sqrt(z^2-1)
 sqrtx2(z::Complex)=sqrt(z-1).*sqrt(z+1)
 sqrtx2(x::Real)=sign(x)*sqrt(x^2-1)
 function sqrtx2(f::Fun)
@@ -12,7 +12,7 @@ function sqrtx2(f::Fun)
     linsolve([B,A],sqrtx2(first(f));tolerance=length(f)*10E-15)
 end
 
-@vectorize_1arg Number sqrtx2 
+@vectorize_1arg Number sqrtx2
 
 
 # intervaloffcircle maps the slit plane to the interior(true)/exterior(false) disk
@@ -24,9 +24,6 @@ intervaloncircle(s::Bool,x)=x+1.im*(s?1:-1).*sqrt(1-x).*sqrt(x+1)
 intervaloffcircle(s::Int,x)=intervaloffcircle(s==1,x)
 intervaloncircle(s::Int,x)=intervaloncircle(s==1,x)
 
-
-
-
 function holdersum(cfs,y0)
     ret=zero(y0)
     y=one(y0)
@@ -34,6 +31,18 @@ function holdersum(cfs,y0)
     for k=1:length(cfs)
         y*=y0
         ret+=cfs[k]*y
+    end
+
+    ret
+end
+
+function divkholdersum(cfs,y0,ys,s)
+    ret=zero(y0)
+    y=ys
+
+    for k=1:length(cfs)
+        y*=y0
+        ret+=cfs[k]*y./(k+s)
     end
 
     ret
@@ -57,10 +66,10 @@ function cauchy(u::Fun{JacobiWeight{Chebyshev}},z::Number)
         z=tocanonical(u,z)
 
 
-        if length(cfs) >=1
+        if length(cfs) ≥1
             ret = cfs[1]*0.5im/absqrt(-1,1,z)
 
-            if length(cfs) >=2
+            if length(cfs) ≥2
                 ret += cfs[2]*(0.5im*z/absqrt(-1,1,z)-.5im)
             end
 
@@ -72,7 +81,6 @@ function cauchy(u::Fun{JacobiWeight{Chebyshev}},z::Number)
         error("cauchy only implemented for Chebyshev weights")
     end
 end
-
 
 
 function cauchy(s::Bool,u::Fun{JacobiWeight{Chebyshev}},x::Number)
@@ -105,19 +113,6 @@ end
 
 
 ## cauchy integral
-
-
-function divkholdersum(cfs,y0,ys,s)
-    ret=zero(y0)
-    y=ys
-
-    for k=1:length(cfs)
-        y*=y0
-        ret+=cfs[k]*y./(k+s)
-    end
-
-    ret
-end
 
 integratejin(cfs,y)=.5*(-cfs[1]*log(y)+divkholdersum(cfs,y,y,1)-divkholdersum(slice(cfs,2:length(cfs)),y,one(y),0))
 
@@ -174,42 +169,5 @@ function cauchy{M,T}(s::Bool,f::Fun{JacobiWeight{OpenCurveSpace{M}},T},z::Number
     mapreduce(rt->in(rt,di)?cauchy(s,fm,rt):cauchy(fm,rt),+,rts)
 end
 
-
-
-
-
-
-## Stieltjes
-
-
-function Stieltjes(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace)
-    @assert ds.α==ds.β==0.5
-
-    x=Fun(identity,rs)
-    y=intervaloffcircle(true,tocanonical(ds,x))
-    
-    ret=Array(typeof(y),300)
-    ret[1]=y
-    n=1
-    l=length(y)-1
-    u=0
-    
-    while norm(ret[n].coefficients)>100eps()
-        n+=1
-        if n > length(ret)
-            # double preallocated ret
-            resize!(ret,2length(ret))
-        end
-        ret[n]=chop!(y*ret[n-1],100eps())  #will be length 2n-1
-        u+=1   # upper bandwidth
-        l=max(l,length(ret[n])-n)
-    end
-    
-    M=bazeros(Complex{Float64},n+l,n,l,u)
-    for k=1:n,j=1:length(ret[k])
-        M[j,k]=π*ret[k].coefficients[j]
-    end
-    Stieltjes(M,ds,rs)
-end
 
 
