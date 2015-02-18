@@ -30,7 +30,7 @@ stieljes(f,z)=-2π*im*cauchy(f,z)
 
 
 include("Hilbert.jl")
-include("Stieljes.jl")
+include("Stieltjes.jl")
 
 include("HilbertFunctions.jl")
 

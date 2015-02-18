@@ -179,10 +179,10 @@ end
 
 
 
-## Stieljes
+## Stieltjes
 
 
-function Stieljes(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace)
+function Stieltjes(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace)
     @assert ds.α==ds.β==0.5
 
     x=Fun(identity,rs)
@@ -209,7 +209,7 @@ function Stieljes(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace)
     for k=1:n,j=1:length(ret[k])
         M[j,k]=π*ret[k].coefficients[j]
     end
-    Stieljes(M,ds,rs)
+    Stieltjes(M,ds,rs)
 end
 
 

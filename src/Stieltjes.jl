@@ -1,4 +1,4 @@
-export Stieljes,Cauchy
+export Stieltjes,Cauchy
 
 
 #############
@@ -6,7 +6,7 @@ export Stieljes,Cauchy
 #
 #       C f(z) := 1/(2πi)\int_\Gamma f(t)/(t-z) dt
 #
-# It is given in terms of the Stieljes operator
+# It is given in terms of the Stieltjes operator
 #
 #       S f(z) := \int_\Gamma f(t)/(z-t) dt = -2πi*C f(z)
 #
@@ -19,35 +19,35 @@ export Stieljes,Cauchy
 #    C^+  -  C^- = I
 #    C^+  +  C^- = -im*H
 #
-#   Or for the Stieljes operator
+#   Or for the Stieltjes operator
 #
 #    S^+ - S^- = -2πi*I
 #    S^+ + S^- = -2π*H
 #
 ############
 
-immutable Stieljes{D<:FunctionSpace,R<:FunctionSpace} <: BandedOperator{Complex{Float64}}
+immutable Stieltjes{D<:FunctionSpace,R<:FunctionSpace} <: BandedOperator{Complex{Float64}}
     data::BandedMatrix{Complex{Float64}}
     domainspace::D
     rangespace::R
 end
 
 
-    ## Stieljes(s,d)
+    ## Stieltjes(s,d)
 
 
 Cauchy(s::Bool,d)=(s?0.5:-0.5)*I +(-0.5im)*Hilbert(d)
 Cauchy(s::Int,d)=Cauchy(s==1,d)
 Cauchy(s::Union(Int,Bool))=Cauchy(s,UnsetSpace())
-Stieljes(ds::PeriodicDomain,rs::PeriodicDomain)=Stieljes(Laurent(ds),Laurent(rs))
-Cauchy(ds,rs)=(1/(-2π*im))*Stieljes(ds,rs)
+Stieltjes(ds::PeriodicDomain,rs::PeriodicDomain)=Stieltjes(Laurent(ds),Laurent(rs))
+Cauchy(ds,rs)=(1/(-2π*im))*Stieltjes(ds,rs)
 
-domainspace(C::Stieljes)=C.domainspace
-rangespace(C::Stieljes)=C.rangespace
-bandinds(C::Stieljes)=bandinds(C.data)
+domainspace(C::Stieltjes)=C.domainspace
+rangespace(C::Stieltjes)=C.rangespace
+bandinds(C::Stieltjes)=bandinds(C.data)
 
 
-function Stieljes(DS::Laurent,RS::Laurent)
+function Stieltjes(DS::Laurent,RS::Laurent)
     ds=domain(DS);rs=domain(RS)
     @assert isa(ds,Circle)
     @assert isa(rs,Circle)
@@ -63,10 +63,10 @@ function Stieljes(DS::Laurent,RS::Laurent)
         M=disjoint_cauchy(ds,rs)
     end
     
-    Stieljes(-2π*im*M,DS,RS)
+    Stieltjes(-2π*im*M,DS,RS)
 end
 
-addentries!(C::Stieljes,A,kr)=addentries!(C.data,A,kr)
+addentries!(C::Stieltjes,A,kr)=addentries!(C.data,A,kr)
 
 
 
