@@ -1,19 +1,15 @@
-
-
 ## SingFun cauchy
 
 
-#  sqrtx2 is analytic continuation of sqrt(z^2-1)
-sqrtx2(z::Complex)=sqrt(z-1).*sqrt(z+1)
+# sqrtx2 is analytic continuation of sqrt(z^2-1)
+sqrtx2(z::Complex)=sqrt(z-1)*sqrt(z+1)
 sqrtx2(x::Real)=sign(x)*sqrt(x^2-1)
+@vectorize_1arg Number sqrtx2
 function sqrtx2(f::Fun)
     B=Evaluation(first(domain(f)))
     A=Derivative()-f*differentiate(f)/(f^2-1)
     linsolve([B,A],sqrtx2(first(f));tolerance=length(f)*10E-15)
 end
-
-@vectorize_1arg Number sqrtx2
-
 
 # intervaloffcircle maps the slit plane to the interior(true)/exterior(false) disk
 # intervaloncircle maps the interval to the upper(true)/lower(false) half circle
@@ -67,10 +63,10 @@ function cauchy(u::Fun{JacobiWeight{Chebyshev}},z::Number)
 
 
         if length(cfs) ≥1
-            ret = cfs[1]*0.5im/absqrt(-1,1,z)
+            ret = cfs[1]*0.5im/sqrtx2(z)
 
             if length(cfs) ≥2
-                ret += cfs[2]*(0.5im*z/absqrt(-1,1,z)-.5im)
+                ret += cfs[2]*(0.5im*z/sqrtx2(z)-.5im)
             end
 
             ret - 1.im*holdersum(cfs[3:end],intervaloffcircle(true,z))
@@ -136,7 +132,7 @@ function cauchyintegral(u::Fun{JacobiWeight{Chebyshev}},z::Number)
             ret = -cfs[1]*0.25im*(b-a)*log(y)
 
             if length(cfs) >=2
-                ret += 0.25im*(b-a)*cfs[2]*(absqrt(-1,1,z)-z)
+                ret += 0.25im*(b-a)*cfs[2]*(sqrtx2(z)-z)
             end
 
             if length(cfs) >= 3
