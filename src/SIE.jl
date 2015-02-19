@@ -1,7 +1,9 @@
 module SIE
     using Base, ApproxFun
 
-export cauchy, cauchyintegral
+export cauchy, cauchyintegral, stieljes
+
+
 import ApproxFun
 import ApproxFun: PeriodicDomain, bandinds, dirichlettransform, idirichlettransform!,
                   Curve,CurveSpace, OpenCurveSpace, ClosedCurveSpace,transform,SpaceOperator,
