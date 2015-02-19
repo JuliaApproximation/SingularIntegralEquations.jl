@@ -1,7 +1,7 @@
 module SIE
     using Base, ApproxFun
 
-export cauchy, cauchyintegral, stieljes
+export cauchy, cauchyintegral, stieltjes
 
 
 import ApproxFun
@@ -27,8 +27,8 @@ end
 hilbert(f)=Hilbert()*f
 hilbert(f,z)=hilbert(f)[z]
 
-stieljes(s,f,z)=-2π*im*cauchy(s,f,z)
-stieljes(f,z)=-2π*im*cauchy(f,z)
+stieltjes(s,f,z)=-2π*im*cauchy(s,f,z)
+stieltjes(f,z)=-2π*im*cauchy(f,z)
 
 
 include("Hilbert.jl")
