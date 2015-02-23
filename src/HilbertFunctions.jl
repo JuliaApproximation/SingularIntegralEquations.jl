@@ -1,21 +1,23 @@
 export hilbert, hilbertinverse
-
-## hilbert is equal to im*(C^+ + C^-)
-
-#hilbert(f,z)=im*(cauchy(true,f,z)+cauchy(false,f,z))
-
-## hilbert and hilbertinverse on JacobiWeight space
+## 
+#  hilbert and hilbertinverse on JacobiWeight space
+# hilbert is equal to im*(C^+ + C^-)
+#  hilbert(f,z)=im*(cauchy(true,f,z)+cauchy(false,f,z))
+##
 
 function hilbert(u::Fun{JacobiWeight{Chebyshev}})
     d=domain(u);sp=space(u)
 
     if sp.α == sp.β == .5
+        # Corollary 5.7 of Olver&Trogdon    
         uf=Fun(u.coefficients,d)
-        Fun([0.,-coefficients(uf,Ultraspherical{1})],d)
+        cfs=coefficients(uf,Ultraspherical{1})
+        Fun([0.;-cfs],d)
     elseif sp.α == sp.β == -.5
-        cfs = dirichlettransform(u.coefficients)
-
-        Fun([cfs[2],2cfs[3:end]],d)
+        # Corollary 5.11 of Olver&Trogdon    
+        uf = Fun(u.coefficients,d)
+        cfs= coefficients(uf,ChebyshevDirichlet{1,1})
+        Fun([cfs[2];2cfs[3:end]],d)
     else
         error("hilbert only implemented for Chebyshev weights")
     end
@@ -23,10 +25,18 @@ end
 
 function hilbertinverse(u::Fun)
     if abs(u.coefficients[1]) < 100eps()
-        ## no singularity
-        Fun(ultraiconversion!(u.coefficients[2:end]),JacobiWeight(.5,.5,u.domain))
+        # no singularity
+        # invert Corollary 5.7 of Olver&Trogdon      
+        cfs=coefficents(u,Chebyshev)      
+        cfs=spaceconversion(cfs[2:end],Ultraspherical{1},Chebyshev)
+        Fun(cfs,JacobiWeight(.5,.5,u.domain))
     else
-        Fun(idirichlettransform!([0.,u.coefficients[1],.5*u.coefficients[2:end]]),JacobiWeight(-.5,-.5,u.domain))
+        # no singularity
+        # invert Corollary 5.11 of Olver&Trogdon      
+        cfs=coefficents(u,Chebyshev)         
+        cfs=[0.,cfs[1],.5*cfs[2:end]]
+        cfs=spaceconversion(cfs,ChebyshevDirichlet{1,1},Chebyshev)         
+        Fun(cfs,JacobiWeight(-.5,-.5,u.domain))
     end
 end
 

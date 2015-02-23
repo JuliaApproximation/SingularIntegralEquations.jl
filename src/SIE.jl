@@ -5,7 +5,7 @@ export cauchy, cauchyintegral, stieltjes
 
 
 import ApproxFun
-import ApproxFun: PeriodicDomain, bandinds, dirichlettransform, idirichlettransform!,
+import ApproxFun: PeriodicDomain, bandinds, 
                   Curve,CurveSpace, OpenCurveSpace, ClosedCurveSpace,transform,SpaceOperator,
                   rangespace, domainspace, addentries!, BandedOperator, PeriodicSpace, AnySpace,
                   canonicalspace, domain, promotedomainspace, AnyDomain, CalculusOperator,
