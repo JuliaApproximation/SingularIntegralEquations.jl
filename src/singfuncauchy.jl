@@ -65,7 +65,7 @@ function cauchy(u::Fun{JacobiWeight{Chebyshev}},z::Number)
             ret = cfs[1]*0.5im/sqrtx2(z)
 
             if length(cfs) ≥2
-                ret += cfs[2]*.5im*((z-1)/sqrtx2(z)-1)
+                ret += cfs[2]*.5im*(z/sqrtx2(z)-1)
             end
 
             ret - 1.im*holdersum(cfs[3:end],intervaloffcircle(true,z))
@@ -88,11 +88,11 @@ function cauchy(s::Bool,u::Fun{JacobiWeight{Chebyshev}},x::Number)
         cfs = coefficients(u.coefficients,Chebyshev,ChebyshevDirichlet{1,1})
         x=tocanonical(u,x)
 
-        if length(cfs) >=1
-            ret = cfs[1]*0.5*(s?1:-1)/sqrt(1-x^2 )
+        if length(cfs) ≥1
+            ret = cfs[1]*0.5*(s?1:-1)/sqrt(1-x^2)
 
-            if length(cfs) >=2
-                ret += cfs[2]*(0.5*(s?1:-1)*(x-1)/sqrt(1-x^2)-.5im)
+            if length(cfs) ≥2
+                ret += cfs[2]*(0.5*(s?1:-1)*x/sqrt(1-x^2)-.5im)
             end
 
             ret - 1.im*holdersum(cfs[3:end],intervaloncircle(!s,x))
@@ -124,14 +124,14 @@ function cauchyintegral(u::Fun{JacobiWeight{Chebyshev}},z::Number)
         z=tocanonical(u,z)
         y=intervaloffcircle(true,z)
 
-        if length(cfs) >=1
+        if length(cfs) ≥1
             ret = -cfs[1]*0.25im*(b-a)*log(y)
 
-            if length(cfs) >=2
-                ret += 0.25im*(b-a)*cfs[2]*(sqrtx2(z)-z)#+cfs[2]*0.25im*(b-a)*.5log(abs2(y))
+            if length(cfs) ≥2
+                ret += 0.25im*(b-a)*cfs[2]*(sqrtx2(z)-z)
             end
 
-            if length(cfs) >= 3
+            if length(cfs) ≥3
                 ret - 0.5im*(b-a)*integratejin(slice(cfs,3:length(cfs)),y)
             else
                 ret

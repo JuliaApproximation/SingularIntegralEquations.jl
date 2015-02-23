@@ -113,7 +113,7 @@ function Stieltjes(ds::JacobiWeight{ChebyshevDirichlet{1,1}},rs::FunctionSpace,o
         y=intervaloffcircle(true,x)
         ret=Array(typeof(y),300)
         ret[1]=1/sqrtx2(x)
-        ret[2]=(x-1)*ret[1]-1
+        ret[2]=x*ret[1]-1
         ret[3]=-2y
         n,l,u = 3,max(length(ret[1])-1,length(ret[2])-1,length(ret[3])-3),2
         while norm(ret[n].coefficients)>100eps()
