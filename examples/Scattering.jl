@@ -1,6 +1,6 @@
 # This file calculates scattering from the Helmholtz equation via the adaptive spectral method.
 # Δu + k^2u = 0,
-# u|Γ = 0 (which for now is [-1,1]),
+# u|Γ = 0,
 # u^i = e^{im k x⋅d},
 # u = u^i + u^s.
 # The normal derivative ∂u∂n of the entire wave is calculated on the sound-hard line [-1,1].

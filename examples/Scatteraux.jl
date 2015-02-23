@@ -5,11 +5,12 @@ function tomovie(x,y,u,L;plotfunction=plot,seconds=1)
     dr = pwd()*"/"*tm*"mov"
     mkdir(dr)
 
-    line = [dom.a,dom.b]
+    line1 = [dom[1].a,dom[1].b]
+    line2 = [dom[2].a,dom[2].b]
     MLen = seconds*25
     for k=1:MLen+2
         t = 2π/ω*(k-1)/24
-        plot(line,0line,"-k",linewidth=2.0)
+        plot(line1,0line1,"-k",line2,0line2,"-k",linewidth=2.0)
         plotfunction(x,y,real(u*exp(-im*ω*t)),L)
         xlabel("\$x\$");ylabel("\$y\$")
         savefig(dr * "/" * string(int(k)) * ".png",dpi=150)
