@@ -24,18 +24,17 @@ function hilbert(u::Fun{JacobiWeight{Chebyshev}})
 end
 
 function hilbertinverse(u::Fun)
-    if abs(u.coefficients[1]) < 100eps()
+    cfs=coefficients(u,Chebyshev)
+    if abs(first(cfs)) < 100eps()
         # no singularity
-        # invert Corollary 5.7 of Olver&Trogdon      
-        cfs=coefficents(u,Chebyshev)      
-        cfs=spaceconversion(cfs[2:end],Ultraspherical{1},Chebyshev)
+        # invert Corollary 5.7 of Olver&Trogdon            
+        cfs=coefficients(cfs[2:end],Ultraspherical{1},Chebyshev)
         Fun(cfs,JacobiWeight(.5,.5,u.domain))
     else
         # no singularity
-        # invert Corollary 5.11 of Olver&Trogdon      
-        cfs=coefficents(u,Chebyshev)         
+        # invert Corollary 5.11 of Olver&Trogdon               
         cfs=[0.,cfs[1],.5*cfs[2:end]]
-        cfs=spaceconversion(cfs,ChebyshevDirichlet{1,1},Chebyshev)         
+        cfs=coefficients(cfs,ChebyshevDirichlet{1,1},Chebyshev)         
         Fun(cfs,JacobiWeight(-.5,-.5,u.domain))
     end
 end
