@@ -58,7 +58,7 @@ function cauchy(u::Fun{JacobiWeight{Chebyshev}},z::Number)
         0.5im*holdersum(coefficients(uf,Ultraspherical{1}),
                         intervaloffcircle(true,tocanonical(u,z)))
     elseif sp.α == sp.β == -.5
-        cfs = dirichlettransform(u.coefficients)
+        cfs = coefficients(u.coefficients,Chebyshev,ChebyshevDirichlet{1,1})
         z=tocanonical(u,z)
 
 
@@ -66,7 +66,7 @@ function cauchy(u::Fun{JacobiWeight{Chebyshev}},z::Number)
             ret = cfs[1]*0.5im/sqrtx2(z)
 
             if length(cfs) ≥2
-                ret += cfs[2]*(0.5im*z/sqrtx2(z)-.5im)
+                ret += cfs[2]*.5im*((z-1)/sqrtx2(z)-1)
             end
 
             ret - 1.im*holdersum(cfs[3:end],intervaloffcircle(true,z))
@@ -83,18 +83,17 @@ function cauchy(s::Bool,u::Fun{JacobiWeight{Chebyshev}},x::Number)
     d=domain(u);sp=space(u)
 
     if sp.α == sp.β == .5
-        uf=Fun(u.coefficients,Chebyshev(d))
-        0.5im*holdersum(coefficients(uf,Ultraspherical{1}),
-                        intervaloncircle(!s,tocanonical(u,x)))
+        cfs=coefficients(u.coefficients,Chebyshev,Ultraspherical{1})
+        0.5im*holdersum(cfs,intervaloncircle(!s,tocanonical(u,x)))
     elseif sp.α == sp.β == -.5
-        cfs = dirichlettransform(u.coefficients)
+        cfs = coefficients(u.coefficients,Chebyshev,ChebyshevDirichlet{1,1})
         x=tocanonical(u,x)
 
         if length(cfs) >=1
             ret = cfs[1]*0.5*(s?1:-1)/sqrt(1-x^2 )
 
             if length(cfs) >=2
-                ret += cfs[2]*(0.5*(s?1:-1)*x/sqrt(1-x^2)-.5im)
+                ret += cfs[2]*(0.5*(s?1:-1)*(x-1)/sqrt(1-x^2)-.5im)
             end
 
             ret - 1.im*holdersum(cfs[3:end],intervaloncircle(!s,x))
@@ -118,13 +117,11 @@ function cauchyintegral(u::Fun{JacobiWeight{Chebyshev}},z::Number)
     sp=space(u)
 
     if sp.α == sp.β == .5
-        uf=Fun(u.coefficients,Chebyshev(d))
-        cfs=coefficients(uf,Ultraspherical{1})
+        cfs=coefficients(u.coefficients,Chebyshev,Ultraspherical{1})
         y=intervaloffcircle(true,tocanonical(u,z))
-
         0.25im*(b-a)*integratejin(cfs,y)
     elseif  sp.α == sp.β == -.5
-        cfs = dirichlettransform(u.coefficients)
+        cfs = coefficients(u.coefficients,Chebyshev,ChebyshevDirichlet{1,1})
         z=tocanonical(u,z)
         y=intervaloffcircle(true,z)
 
@@ -132,7 +129,7 @@ function cauchyintegral(u::Fun{JacobiWeight{Chebyshev}},z::Number)
             ret = -cfs[1]*0.25im*(b-a)*log(y)
 
             if length(cfs) >=2
-                ret += 0.25im*(b-a)*cfs[2]*(sqrtx2(z)-z)
+                ret += 0.25im*(b-a)*cfs[2]*(sqrtx2(z)-z)#+cfs[2]*0.25im*(b-a)*.5log(abs2(y))
             end
 
             if length(cfs) >= 3
