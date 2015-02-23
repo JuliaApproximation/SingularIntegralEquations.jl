@@ -41,6 +41,7 @@ Stieltjes{B<:BandedMatrix,D<:FunctionSpace,R<:FunctionSpace}(data::B,ds::D,rs::R
 Cauchy(s::Bool,d)=(s?0.5:-0.5)*I +(-0.5im)*Hilbert(d)
 Cauchy(s::Int,d)=Cauchy(s==1,d)
 Cauchy(s::Union(Int,Bool))=Cauchy(s,UnsetSpace())
+Stieltjes(ds::PeriodicDomain,rs::PeriodicDomain,order)=Stieltjes(Laurent(ds),Laurent(rs),order)
 Stieltjes(ds::PeriodicDomain,rs::PeriodicDomain)=Stieltjes(Laurent(ds),Laurent(rs))
 Cauchy(ds,rs,order)=(1/(-2π*im))*Stieltjes(ds,rs,order)
 Cauchy(ds,rs)=Cauchy(ds,rs,1)
@@ -132,10 +133,11 @@ function Stieltjes(ds::JacobiWeight{ChebyshevDirichlet{1,1}},rs::FunctionSpace,o
 end
 
 
-function Stieltjes(DS::Laurent,RS::Laurent)
+function Stieltjes(DS::Laurent,RS::Laurent,order::Int)
     ds=domain(DS);rs=domain(RS)
     @assert isa(ds,Circle)
     @assert isa(rs,Circle)
+    @assert order==1
 
     c2=rs.center;c1=ds.center
     r2=rs.radius;r1=ds.radius
