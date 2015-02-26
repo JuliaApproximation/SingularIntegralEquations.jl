@@ -54,7 +54,7 @@ function cauchy(u::Fun{JacobiWeight{Chebyshev}},z::Number)
     d=domain(u);sp=space(u)
 
     if sp.α == sp.β == .5
-        cfs = coefficients(Chebyshev,Ultraspherical{1})
+        cfs = coefficients(u.coefficients,Chebyshev,Ultraspherical{1})
         0.5im*holdersum(cfs,intervaloffcircle(true,tocanonical(u,z)))
     elseif sp.α == sp.β == -.5
         cfs = coefficients(u.coefficients,Chebyshev,ChebyshevDirichlet{1,1})
