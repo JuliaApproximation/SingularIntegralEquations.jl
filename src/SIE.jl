@@ -5,12 +5,12 @@ export cauchy, cauchyintegral, stieltjes, logkernel
 
 
 import ApproxFun
-import ApproxFun: PeriodicDomain, bandinds, 
+import ApproxFun: PeriodicDomain, bandinds,
                   Curve,CurveSpace, OpenCurveSpace, ClosedCurveSpace,transform,SpaceOperator,
                   rangespace, domainspace, addentries!, BandedOperator, PeriodicSpace, AnySpace,
                   canonicalspace, domain, promotedomainspace, AnyDomain, CalculusOperator,
                   SumSpace,PiecewiseSpace, interlace,Multiplication,ArraySpace,DiagonalArrayOperator,
-                  BandedMatrix,bazeros,ChebyshevDirichlet,
+                  BandedMatrix,bazeros,ChebyshevDirichlet,PolynomialSpace,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,
                   ProductFun, mappoint, PeriodicLineSpace, PeriodicLineDirichlet,Recurrence
 

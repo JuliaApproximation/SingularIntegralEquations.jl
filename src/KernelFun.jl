@@ -6,7 +6,7 @@
 # bivariate function, then forms the matrix of ProductFun coefficients
 # recursively via a Chebyshev addition theorem.
 #
-function ProductFun{S<:Chebyshev,T,U<:Union(Chebyshev,JacobiWeight{Chebyshev}),V<:Union(Chebyshev,JacobiWeight{Chebyshev})}(f::Fun{S,T},u::U,v::V)
+function ProductFun{S<:PolynomialSpace,T,U<:PolynomialSpace,V<:PolynomialSpace}(f::Fun{S,T},u::Union(U,JacobiWeight{U}),v::Union(V,JacobiWeight{V}))
     ## TODO: Can the complexity be reduced from O(n^3)?
     df,du,dv = domain(f),domain(u),domain(v)
     @assert length(df) == 2length(du) && length(df) == 2length(dv)
@@ -77,6 +77,13 @@ function ProductFun{S<:Chebyshev,T,U<:Union(Chebyshev,JacobiWeight{Chebyshev}),V
         for j=1:n,i=1:n-j+1
             C1[i,j],C2[i,j] = C2[i,j],C1[i,j]
         end
+    end
+    cspu,cspv = canonicalspace(u),canonicalspace(v)
+    if cspu != u
+        [X[1:N+1-k,k] = coefficients(vec(X[1:N+1-k,k]),cspu,u) for k=1:N]
+    end
+    if cspv != v
+        [X[k,1:N+1-k] = coefficients(vec(X[k,1:N+1-k]),cspv,v) for k=1:N]
     end
     ProductFun(X,u⊗v)
 end
