@@ -126,7 +126,7 @@ end
 
 
 integratejin(cfs,y)=.5*(-cfs[1]*(log(y)+log(2))+divkholdersum(cfs,y,y,1)-divkholdersum(slice(cfs,2:length(cfs)),y,one(y),0))
-realintegratejin{T<:Real}(cfs::Vector{T},y)=.5*(-cfs[1]*(logabs(y)+log(2))+realdivkholdersum(cfs,y,y,1)-realdivkholdersum(slice(cfs,2:length(cfs)),y,one(y),0))
+realintegratejin(cfs,y)=.5*(-cfs[1]*(logabs(y)+log(2))+realdivkholdersum(cfs,y,y,1)-realdivkholdersum(slice(cfs,2:length(cfs)),y,one(y),0))
 
 
 realintervaloffcircle(b,z)=real(intervaloffcircle(b,z))
@@ -153,7 +153,7 @@ for (OP,JIN,LOG,IOC) in ((:stieltjesintegral,:integratejin,:log,:intervaloffcirc
             y=intervaloffcircle(true,z)
     
             if length(cfs) ≥1
-                ret = -cfs[1]*0.5π*(b-a)*$LOG(y)
+                ret = -cfs[1]*0.5π*(b-a)*($LOG(y)+log(2))
     
                 if length(cfs) ≥2
                     ret += -0.5π*(b-a)*cfs[2]*$IOC(true,z)
