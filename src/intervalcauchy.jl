@@ -1,8 +1,9 @@
-import ApproxFun: dotu
+import ApproxFun: dotu,SliceOperator
 
 function cauchylegendre(z::Number)
+    J=SliceOperator(JacobiRecurrence(0.,0.)-z,1,0,1)  # drop first row
     [BasisFunctional(1),
-        (JacobiRecurrenceOperator(0.,0.)-z)[2:end,:]]\[(log(z-1)-log(z+1))/(2π*im)]
+        J]\[(log(z-1)-log(z+1))/(2π*im)]
 end
 
 function cauchy(f::Fun{Jacobi},z::Number)

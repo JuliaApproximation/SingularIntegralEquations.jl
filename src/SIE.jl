@@ -12,7 +12,7 @@ import ApproxFun: PeriodicDomain, bandinds,
                   SumSpace,PiecewiseSpace, interlace,Multiplication,ArraySpace,DiagonalArrayOperator,
                   BandedMatrix,bazeros,ChebyshevDirichlet,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,
-                  ProductFun, mappoint, PeriodicLineSpace, PeriodicLineDirichlet
+                  ProductFun, mappoint, PeriodicLineSpace, PeriodicLineDirichlet,JacobiRecurrence
 
 function cauchy(s,f,z)
     if isa(s,Bool)
@@ -45,6 +45,7 @@ include("vectorcauchy.jl")
 include("KernelFun.jl")
 
 include("periodicline.jl")
+include("arc.jl")
 
 if isdir(Pkg.dir("TikzGraphs"))
     include("introspect.jl")
