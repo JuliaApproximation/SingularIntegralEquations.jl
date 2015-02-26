@@ -11,6 +11,9 @@ function sqrtx2(f::Fun)
     linsolve([B,A],sqrtx2(first(f));tolerance=length(f)*10E-15)
 end
 
+logabs(x::Real)=log(abs(x))
+logabs(x::Complex)=log(abs2(x))/2
+
 # intervaloffcircle maps the slit plane to the interior(true)/exterior(false) disk
 # intervaloncircle maps the interval to the upper(true)/lower(false) half circle
 
@@ -45,7 +48,7 @@ function divkholdersum(cfs,y0,ys,s)
 end
 
 function realdivkholdersum(cfs,y0,ys,s)
-    ret=zero(y0)
+    ret=zero(real(y0))
     y=ys
 
     for k=1:length(cfs)
@@ -63,8 +66,9 @@ absqrt(s::Bool,a,b,z)=(s?1:-1)*im*sqrt(z-a)*sqrt(b-z)
 absqrt(s::Int,a,b,z)=absqrt(s==1,a,b,z)
 
 
+
 function cauchy(u::Fun{JacobiWeight{Chebyshev}},z::Number)
-    d=domain(u);sp=space(u)
+    sp=space(u)
 
     if sp.α == sp.β == .5
         cfs = coefficients(u.coefficients,Chebyshev,Ultraspherical{1})
@@ -92,7 +96,7 @@ end
 
 
 function cauchy(s::Bool,u::Fun{JacobiWeight{Chebyshev}},x::Number)
-    d=domain(u);sp=space(u)
+    sp=space(u)
 
     if sp.α == sp.β == .5
         cfs=coefficients(u.coefficients,Chebyshev,Ultraspherical{1})
@@ -119,40 +123,50 @@ end
 
 
 
-## cauchy integral
+
 
 integratejin(cfs,y)=.5*(-cfs[1]*(log(y)+log(2))+divkholdersum(cfs,y,y,1)-divkholdersum(slice(cfs,2:length(cfs)),y,one(y),0))
-realintegratejin{T<:Real}(cfs::Vector{T},y)=.5*(-cfs[1]*(log(abs(y))+log(2))+realdivkholdersum(cfs,y,y,1)-realdivkholdersum(slice(cfs,2:length(cfs)),y,one(y),0))
+realintegratejin{T<:Real}(cfs::Vector{T},y)=.5*(-cfs[1]*(logabs(y)+log(2))+realdivkholdersum(cfs,y,y,1)-realdivkholdersum(slice(cfs,2:length(cfs)),y,one(y),0))
 
 
-function stieltjesintegral(u::Fun{JacobiWeight{Chebyshev}},z::Number)
-    d=domain(u)
-    a,b=d.a,d.b
-    sp=space(u)
+realintervaloffcircle(b,z)=real(intervaloffcircle(b,z))
 
-    if sp.α == sp.β == .5
-        cfs=coefficients(u.coefficients,Chebyshev,Ultraspherical{1})
-        y=intervaloffcircle(true,tocanonical(u,z))
-        0.5π*(b-a)*integratejin(cfs,y)
-    elseif  sp.α == sp.β == -.5
-        cfs = coefficients(u.coefficients,Chebyshev,ChebyshevDirichlet{1,1})
-        z=tocanonical(u,z)
-        y=intervaloffcircle(true,z)
+#########
+# stieltjesintegral is an indefinite integral of stieltjes
+# normalized so that there is no constant term 
+# logkernel is the real part of stieljes
+#####
 
-        if length(cfs) ≥1
-            ret = -cfs[1]*0.5π*(b-a)*log(y)
-
-            if length(cfs) ≥2
-                ret += 0.5π*(b-a)*cfs[2]*(sqrtx2(z)-z)
-            end
-
-            if length(cfs) ≥3
-                ret - π*(b-a)*integratejin(slice(cfs,3:length(cfs)),y)
+for (OP,JIN,LOG,IOC) in ((:stieltjesintegral,:integratejin,:log,:intervaloffcircle),(:logkernel,:realintegratejin,:logabs,:realintervaloffcircle))
+    @eval function $OP(u::Fun{JacobiWeight{Chebyshev}},z::Number)
+        d=domain(u)
+        a,b=d.a,d.b     # TODO: type not inferred right now
+        sp=space(u)
+    
+        if sp.α == sp.β == .5
+            cfs=coefficients(u.coefficients,Chebyshev,Ultraspherical{1})
+            y=intervaloffcircle(true,tocanonical(u,z))
+            0.5π*(b-a)*$JIN(cfs,y)
+        elseif  sp.α == sp.β == -.5
+            cfs = coefficients(u.coefficients,Chebyshev,ChebyshevDirichlet{1,1})
+            z=tocanonical(u,z)
+            y=intervaloffcircle(true,z)
+    
+            if length(cfs) ≥1
+                ret = -cfs[1]*0.5π*(b-a)*$LOG(y)
+    
+                if length(cfs) ≥2
+                    ret += -0.5π*(b-a)*cfs[2]*$IOC(true,z)
+                end
+    
+                if length(cfs) ≥3
+                    ret - π*(b-a)*$JIN(slice(cfs,3:length(cfs)),y)
+                else
+                    ret
+                end
             else
-                ret
+                zero(z)
             end
-        else
-            zero(z)
         end
     end
 end
