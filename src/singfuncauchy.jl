@@ -108,7 +108,7 @@ end
 
 ## cauchy integral
 
-integratejin(cfs,y)=.5*(-cfs[1]*log(y)+divkholdersum(cfs,y,y,1)-divkholdersum(slice(cfs,2:length(cfs)),y,one(y),0))
+integratejin(cfs,y)=.5*(-cfs[1]*(log(y)+log(2))+divkholdersum(cfs,y,y,1)-divkholdersum(slice(cfs,2:length(cfs)),y,one(y),0))
 
 function cauchyintegral(u::Fun{JacobiWeight{Chebyshev}},z::Number)
     d=domain(u)
