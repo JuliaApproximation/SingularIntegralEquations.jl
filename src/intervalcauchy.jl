@@ -1,7 +1,7 @@
 import ApproxFun: dotu,SliceOperator
 
 function cauchylegendre(z::Number)
-    J=SliceOperator(JacobiRecurrence(0.,0.)-z,1,0,1)  # drop first row
+    J=SliceOperator(Recurrence(Jacobi(0.,0.)).'-z,1,0,1)  # drop first row
     [BasisFunctional(1),
         J]\[(log(z-1)-log(z+1))/(2π*im)]
 end
