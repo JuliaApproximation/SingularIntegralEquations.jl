@@ -44,6 +44,19 @@ function divkholdersum(cfs,y0,ys,s)
     ret
 end
 
+function realdivkholdersum(cfs,y0,ys,s)
+    ret=zero(y0)
+    y=ys
+
+    for k=1:length(cfs)
+        y*=y0
+        ret+=cfs[k]*real(y)./(k+s)
+    end
+
+    ret
+end
+
+
 absqrt(a,b,z::Complex)=sqrt(z-a)*sqrt(z-b)
 absqrt(a,b,x::Real)=x<a?-sqrt(a-x)*sqrt(b-x):sqrt(x-a)*sqrt(x-b)
 absqrt(s::Bool,a,b,z)=(s?1:-1)*im*sqrt(z-a)*sqrt(b-z)
@@ -109,8 +122,10 @@ end
 ## cauchy integral
 
 integratejin(cfs,y)=.5*(-cfs[1]*(log(y)+log(2))+divkholdersum(cfs,y,y,1)-divkholdersum(slice(cfs,2:length(cfs)),y,one(y),0))
+realintegratejin{T<:Real}(cfs::Vector{T},y)=.5*(-cfs[1]*(log(abs(y))+log(2))+realdivkholdersum(cfs,y,y,1)-realdivkholdersum(slice(cfs,2:length(cfs)),y,one(y),0))
 
-function cauchyintegral(u::Fun{JacobiWeight{Chebyshev}},z::Number)
+
+function stieltjesintegral(u::Fun{JacobiWeight{Chebyshev}},z::Number)
     d=domain(u)
     a,b=d.a,d.b
     sp=space(u)
@@ -118,29 +133,31 @@ function cauchyintegral(u::Fun{JacobiWeight{Chebyshev}},z::Number)
     if sp.α == sp.β == .5
         cfs=coefficients(u.coefficients,Chebyshev,Ultraspherical{1})
         y=intervaloffcircle(true,tocanonical(u,z))
-        0.25im*(b-a)*integratejin(cfs,y)
+        0.5π*(b-a)*integratejin(cfs,y)
     elseif  sp.α == sp.β == -.5
         cfs = coefficients(u.coefficients,Chebyshev,ChebyshevDirichlet{1,1})
         z=tocanonical(u,z)
         y=intervaloffcircle(true,z)
 
         if length(cfs) ≥1
-            ret = -cfs[1]*0.25im*(b-a)*log(y)
+            ret = -cfs[1]*0.5π*(b-a)*log(y)
 
             if length(cfs) ≥2
-                ret += 0.25im*(b-a)*cfs[2]*(sqrtx2(z)-z)
+                ret += 0.5π*(b-a)*cfs[2]*(sqrtx2(z)-z)
             end
 
             if length(cfs) ≥3
-                ret - 0.5im*(b-a)*integratejin(slice(cfs,3:length(cfs)),y)
+                ret - π*(b-a)*integratejin(slice(cfs,3:length(cfs)),y)
             else
                 ret
             end
         else
-            0.0+0.0im
+            zero(z)
         end
     end
 end
+
+cauchyintegral(u,z)=im/(2π)*stieltjesintegral(u,z)
 
 
 ## Mapped
