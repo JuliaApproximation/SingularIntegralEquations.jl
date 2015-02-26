@@ -79,12 +79,8 @@ function ProductFun{S<:PolynomialSpace,T,U<:PolynomialSpace,V<:PolynomialSpace}(
         end
     end
     cspu,cspv = canonicalspace(u),canonicalspace(v)
-    if cspu != u
-        [X[1:N+1-k,k] = coefficients(vec(X[1:N+1-k,k]),cspu,u) for k=1:N]
-    end
-    if cspv != v
-        [X[k,1:N+1-k] = coefficients(vec(X[k,1:N+1-k]),cspv,v) for k=1:N]
-    end
+    [X[1:N+1-k,k] = coefficients(vec(X[1:N+1-k,k]),cspu,u) for k=1:N]
+    [X[k,1:N+1-k] = coefficients(vec(X[k,1:N+1-k]),cspv,v) for k=1:N]
     ProductFun(X,u⊗v)
 end
 
