@@ -262,3 +262,44 @@ function disjoint_cauchy(a::Circle,b::Circle)
     end
     M
 end
+
+
+
+
+## Stiejles Functional
+
+
+function HornerFunctional(y0,sp)
+    r=Array(typeof(y0),200)
+    r[1]=y0
+    k=1
+    tol=eps()
+    while(abs(r[k])>tol)
+        k+=1
+        if k>length(r)
+            resize!(r,2length(r))
+        end
+        r[k]=r[k-1]*y0
+    end
+
+    SavedFunctional(ZeroFunctional(typeof(y0),sp),r[1:k])
+end
+
+function Stieltjes(sp::JacobiWeight{Ultraspherical{1}},z::Number)
+    if sp.α == sp.β == 0.5
+        π*HornerFunctional(intervaloffcircle(true,tocanonical(sp,z)),sp)
+    else
+        error("Not implemented")
+    end
+end
+
+function Stieltjes(sp::JacobiWeight{Chebyshev},z::Number)
+    if sp.α == sp.β == 0.5
+        us=JacobiWeight(0.5,0.5,Ultraspherical{1}(domain(sp)))
+        Stieltjes(us,z)*Conversion(sp,us)
+    else
+        error("Not implemented")
+    end
+end
+
+
