@@ -282,7 +282,7 @@ function HornerFunctional(y0,sp)
         r[k]=r[k-1]*y0
     end
 
-    SavedFunctional(ZeroFunctional(typeof(y0),sp),r[1:k])
+    CompactFunctional(r[1:k],sp)
 end
 
 function Stieltjes(sp::JacobiWeight{Ultraspherical{1}},z::Number)

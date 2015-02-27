@@ -12,7 +12,7 @@ import ApproxFun: PeriodicDomain, bandinds,
                   SumSpace,PiecewiseSpace, interlace,Multiplication,ArraySpace,DiagonalArrayOperator,
                   BandedMatrix,bazeros,ChebyshevDirichlet,PolynomialSpace,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,
-                  ProductFun, mappoint, PeriodicLineSpace, PeriodicLineDirichlet,Recurrence, ZeroFunctional
+                  ProductFun, mappoint, PeriodicLineSpace, PeriodicLineDirichlet,Recurrence, CompactFunctional
 
 function cauchy(s,f,z)
     if isa(s,Bool)
