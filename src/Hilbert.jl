@@ -30,10 +30,9 @@ Hilbert(AS::ReImSpace,k::Integer)=HilbertWrapper(ReImOperator(Hilbert(AS.space,k
 ## PiecewiseSpace
 
 
-function Hilbert(S::PiecewiseSpace,k::Integer)
-    @assert k==1 #TODO: Shouldn't need assertion.
+function Hilbert(S::PiecewiseSpace,n::Integer)
     sp=vec(S)
-    C=BandedOperator{Complex{Float64}}[k==j?Hilbert(sp[k]):1/(-π)*Stieltjes(sp[k],rangespace(Hilbert(sp[j]))) for j=1:length(sp),k=1:length(sp)]
+    C=BandedOperator{Complex{Float64}}[k==j?Hilbert(sp[k],n):OffHilbert(sp[k],rangespace(Hilbert(sp[j])),n) for j=1:length(sp),k=1:length(sp)]
     HilbertWrapper(interlace(C))
 end
 
@@ -56,7 +55,7 @@ function addentries!(H::Hilbert{Hardy{true}},A,kr::Range)
     elseif m == 1
         for k=kr
             A[k,k] += im
-        end    
+        end
     else
         for k=kr
             A[k,k] += k==1?0.0:1.im*(1.im*(k-1))^(m-1)
@@ -74,7 +73,7 @@ function addentries!(H::Hilbert{Hardy{false}},A,kr::Range)
     if m== 1
         for k=kr
             A[k,k]-= im
-        end    
+        end
     else
         for k=kr
             A[k,k]-=1.im*(1.im*k)^(m-1)
