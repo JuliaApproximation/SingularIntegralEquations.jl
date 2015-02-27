@@ -113,7 +113,7 @@ function Stieltjes(ds::JacobiWeight{ChebyshevDirichlet{1,1}},rs::FunctionSpace,o
         ret=Array(typeof(y),300)
         ret[1]=-log(2y)
         ret[2]=-yk
-        ret[3]=-ret[1]-.5ykp1
+        ret[3]=chop!(-ret[1]-.5ykp1,100eps())
         n,l,u = 3,max(length(ret[1])-1,length(ret[2])-2,length(ret[3])-3),2
         while norm(ret[n].coefficients)>100eps()
             n+=1
