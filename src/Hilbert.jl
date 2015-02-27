@@ -32,7 +32,7 @@ Hilbert(AS::ReImSpace,k::Integer)=HilbertWrapper(ReImOperator(Hilbert(AS.space,k
 
 function Hilbert(S::PiecewiseSpace,n::Integer)
     sp=vec(S)
-    C=BandedOperator{Complex{Float64}}[k==j?Hilbert(sp[k],n):OffHilbert(sp[k],rangespace(Hilbert(sp[j])),n) for j=1:length(sp),k=1:length(sp)]
+    C=BandedOperator{Complex{Float64}}[k==j?Hilbert(sp[k],n):OffHilbert(sp[k],rangespace(Hilbert(sp[j],n)),n) for j=1:length(sp),k=1:length(sp)]
     HilbertWrapper(interlace(C),n)
 end
 
