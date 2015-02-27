@@ -65,8 +65,8 @@ function Stieltjes(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace,order::
         y=intervaloffcircle(true,x)
         yk,ykp1=y,y*y
         ret=Array(typeof(y),300)
-        ret[1]=-.5log(y)+.25ykp1
-        n,l,u = 1,length(y)-1,0
+        ret[1]=-.5log(2y)+.25ykp1
+        n,l,u = 1,length(ret[1])-1,0
         while norm(ret[n].coefficients)>100eps()
             n+=1
             if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
@@ -74,8 +74,7 @@ function Stieltjes(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace,order::
             ret[n]=chop!(.5*(ykp1/(n+1)-yk/(n-1)) ,100eps())  #will be length 2n-1
             yk*=y
             u+=1   # upper bandwidth
-            l=max(l,length(ret[n])-1)
-            println("This is n: ",n," this is l: ",l," this is u: ",u)
+            l=max(l,length(ret[n])-n)
         end
     elseif order == 1
         z=Fun(identity,rs)
@@ -83,7 +82,7 @@ function Stieltjes(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace,order::
         y=intervaloffcircle(true,x)
         ret=Array(typeof(y),300)
         ret[1]=y
-        n,l,u = 1,length(y)-1,0
+        n,l,u = 1,length(ret[1])-1,0
         while norm(ret[n].coefficients)>100eps()
             n+=1
             if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
@@ -93,9 +92,8 @@ function Stieltjes(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace,order::
         end
     end
 
-    M=bazeros(Complex{Float64},n+l+u+40,n+l+u+40,l+40,u+40)
+    M=bazeros(Complex{Float64},l+1,n,l,u)
     for k=1:n,j=1:length(ret[k])
-        println("This is k: ",k," and this is j: ",j)
         M[j,k]=C*π*ret[k].coefficients[j]
     end
     Stieltjes(M,ds,rs,order)
@@ -107,7 +105,26 @@ function Stieltjes(ds::JacobiWeight{ChebyshevDirichlet{1,1}},rs::FunctionSpace,o
     d = domain(ds)
     C = (.5(d.b-d.a))^(1-order) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
 
-    if order == 1
+    if order == 0
+        z=Fun(identity,rs)
+        x=tocanonical(ds,z)
+        y=intervaloffcircle(true,x)
+        yk,ykp1=y,y*y
+        ret=Array(typeof(y),300)
+        ret[1]=-log(2y)
+        ret[2]=-yk
+        ret[3]=-ret[1]-.5ykp1
+        n,l,u = 3,max(length(ret[1])-1,length(ret[2])-2,length(ret[3])-3),2
+        while norm(ret[n].coefficients)>100eps()
+            n+=1
+            if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
+            ykp1*=y
+            ret[n]=chop!(yk/(n-3)-ykp1/(n-1),100eps())  #will be length 2n-1
+            yk*=y
+            u+=1   # upper bandwidth
+            l=max(l,length(ret[n])-n)
+        end
+    elseif order == 1
         z=Fun(identity,rs)
         x=tocanonical(ds,z)
         y=intervaloffcircle(true,x)
@@ -115,7 +132,7 @@ function Stieltjes(ds::JacobiWeight{ChebyshevDirichlet{1,1}},rs::FunctionSpace,o
         ret[1]=1/sqrtx2(x)
         ret[2]=x*ret[1]-1
         ret[3]=-2y
-        n,l,u = 3,max(length(ret[1])-1,length(ret[2])-1,length(ret[3])-3),2
+        n,l,u = 3,max(length(ret[1])-1,length(ret[2])-2,length(ret[3])-3),2
         while norm(ret[n].coefficients)>100eps()
             n+=1
             if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
@@ -125,7 +142,7 @@ function Stieltjes(ds::JacobiWeight{ChebyshevDirichlet{1,1}},rs::FunctionSpace,o
         end
     end
 
-    M=bazeros(Complex{Float64},n+l-u,n+l-u,l,u)
+    M=bazeros(Complex{Float64},l+3,n,l,u)
     for k=1:n,j=1:length(ret[k])
         M[j,k]=C*π*ret[k].coefficients[j]
     end

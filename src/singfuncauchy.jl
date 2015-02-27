@@ -11,8 +11,7 @@ function sqrtx2(f::Fun)
     linsolve([B,A],sqrtx2(first(f));tolerance=length(f)*10E-15)
 end
 
-logabs(x::Real)=log(abs(x))
-logabs(x::Complex)=log(abs2(x))/2
+logabs(x)=log(abs2(x))/2
 
 # intervaloffcircle maps the slit plane to the interior(true)/exterior(false) disk
 # intervaloncircle maps the interval to the upper(true)/lower(false) half circle
@@ -133,7 +132,7 @@ realintervaloffcircle(b,z)=real(intervaloffcircle(b,z))
 
 #########
 # stieltjesintegral is an indefinite integral of stieltjes
-# normalized so that there is no constant term 
+# normalized so that there is no constant term
 # logkernel is the real part of stieljes
 #####
 
@@ -142,7 +141,7 @@ for (OP,JIN,LOG,IOC) in ((:stieltjesintegral,:integratejin,:log,:intervaloffcirc
         d=domain(u)
         a,b=d.a,d.b     # TODO: type not inferred right now
         sp=space(u)
-    
+
         if sp.α == sp.β == .5
             cfs=coefficients(u.coefficients,Chebyshev,Ultraspherical{1})
             y=intervaloffcircle(true,tocanonical(u,z))
@@ -151,14 +150,14 @@ for (OP,JIN,LOG,IOC) in ((:stieltjesintegral,:integratejin,:log,:intervaloffcirc
             cfs = coefficients(u.coefficients,Chebyshev,ChebyshevDirichlet{1,1})
             z=tocanonical(u,z)
             y=intervaloffcircle(true,z)
-    
+
             if length(cfs) ≥1
                 ret = -cfs[1]*0.5π*(b-a)*($LOG(y)+log(2))
-    
+
                 if length(cfs) ≥2
                     ret += -0.5π*(b-a)*cfs[2]*$IOC(true,z)
                 end
-    
+
                 if length(cfs) ≥3
                     ret - π*(b-a)*$JIN(slice(cfs,3:length(cfs)),y)
                 else
