@@ -24,10 +24,10 @@ intervaloncircle(s::Int,x)=intervaloncircle(s==1,x)
 
 function holdersum(cfs,y0)
     ret=zero(y0)
-    y=one(y0)
+    y=zero(y0)+1
 
     for k=1:length(cfs)
-        y*=y0
+        y.*=y0
         ret+=cfs[k]*y
     end
 
@@ -39,7 +39,7 @@ function divkholdersum(cfs,y0,ys,s)
     y=ys
 
     for k=1:length(cfs)
-        y*=y0
+        y.*=y0
         ret+=cfs[k]*y./(k+s)
     end
 
@@ -51,7 +51,7 @@ function realdivkholdersum(cfs,y0,ys,s)
     y=ys
 
     for k=1:length(cfs)
-        y*=y0
+        y.*=y0
         ret+=cfs[k]*real(y)./(k+s)
     end
 
@@ -124,8 +124,8 @@ end
 
 
 
-integratejin(cfs,y)=.5*(-cfs[1]*(log(y)+log(2))+divkholdersum(cfs,y,y,1)-divkholdersum(slice(cfs,2:length(cfs)),y,one(y),0))
-realintegratejin(cfs,y)=.5*(-cfs[1]*(logabs(y)+log(2))+realdivkholdersum(cfs,y,y,1)-realdivkholdersum(slice(cfs,2:length(cfs)),y,one(y),0))
+integratejin(cfs,y)=.5*(-cfs[1]*(log(y)+log(2))+divkholdersum(cfs,y,y,1)-divkholdersum(slice(cfs,2:length(cfs)),y,zero(y)+1,0))
+realintegratejin(cfs,y)=.5*(-cfs[1]*(logabs(y)+log(2))+realdivkholdersum(cfs,y,y,1)-realdivkholdersum(slice(cfs,2:length(cfs)),y,zero(y)+1,0))
 
 
 realintervaloffcircle(b,z)=real(intervaloffcircle(b,z))
@@ -137,17 +137,17 @@ realintervaloffcircle(b,z)=real(intervaloffcircle(b,z))
 #####
 
 for (OP,JIN,LOG,IOC) in ((:stieltjesintegral,:integratejin,:log,:intervaloffcircle),(:logkernel,:realintegratejin,:logabs,:realintervaloffcircle))
-    @eval function $OP(u::Fun{JacobiWeight{Chebyshev}},z::Number)
+    @eval function $OP{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
         d=domain(u)
         a,b=d.a,d.b     # TODO: type not inferred right now
         sp=space(u)
 
         if sp.α == sp.β == .5
-            cfs=coefficients(u.coefficients,Chebyshev,Ultraspherical{1})
+            cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1})
             y=intervaloffcircle(true,tocanonical(u,z))
             0.5π*(b-a)*$JIN(cfs,y)
         elseif  sp.α == sp.β == -.5
-            cfs = coefficients(u.coefficients,Chebyshev,ChebyshevDirichlet{1,1})
+            cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1})
             z=tocanonical(u,z)
             y=intervaloffcircle(true,z)
 
