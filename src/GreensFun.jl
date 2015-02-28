@@ -10,7 +10,7 @@ end
 order{O}(::CauchyWeight{O}) = O
 domain(C::CauchyWeight)=domain(C.space)
 
-cauchyweight(O,x,y) = O == 0 ? logabs(y-x) : (y-x).^(-O)
+cauchyweight(O,x,y) = O == 0 ? logabs(y-x) : (y-x).^(-O) ## To π or not to π?
 cauchyweight{O}(C::CauchyWeight{O},x,y) = cauchyweight(O,tocanonical(C,x,y)...)
 
 
