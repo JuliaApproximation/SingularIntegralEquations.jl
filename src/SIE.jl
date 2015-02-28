@@ -10,7 +10,7 @@ import ApproxFun: PeriodicDomain, bandinds,
                   rangespace, domainspace, addentries!, BandedOperator, PeriodicSpace, AnySpace,
                   canonicalspace, domain, promotedomainspace, AnyDomain, CalculusOperator,
                   SumSpace,PiecewiseSpace, interlace,Multiplication,ArraySpace,DiagonalArrayOperator,
-                  BandedMatrix,bazeros,ChebyshevDirichlet,PolynomialSpace,
+                  BandedMatrix,bazeros,ChebyshevDirichlet,PolynomialSpace,AbstractProductSpace,evaluate,order,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,
                   ProductFun, mappoint, PeriodicLineSpace, PeriodicLineDirichlet,Recurrence, CompactFunctional
 
@@ -43,7 +43,7 @@ include("singfuncauchy.jl")
 
 include("vectorcauchy.jl")
 
-include("KernelFun.jl")
+include("GreensFun.jl")
 
 include("periodicline.jl")
 include("arc.jl")

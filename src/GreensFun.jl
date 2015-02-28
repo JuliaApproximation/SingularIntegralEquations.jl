@@ -1,3 +1,55 @@
+# CauchyWeight
+
+export CauchyWeight
+
+immutable CauchyWeight{O} <: AbstractProductSpace
+    space::AbstractProductSpace
+    CauchyWeight(space) = new(space)
+end
+
+order{O}(::CauchyWeight{O}) = O
+domain(C::CauchyWeight)=domain(C.space)
+
+cauchyweight(O,x,y) = O == 0 ? logabs(y-x) : (y-x).^(-O)
+cauchyweight{O}(C::CauchyWeight{O},x,y) = cauchyweight(O,tocanonical(C,x,y)...)
+
+
+function ProductFun{O}(f::Function,cwsp::CauchyWeight{O})
+    sp = cwsp.space
+    cfs = ProductFun(f,sp).coefficients
+    ProductFun{typeof(sp.spaces[1]),typeof(sp.spaces[2]),typeof(cwsp),eltype(cfs[1])}(cfs,cwsp)
+end
+
+evaluate{S<:FunctionSpace,V<:FunctionSpace,O,T}(f::ProductFun{S,V,CauchyWeight{O},T},x::Range,y::Range) = evaluate(f,[x],[y])
+
+function evaluate{S<:FunctionSpace,V<:FunctionSpace,O,T}(f::ProductFun{S,V,CauchyWeight{O},T},x,y)
+    ProductFun{S,V,typeof(space(f).space),T}(f.coefficients,space(f).space)[x,y].*cauchyweight(space(f),x,y)
+end
+
+# GreensFun
+#=
+export GreensFun
+
+immutable GreensFun{S<:FunctionSpace,V<:FunctionSpace,T}<:BivariateFun
+    kernels::Vector{ProductFun}
+#    spacex::S
+#    spacey::V
+#    elt::T
+end
+
+immutable GreensFun<:ApproxFun.BivariateFun
+    kernels::Vector{ProductFun}
+end
+=#
+
+
+
+
+
+
+
+
+
 #
 # A new ProductFun constructor for bivariate functions on Intervals
 # defined as the difference of their arguments.
