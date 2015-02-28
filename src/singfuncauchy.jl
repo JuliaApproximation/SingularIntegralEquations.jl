@@ -22,7 +22,7 @@ intervaloncircle(s::Bool,x)=x+1.im*(s?1:-1).*sqrt(1-x).*sqrt(x+1)
 intervaloffcircle(s::Int,x)=intervaloffcircle(s==1,x)
 intervaloncircle(s::Int,x)=intervaloncircle(s==1,x)
 
-function holdersum(cfs,y0)
+function hornersum(cfs,y0)
     ret=zero(y0)
     y=zero(y0)+1
 
@@ -34,7 +34,7 @@ function holdersum(cfs,y0)
     ret
 end
 
-function divkholdersum(cfs,y0,ys,s)
+function divkhornersum(cfs,y0,ys,s)
     ret=zero(y0)
     y=ys
 
@@ -46,7 +46,7 @@ function divkholdersum(cfs,y0,ys,s)
     ret
 end
 
-function realdivkholdersum(cfs,y0,ys,s)
+function realdivkhornersum(cfs,y0,ys,s)
     ret=zero(real(y0))
     y=ys
 
@@ -71,7 +71,7 @@ function cauchy(u::Fun{JacobiWeight{Chebyshev}},z::Number)
 
     if sp.α == sp.β == .5
         cfs = coefficients(u.coefficients,Chebyshev,Ultraspherical{1})
-        0.5im*holdersum(cfs,intervaloffcircle(true,tocanonical(u,z)))
+        0.5im*hornersum(cfs,intervaloffcircle(true,tocanonical(u,z)))
     elseif sp.α == sp.β == -.5
         cfs = coefficients(u.coefficients,Chebyshev,ChebyshevDirichlet{1,1})
         z=tocanonical(u,z)
@@ -84,7 +84,7 @@ function cauchy(u::Fun{JacobiWeight{Chebyshev}},z::Number)
                 ret += cfs[2]*.5im*(z/sqrtx2(z)-1)
             end
 
-            ret - 1.im*holdersum(cfs[3:end],intervaloffcircle(true,z))
+            ret - 1.im*hornersum(cfs[3:end],intervaloffcircle(true,z))
         else
             0.0+0.0im
         end
@@ -99,7 +99,7 @@ function cauchy(s::Bool,u::Fun{JacobiWeight{Chebyshev}},x::Number)
 
     if sp.α == sp.β == .5
         cfs=coefficients(u.coefficients,Chebyshev,Ultraspherical{1})
-        0.5im*holdersum(cfs,intervaloncircle(!s,tocanonical(u,x)))
+        0.5im*hornersum(cfs,intervaloncircle(!s,tocanonical(u,x)))
     elseif sp.α == sp.β == -.5
         cfs = coefficients(u.coefficients,Chebyshev,ChebyshevDirichlet{1,1})
         x=tocanonical(u,x)
@@ -111,7 +111,7 @@ function cauchy(s::Bool,u::Fun{JacobiWeight{Chebyshev}},x::Number)
                 ret += cfs[2]*(0.5*(s?1:-1)*x/sqrt(1-x^2)-.5im)
             end
 
-            ret - 1.im*holdersum(cfs[3:end],intervaloncircle(!s,x))
+            ret - 1.im*hornersum(cfs[3:end],intervaloncircle(!s,x))
         else
             0.0+0.0im
         end
@@ -124,8 +124,8 @@ end
 
 
 
-integratejin(cfs,y)=.5*(-cfs[1]*(log(y)+log(2))+divkholdersum(cfs,y,y,1)-divkholdersum(slice(cfs,2:length(cfs)),y,zero(y)+1,0))
-realintegratejin(cfs,y)=.5*(-cfs[1]*(logabs(y)+log(2))+realdivkholdersum(cfs,y,y,1)-realdivkholdersum(slice(cfs,2:length(cfs)),y,zero(y)+1,0))
+integratejin(cfs,y)=.5*(-cfs[1]*(log(y)+log(2))+divkhornersum(cfs,y,y,1)-divkhornersum(slice(cfs,2:length(cfs)),y,zero(y)+1,0))
+realintegratejin(cfs,y)=.5*(-cfs[1]*(logabs(y)+log(2))+realdivkhornersum(cfs,y,y,1)-realdivkhornersum(slice(cfs,2:length(cfs)),y,zero(y)+1,0))
 
 
 realintervaloffcircle(b,z)=real(intervaloffcircle(b,z))
