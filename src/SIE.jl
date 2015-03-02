@@ -43,7 +43,7 @@ include("singfuncauchy.jl")
 
 include("vectorcauchy.jl")
 
-include("GreensFun.jl")
+include("./GreensFun/GreensFun.jl")
 
 include("periodicline.jl")
 include("arc.jl")

@@ -16,21 +16,20 @@ d = (1,-1)
 d = d[1]/hypot(d[1],d[2]),d[2]/hypot(d[1],d[2])
 ui(x,y) = exp(im*k*(d⋅(x,y)))
 
-#=
+
     dom = Interval(-1.,1.)
     sp = Chebyshev(dom)
     wsp = JacobiWeight(-.5,-.5,sp)
-    uiΓ,H0,Σ = Fun(x->ui(x,0),sp),Hilbert(dom,0),DefiniteIntegral(dom)
+    cwsp = CauchyWeight{0}(sp⊗wsp)
+    uiΓ,⨍ = Fun(x->ui(x,0),sp),PrincipalValue(dom)
 
-    FK0LR = Fun(x->besselj0(k*x),Chebyshev([-length(dom),length(dom)]))
-    FKr = Fun(x->1/2π*besselj0(k*x)*log(abs(x))-bessely0(k*abs(x))/4,Chebyshev([-length(dom),length(dom)]))
-    K0 = SymmetricProductFun(-FK0LR/2π,sp,wsp)
-    Kim = SymmetricProductFun(FK0LR/4π,sp,wsp)
-    Kr = SymmetricProductFun(FKr/π,sp,wsp)
-    L,f = H0[K0] + Σ[Kr] + im*Σ[Kim],uiΓ
-=#
+    K0 = ProductFun((x,y)->-besselj0(k*(y-x))/2π,cwsp)
+    Kim = SymmetricProductFun((x,y)->besselj0(k*(y-x))/4π,sp,wsp)
+    Kr = SymmetricProductFun((x,y)->(1/2π*besselj0(k*(y-x))*log(abs(y-x))-bessely0(k*abs(y-x))/4)/π,sp,wsp)
+    L,f = ⨍[K0] + ⨍[Kr] + im*⨍[Kim],uiΓ
 
 
+#=
     dom = Interval(-2.5,-.5)∪Interval(.5,2.5)
     sp = Space(dom)
     wsp = ApproxFun.PiecewiseSpace([JacobiWeight(-.5,-.5,sp.spaces[i]) for i=1:length(sp)])
@@ -72,9 +71,10 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     L22 = H2[K022] + Σ2[Kr22] + im*Σ2[Kim22]
 
     L,f = [L11 L21; L12 L22],uiΓ
-
+=#
     @time ∂u∂n = L\f
     println("The length of ∂u∂n is: ",length(∂u∂n))
 
-    ∂u∂nv = vec(∂u∂n)
-    us(x,y) = Fun(t->-im/4.*hankelh1(0,k.*sqrt((x.-t).^2.+y.^2))*∂u∂nv[1][t],ApproxFun.ArraySpace(sp[1],length(x)),length(∂u∂nv[1])).coefficients[1:length(x)]+Fun(t->-im/4.*hankelh1(0,k.*sqrt((x.-t).^2.+y.^2))*∂u∂nv[2][t],ApproxFun.ArraySpace(sp[2],length(x)),length(∂u∂nv[2])).coefficients[1:length(x)]
+#    ∂u∂nv = vec(∂u∂n)
+#    us(x,y) = Fun(t->-im/4.*hankelh1(0,k.*sqrt((x.-t).^2.+y.^2))*∂u∂nv[1][t],ApproxFun.ArraySpace(sp[1],length(x)),length(∂u∂nv[1])).coefficients[1:length(x)]+Fun(t->-im/4.*hankelh1(0,k.*sqrt((x.-t).^2.+y.^2))*∂u∂nv[2][t],ApproxFun.ArraySpace(sp[2],length(x)),length(∂u∂nv[2])).coefficients[1:length(x)]
+    us(x,y) = Fun(t->-im/4.*hankelh1(0,k.*sqrt((x.-t).^2.+y.^2))*∂u∂n[t],ApproxFun.ArraySpace(sp,length(x)),length(∂u∂n)).coefficients[1:length(x)]
