@@ -13,9 +13,9 @@ domain(C::CauchyWeight)=domain(C.space)
 cauchyweight(O,x,y) = O == 0 ? logabs(y-x)/π : (y-x).^(-O)/π
 cauchyweight{O}(C::CauchyWeight{O},x,y) = cauchyweight(O,tocanonical(C,x,y)...)
 
-Base.getindex{BT,S,V,O,T}(B::Operator{BT},f::ProductFun{S,V,CauchyWeight{O},T}) = PlusOperator(BandedOperator{promote_type(BT,T)}[f.coefficients[i]*B[Fun([zeros(promote_type(BT,T),i-1),one(promote_type(BT,T))],f.space.space.spaces[2])] for i=1:length(f.coefficients)])
+Base.getindex{BT,S,V,O,T}(B::Operator{BT},f::ProductFun{S,V,CauchyWeight{O},T}) = PlusOperator(BandedOperator{promote_type(BT,T)}[f.coefficients[i]*B[Fun([zeros(promote_type(BT,T),i-1),one(promote_type(BT,T))],f.space.space[2])] for i=1:length(f.coefficients)])
 
-# Principal Value Integral (Could be called PrincipalValueIntegral, but I thought that was too long)
+# Principal Value Integral (Could be called PrincipalValueIntegral)
 
 export PrincipalValue
 
@@ -35,7 +35,7 @@ domainspace(⨍::PrincipalValue)=⨍.domainspace
 getindex(::PrincipalValue{UnsetSpace},kr::Range)=error("Spaces cannot be inferred for operator")
 
 Base.getindex{S,V,O,T}(⨍::PrincipalValue{V,T},f::ProductFun{S,V,CauchyWeight{O},T}) = Hilbert(⨍.domainspace,O)[f]
-Base.getindex{S,V,SS,T}(⨍::PrincipalValue{V,T},f::ProductFun{S,V,SS,T}) = Σ(⨍.domainspace)[f]
+Base.getindex{S,V,SS,T}(⨍::PrincipalValue{V,T},f::ProductFun{S,V,SS,T}) = DefiniteIntegral(⨍.domainspace)[f]
 
 
 
@@ -74,12 +74,12 @@ end
 
 
 
-
+export SymmetricProductFun
 #
 # A new ProductFun constructor for bivariate functions on Intervals
 # defined as the difference of their arguments.
 #
-function ProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Function,u::Union(U,JacobiWeight{U}),v::Union(V,JacobiWeight{V}),method::Symbol=:symmetric)
+function SymmetricProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Function,u::Union(U,JacobiWeight{U}),v::Union(V,JacobiWeight{V}))
     du,dv = domain(u),domain(v)
     @assert length(du) == length(dv)
     T,spf = eltype(du),Chebyshev([du.a+dv.a,du.b+dv.b])
