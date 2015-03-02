@@ -11,10 +11,10 @@ d = domain(x)
 d2 = d^2
 B = dirichlet(d)
 H2 = Hilbert(d,2)
-S = Σ(d)
+Σ = DefiniteIntegral(d)
 ϵ = 2.0
 K = LowRankFun((x,y)->-1./(x+y+2ϵ).^2+12(x+ϵ)./(x+y+2ϵ).^3-12(x+ϵ).^2./(x+y+2ϵ).^4,d2)
-L = H2[w] + S[K*(w/π)]
+L = H2[w] + Σ[K*(w/π)]
 f = -Fun(one)
 
 uSIE = [B,L]\[zeros(2),f]

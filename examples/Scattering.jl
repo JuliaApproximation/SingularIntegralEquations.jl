@@ -20,21 +20,21 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     dom = Interval(-1.,1.)
     sp = Chebyshev(dom)
     wsp = JacobiWeight(-.5,-.5,sp)
-    uiΓ,H0,S = Fun(x->ui(x,0),sp),Hilbert(dom,0),Σ(dom)
+    uiΓ,H0,Σ = Fun(x->ui(x,0),sp),Hilbert(dom,0),DefiniteIntegral(dom)
 
     FK0LR = Fun(x->besselj0(k*x),Chebyshev([-length(dom),length(dom)]))
     FKr = Fun(x->1/2π*besselj0(k*x)*log(abs(x))-bessely0(k*abs(x))/4,Chebyshev([-length(dom),length(dom)]))
     K0 = ProductFun(-FK0LR/2π,sp,wsp)
     Kim = ProductFun(FK0LR/4π,sp,wsp)
     Kr = ProductFun(FKr/π,sp,wsp)
-    L,f = H0[K0] + S[Kr] + im*S[Kim],uiΓ
+    L,f = H0[K0] + Σ[Kr] + im*Σ[Kim],uiΓ
 =#
 
 
     dom = Interval(-2.5,-.5)∪Interval(.5,2.5)
     sp = Space(dom)
     wsp = ApproxFun.PiecewiseSpace([JacobiWeight(-.5,-.5,sp.spaces[i]) for i=1:length(sp)])
-    uiΓ,H1,H2,S1,S2 = Fun(x->ui(x,0),sp),Hilbert(wsp[1],0),Hilbert(wsp[2],0),Σ(wsp[1]),Σ(wsp[2])
+    uiΓ,H1,H2,Σ1,Σ2 = Fun(x->ui(x,0),sp),Hilbert(wsp[1],0),Hilbert(wsp[2],0),DefiniteIntegral(wsp[1]),DefiniteIntegral(wsp[2])
 
 
     # Region 1 -> 1
@@ -66,10 +66,10 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     Kim22 = ProductFun(FK022/4π,sp[2],wsp[2])
     Kr22 = ProductFun(FKr22/π,sp[2],wsp[2])
 
-    L11 = H1[K011] + S1[Kr11] + im*S1[Kim11]
-    L12 = S1[K12r] + im*S1[K12im]
-    L21 = S2[K21r] + im*S2[K21im]
-    L22 = H2[K022] + S2[Kr22] + im*S2[Kim22]
+    L11 = H1[K011] + Σ1[Kr11] + im*Σ1[Kim11]
+    L12 = Σ1[K12r] + im*Σ1[K12im]
+    L21 = Σ2[K21r] + im*Σ2[K21im]
+    L22 = H2[K022] + Σ2[Kr22] + im*Σ2[Kim22]
 
     L,f = [L11 L21; L12 L22],uiΓ
 

@@ -12,7 +12,7 @@ d2 = d^2
 B = dirichlet(d)
 H0 = Hilbert(d,0)
 H2 = Hilbert(d,2)
-S = Σ(d)
+Σ = DefiniteIntegral(d)
 
 β = -2.0
 G = exp(β*x)
@@ -21,7 +21,7 @@ K = LowRankFun((x,y)->exp(β/2.*(y-x)).*β^2./2.^2.*(FK1(β.*(y-x)./2).*(log(abs
 K0 = LowRankFun((x,y)->exp(β/2.*(y-x)).*β^2./2.^2.*FK1(β.*(y-x)./2),d2)
 K2 = LowRankFun((x,y)->exp(β/2.*(y-x)),d2)
 
-L = H2[K2*w] + H0[K0*w] + S[K*(w/π)]
+L = H2[K2*w] + H0[K0*w] + Σ[K*(w/π)]
 p = -Fun(one)
 
 uSIE = [B,L]\[zeros(2),p/G]
