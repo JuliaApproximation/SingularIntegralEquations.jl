@@ -1,39 +1,69 @@
 include("CauchyWeight.jl")
 include("PrincipalValue.jl")
 
-function ProductFun{O}(f::Function,cwsp::CauchyWeight{O})
-    sp = cwsp.space
-    cfs = SymmetricProductFun(f,sp[1],sp[2]).coefficients
-    ProductFun{typeof(sp[1]),typeof(sp[2]),typeof(cwsp),eltype(cfs[1])}(cfs,cwsp)
-end
-
-evaluate{S<:FunctionSpace,V<:FunctionSpace,O,T}(f::ProductFun{S,V,CauchyWeight{O},T},x::Range,y::Range) = evaluate(f,[x],[y])
-
-function evaluate{S<:FunctionSpace,V<:FunctionSpace,O,T}(f::ProductFun{S,V,CauchyWeight{O},T},x,y)
-    ProductFun{S,V,typeof(space(f).space),T}(f.coefficients,space(f).space)[x,y].*cauchyweight(space(f),x,y)
-end
-
 # GreensFun
-#=
+
 export GreensFun
 
-immutable GreensFun{S<:FunctionSpace,V<:FunctionSpace,T}<:BivariateFun
+immutable GreensFun <: BivariateFun
     kernels::Vector{ProductFun}
-#    spacex::S
-#    spacey::V
-#    elt::T
+    function GreensFun(kernels)
+        n = length(kernels)
+        [@assert eltype(kernels[i]) == eltype(kernels[1]) for i=1:n]
+        # TODO: should probably be a space assertion but complicated by enrichment.
+        # TODO: ProductDomain needs equality.
+        [@assert domain(kernels[i]).domains[j] == domain(kernels[1]).domains[j] for i=1:n,j=1:length(domain(kernels[1]))]
+        new(kernels)
+    end
 end
 
-immutable GreensFun<:ApproxFun.BivariateFun
-    kernels::Vector{ProductFun}
+Base.length(G::GreensFun) = length(G.kernels)
+
+# TODO: We are missing unary operation + for a ProductFun
+#=
+for op = (:+,:-)
+    @eval begin
+        $op{S,V,O,T}(F::ProductFun{S,V,CauchyWeight{0},T},G::ProductFun{S,V,CauchyWeight{O},T}) = GreensFun([F,$op(G)])
+    end
 end
 =#
 
 
++{S<:FunctionSpace,V<:FunctionSpace,O1,O2,T}(F::ProductFun{S,V,CauchyWeight{O1},T},G::ProductFun{S,V,CauchyWeight{O2},T}) = GreensFun([F,G])
++{S<:FunctionSpace,V<:FunctionSpace,O1,SS,T}(F::ProductFun{S,V,CauchyWeight{O1},T},G::ProductFun{S,V,SS,T}) = GreensFun([F,G])
++{S<:FunctionSpace,V<:FunctionSpace,SS,O1,T}(F::ProductFun{S,V,SS,T},G::ProductFun{S,V,CauchyWeight{O1},T}) = GreensFun([F,G])
 
++{S<:FunctionSpace,V<:FunctionSpace,O,T}(F::GreensFun,G::ProductFun{S,V,CauchyWeight{O},T}) = GreensFun([F.kernels,G])
++{S<:FunctionSpace,V<:FunctionSpace,O,T}(F::ProductFun{S,V,CauchyWeight{O},T},G::GreensFun) = GreensFun([F,G.kernels])
 
++(F::GreensFun,G::GreensFun) = GreensFun([F.kernels,G.kernels])
 
+-{S<:FunctionSpace,V<:FunctionSpace,O1,O2,T}(F::ProductFun{S,V,CauchyWeight{O1},T},G::ProductFun{S,V,CauchyWeight{O2},T}) = GreensFun([F,-G])
+-{S<:FunctionSpace,V<:FunctionSpace,O1,SS,T}(F::ProductFun{S,V,CauchyWeight{O1},T},G::ProductFun{S,V,SS,T}) = GreensFun([F,-G])
+-{S<:FunctionSpace,V<:FunctionSpace,SS<:AbstractProductSpace,O1,T}(F::ProductFun{S,V,SS,T},G::ProductFun{S,V,CauchyWeight{O1},T}) = GreensFun([F,-G])
 
+-{S<:FunctionSpace,V<:FunctionSpace,O,T}(F::GreensFun,G::ProductFun{S,V,CauchyWeight{O},T}) = GreensFun([F.kernels,-G])
+-{S<:FunctionSpace,V<:FunctionSpace,O,T}(F::ProductFun{S,V,CauchyWeight{O},T},G::GreensFun) = GreensFun([F,-G.kernels])
+
+-(F::GreensFun,G::GreensFun) = GreensFun([F.kernels,-G.kernels])
+
+function evaluate(G::GreensFun,x,y)
+    ret = evaluate(G.kernels[1],x,y)
+    for i = 2:length(G)
+        ret += evaluate(G.kernels[i],x,y)
+    end
+
+    ret
+end
+
+function Base.getindex(⨍::PrincipalValue,G::GreensFun)
+    ret = ⨍[G.kernels[1]]
+    for i = 2:length(G)
+        ret += ⨍[G.kernels[i]]
+    end
+
+    ret
+end
 
 
 export SymmetricProductFun

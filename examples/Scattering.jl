@@ -26,7 +26,7 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     K0 = ProductFun((x,y)->-besselj0(k*(y-x))/2π,cwsp)
     Kim = SymmetricProductFun((x,y)->besselj0(k*(y-x))/4π,sp,wsp)
     Kr = SymmetricProductFun((x,y)->(1/2π*besselj0(k*(y-x))*log(abs(y-x))-bessely0(k*abs(y-x))/4)/π,sp,wsp)
-    L,f = ⨍[K0] + ⨍[Kr] + im*⨍[Kim],uiΓ
+    L,f = ⨍[K0 + Kr] + im*⨍[Kim],uiΓ
 
 
 #=
