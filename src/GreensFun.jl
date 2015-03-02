@@ -10,8 +10,33 @@ end
 order{O}(::CauchyWeight{O}) = O
 domain(C::CauchyWeight)=domain(C.space)
 
-cauchyweight(O,x,y) = O == 0 ? logabs(y-x) : (y-x).^(-O) ## To π or not to π?
+cauchyweight(O,x,y) = O == 0 ? logabs(y-x)/π : (y-x).^(-O)/π
 cauchyweight{O}(C::CauchyWeight{O},x,y) = cauchyweight(O,tocanonical(C,x,y)...)
+
+Base.getindex{BT,S,V,O,T}(B::Operator{BT},f::ProductFun{S,V,CauchyWeight{O},T}) = PlusOperator(BandedOperator{promote_type(BT,T)}[f.coefficients[i]*B[Fun([zeros(promote_type(BT,T),i-1),one(promote_type(BT,T))],f.space.space.spaces[2])] for i=1:length(f.coefficients)])
+
+# Principal Value Integral (Could be called PrincipalValueIntegral, but I thought that was too long)
+
+export PrincipalValue
+
+immutable PrincipalValue{D<:FunctionSpace,T<:Number} <: Functional{T}
+    domainspace::D
+end
+
+PrincipalValue()=PrincipalValue(UnsetSpace())
+PrincipalValue(dsp::FunctionSpace) = PrincipalValue{typeof(dsp),eltype(dsp)}(dsp)
+promotedomainspace(::PrincipalValue,sp::FunctionSpace)=PrincipalValue(sp)
+
+Base.convert{T}(::Type{Functional{T}},⨍::PrincipalValue)=PrincipalValue{typeof(⨍.domainspace),T}(⨍.domainspace)
+
+domain(⨍::PrincipalValue)=domain(⨍.domainspace)
+domainspace(⨍::PrincipalValue)=⨍.domainspace
+
+getindex(::PrincipalValue{UnsetSpace},kr::Range)=error("Spaces cannot be inferred for operator")
+
+Base.getindex{S,V,O,T}(⨍::PrincipalValue{V,T},f::ProductFun{S,V,CauchyWeight{O},T}) = Hilbert(⨍.domainspace,O)[f]
+Base.getindex{S,V,SS,T}(⨍::PrincipalValue{V,T},f::ProductFun{S,V,SS,T}) = Σ(⨍.domainspace)[f]
+
 
 
 function ProductFun{O}(f::Function,cwsp::CauchyWeight{O})
