@@ -54,19 +54,31 @@ end
 # A new ProductFun constructor for bivariate functions on Intervals
 # defined as the difference of their arguments.
 #
-# This method takes as input a 1D Fun which is the antidiagonal of the
-# bivariate function, then forms the matrix of ProductFun coefficients
-# recursively via a Chebyshev addition theorem.
-#
-function ProductFun{S<:PolynomialSpace,T,U<:PolynomialSpace,V<:PolynomialSpace}(f::Fun{S,T},u::Union(U,JacobiWeight{U}),v::Union(V,JacobiWeight{V}))
-    ## TODO: Can the complexity be reduced from O(n^3)?
-    df,du,dv = domain(f),domain(u),domain(v)
-    @assert length(df) == 2length(du) && length(df) == 2length(dv)
-    c = chop(coefficients(f),maxabs(coefficients(f))*100eps(T))
+function ProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Function,u::Union(U,JacobiWeight{U}),v::Union(V,JacobiWeight{V}),method::Symbol=:symmetric)
+    du,dv = domain(u),domain(v)
+    @assert length(du) == length(dv)
+    T,spf = eltype(du),Chebyshev([du.a+dv.a,du.b+dv.b])
+    ff = Fun(x->f(-x/2,x/2),spf)
+    c = chop(coefficients(ff),maxabs(coefficients(ff))*100eps(T))
     N = length(c)
-    if N ≤ 3 N=3;pad!(c,3) end
+
+    if N ≤ 3000
+        if N ≤ 3 N=3;pad!(c,3) end
+        X = zeros(T,N,N)
+        chebyshevaddition!(c,X)
+        cspu,cspv = canonicalspace(u),canonicalspace(v)
+        [X[1:N+1-k,k] = coefficients(vec(X[1:N+1-k,k]),cspu,u) for k=1:N]
+        [X[k,1:N+1-k] = coefficients(vec(X[k,1:N+1-k]),cspv,v) for k=1:N]
+        return ProductFun(X,u⊗v)
+    else
+        return ProductFun((x,y)->x==y?ff[zero(T)]:f(x,y),u⊗v,N,N)
+    end
+end
+
+function chebyshevaddition!{T<:Number}(c::Vector{T},X::Matrix{T})
+    N = length(c)
     un = one(T)
-    C1,C2,X = zeros(T,N,N),zeros(T,N,N),zeros(T,N,N)
+    C1,C2 = zeros(T,N,N),zeros(T,N,N)
 
     C1[1,1] = un
     cn = c[1]
@@ -107,7 +119,7 @@ function ProductFun{S<:PolynomialSpace,T,U<:PolynomialSpace,V<:PolynomialSpace}(
         C2[2,1] = (C1[2,2]-C1[3,1])/2 - C1[1,1] - C2[2,1]
         C2[n,1] = C1[n-1,1]/(-2)
         C2[1,2] = (C1[1,3]-C1[2,2])/2 + C1[1,1] - C2[1,2]
-        C2[2,2] = (C1[2,3]-C1[3,2])/2 + C1[2,1]-C1[1,2] - C2[2,2]
+        C2[2,2] = (C1[2,3]-C1[3,2])/2 + C1[2,1] - C1[1,2] - C2[2,2]
         C2[1,n] = C1[1,n-1]/2
         for k=n-2:-2:3
             C2[k,1] = (C1[k,2]-C1[k-1,1]-C1[k+1,1])/2 - C2[k,1]
@@ -130,10 +142,6 @@ function ProductFun{S<:PolynomialSpace,T,U<:PolynomialSpace,V<:PolynomialSpace}(
             C1[i,j],C2[i,j] = C2[i,j],C1[i,j]
         end
     end
-    cspu,cspv = canonicalspace(u),canonicalspace(v)
-    [X[1:N+1-k,k] = coefficients(vec(X[1:N+1-k,k]),cspu,u) for k=1:N]
-    [X[k,1:N+1-k] = coefficients(vec(X[k,1:N+1-k]),cspv,v) for k=1:N]
-    ProductFun(X,u⊗v)
 end
 
 #
