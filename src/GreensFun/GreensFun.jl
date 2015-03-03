@@ -65,6 +65,39 @@ function Base.getindex(⨍::PrincipalValue,G::GreensFun)
     ret
 end
 
+export LowRankPositiveDefiniteFun
+
+function LowRankPositiveDefiniteFun(f::Function,spx::FunctionSpace,spy::FunctionSpace)
+    dx,dy = domain(spx),domain(spy)
+    T,dz = eltype(dx),Chebyshev([dx.a+dy.a,dx.b+dy.b])
+    ff = Fun(x->f(-x/2,x/2),dz)
+    f0 = ff[zero(T)]
+    fnew(x,y) = x == y ? f0 : f(x,y)
+    tol = maxabs(coefficients(ff))*100eps(T)
+    c = chop(coefficients(ff),tol)
+    N = length(c)
+    pts=points(dz,N)
+    r=((dx.a+dx.b)/2,(dy.a+dy.b)/2)
+    rold=(r[1]+1,r[2]+1)
+    a=Fun(x->fnew(x,r[2]),dx)
+    A=typeof(a)[]
+    while norm(a.coefficients) > tol && r != rold
+        A=[A;a/sqrt(abs(a[r[1]]))]
+        r,rold=findposdefapproxmax((x,y)->fnew(x,y)-evaluate(A,A,x,y),pts),r
+        Br=map(q->q[r[2]],A)
+        a=Fun(x->fnew(x,r[2]),dx; method="abszerocoefficients") - dotu(Br,A)
+        a=chop!(a,tol)
+    end
+    LowRankFun(A,A)
+end
+
+function findposdefapproxmax(f::Function,pts::Vector)
+    fv = eltype(f(pts[1]/2,pts[1]/2))[abs(f(ptsk/2,ptsk/2)) for ptsk in pts]
+    mpt = pts[indmax(fv)]/2
+    mpt,mpt
+end
+
+
 
 export SymmetricProductFun
 #
@@ -76,6 +109,7 @@ function SymmetricProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Function,
     @assert length(du) == length(dv)
     T,spf = eltype(du),Chebyshev([du.a+dv.a,du.b+dv.b])
     ff = Fun(x->f(-x/2,x/2),spf)
+    f0 = ff[zero(T)]
     c = chop(coefficients(ff),maxabs(coefficients(ff))*100eps(T))
     N = length(c)
 
@@ -88,7 +122,7 @@ function SymmetricProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Function,
         [X[k,1:N+1-k] = coefficients(vec(X[k,1:N+1-k]),cspv,v) for k=1:N]
         return ProductFun(X,u⊗v)
     else
-        return ProductFun((x,y)->x==y?ff[zero(T)]:f(x,y),u⊗v,N,N)
+        return ProductFun((x,y)->x==y?f0:f(x,y),u⊗v,N,N)
     end
 end
 
