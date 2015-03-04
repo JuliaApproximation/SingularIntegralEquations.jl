@@ -71,6 +71,16 @@ function Base.getindex(⨍::PrincipalValue,G::GreensFun)
     ret
 end
 
+function Base.getindex(⨍::PrincipalValue,G::Matrix{GreensFun})
+    m,n = size(G)
+    ret = Array(typeof(⨍[G[1,1]]),m,n)
+    for i=1:m,j=1:n
+        ret[i,j] = ⨍[G[i,j]]
+    end
+
+    ret
+end
+
 export LowRankPositiveDefiniteFun
 
 function LowRankPositiveDefiniteFun(f::Function,spx::FunctionSpace,spy::FunctionSpace)
