@@ -71,11 +71,17 @@ function Base.getindex(⨍::PrincipalValue,G::GreensFun)
     ret
 end
 
-function Base.getindex(⨍::PrincipalValue,G::Matrix{GreensFun})
-    m,n = size(G)
-    ret = Array(typeof(⨍[G[1,1]]),m,n)
-    for i=1:m,j=1:n
-        ret[i,j] = ⨍[G[i,j]]
+function Base.getindex(⨍::PrincipalValue,B::Matrix{BivariateFun})
+    m,n = size(B)
+    wsp = domainspace(⨍)
+    @assert m == length(wsp.spaces)
+    ⨍j = PrincipalValue(wsp[1])
+    ret = Array(typeof(⨍j[B[1,1]]),m,n)
+    for j=1:n
+        ⨍j = PrincipalValue(wsp[j])
+        for i=1:m
+            ret[i,j] = ⨍j[B[i,j]]
+        end
     end
 
     ret
