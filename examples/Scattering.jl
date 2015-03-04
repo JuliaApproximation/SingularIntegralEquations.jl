@@ -23,10 +23,8 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     cwsp = CauchyWeight{0}(sp⊗wsp)
     uiΓ,⨍ = Fun(x->ui(x,0),sp),PrincipalValue(dom)
 
-    K0 = ProductFun((x,y)->-besselj0(k*(y-x))/2π,cwsp)
-    Kim = SymmetricProductFun((x,y)->besselj0(k*(y-x))/4π,sp,wsp)
-    Kr = SymmetricProductFun((x,y)->(1/2π*besselj0(k*(y-x))*log(abs(y-x))-bessely0(k*abs(y-x))/4)/π,sp,wsp)
-    L,f = ⨍[K0 + Kr] + im*⨍[Kim],uiΓ
+    G = ProductFun((x,y)->-besselj0(k*(y-x))/2π,cwsp) + ProductFun((x,y)->(besselj0(k*(y-x))*(im*π/2+log(abs(y-x)))/2π - bessely0(k*abs(y-x))/4)/π,sp,wsp;method=:convolution)
+    L,f = ⨍[G],uiΓ
 
 
 #=

@@ -1,4 +1,4 @@
-# Principal Value Integral (Could be called PrincipalValueIntegral)
+# Principal Value Integral
 
 export PrincipalValue
 
@@ -8,14 +8,12 @@ end
 
 PrincipalValue()=PrincipalValue(UnsetSpace())
 PrincipalValue(dsp::FunctionSpace) = PrincipalValue{typeof(dsp),eltype(dsp)}(dsp)
-promotedomainspace(::PrincipalValue,sp::FunctionSpace)=PrincipalValue(sp)
-
-Base.convert{T}(::Type{Functional{T}},⨍::PrincipalValue)=PrincipalValue{typeof(⨍.domainspace),T}(⨍.domainspace)
+#promotedomainspace(::PrincipalValue,sp::FunctionSpace)=PrincipalValue(sp)
 
 domain(⨍::PrincipalValue)=domain(⨍.domainspace)
 domainspace(⨍::PrincipalValue)=⨍.domainspace
 
-getindex(::PrincipalValue{UnsetSpace},kr::Range)=error("Spaces cannot be inferred for operator")
+#Base.getindex(::PrincipalValue{UnsetSpace},kr::Range)=error("Spaces cannot be inferred for operator")
 
 PrincipalValue(d::IntervalDomain)=PrincipalValue(JacobiWeight(-.5,-.5,Chebyshev(d)))
 
@@ -26,5 +24,5 @@ end
 PrincipalValue(α::Number,β::Number) = PrincipalValue(α,β,Interval())
 
 
-Base.getindex{S,V,O,T}(⨍::PrincipalValue{V,T},f::ProductFun{S,V,CauchyWeight{O},T}) = Hilbert(⨍.domainspace,O)[f]
-Base.getindex{S,V,SS,T}(⨍::PrincipalValue{V,T},f::ProductFun{S,V,SS,T}) = DefiniteIntegral(⨍.domainspace)[f]
+Base.getindex{S,V,O,T1,T2}(⨍::PrincipalValue{V,T1},f::ProductFun{S,V,CauchyWeight{O},T2}) = Hilbert(⨍.domainspace,O)[f]
+Base.getindex{S,V,SS,T1,T2}(⨍::PrincipalValue{V,T1},f::ProductFun{S,V,SS,T2}) = DefiniteIntegral(⨍.domainspace)[f]
