@@ -71,7 +71,7 @@ function Base.getindex(⨍::PrincipalValue,G::GreensFun)
     ret
 end
 
-function Base.getindex(⨍::PrincipalValue,B::Matrix{BivariateFun})
+function Base.getindex{F<:BivariateFun}(⨍::PrincipalValue,B::Matrix{F})
     m,n = size(B)
     wsp = domainspace(⨍)
     @assert m == length(wsp.spaces)
