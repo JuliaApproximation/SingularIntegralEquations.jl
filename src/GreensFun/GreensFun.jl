@@ -125,10 +125,8 @@ end
 function ConvolutionProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Function,u::Union(U,JacobiWeight{U}),v::Union(V,JacobiWeight{V}))
     du,dv = domain(u),domain(v)
     @assert length(du) == length(dv)
-    T,spf = eltype(du),Chebyshev([du.a+dv.a,du.b+dv.b])
-    ff = Fun(x->f(-x/2,x/2),spf)
-    T = promote_type(T,eltype(ff))
-    fd = ff[(du.a+du.b)/2]
+    ff = Fun(x->f(-x/2,x/2),Chebyshev([du.a+dv.a,du.b+dv.b]))
+    T,fd = eltype(ff),ff[(du.a+du.b)/2]
     c = chop(coefficients(ff),maxabs(coefficients(ff))*100eps(T))
     N = length(c)
 
