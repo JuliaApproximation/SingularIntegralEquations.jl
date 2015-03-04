@@ -75,9 +75,8 @@ export LowRankPositiveDefiniteFun
 
 function LowRankPositiveDefiniteFun(f::Function,spx::FunctionSpace,spy::FunctionSpace)
     dx,dy = domain(spx),domain(spy)
-    T,dz = eltype(dx),Chebyshev([dx.a+dy.a,dx.b+dy.b])
-    ff = Fun(x->f(-x/2,x/2),dz)
-    fd = ff[(dx.a+dx.b)/2]
+    ff = Fun(x->f(-x/2,x/2),Chebyshev([dx.a+dy.a,dx.b+dy.b]))
+    T,fd = eltype(ff),ff[(dx.a+dx.b)/2]
     fnew(x,y) = x == y ? fd : f(x,y)
     tol = maxabs(coefficients(ff))*100eps(T)
     c = chop(coefficients(ff),tol)
