@@ -33,9 +33,6 @@ end
 +{S<:FunctionSpace,V<:FunctionSpace,O1,SS,T1,T2}(F::ProductFun{S,V,CauchyWeight{O1},T1},G::ProductFun{S,V,SS,T2}) = GreensFun([F,G])
 +{S<:FunctionSpace,V<:FunctionSpace,SS,O1,T1,T2}(F::ProductFun{S,V,SS,T1},G::ProductFun{S,V,CauchyWeight{O1},T2}) = GreensFun([F,G])
 
-+{S<:FunctionSpace,V<:FunctionSpace,O,T}(F::GreensFun,G::ProductFun{S,V,CauchyWeight{O},T}) = GreensFun([F.kernels,G])
-+{S<:FunctionSpace,V<:FunctionSpace,O,T}(F::ProductFun{S,V,CauchyWeight{O},T},G::GreensFun) = GreensFun([F,G.kernels])
-
 +(F::GreensFun,G::ProductFun) = GreensFun([F.kernels,G])
 +(F::ProductFun,G::GreensFun) = GreensFun([F,G.kernels])
 
@@ -44,9 +41,6 @@ end
 -{S<:FunctionSpace,V<:FunctionSpace,O1,O2,T1,T2}(F::ProductFun{S,V,CauchyWeight{O1},T1},G::ProductFun{S,V,CauchyWeight{O2},T2}) = GreensFun([F,-G])
 -{S<:FunctionSpace,V<:FunctionSpace,O1,SS,T1,T2}(F::ProductFun{S,V,CauchyWeight{O1},T1},G::ProductFun{S,V,SS,T2}) = GreensFun([F,-G])
 -{S<:FunctionSpace,V<:FunctionSpace,SS<:AbstractProductSpace,O1,T1,T2}(F::ProductFun{S,V,SS,T1},G::ProductFun{S,V,CauchyWeight{O1},T2}) = GreensFun([F,-G])
-
--{S<:FunctionSpace,V<:FunctionSpace,O,T}(F::GreensFun,G::ProductFun{S,V,CauchyWeight{O},T}) = GreensFun([F.kernels,-G])
--{S<:FunctionSpace,V<:FunctionSpace,O,T}(F::ProductFun{S,V,CauchyWeight{O},T},G::GreensFun) = GreensFun([F,-G.kernels])
 
 -(F::GreensFun,G::ProductFun) = GreensFun([F.kernels,-G])
 -(F::ProductFun,G::GreensFun) = GreensFun([F,-G.kernels])
