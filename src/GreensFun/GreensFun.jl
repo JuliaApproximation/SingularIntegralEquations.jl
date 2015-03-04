@@ -75,12 +75,12 @@ function Base.getindex(⨍::PrincipalValue,B::Matrix{BivariateFun})
     m,n = size(B)
     wsp = domainspace(⨍)
     @assert m == length(wsp.spaces)
-    ⨍₁ = PrincipalValue(wsp[1])
-    ret = Array(typeof(⨍₁[B[1,1]]),m,n)
+    ⨍j = PrincipalValue(wsp[1])
+    ret = Array(typeof(⨍j[B[1,1]]),m,n)
     for j=1:n
-        ⨍ⱼ = PrincipalValue(wsp[j])
+        ⨍j = PrincipalValue(wsp[j])
         for i=1:m
-            ret[i,j] = ⨍ⱼ[B[i,j]]
+            ret[i,j] = ⨍j[B[i,j]]
         end
     end
 
