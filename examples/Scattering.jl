@@ -17,6 +17,7 @@ d = d[1]/hypot(d[1],d[2]),d[2]/hypot(d[1],d[2])
 ui(x,y) = exp(im*k*(d⋅(x,y)))
 
 
+#=
     dom = Interval(-1.,1.)
     sp = Chebyshev(dom)
     wsp = JacobiWeight(-.5,-.5,sp)
@@ -26,53 +27,37 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     G = ProductFun((x,y)->-besselj0(k*(y-x))/2π,cwsp) + ProductFun((x,y)->(besselj0(k*(y-x))*(im*π/2+log(abs(y-x)))/2π - bessely0(k*abs(y-x))/4)/π,sp,wsp;method=:convolution)
     L,f = ⨍[G],uiΓ
 
+    @time ∂u∂n = L\f
+    println("The length of ∂u∂n is: ",length(∂u∂n))
+    us(x,y) = Fun(t->-im/4.*hankelh1(0,k.*sqrt((x.-t).^2.+y.^2))*∂u∂n[t],ApproxFun.ArraySpace(sp,length(x)),length(∂u∂n)).coefficients[1:length(x)]
+=#
 
-#=
+
     dom = Interval(-2.5,-.5)∪Interval(.5,2.5)
     sp = Space(dom)
     wsp = ApproxFun.PiecewiseSpace([JacobiWeight(-.5,-.5,sp.spaces[i]) for i=1:length(sp)])
+    cwsp = [CauchyWeight{0}(sp[1]⊗wsp[1]) CauchyWeight{0}(sp[2]⊗wsp[2])]
     uiΓ,H1,H2,Σ1,Σ2 = Fun(x->ui(x,0),sp),Hilbert(wsp[1],0),Hilbert(wsp[2],0),DefiniteIntegral(wsp[1]),DefiniteIntegral(wsp[2])
+    ⨍1,⨍2 = PrincipalValue(wsp[1]),PrincipalValue(wsp[2])
 
+    g1(x,y) = -besselj0(k*(y-x))/2π
+    g2(x,y) = (besselj0(k*(y-x))*(im*π/2+log(abs(y-x)))/2π - bessely0(k*abs(y-x))/4)/π
+    g3(x,y) = im/4π*hankelh1(0,k*abs(y-x))
 
-    # Region 1 -> 1
-    # RMS personal note: K011 division by π because FK011*2/π is smooth part of log of Hankel.
-    # Kim11 division by π because S1 multiplies by π.
-    # Kr11 division by π because S1 multiplies by π.
-    FK011 = Fun(x->besselj0(k*x),Chebyshev([-length(dom[1]),length(dom[1])]))
-    FKr11 = Fun(x->1/2π*besselj0(k*x)*log(abs(x))-bessely0(k*abs(x))/4,Chebyshev([-length(dom[1]),length(dom[1])]))
-    K011 = SymmetricProductFun(-FK011/2π,sp[1],wsp[1])
-    Kim11 = SymmetricProductFun(FK011/4π,sp[1],wsp[1])
-    Kr11 = SymmetricProductFun(FKr11/π,sp[1],wsp[1])
+    K11 = ProductFun(g1,cwsp[1];method=:convolution) + ProductFun(g2,sp[1],wsp[1];method=:convolution)
+    K12 = ProductFun(g3,sp[2],wsp[1];method=:convolution)
+    K21 = ProductFun(g3,sp[1],wsp[2];method=:convolution)
+    K22 = ProductFun(g1,cwsp[2];method=:convolution) + ProductFun(g2,sp[2],wsp[2];method=:convolution)
 
-    # Region 1 -> 2
-    F12r = Fun(x->-.25bessely0(k*abs(3.-x)),Chebyshev([-length(dom[1]),length(dom[1])]))
-    K12r = SymmetricProductFun(F12r/π,sp[2],wsp[1])
-    F12im = Fun(x->.25besselj0(k*abs(3.-x)),Chebyshev([-length(dom[1]),length(dom[1])]))
-    K12im = SymmetricProductFun(F12im/π,sp[2],wsp[1])
+    L11 = ⨍1[K11]
+    L12 = ⨍1[K12]
+    L21 = ⨍2[K21]
+    L22 = ⨍2[K22]
 
-    # Region 2 -> 1
-    F21r = Fun(x->-.25bessely0(k*abs(3.-x)),Chebyshev([-length(dom[1]),length(dom[1])]))
-    K21r = SymmetricProductFun(F21r/π,sp[1],wsp[2])
-    F21im = Fun(x->.25besselj0(k*abs(3.-x)),Chebyshev([-length(dom[1]),length(dom[1])]))
-    K21im = SymmetricProductFun(F21im/π,sp[1],wsp[2])
-
-    # Region 2 -> 2
-    FK022 = Fun(x->besselj0(k*x),Chebyshev([-length(dom[2]),length(dom[2])]))
-    FKr22 = Fun(x->1/2π*besselj0(k*x)*log(abs(x))-bessely0(k*abs(x))/4,Chebyshev([-length(dom[2]),length(dom[2])]))
-    K022 = SymmetricProductFun(-FK022/2π,sp[2],wsp[2])
-    Kim22 = SymmetricProductFun(FK022/4π,sp[2],wsp[2])
-    Kr22 = SymmetricProductFun(FKr22/π,sp[2],wsp[2])
-
-    L11 = H1[K011] + Σ1[Kr11] + im*Σ1[Kim11]
-    L12 = Σ1[K12r] + im*Σ1[K12im]
-    L21 = Σ2[K21r] + im*Σ2[K21im]
-    L22 = H2[K022] + Σ2[Kr22] + im*Σ2[Kim22]
 
     L,f = [L11 L21; L12 L22],uiΓ
-=#
+
     @time ∂u∂n = L\f
     println("The length of ∂u∂n is: ",length(∂u∂n))
-
-#    ∂u∂nv = vec(∂u∂n)
-#    us(x,y) = Fun(t->-im/4.*hankelh1(0,k.*sqrt((x.-t).^2.+y.^2))*∂u∂nv[1][t],ApproxFun.ArraySpace(sp[1],length(x)),length(∂u∂nv[1])).coefficients[1:length(x)]+Fun(t->-im/4.*hankelh1(0,k.*sqrt((x.-t).^2.+y.^2))*∂u∂nv[2][t],ApproxFun.ArraySpace(sp[2],length(x)),length(∂u∂nv[2])).coefficients[1:length(x)]
-    us(x,y) = Fun(t->-im/4.*hankelh1(0,k.*sqrt((x.-t).^2.+y.^2))*∂u∂n[t],ApproxFun.ArraySpace(sp,length(x)),length(∂u∂n)).coefficients[1:length(x)]
+    ∂u∂nv = vec(∂u∂n)
+    us(x,y) = Fun(t->-im/4.*hankelh1(0,k.*sqrt((x.-t).^2.+y.^2))*∂u∂nv[1][t],ApproxFun.ArraySpace(sp[1],length(x)),length(∂u∂nv[1])).coefficients[1:length(x)]+Fun(t->-im/4.*hankelh1(0,k.*sqrt((x.-t).^2.+y.^2))*∂u∂nv[2][t],ApproxFun.ArraySpace(sp[2],length(x)),length(∂u∂nv[2])).coefficients[1:length(x)]
