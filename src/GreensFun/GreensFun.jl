@@ -133,9 +133,14 @@ end
 #
 function ConvolutionProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Function,u::Union(U,JacobiWeight{U}),v::Union(V,JacobiWeight{V}))
     du,dv = domain(u),domain(v)
-    @assert length(du) == length(dv)
+    #@assert length(du) == length(dv)
+    println("These are the lengths of the spaces: ",length(du),length(dv))
     #println("This is the x argument: ",(du.a+du.b)/2," this is the y argument: ",(dv.b+dv.a)/2)
-    ff = Fun(x->f(((du.a+du.b)-x)/2,((dv.b+dv.a)+x)/2),Chebyshev([-length(du),length(du)])) # Not sure if this is exactly correct yet.
+    d1,d2 = length(du),length(dv)
+    d = (d1+d2)/2
+    ff = Fun(x->f(((du.a+du.b)-x)/2,((dv.b+dv.a)+x)/2),Chebyshev([-d,d]))
+    #ff = Fun(x->f(-fromcanonical(du,x),fromcanonical(dv,x)),Chebyshev([-1,1]))
+#println(ff)
     T = eltype(ff)
     fd = ff[zero(T)]#ff[(du.a+du.b)/2]
     c = chop(coefficients(ff),maxabs(coefficients(ff))*100eps(T))

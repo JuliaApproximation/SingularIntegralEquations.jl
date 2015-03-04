@@ -32,25 +32,36 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     us(x,y) = Fun(t->-im/4.*hankelh1(0,k.*sqrt((x.-t).^2.+y.^2))*∂u∂n[t],ApproxFun.ArraySpace(sp,length(x)),length(∂u∂n)).coefficients[1:length(x)]
 =#
 
-    dom = Interval(-2.25,-.25)∪Interval(.25,2.25)
+    dom = Interval(-2.-2/3,-2.0)∪Interval(-1.-2/3,-1.0)∪Interval(0.-2/3,0.0)∪Interval(1.-2/3,1.0)∪Interval(2.-2/3,2.0)∪Interval(3.-2/3,3.0)
+    N = length(dom)
     sp = Space(dom)
-    wsp = ApproxFun.PiecewiseSpace([JacobiWeight(-.5,-.5,sp.spaces[i]) for i=1:length(sp)])
-    cwsp = [CauchyWeight{0}(sp[1]⊗wsp[1]) CauchyWeight{0}(sp[2]⊗wsp[2])]
+    wsp = ApproxFun.PiecewiseSpace([JacobiWeight(-.5,-.5,sp.spaces[i]) for i=1:N])
+    cwsp = [CauchyWeight{0}(sp[i]⊗wsp[i]) for i=1:N]
     uiΓ,⨍ = Fun(x->ui(x,0),sp),PrincipalValue(wsp)
 
     g1(x,y) = -besselj0(k*(y-x))/2π
     g2(x,y) = (besselj0(k*(y-x))*(im*π/2+log(abs(y-x)))/2π - bessely0(k*abs(y-x))/4)/π
     g3(x,y) = im/4π*hankelh1(0,k*abs(y-x))
 
-    G11 = ProductFun(g1,cwsp[1]) + ProductFun(g2,sp[1],wsp[1];method=:convolution)
-    G21 = ProductFun(g3,sp[2],wsp[1];method=:convolution)
-    G12 = ProductFun(g3,sp[1],wsp[2];method=:convolution)
-    G22 = ProductFun(g1,cwsp[2]) + ProductFun(g2,sp[2],wsp[2];method=:convolution)
-    G = [G11 G12;G21 G22]
+
+    G = Array(ApproxFun.BivariateFun,N,N)
+    for i=1:N,j=1:N
+        if i == j
+            G[i,i] = ProductFun(g1,cwsp[i]) + ProductFun(g2,sp[i],wsp[i];method=:convolution)
+        else
+            G[i,j] = ProductFun(g3,sp[i],wsp[j];method=:convolution)
+        end
+    end
 
     L,f = ⨍[G],uiΓ
 
     @time ∂u∂n = L\f
     println("The length of ∂u∂n is: ",length(∂u∂n))
     ∂u∂nv = vec(∂u∂n)
-    us(x,y) = Fun(t->-π*g3(x-t,im*y)*∂u∂nv[1][t],ApproxFun.ArraySpace(sp[1],length(x)),length(∂u∂nv[1])).coefficients[1:length(x)].*length(domain(sp[1]))/2+Fun(t->-π*g3(x-t,im*y)*∂u∂nv[2][t],ApproxFun.ArraySpace(sp[2],length(x)),length(∂u∂nv[2])).coefficients[1:length(x)]*length(domain(sp[2]))/2
+function us(x,y)
+    ret = Fun(t->-π*g3(x-t,im*y)*∂u∂nv[1][t],ApproxFun.ArraySpace(sp[1],length(x)),length(∂u∂nv[1])).coefficients[1:length(x)].*length(domain(sp[1]))/2
+    for i=2:N
+        ret += Fun(t->-π*g3(x-t,im*y)*∂u∂nv[i][t],ApproxFun.ArraySpace(sp[i],length(x)),length(∂u∂nv[i])).coefficients[1:length(x)]*length(domain(sp[i]))/2
+    end
+    ret
+end
