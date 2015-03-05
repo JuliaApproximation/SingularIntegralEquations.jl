@@ -1,13 +1,13 @@
 
-        
+
 ## cauchy
 
-function cauchyS(s::Bool,cfs::Vector,z::Number)    
+function cauchyS(s::Bool,cfs::Vector,z::Number)
     ret=zero(Complex{Float64})
-    
+
     if s
         zm = one(Complex{Float64})
-        
+
         #odd coefficients are pos
         @simd for k=1:2:length(cfs)
             @inbounds ret += cfs[k]*zm
@@ -23,7 +23,7 @@ function cauchyS(s::Bool,cfs::Vector,z::Number)
             zm *= z
         end
     end
-    
+
     ret
 end
 
@@ -39,7 +39,7 @@ cauchy(d::Circle,cfs::Vector,z::Vector)=[cauchy(d,cfs,zk) for zk in z]
 
 function cauchy(s::Bool,d::Circle,cfs::Vector,z::Number)
     @assert in(z,d)
-    
+
     cauchyS(s,d,cfs,z)
 end
 
@@ -75,7 +75,7 @@ function cauchy(f::Fun{ClosedCurveSpace{Laurent,Complex{Float64}}},z::Number)
     c=domain(f)  # the curve that f lives on
     @assert domain(fcirc)==Circle()
     # subtract out value at infinity, determined by the fact that leading term is poly
-    # we find the 
+    # we find the
     sum(cauchy(fcirc,complexroots(c.curve-z)))-div(length(domain(f).curve),2)*cauchy(fcirc,0.)
 end
 
@@ -85,9 +85,9 @@ function cauchy(s,f::Fun{ClosedCurveSpace{Laurent,Complex{Float64}}},z::Number)
     @assert domain(fcirc)==Circle()
     rts=complexroots(c.curve-z)
 
-    
+
     ret=-div(length(domain(f).curve),2)*cauchy(fcirc,0.)
-    
+
     for k=2:length(rts)
         ret+=in(rts[k],Circle())?cauchy(s,fcirc,rts[k]):cauchy(fcirc,rts[k])
     end
@@ -101,12 +101,43 @@ function hilbert(f::Fun{ClosedCurveSpace{Laurent,Complex{Float64}}},z::Number)
     @assert domain(fcirc)==Circle()
     rts=complexroots(c.curve-z)
 
-    
+
     ret=-2im*div(length(domain(f).curve),2)*cauchy(fcirc,0.)
-    
+
     for k=2:length(rts)
         ret+=in(rts[k],Circle())?hilbert(fcirc,rts[k]):2im*cauchy(fcirc,rts[k])
     end
     ret
 end
 
+
+
+
+## cauchyintegral and logkernel
+
+
+function stieltjesintegral(f::Fun{Laurent},z::Number)
+    d=domain(f)
+    @assert d==Circle()  #TODO: radius
+    ζ=Fun(d)
+    r=stieltjes(integrate(f-f.coefficients[2]/ζ),z)
+    abs(z)<1?r:r+2π*im*f.coefficients[2]*log(z)
+end
+
+function stieltjesintegral(s,f::Fun{Laurent},z::Number)
+    d=domain(f)
+    @assert d==Circle()  #TODO: radius
+    ζ=Fun(d)
+    r=stieltjes(s,integrate(f-f.coefficients[2]/ζ),z)
+    s?r:r+2π*im*f.coefficients[2]*log(z)
+end
+
+stieltjesintegral(f::Fun{Fourier},z::Number)=stieltjesintegral(Fun(f,Laurent),z)
+
+function logkernel{T<:Real}(f::Fun{Fourier,T},z::Number)
+    d=domain(f)
+    @assert d==Circle()  #TODO: radius
+    ζ=Fun(d)
+    #TODO: call logabs
+    real(-im*stieltjesintegral(f/ζ,z))
+end

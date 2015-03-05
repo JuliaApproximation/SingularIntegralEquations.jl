@@ -27,9 +27,11 @@ end
 hilbert(f)=Hilbert()*f
 hilbert(f,z)=hilbert(f)[z]
 
+#TODO: cauchy ->stieljtjes
+#TODO: stieltjes -> offhilbert
 stieltjes(s,f,z)=-2π*im*cauchy(s,f,z)
 stieltjes(f,z)=-2π*im*cauchy(f,z)
-
+cauchyintegral(u,z)=im/(2π)*stieltjesintegral(u,z)
 
 include("Hilbert.jl")
 include("Stieltjes.jl")

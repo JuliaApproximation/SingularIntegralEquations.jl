@@ -170,7 +170,7 @@ for (OP,JIN,LOG,IOC) in ((:stieltjesintegral,:integratejin,:log,:intervaloffcirc
     end
 end
 
-cauchyintegral(u,z)=im/(2π)*stieltjesintegral(u,z)
+
 
 
 ## Mapped
