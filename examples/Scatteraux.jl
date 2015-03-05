@@ -1,22 +1,26 @@
 ⋅(d,z) = d[1]*z[1]+d[2]*z[2]
 
-function tomovie(x,y,u,L;plotfunction=plot,seconds=1)
+function makegif(x,y,u,L;plotfunction=plot,seconds=1)
     tm=string(time_ns())
     dr = pwd()*"/"*tm*"mov"
     mkdir(dr)
 
-    line1 = [dom[1].a,dom[1].b]
-    line2 = [dom[2].a,dom[2].b]
-    MLen = seconds*25
-    for k=1:MLen+2
-        t = 2π/ω*(k-1)/24
-        plot(line1,0line1,"-k",line2,0line2,"-k",linewidth=2.0)
-        plotfunction(x,y,real(u*exp(-im*ω*t)),L)
+    umax = maxabs(u)
+    fps = 24
+    MLen = seconds*fps
+    for k=1:MLen
+        t = 2π/ω*(k-1)/fps
+        axes(aspect="equal")
+        for doma in dom.domains
+            line = [doma.a,doma.b]
+            plot(line,0line,"-k",linewidth=2.0)
+        end
+        plotfunction(x,y,real(u*exp(-im*ω*t)),L;vmin=-umax,vmax=umax)
         xlabel("\$x\$");ylabel("\$y\$")
-        savefig(dr * "/" * string(int(k)) * ".png",dpi=150)
+        savefig(dr * "/" * lpad(k,int(ceil(log10(MLen))),0) * ".png",dpi=150)
         clf()
     end
-
-    run(`ffmpeg -r 25 -i $dr/%d.png -b:v 10MiB $dr/out.mpg`)
-    run(`open $dr/out.mpg`)
+    # If it fails, try: brew install imagemagick
+    run(`convert -delay 6 -loop 0 $dr/*.png $dr/scattering.gif`)
+    run(`open $dr/scattering.gif`)
 end

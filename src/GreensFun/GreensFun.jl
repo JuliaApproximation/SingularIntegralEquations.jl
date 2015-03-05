@@ -133,23 +133,17 @@ end
 #
 function ConvolutionProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Function,u::Union(U,JacobiWeight{U}),v::Union(V,JacobiWeight{V}))
     du,dv = domain(u),domain(v)
-    #@assert length(du) == length(dv)
-    println("These are the lengths of the spaces: ",length(du),length(dv))
-    #println("This is the x argument: ",(du.a+du.b)/2," this is the y argument: ",(dv.b+dv.a)/2)
-    d1,d2 = length(du),length(dv)
-    d = (d1+d2)/2
-    ff = Fun(x->f(((du.a+du.b)-x)/2,((dv.b+dv.a)+x)/2),Chebyshev([-d,d]))
-    #ff = Fun(x->f(-fromcanonical(du,x),fromcanonical(dv,x)),Chebyshev([-1,1]))
-#println(ff)
+    D = (length(du)+length(dv))/2
+    ff = Fun(x->f((du.a+du.b-x)/2,(dv.b+dv.a+x)/2),Chebyshev([-D,D]))
     T = eltype(ff)
-    fd = ff[zero(T)]#ff[(du.a+du.b)/2]
+    fd,B,C = ff[zero(T)],convert(T,(dv.b-dv.a)/2D),convert(T,(du.b-du.a)/2D)
     c = chop(coefficients(ff),maxabs(coefficients(ff))*100eps(T))
     N = length(c)
 
     if N ≤ 3000
         if N ≤ 3 N=3;pad!(c,3) end
         X = zeros(T,N,N)
-        chebyshevaddition!(c,X)
+        chebyshevaddition!(c,B,C,X)
         cspu,cspv = canonicalspace(u),canonicalspace(v)
         [X[1:N+1-k,k] = coefficients(vec(X[1:N+1-k,k]),cspu,u) for k=1:N]
         [X[k,1:N+1-k] = coefficients(vec(X[k,1:N+1-k]),cspv,v) for k=1:N]
@@ -159,7 +153,7 @@ function ConvolutionProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Functio
     end
 end
 
-function chebyshevaddition!{T<:Number}(c::Vector{T},X::Matrix{T})
+function chebyshevaddition!{T<:Number}(c::Vector{T},B::T,C::T,X::Matrix{T})
     N = length(c)
     un = one(T)
     C1,C2 = zeros(T,N,N),zeros(T,N,N)
@@ -169,17 +163,18 @@ function chebyshevaddition!{T<:Number}(c::Vector{T},X::Matrix{T})
 
     X[1,1] += cn*C1[1,1]
 
-    C2[2,1] = -un/2
-    C2[1,2] = un/2
+    C2[2,1] = -C
+    C2[1,2] = B
+
     cn = c[2]
 
     X[2,1] += cn*C2[2,1]
     X[1,2] += cn*C2[1,2]
 
-    C1[1,1] = -un/2
-    C1[3,1] = un/4
-    C1[2,2] = -un
-    C1[1,3] = un/4
+    C1[1,1] = B^2+C^2-un
+    C1[3,1] = C^2
+    C1[2,2] = -4B*C
+    C1[1,3] = B^2
     cn = c[3]
 
     X[1,1] += cn*C1[1,1]
@@ -188,33 +183,22 @@ function chebyshevaddition!{T<:Number}(c::Vector{T},X::Matrix{T})
     X[1,3] += cn*C1[1,3]
 
     @inbounds for n=4:N
-        #
-        # There are 11 unique recurrence relationships for the coefficients. The main recurrence is:
-        #
-        # C[i,j,n] = (C[i,j+1,n-1]+C[i,j-1,n-1]-C[i+1,j,n-1]-C[i-1,j,n-1])/2 - C[i,j,n-2],
-        #
-        # and the other 10 come from shutting some terms off if they are out of bounds,
-        # or for the row C[2,1:n,n] or column C[1:n,2,n] terms are turned on. This follows from
-        # the reflection of Chebyshev polynomials: 2T_m(x)T_n(x) = T_{m+n}(x) + T_|m-n|(x).
-        # For testing of stability, they should always be equal to:
-        # C[1:n,1:n,n] = coefficients(ProductFun((x,y)->cos((n-1)*acos((y-x)/2)))).
-        #
-        C2[1,1] = (C1[1,2]-C1[2,1])/2 - C2[1,1]
-        C2[2,1] = (C1[2,2]-C1[3,1])/2 - C1[1,1] - C2[2,1]
-        C2[n,1] = C1[n-1,1]/(-2)
-        C2[1,2] = (C1[1,3]-C1[2,2])/2 + C1[1,1] - C2[1,2]
-        C2[2,2] = (C1[2,3]-C1[3,2])/2 + C1[2,1] - C1[1,2] - C2[2,2]
-        C2[1,n] = C1[1,n-1]/2
+        C2[1,1] = B*C1[1,2] - C*C1[2,1] - C2[1,1]
+        C2[2,1] = B*C1[2,2] - C*C1[3,1] - 2C*C1[1,1] - C2[2,1]
+        C2[n,1] = -C*C1[n-1,1]
+        C2[1,2] = B*C1[1,3]-C*C1[2,2] + 2B*C1[1,1] - C2[1,2]
+        C2[2,2] = B*C1[2,3]-C*C1[3,2] + 2B*C1[2,1] - 2C*C1[1,2] - C2[2,2]
+        C2[1,n] = B*C1[1,n-1]
         for k=n-2:-2:3
-            C2[k,1] = (C1[k,2]-C1[k-1,1]-C1[k+1,1])/2 - C2[k,1]
-            C2[1,k] = (C1[1,k+1]+C1[1,k-1]-C1[2,k])/2 - C2[1,k]
+            C2[k,1] = B*C1[k,2]-C*C1[k-1,1]-C*C1[k+1,1] - C2[k,1]
+            C2[1,k] = B*C1[1,k+1]+B*C1[1,k-1]-C*C1[2,k] - C2[1,k]
         end
         for k=n-1:-2:3
-            C2[k,2] = (C1[k,3]-C1[k-1,2]-C1[k+1,2])/2 + C1[k,1] - C2[k,2]
-            C2[2,k] = (C1[2,k+1]+C1[2,k-1]-C1[3,k])/2 - C1[1,k] - C2[2,k]
+            C2[k,2] = B*C1[k,3]-C*C1[k-1,2]-C*C1[k+1,2] + 2B*C1[k,1] - C2[k,2]
+            C2[2,k] = B*C1[2,k+1]+B*C1[2,k-1]-C*C1[3,k] - 2C*C1[1,k] - C2[2,k]
         end
         for j=n:-1:3,i=n-j+1:-2:3
-            C2[i,j] = (C1[i,j+1]+C1[i,j-1]-C1[i+1,j]-C1[i-1,j])/2 - C2[i,j]
+            C2[i,j] = B*C1[i,j+1]+B*C1[i,j-1]-C*C1[i+1,j]-C*C1[i-1,j] - C2[i,j]
         end
 
         cn = c[n]

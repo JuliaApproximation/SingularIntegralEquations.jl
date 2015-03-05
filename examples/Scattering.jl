@@ -32,8 +32,12 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     us(x,y) = Fun(t->-im/4.*hankelh1(0,k.*sqrt((x.-t).^2.+y.^2))*∂u∂n[t],ApproxFun.ArraySpace(sp,length(x)),length(∂u∂n)).coefficients[1:length(x)]
 =#
 
-    dom = Interval(-2.-2/3,-2.0)∪Interval(-1.-2/3,-1.0)∪Interval(0.-2/3,0.0)∪Interval(1.-2/3,1.0)∪Interval(2.-2/3,2.0)∪Interval(3.-2/3,3.0)
-    N = length(dom)
+    N = 6
+    r = rand(2N+1)
+    cr = cumsum(r)
+    ccr = -3+(cr-cr[1])*6/(cr[end]-cr[1])
+    dom = ApproxFun.UnionDomain(Interval(ccr+(3-ccr[end-1])/2)[1:2:end])
+
     sp = Space(dom)
     wsp = ApproxFun.PiecewiseSpace([JacobiWeight(-.5,-.5,sp.spaces[i]) for i=1:N])
     cwsp = [CauchyWeight{0}(sp[i]⊗wsp[i]) for i=1:N]
@@ -44,12 +48,12 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     g3(x,y) = im/4π*hankelh1(0,k*abs(y-x))
 
 
-    G = Array(ApproxFun.BivariateFun,N,N)
+    G = Array(GreensFun,N,N)
     for i=1:N,j=1:N
         if i == j
             G[i,i] = ProductFun(g1,cwsp[i]) + ProductFun(g2,sp[i],wsp[i];method=:convolution)
         else
-            G[i,j] = ProductFun(g3,sp[i],wsp[j];method=:convolution)
+            G[i,j] = GreensFun([ProductFun(g3,sp[i],wsp[j];method=:convolution)])
         end
     end
 
