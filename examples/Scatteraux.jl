@@ -17,7 +17,7 @@ function makegif(x,y,u,L;plotfunction=plot,seconds=1)
         end
         plotfunction(x,y,real(u*exp(-im*ω*t)),L;vmin=-umax,vmax=umax)
         xlabel("\$x\$");ylabel("\$y\$")
-        savefig(dr * "/" * lpad(k,int(ceil(log10(MLen))),0) * ".png",dpi=150)
+        savefig(dr * "/" * lpad(k,int(ceil(log10(MLen))),0) * ".png";dpi=150,bbox_inches="tight")
         clf()
     end
     # If it fails, try: brew install imagemagick
