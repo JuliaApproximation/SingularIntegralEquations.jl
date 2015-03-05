@@ -134,10 +134,13 @@ end
 
 stieltjesintegral(f::Fun{Fourier},z::Number)=stieltjesintegral(Fun(f,Laurent),z)
 
-function logkernel{T<:Real}(f::Fun{Fourier,T},z::Number)
-    d=domain(f)
+function logkernel{T<:Real}(g::Fun{Fourier,T},z::Number)
+    d=domain(g)
     @assert d==Circle()  #TODO: radius
     ζ=Fun(d)
-    #TODO: call logabs
-    real(-im*stieltjesintegral(f/ζ,z))
+
+    f=Fun(g/ζ,Laurent)
+
+    r=real(-im*stieltjes(integrate(f-f.coefficients[2]/ζ),z))
+    abs(z)<1?r:r+2π*real(f.coefficients[2])*logabs(z)
 end
