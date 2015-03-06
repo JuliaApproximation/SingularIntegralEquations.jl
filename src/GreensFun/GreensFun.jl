@@ -136,7 +136,7 @@ function ConvolutionProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Functio
     D = (length(du)+length(dv))/2
     ff = Fun(x->f((du.a+du.b-x)/2,(dv.b+dv.a+x)/2),Chebyshev([-D,D]))
     T = eltype(ff)
-    fd,B,C = ff[zero(T)],convert(T,(dv.b-dv.a)/2D),convert(T,(du.b-du.a)/2D)
+    fd,B,C = ff[zero(T)],(dv.b-dv.a)/2D,(du.b-du.a)/2D
     c = chop(coefficients(ff),maxabs(coefficients(ff))*100eps(T))
     N = length(c)
 
@@ -153,7 +153,7 @@ function ConvolutionProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Functio
     end
 end
 
-function chebyshevaddition!{T<:Number}(c::Vector{T},B::T,C::T,X::Matrix{T})
+function chebyshevaddition!{T<:Number}(c::Vector,B,C,X::Matrix{T})
     N = length(c)
     un = one(T)
     C1,C2 = zeros(T,N,N),zeros(T,N,N)

@@ -42,13 +42,13 @@ function OffHilbert(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace,order:
         y=intervaloffcircle(true,x)
         yk,ykp1=y,y*y
         ret=Array(typeof(y),300)
-        ret[1]=.5logabs(2y)-.25real(ykp1)
+        ret[1]=-.5logabs(2y)+.25real(ykp1)
         n,l,u = 1,length(ret[1])-1,0
         while norm(ret[n].coefficients)>100eps()
             n+=1
             if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
             ykp1*=y
-            ret[n]=chop!(.5*(real(yk)/(n-1)-real(ykp1)/(n+1)) ,100eps())  #will be length 2n-1
+            ret[n]=chop!(.5*(real(yk)/(n+1)-real(ykp1)/(n-1)) ,100eps())  #will be length 2n-1
             yk*=y
             u+=1   # upper bandwidth
             l=max(l,length(ret[n])-n)
@@ -88,15 +88,15 @@ function OffHilbert(ds::JacobiWeight{ChebyshevDirichlet{1,1}},rs::FunctionSpace,
         y=intervaloffcircle(true,x)
         yk,ykp1=y,y*y
         ret=Array(typeof(y),300)
-        ret[1]=logabs(2y)
-        ret[2]=real(yk)
-        ret[3]=chop!(-ret[1]+.5ykp1,100eps())
+        ret[1]=-logabs(2y)
+        ret[2]=-real(yk)
+        ret[3]=chop!(-ret[1]-.5real(ykp1),100eps())
         n,l,u = 3,max(length(ret[1])-1,length(ret[2])-2,length(ret[3])-3),2
         while norm(ret[n].coefficients)>100eps()
             n+=1
             if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
             ykp1*=y
-            ret[n]=chop!(real(ykp1)/(n-1)-real(yk)/(n-3),100eps())  #will be length 2n-1
+            ret[n]=chop!(real(ykp1)/(n-3)-real(yk)/(n-1),100eps())  #will be length 2n-1
             yk*=y
             u+=1   # upper bandwidth
             l=max(l,length(ret[n])-n)
