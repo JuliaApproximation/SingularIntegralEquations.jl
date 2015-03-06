@@ -13,7 +13,7 @@ function makegif(x,y,u,L;plotfunction=plot,seconds=1)
         axes(aspect="equal")
         for doma in dom.domains
             line = [doma.a,doma.b]
-            plot(line,0line,"-k",linewidth=2.0)
+            plot(real(line),imag(line),"-k",linewidth=2.0)
         end
         plotfunction(x,y,real(u*exp(-im*ω*t)),L;vmin=-umax,vmax=umax)
         xlabel("\$x\$");ylabel("\$y\$")
