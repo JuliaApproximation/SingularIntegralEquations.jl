@@ -152,7 +152,7 @@ for (OP,JIN,LOG,IOC) in ((:stieltjesintegral,:integratejin,:log,:intervaloffcirc
             y=intervaloffcircle(true,z)
 
             if length(cfs) ≥1
-                ret = -cfs[1]*0.5π*(b-a)*($LOG(y)+log(2))
+                ret = -cfs[1]*0.5π*(b-a)*($LOG(y)+log(4/(b-a)))
 
                 if length(cfs) ≥2
                     ret += -0.5π*(b-a)*cfs[2]*$IOC(true,z)
