@@ -1,4 +1,4 @@
-export OffHilbert
+export OffHilbert,Stieltjes,Cauchy
 
 
 #############
@@ -48,7 +48,7 @@ function OffHilbert(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace,order:
             n+=1
             if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
             ykp1*=y
-            ret[n]=chop!(.5*(real(yk)/(n+1)-real(ykp1)/(n-1)) ,100eps())  #will be length 2n-1
+            ret[n]=chop!(.5*(real(ykp1)/(n+1)-real(yk)/(n-1)) ,100eps())  #will be length 2n-1
             yk*=y
             u+=1   # upper bandwidth
             l=max(l,length(ret[n])-n)
@@ -96,7 +96,7 @@ function OffHilbert(ds::JacobiWeight{ChebyshevDirichlet{1,1}},rs::FunctionSpace,
             n+=1
             if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
             ykp1*=y
-            ret[n]=chop!(real(ykp1)/(n-3)-real(yk)/(n-1),100eps())  #will be length 2n-1
+            ret[n]=chop!(real(yk)/(n-3)-real(ykp1)/(n-1),100eps())  #will be length 2n-1
             yk*=y
             u+=1   # upper bandwidth
             l=max(l,length(ret[n])-n)
@@ -186,3 +186,193 @@ function OffHilbert(sp::JacobiWeight{Chebyshev},z::Number)
 end
 
 
+
+
+## Special cases
+
+function exterior_cauchy(b::Circle,a::Circle)
+    c=b.center
+    r=b.radius
+
+    S=Fun([0.0,0,1],a)  # Shift to use bandedness
+    ret=Array(Fun{Laurent,Complex{Float64}},300)
+    ret[1]=Fun(z->(r/(z-c)),a)
+    n=1
+    m=length(ret[1])-2
+    f1=ret[1]*S
+    while norm(ret[n].coefficients)>100eps()
+        n+=1
+        if n > length(ret)
+            resize!(ret,2length(ret))
+        end
+        ret[n]=chop!(f1*ret[n-1],100eps())
+        m=max(m,length(ret[n])-2)
+    end
+
+    M=bazeros(Complex{Float64},2n,2n,m,0)
+    #j+2k-2≤2n
+    #j≤2(n-k)+2
+    for k=1:n,j=2:2:min(length(ret[k].coefficients),2(n-k)+2)
+        M[j+2k-2,2k]=-ret[k].coefficients[j]
+    end
+    M
+end
+
+function interior_cauchy(a::Circle,b::Circle)
+    c=a.center
+    r=a.radius
+
+
+    z=Fun(z->(z-c)/r,b)
+
+    ret=Array(Fun{Laurent,Complex{Float64}},300)
+    ret[1]=ones(b)
+    n=1
+    m=0
+
+    while norm(ret[n].coefficients)>100eps()
+        n+=1
+        if n > length(ret)
+            # double preallocated ret
+            resize!(ret,2length(ret))
+        end
+        ret[n]=z*ret[n-1]  #will be length 2n-1
+
+
+        # find bandwidth by checking how many coefficients are zero
+        # we jump over negative coefficients
+        for j=1:2:2n-1
+            if norm(ret[n].coefficients[j])>100eps()
+                m=max(m,2n-j-1)
+                break
+            end
+        end
+    end
+
+    M=bazeros(Complex{Float64},2n-1,2n-1,0,m)
+    for k=1:n,j=max(1,2k-1-m):2:2k-1
+        M[j,2k-1]=ret[k].coefficients[j]
+    end
+
+    M
+end
+
+function disjoint_cauchy(a::Circle,b::Circle)
+    c=a.center
+    r=a.radius
+
+    f=Fun(z->r/(z-c),b)
+
+        ret=Array(Fun{Laurent,Complex{Float64}},300)
+    ret[1]=f
+    n=1
+
+    l=length(f)-2   #lower bandwidth
+    u=1             #upper bandwidth
+
+    while norm(ret[n].coefficients)>100eps()
+        n+=1
+        if n > length(ret)
+            # double preallocated ret
+            resize!(ret,2length(ret))
+        end
+    ret[n]=chop!(f*ret[n-1],100eps())  #will be length 2n-1
+    u=max(u,length(ret[n])-2n)   # upper bandwidth
+
+        # find bandwidth by checking how many coefficients are zero
+        # we jump over negative coefficients
+        for j=1:2:length(ret[n])
+            if norm(ret[n].coefficients[j])>100eps()
+                l=max(l,2n-j)
+                break
+            end
+        end
+    end
+
+    M=bazeros(Complex{Float64},2n-1,2n,l,u)
+    for k=1:n,j=max(1,2k-u):2:min(length(ret[k]),2n-1)
+            M[j,2k]=-ret[k].coefficients[j]
+    end
+    M
+end
+
+
+
+
+
+
+#############
+# Cauchy implements the Cauchy operator corresponding to evaluating the Cauchy transform
+#
+#       C f(z) := 1/(2πi)\int_Γ f(t)/(t-z) dt
+#
+# It is given in terms of the Stieltjes operator
+#
+#       S f(z) := \int_Γ f(t)/(z-t) dt = -2πi*C f(z)
+#
+# note that the domain of domainspace must be different than the domain of rangespace
+#
+# The notion of C^± for the left/right limits of the Cauchy operator
+# with the domains matching is represented
+# using the Hilbert operator and the formulae
+#
+#    C^+  -  C^- = I
+#    C^+  +  C^- = -im*H
+#
+#   Or for the Stieltjes operator
+#
+#    S^+ - S^- = -2πi*I
+#    S^+ + S^- = -2π*H
+#
+############
+Stieltjes(d,r,order) = (order==0?π:-π)*OffHilbert(d,r,order)
+Stieltjes(d,r) = (-π)*OffHilbert(d,r)
+
+
+
+Cauchy(s::Bool,d)=(s?0.5:-0.5)*I +(-0.5im)*Hilbert(d)
+Cauchy(s::Int,d)=Cauchy(s==1,d)
+Cauchy(s::Union(Int,Bool))=Cauchy(s,UnsetSpace())
+Cauchy(ds,rs,order)=(1/(2*im))*OffHilbert(ds,rs,order)
+Cauchy(ds,rs)=Cauchy(ds,rs,1)
+
+
+
+
+
+
+## Stiejles Functional
+
+
+function HornerFunctional(y0,sp)
+    r=Array(typeof(y0),200)
+    r[1]=y0
+    k=1
+    tol=eps()
+    while(abs(r[k])>tol)
+        k+=1
+        if k>length(r)
+            resize!(r,2length(r))
+        end
+        r[k]=r[k-1]*y0
+    end
+
+    CompactFunctional(r[1:k],sp)
+end
+
+function OffHilbert(sp::JacobiWeight{Ultraspherical{1}},z::Number)
+    if sp.α == sp.β == 0.5
+        -HornerFunctional(intervaloffcircle(true,tocanonical(sp,z)),sp)
+    else
+        error("Not implemented")
+    end
+end
+
+function OffHilbert(sp::JacobiWeight{Chebyshev},z::Number)
+    if sp.α == sp.β == 0.5
+        us=JacobiWeight(0.5,0.5,Ultraspherical{1}(domain(sp)))
+        OffHilbert(us,z)*Conversion(sp,us)
+    else
+        error("Not implemented")
+    end
+end

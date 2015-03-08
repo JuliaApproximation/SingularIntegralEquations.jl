@@ -34,7 +34,6 @@ stieltjes(f,z)=-2π*im*cauchy(f,z)
 cauchyintegral(u,z)=im/(2π)*stieltjesintegral(u,z)
 
 include("Hilbert.jl")
-include("Stieltjes.jl")
 include("OffHilbert.jl")
 
 include("HilbertFunctions.jl")
