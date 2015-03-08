@@ -145,7 +145,7 @@ function logkernel{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
 
     if sp.α == sp.β == .5
         cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1})
-        y=intervaloffcircle(true,tocanonical(u,z))
+        y=in(z,Interval())?intervaloffcircle(true,tocanonical(u,z)):intervaloncircle(true,tocanonical(u,z))
         π*length(d)*realintegratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
         cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1})

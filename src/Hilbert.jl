@@ -113,12 +113,16 @@ function Hilbert(S::JacobiWeight{Chebyshev},k::Integer)
     if S.α==S.β==-0.5
         Hilbert{JacobiWeight{Chebyshev},Float64}(S,k)
     elseif S.α==S.β==0.5
-        @assert k==1
-        HilbertWrapper(
-            Hilbert(JacobiWeight(0.5,0.5,Ultraspherical{1}(domain(S))),k)*Conversion(S,JacobiWeight(0.5,0.5,Ultraspherical{1}(domain(S)))),
-            k)
+        d=domain(S)
+        if k==1
+            J=JacobiWeight(0.5,0.5,Ultraspherical{1}(d))
+            HilbertWrapper(Hilbert(J,k)*Conversion(S,J),k)
+        else
+            J=JacobiWeight(-0.5,-0.5,Chebyshev(d))
+            HilbertWrapper(Hilbert(J,k)*Conversion(S,J),k)
+        end
     else
-        error("Hilbert not implemented")
+        error("Hilbert not implemented for parameters $(S.α),$(S.β)")
     end
 end
 
