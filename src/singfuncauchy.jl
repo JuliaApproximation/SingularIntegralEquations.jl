@@ -128,7 +128,7 @@ integratejin(c,cfs,y)=.5*(-cfs[1]*(log(y)+log(c))+divkhornersum(cfs,y,y,1)-divkh
 realintegratejin(c,cfs,y)=.5*(-cfs[1]*(logabs(y)+logabs(c))+realdivkhornersum(cfs,y,y,1)-realdivkhornersum(slice(cfs,2:length(cfs)),y,zero(y)+1,0))
 
 
-realintervaloffcircle(b,z)=real(intervaloffcircle(b,z))
+realintervaloffcircle(b,z)=in(z,Interval())?real(z):real(intervaloffcircle(b,z))
 
 #########
 # stieltjesintegral is an indefinite integral of stieltjes
@@ -138,40 +138,105 @@ realintervaloffcircle(b,z)=real(intervaloffcircle(b,z))
 
 complexlength(d::Interval)=(d.b-d.a)
 
-for (OP,JIN,LOG,IOC,LNG) in ((:stieltjesintegral,:integratejin,:log,:intervaloffcircle,:complexlength),
-                              (:logkernel,:realintegratejin,:logabs,:realintervaloffcircle,:length))
-    @eval function $OP{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
-        d=domain(u)
-        a,b=d.a,d.b     # TODO: type not inferred right now
-        sp=space(u)
+function logkernel{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
+    d=domain(u)
+    a,b=d.a,d.b     # TODO: type not inferred right now
+    sp=space(u)
 
-        if sp.α == sp.β == .5
-            cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1})
-            y=intervaloffcircle(true,tocanonical(u,z))
-            π*$LNG(d)*$JIN(4/(b-a),cfs,y)/2
-        elseif  sp.α == sp.β == -.5
-            cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1})
-            z=tocanonical(u,z)
-            y=intervaloffcircle(true,z)
+    if sp.α == sp.β == .5
+        cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1})
+        y=intervaloffcircle(true,tocanonical(u,z))
+        π*length(d)*realintegratejin(4/(b-a),cfs,y)/2
+    elseif  sp.α == sp.β == -.5
+        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1})
+        z=tocanonical(u,z)
+        y=in(z,Interval())?intervaloncircle(true,z):intervaloffcircle(true,z)
 
-            if length(cfs) ≥1
-                ret = -cfs[1]*π*$LNG(d)*($LOG(y)+$LOG(4/(b-a)))/2
+        if length(cfs) ≥1
+            ret = -cfs[1]*π*length(d)*(logabs(y)+logabs(4/(b-a)))/2
 
-                if length(cfs) ≥2
-                    ret += -π*$LNG(d)*cfs[2]*$IOC(true,z)/2
-                end
+            if length(cfs) ≥2
+                ret += -π*length(d)*cfs[2]*realintervaloffcircle(true,z)/2
+            end
 
-                if length(cfs) ≥3
-                    ret - π*$LNG(d)*$JIN(4/(b-a),slice(cfs,3:length(cfs)),y)
-                else
-                    ret
-                end
+            if length(cfs) ≥3
+                ret - π*length(d)*realintegratejin(4/(b-a),slice(cfs,3:length(cfs)),y)
             else
-                zero(z)
+                ret
             end
         else
-            error(string($OP)*" not implemented for parameters "*string(sp.α)*","*string(sp.β))
+            zero(z)
         end
+    else
+        error("logkernel not implemented for parameters "*string(sp.α)*","*string(sp.β))
+    end
+end
+
+function stieltjesintegral{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
+    d=domain(u)
+    a,b=d.a,d.b     # TODO: type not inferred right now
+    sp=space(u)
+
+    if sp.α == sp.β == .5
+        cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1})
+        y=intervaloffcircle(true,tocanonical(u,z))
+        π*complexlength(d)*integratejin(4/(b-a),cfs,y)/2
+    elseif  sp.α == sp.β == -.5
+        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1})
+        z=tocanonical(u,z)
+        y=intervaloffcircle(true,z)
+
+        if length(cfs) ≥1
+            ret = -cfs[1]*π*complexlength(d)*(log(y)+log(4/(b-a)))/2
+
+            if length(cfs) ≥2
+                ret += -π*complexlength(d)*cfs[2]*intervaloffcircle(true,z)/2
+            end
+
+            if length(cfs) ≥3
+                ret - π*complexlength(d)*integratejin(4/(b-a),slice(cfs,3:length(cfs)),y)
+            else
+                ret
+            end
+        else
+            zero(z)
+        end
+    else
+        error("stieltjes integral not implemented for parameters "*string(sp.α)*","*string(sp.β))
+    end
+end
+
+function stieltjesintegral{S<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{S}},z)
+    d=domain(u)
+    a,b=d.a,d.b     # TODO: type not inferred right now
+    sp=space(u)
+
+    if sp.α == sp.β == .5
+        cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1})
+        y=intervaloncircle(!s,tocanonical(u,z))
+        π*complexlength(d)*integratejin(4/(b-a),cfs,y)/2
+    elseif  sp.α == sp.β == -.5
+        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1})
+        z=tocanonical(u,z)
+        y=intervaloncircle(!s,z)
+
+        if length(cfs) ≥1
+            ret = -cfs[1]*π*complexlength(d)*(log(y)+log(4/(b-a)))/2
+
+            if length(cfs) ≥2
+                ret += -π*complexlength(d)*cfs[2]*intervaloncircle(!s,z)/2
+            end
+
+            if length(cfs) ≥3
+                ret - π*complexlength(d)*integratejin(4/(b-a),slice(cfs,3:length(cfs)),y)
+            else
+                ret
+            end
+        else
+            zero(z)
+        end
+    else
+        error("stieltjes integral not implemented for parameters "*string(sp.α)*","*string(sp.β))
     end
 end
 
