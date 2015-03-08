@@ -124,8 +124,8 @@ end
 
 
 
-integratejin(cfs,y)=.5*(-cfs[1]*(log(y)+log(2))+divkhornersum(cfs,y,y,1)-divkhornersum(slice(cfs,2:length(cfs)),y,zero(y)+1,0))
-realintegratejin(cfs,y)=.5*(-cfs[1]*(logabs(y)+log(2))+realdivkhornersum(cfs,y,y,1)-realdivkhornersum(slice(cfs,2:length(cfs)),y,zero(y)+1,0))
+integratejin(c,cfs,y)=.5*(-cfs[1]*(log(y)+log(c))+divkhornersum(cfs,y,y,1)-divkhornersum(slice(cfs,2:length(cfs)),y,zero(y)+1,0))
+realintegratejin(c,cfs,y)=.5*(-cfs[1]*(logabs(y)+logabs(c))+realdivkhornersum(cfs,y,y,1)-realdivkhornersum(slice(cfs,2:length(cfs)),y,zero(y)+1,0))
 
 
 realintervaloffcircle(b,z)=real(intervaloffcircle(b,z))
@@ -145,27 +145,29 @@ for (OP,JIN,LOG,IOC) in ((:stieltjesintegral,:integratejin,:log,:intervaloffcirc
         if sp.α == sp.β == .5
             cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1})
             y=intervaloffcircle(true,tocanonical(u,z))
-            0.5π*(b-a)*$JIN(cfs,y)
+            0.5π*(b-a)*$JIN(4/(b-a),cfs,y)
         elseif  sp.α == sp.β == -.5
             cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1})
             z=tocanonical(u,z)
             y=intervaloffcircle(true,z)
 
             if length(cfs) ≥1
-                ret = -cfs[1]*0.5π*(b-a)*($LOG(y)+log(4/(b-a)))
+                ret = -cfs[1]*0.5π*(b-a)*($LOG(y)+$LOG(4/(b-a)))
 
                 if length(cfs) ≥2
                     ret += -0.5π*(b-a)*cfs[2]*$IOC(true,z)
                 end
 
                 if length(cfs) ≥3
-                    ret - π*(b-a)*$JIN(slice(cfs,3:length(cfs)),y)
+                    ret - π*(b-a)*$JIN(4/(b-a),slice(cfs,3:length(cfs)),y)
                 else
                     ret
                 end
             else
                 zero(z)
             end
+        else
+            error(string($OP)*" not implemented for parameters "*string(sp.α)*","*string(sp.β))
         end
     end
 end

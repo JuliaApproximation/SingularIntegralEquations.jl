@@ -1,7 +1,7 @@
 module SIE
     using Base, ApproxFun
 
-export cauchy, cauchyintegral, stieltjes, logkernel
+export cauchy, cauchyintegral, stieltjes, logkernel,stieltjesintegral
 
 
 import ApproxFun
