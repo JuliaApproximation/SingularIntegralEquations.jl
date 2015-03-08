@@ -136,7 +136,10 @@ realintervaloffcircle(b,z)=real(intervaloffcircle(b,z))
 # logkernel is the real part of stieljes
 #####
 
-for (OP,JIN,LOG,IOC) in ((:stieltjesintegral,:integratejin,:log,:intervaloffcircle),(:logkernel,:realintegratejin,:logabs,:realintervaloffcircle))
+complexlength(d::Interval)=(d.b-d.a)
+
+for (OP,JIN,LOG,IOC,LNG) in ((:stieltjesintegral,:integratejin,:log,:intervaloffcircle,:complexlength),
+                              (:logkernel,:realintegratejin,:logabs,:realintervaloffcircle,:length))
     @eval function $OP{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
         d=domain(u)
         a,b=d.a,d.b     # TODO: type not inferred right now
@@ -145,21 +148,21 @@ for (OP,JIN,LOG,IOC) in ((:stieltjesintegral,:integratejin,:log,:intervaloffcirc
         if sp.α == sp.β == .5
             cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1})
             y=intervaloffcircle(true,tocanonical(u,z))
-            0.5π*(b-a)*$JIN(4/(b-a),cfs,y)
+            π*$LNG(d)*$JIN(4/(b-a),cfs,y)/2
         elseif  sp.α == sp.β == -.5
             cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1})
             z=tocanonical(u,z)
             y=intervaloffcircle(true,z)
 
             if length(cfs) ≥1
-                ret = -cfs[1]*0.5π*(b-a)*($LOG(y)+$LOG(4/(b-a)))
+                ret = -cfs[1]*π*$LNG(d)*($LOG(y)+$LOG(4/(b-a)))/2
 
                 if length(cfs) ≥2
-                    ret += -0.5π*(b-a)*cfs[2]*$IOC(true,z)
+                    ret += -π*$LNG(d)*cfs[2]*$IOC(true,z)/2
                 end
 
                 if length(cfs) ≥3
-                    ret - π*(b-a)*$JIN(4/(b-a),slice(cfs,3:length(cfs)),y)
+                    ret - π*$LNG(d)*$JIN(4/(b-a),slice(cfs,3:length(cfs)),y)
                 else
                     ret
                 end
