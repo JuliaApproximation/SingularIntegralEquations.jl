@@ -146,9 +146,9 @@ function addentries!(H::Hilbert{JacobiWeight{Chebyshev}},A,kr::Range)
     @assert sp.α==sp.β==-0.5
 
     if m == 0
-        C=(d.b-d.a)/2.
+        C=length(d)/2.
         for k=kr
-            A[k,k] += k==1?C*log(.5abs(C)):-C/(k-1)
+            A[k,k] += k==1?C*log(C/2):-C/(k-1)
         end
     else
         C=(4./(d.b-d.a))^(m-1)
