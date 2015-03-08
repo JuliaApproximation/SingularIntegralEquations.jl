@@ -8,8 +8,8 @@ export OffHilbert,Stieltjes,Cauchy
 #
 ############
 
-immutable OffHilbert{D<:FunctionSpace,R<:FunctionSpace} <: BandedOperator{Complex{Float64}}
-    data::BandedMatrix{Complex{Float64}}
+immutable OffHilbert{D<:FunctionSpace,R<:FunctionSpace,T} <: BandedOperator{T}
+    data::BandedMatrix{T}
     domainspace::D
     rangespace::R
     order::Int
@@ -80,7 +80,7 @@ end
 function OffHilbert(ds::JacobiWeight{ChebyshevDirichlet{1,1}},rs::FunctionSpace,order::Int)
     @assert ds.α==ds.β==-0.5
     d = domain(ds)
-    C = (.5(d.b-d.a))^(1-order) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
+    C = order==0?length(d)/2:(.5(d.b-d.a))^(1-order) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
 
     if order == 0
         z=Fun(identity,rs)
@@ -88,7 +88,7 @@ function OffHilbert(ds::JacobiWeight{ChebyshevDirichlet{1,1}},rs::FunctionSpace,
         y=intervaloffcircle(true,x)
         yk,ykp1=y,y*y
         ret=Array(typeof(y),300)
-        ret[1]=-logabs(2y)
+        ret[1]=-logabs(2y/C)
         ret[2]=-real(yk)
         ret[3]=chop!(-ret[1]-.5real(ykp1),100eps())
         n,l,u = 3,max(length(ret[1])-1,length(ret[2])-2,length(ret[3])-3),2
@@ -119,7 +119,7 @@ function OffHilbert(ds::JacobiWeight{ChebyshevDirichlet{1,1}},rs::FunctionSpace,
         end
     end
 
-    M=bazeros(Complex{Float64},l+3,n,l,u)
+    M=bazeros(order==0?Float64:Complex{Float64},l+3,n,l,u)
     for k=1:n,j=1:length(ret[k])
         M[j,k]=C*ret[k].coefficients[j]
     end
