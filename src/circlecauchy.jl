@@ -136,8 +136,8 @@ stieltjesintegral(f::Fun{Fourier},z::Number)=stieltjesintegral(Fun(f,Laurent),z)
 
 function logkernel{T}(g::Fun{Fourier,T},z::Number)
     d=domain(g)
-    @assert d.center==0  #TODO: centre
-    r=d.radius
+    c,r=d.center,d.radius
+    z=z-c
     if abs(z) ≤r
         ret=2r*log(r)*g.coefficients[1]
         for j=2:2:length(g)
