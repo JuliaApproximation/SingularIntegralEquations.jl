@@ -134,13 +134,31 @@ end
 
 stieltjesintegral(f::Fun{Fourier},z::Number)=stieltjesintegral(Fun(f,Laurent),z)
 
-function logkernel{T<:Real}(g::Fun{Fourier,T},z::Number)
+function logkernel{T}(g::Fun{Fourier,T},z::Number)
     d=domain(g)
-    @assert d==Circle()  #TODO: radius
-    ζ=Fun(d)
-
-    f=Fun(g/ζ,Laurent)
-
-    r=real(-im*stieltjes(integrate(f-f.coefficients[2]/ζ),z))
-    abs(z)<1?r:r+2π*real(f.coefficients[2])*logabs(z)
+    @assert d.center==0  #TODO: centre
+    r=d.radius
+    if abs(z) ≤r
+        ret=2r*log(r)*g.coefficients[1]
+        for j=2:2:length(g)
+            k=div(j,2)
+            ret+=-g.coefficients[j]*sin(k*angle(z))*abs(z)^k/(k*r^(k-1))
+        end
+        for j=3:2:length(g)
+            k=div(j,2)
+            ret+=-g.coefficients[j]*cos(k*angle(z))*abs(z)^k/(k*r^(k-1))
+        end
+        π*ret
+    else
+        ret=2r*logabs(z)*g.coefficients[1]
+        for j=2:2:length(g)
+            k=div(j,2)
+            ret+=-g.coefficients[j]*sin(k*angle(z))*r^(k+1)/(k*abs(z)^k)
+        end
+        for j=3:2:length(g)
+            k=div(j,2)
+            ret+=-g.coefficients[j]*cos(k*angle(z))*r^(k+1)/(k*abs(z)^k)
+        end
+        π*ret
+    end
 end
