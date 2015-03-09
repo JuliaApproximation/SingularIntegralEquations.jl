@@ -32,7 +32,8 @@ Hilbert(AS::ReImSpace,k::Integer)=HilbertWrapper(ReImOperator(Hilbert(AS.space,k
 
 function Hilbert(S::PiecewiseSpace,n::Integer)
     sp=vec(S)
-    C=BandedOperator{Complex{Float64}}[k==j?Hilbert(sp[k],n):OffHilbert(sp[k],rangespace(Hilbert(sp[j],n)),n) for j=1:length(sp),k=1:length(sp)]
+  #This isn't correct, but how to anticipate the unifying type without creating every block to begin with?
+    C=BandedOperator{eltype(OffHilbert(sp[1],rangespace(Hilbert(sp[2],n)),n))}[k==j?Hilbert(sp[k],n):OffHilbert(sp[k],rangespace(Hilbert(sp[j],n)),n) for j=1:length(sp),k=1:length(sp)]
     HilbertWrapper(interlace(C),n)
 end
 

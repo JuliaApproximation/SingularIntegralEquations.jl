@@ -17,6 +17,8 @@ end
 
 addentries!(C::OffHilbert,A,kr)=addentries!(C.data,A,kr)
 
+Base.convert{BT<:Operator}(::Type{BT},OH::OffHilbert)=OffHilbert{typeof(OH.domainspace),typeof(OH.rangespace),eltype(BT)}(OH.data,OH.domainspace,OH.rangespace,OH.order)
+
 OffHilbert{D<:FunctionSpace,R<:FunctionSpace}(ds::D,rs::R) = OffHilbert(ds,rs,1)
 OffHilbert{B<:BandedMatrix,D<:FunctionSpace,R<:FunctionSpace}(data::B,ds::D,rs::R) = OffHilbert(data,ds,rs,1)
 
