@@ -40,7 +40,7 @@ using ApproxFun,SIE
 
     csp = [CauchyWeight{0}(sp[i]⊗sp[i]) for i=1:N]
     cwsp = [CauchyWeight{0}(sp[i]⊗wsp[i]) for i=1:N]
-    uiΓ,⨍ = Fun(t->ui(real(xid[t]),imag(xid[t])),sp),PrincipalValue(wsp)
+    uiΓ,⨍ = Fun(t->ui(real(xid[t]),imag(xid[t])),sp),DefiniteLineIntegral(wsp)
 
     g1(x,y) = 1/2
     g3(x,y) = 1/2π*logabs(y-x)

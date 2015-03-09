@@ -1,5 +1,4 @@
 include("CauchyWeight.jl")
-include("PrincipalValue.jl")
 
 # GreensFun
 
@@ -56,7 +55,7 @@ function evaluate(G::GreensFun,x,y)
     ret
 end
 
-function Base.getindex(⨍::PrincipalValue,G::GreensFun)
+function Base.getindex(⨍::DefiniteLineIntegral,G::GreensFun)
     ret = ⨍[G.kernels[1]]
     for i = 2:length(G)
         ret += ⨍[G.kernels[i]]
@@ -65,14 +64,14 @@ function Base.getindex(⨍::PrincipalValue,G::GreensFun)
     ret
 end
 
-function Base.getindex{F<:BivariateFun}(⨍::PrincipalValue,B::Matrix{F})
+function Base.getindex{F<:BivariateFun}(⨍::DefiniteLineIntegral,B::Matrix{F})
     m,n = size(B)
     wsp = domainspace(⨍)
     @assert m == length(wsp.spaces)
-    ⨍j = PrincipalValue(wsp[1])
+    ⨍j = DefiniteLineIntegral(wsp[1])
     ret = Array(typeof(⨍j[B[1,1]]),m,n)
     for j=1:n
-        ⨍j = PrincipalValue(wsp[j])
+        ⨍j = DefiniteLineIntegral(wsp[j])
         for i=1:m
             ret[i,j] = ⨍j[B[i,j]]
         end

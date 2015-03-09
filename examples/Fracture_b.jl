@@ -8,7 +8,7 @@ include("Fractureaux.jl")
 d = Interval(-1.,1.)
 sp = Space(d)
 wsp = JacobiWeight(-.5,-.5,sp)
-⨍ = PrincipalValue(wsp)
+⨍ = DefiniteLineIntegral(wsp)
 x = Fun(identity,d)
 
 β = -2.0

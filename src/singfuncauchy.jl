@@ -140,8 +140,6 @@ realintegratejin(c,cfs,y)=.5*(-cfs[1]*(logabs(y)+logabs(c))+realdivkhornersum(cf
 # logkernel is the real part of stieljes
 #####
 
-complexlength(d::Interval)=(d.b-d.a)
-
 function logkernel{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
     d=domain(u)
     a,b=d.a,d.b     # TODO: type not inferred right now

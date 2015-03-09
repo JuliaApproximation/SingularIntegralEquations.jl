@@ -22,7 +22,7 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     sp = Chebyshev(dom)
     wsp = JacobiWeight(-.5,-.5,sp)
     cwsp = CauchyWeight{0}(sp⊗wsp)
-    uiΓ,⨍ = Fun(x->ui(x,0),sp),PrincipalValue(dom)
+    uiΓ,⨍ = Fun(x->ui(x,0),sp),DefiniteLineIntegral(dom)
 
     G = ProductFun((x,y)->-besselj0(k*(y-x))/2π,cwsp) + ProductFun((x,y)->(besselj0(k*(y-x))*(im*π/2+log(abs(y-x)))/2π - bessely0(k*abs(y-x))/4)/π,sp,wsp;method=:convolution)
     L,f = ⨍[G],uiΓ
@@ -47,7 +47,7 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     wsp = ApproxFun.PiecewiseSpace([JacobiWeight(-.5,-.5,sp.spaces[i]) for i=1:N])
     cwsp = [CauchyWeight{0}(sp[i]⊗wsp[i]) for i=1:N]
     xid = Fun(identity,sp)
-    uiΓ,⨍ = Fun(t->ui(real(xid[t]),imag(xid[t])),sp),PrincipalValue(wsp)
+    uiΓ,⨍ = Fun(t->ui(real(xid[t]),imag(xid[t])),sp),DefiniteLineIntegral(wsp)
 
     g1(x,y) = -besselj0(k*abs(y-x))/2π
     g2(x,y) = (besselj0(k*abs(y-x))*(im*π/2+log(abs(y-x)))/2π - bessely0(k*abs(y-x))/4)/π
