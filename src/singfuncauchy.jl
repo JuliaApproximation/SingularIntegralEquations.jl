@@ -25,8 +25,8 @@ intervaloncircle(s::Int,x)=intervaloncircle(s==1,x)
 #TODO: These aren't quite typed correctly but the trouble comes from anticipating the unifying type without checking every element.
 
 updownjoukowskyinverse{T<:Number}(s::Bool,x::T) = in(x,Interval(-one(T),one(T))) ? intervaloncircle(s,x) : intervaloffcircle(s,x)
-updownjoukowskyinverse{T<:Number}(s::Bool,x::Vector{T}) = Complex{T}[updownjoukowskyinverse(s,xk) for xk in x]
-updownjoukowskyinverse{T<:Number}(s::Bool,x::Array{T,2}) = Complex{T}[updownjoukowskyinverse(s,x[k,j]) for k=1:size(x,1),j=1:size(x,2)]
+updownjoukowskyinverse{T<:Number}(s::Bool,x::Vector{T}) = Complex{real(T)}[updownjoukowskyinverse(s,xk) for xk in x]
+updownjoukowskyinverse{T<:Number}(s::Bool,x::Array{T,2}) = Complex{real(T)}[updownjoukowskyinverse(s,x[k,j]) for k=1:size(x,1),j=1:size(x,2)]
 
 function hornersum(cfs,y0)
     ret=zero(y0)
