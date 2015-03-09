@@ -1,5 +1,7 @@
 ## SingFun cauchy
 
+export logabs
+logabs(x)=log(abs2(x))/2
 
 # sqrtx2 is analytic continuation of sqrt(z^2-1)
 sqrtx2(z::Complex)=sqrt(z-1)*sqrt(z+1)
@@ -11,8 +13,6 @@ function sqrtx2(f::Fun)
     linsolve([B,A],sqrtx2(first(f));tolerance=length(f)*10E-15)
 end
 
-logabs(x)=log(abs2(x))/2
-
 # intervaloffcircle maps the slit plane to the interior(true)/exterior(false) disk
 # intervaloncircle maps the interval to the upper(true)/lower(false) half circle
 
@@ -21,6 +21,12 @@ intervaloncircle(s::Bool,x)=x+1.im*(s?1:-1).*sqrt(1-x).*sqrt(x+1)
 
 intervaloffcircle(s::Int,x)=intervaloffcircle(s==1,x)
 intervaloncircle(s::Int,x)=intervaloncircle(s==1,x)
+
+#TODO: These aren't quite typed correctly but the trouble comes from anticipating the unifying type without checking every element.
+
+updownjoukowskyinverse{T<:Number}(s::Bool,x::T) = in(x,Interval(-one(T),one(T))) ? intervaloncircle(s,x) : intervaloffcircle(s,x)
+updownjoukowskyinverse{T<:Number}(s::Bool,x::Vector{T}) = Complex{T}[updownjoukowskyinverse(s,xk) for xk in x]
+updownjoukowskyinverse{T<:Number}(s::Bool,x::Array{T,2}) = Complex{T}[updownjoukowskyinverse(s,x[k,j]) for k=1:size(x,1),j=1:size(x,2)]
 
 function hornersum(cfs,y0)
     ret=zero(y0)
@@ -58,22 +64,23 @@ function realdivkhornersum(cfs,y0,ys,s)
     ret
 end
 
-
+# Mothballed via canonicalization.
+#=
 absqrt(a,b,z::Complex)=sqrt(z-a)*sqrt(z-b)
 absqrt(a,b,x::Real)=x<a?-sqrt(a-x)*sqrt(b-x):sqrt(x-a)*sqrt(x-b)
 absqrt(s::Bool,a,b,z)=(s?1:-1)*im*sqrt(z-a)*sqrt(b-z)
 absqrt(s::Int,a,b,z)=absqrt(s==1,a,b,z)
+=#
 
 
-
-function cauchy(u::Fun{JacobiWeight{Chebyshev}},z::Number)
+function cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z::Number)
     sp=space(u)
 
     if sp.α == sp.β == .5
-        cfs = coefficients(u.coefficients,Chebyshev,Ultraspherical{1})
+        cfs = coefficients(u.coefficients,sp.space,Ultraspherical{1})
         0.5im*hornersum(cfs,intervaloffcircle(true,tocanonical(u,z)))
     elseif sp.α == sp.β == -.5
-        cfs = coefficients(u.coefficients,Chebyshev,ChebyshevDirichlet{1,1})
+        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1})
         z=tocanonical(u,z)
 
 
@@ -94,14 +101,14 @@ function cauchy(u::Fun{JacobiWeight{Chebyshev}},z::Number)
 end
 
 
-function cauchy(s::Bool,u::Fun{JacobiWeight{Chebyshev}},x::Number)
+function cauchy{S<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{S}},x::Number)
     sp=space(u)
 
     if sp.α == sp.β == .5
-        cfs=coefficients(u.coefficients,Chebyshev,Ultraspherical{1})
+        cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1})
         0.5im*hornersum(cfs,intervaloncircle(!s,tocanonical(u,x)))
     elseif sp.α == sp.β == -.5
-        cfs = coefficients(u.coefficients,Chebyshev,ChebyshevDirichlet{1,1})
+        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1})
         x=tocanonical(u,x)
 
         if length(cfs) ≥1
@@ -127,9 +134,6 @@ end
 integratejin(c,cfs,y)=.5*(-cfs[1]*(log(y)+log(c))+divkhornersum(cfs,y,y,1)-divkhornersum(slice(cfs,2:length(cfs)),y,zero(y)+1,0))
 realintegratejin(c,cfs,y)=.5*(-cfs[1]*(logabs(y)+logabs(c))+realdivkhornersum(cfs,y,y,1)-realdivkhornersum(slice(cfs,2:length(cfs)),y,zero(y)+1,0))
 
-
-realintervaloffcircle(b,z)=in(z,Interval())?real(z):real(intervaloffcircle(b,z))
-
 #########
 # stieltjesintegral is an indefinite integral of stieltjes
 # normalized so that there is no constant term
@@ -145,18 +149,19 @@ function logkernel{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
 
     if sp.α == sp.β == .5
         cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1})
-        y=in(z,Interval())?intervaloffcircle(true,tocanonical(u,z)):intervaloncircle(true,tocanonical(u,z))
+        z=tocanonical(u,z)
+        y = updownjoukowskyinverse(true,z)
         π*length(d)*realintegratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
         cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1})
         z=tocanonical(u,z)
-        y=in(z,Interval())?intervaloncircle(true,z):intervaloffcircle(true,z)
+        y = updownjoukowskyinverse(true,z)
 
         if length(cfs) ≥1
             ret = -cfs[1]*π*length(d)*(logabs(y)+logabs(4/(b-a)))/2
 
             if length(cfs) ≥2
-                ret += -π*length(d)*cfs[2]*realintervaloffcircle(true,z)/2
+                ret += -π*length(d)*cfs[2]*real(y)/2
             end
 
             if length(cfs) ≥3

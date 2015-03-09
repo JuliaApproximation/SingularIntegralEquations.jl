@@ -1,4 +1,6 @@
-
+# I think it makes more sense to let the array into the function.
+# That way the coefficient conversions happen once.
+#=
 function cauchy{S,T}(f::Fun{S,T},z::Array)
     ret=Array(Complex{Float64},size(z)...)
     for k=1:size(z,1),j=1:size(z,2)
@@ -20,13 +22,15 @@ function cauchy{S,T}(s,f::Fun{S,T},z::Array)
     end
     ret
 end
+=#
 
-
-
-
-cauchy{F<:Fun}(v::Vector{F},z)=mapreduce(f->cauchy(f,z),+,v)
-cauchy(v::Vector{Any},z)=mapreduce(f->cauchy(f,z),+,v)
-cauchy{P<:PiecewiseSpace,T}(v::Fun{P,T},z::Number)=cauchy(vec(v),z)
+for op in (:(hilbert),:(stieltjes),:(cauchy),:(logkernel),:(stieltjesintegral),:(cauchyintegral))
+    @eval begin
+        $op{F<:Fun}(v::Vector{F},z)=mapreduce(f->$op(f,z),+,v)
+        $op(v::Vector{Any},z)=mapreduce(f->$op(f,z),+,v)
+        $op{P<:PiecewiseSpace,T}(v::Fun{P,T},z)=$op(vec(v),z)
+    end
+end
 
 
 function cauchy{S<:ArraySpace,T}(v::Fun{S,T},z::Number)
