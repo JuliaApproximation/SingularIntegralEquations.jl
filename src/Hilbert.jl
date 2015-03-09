@@ -83,22 +83,37 @@ function addentries!(H::Hilbert{Hardy{false}},A,kr::Range)
 end
 
 # Override sumspace
-Hilbert(F::Fourier,k::Integer)=Hilbert{typeof(F),Complex{Float64}}(F,k)
+Hilbert(F::Fourier,k::Integer)=Hilbert{typeof(F),k==0?Float64:Complex{Float64}}(F,k)
 
-bandinds{F<:Fourier}(::Hilbert{F})=-1,1
+bandinds{F<:Fourier}(H::Hilbert{F})=-H.order,H.order
 domainspace{F<:Fourier}(H::Hilbert{F})=H.space
 rangespace{F<:Fourier}(H::Hilbert{F})=H.space
 
 function addentries!{F<:Fourier}(H::Hilbert{F},A,kr::Range)
-    @assert isa(domain(H),Circle) && H.order == 1
-    for k=kr
-        if k==1
-            A[1,1]+=1.0im
-        elseif iseven(k)
-            A[k,k+1]-=1
-        else   #isodd(k)
-            A[k,k-1]+=1
+    @assert isa(domain(H),Circle)
+
+    r = domain(H).radius
+    if H.order == 0
+        for k=kr
+            if k==1
+                A[1,1]+=2r*log(r)
+            else
+                j=div(k,2)
+                A[k,k]+=-r/j
+            end
         end
+    elseif H.order == 1
+        for k=kr
+            if k==1
+                A[1,1]+=1.0im
+            elseif iseven(k)
+                A[k,k+1]-=1
+            else   #isodd(k)
+                A[k,k-1]+=1
+            end
+        end
+    else
+            error("Hilbert order $(H.order) not implemented for Fourier")
     end
 
     A
