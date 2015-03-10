@@ -53,23 +53,6 @@ for (Op,OpWrap,OffOp) in ((:Hilbert,:HilbertWrapper,:OffHilbert),(:SingularInteg
             Ultraspherical{max(H.order-1,0)}(domain(H))
         end
         bandinds{λ}(H::$Op{JacobiWeight{Ultraspherical{λ}}})=-λ,H.order-λ
-
-        function $Op(S::JacobiWeight{Chebyshev},n::Int)
-            if S.α==S.β==-0.5
-                $Op{JacobiWeight{Chebyshev},Float64}(S,n)
-            elseif S.α==S.β==0.5
-                d=domain(S)
-                if n==1
-                    J=JacobiWeight(0.5,0.5,Ultraspherical{1}(d))
-                    $OpWrap($Op(J,n)*Conversion(S,J),n)
-                else
-                    J=JacobiWeight(-0.5,-0.5,Chebyshev(d))
-                    $OpWrap($Op(J,n)*Conversion(S,J),n)
-                end
-            else
-                error("$Op not implemented for parameters $(S.α),$(S.β)")
-            end
-        end
     end
 end
 
@@ -152,12 +135,60 @@ function addentries!{F<:Fourier}(H::Hilbert{F},A,kr::Range)
 end
 
 
+function addentries!{F<:Fourier}(H::SingularIntegral{F},A,kr::Range)
+    @assert isa(domain(H),Circle)
+
+    r = domain(H).radius
+    if H.order == 0
+        for k=kr
+            if k==1
+                A[1,1]+=2r*log(r)
+            else
+                j=div(k,2)
+                A[k,k]+=-r/j
+            end
+        end
+    elseif H.order == 1
+        for k=kr
+            if k==1
+                A[1,1]+=0
+            elseif iseven(k)
+                A[k,k+1]-=1
+            else   #isodd(k)
+                A[k,k-1]+=1
+            end
+        end
+    else
+            error("Hilbert order $(H.order) not implemented for Fourier")
+    end
+
+    A
+end
+
 
 
 ## JacobiWeight
 
-for (Op,Len) in ((:Hilbert,:complexlength),(:SingularIntegral,:length))
+for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),(:SingularIntegral,:SingularIntegralWrapper,:length))
     @eval begin
+
+        function $Op(S::JacobiWeight{Chebyshev},n::Int)
+            if S.α==S.β==-0.5
+                $Op{JacobiWeight{Chebyshev},eltype($Len(domain(S)))}(S,n)
+            elseif S.α==S.β==0.5
+                d=domain(S)
+                if n==1
+                    J=JacobiWeight(0.5,0.5,Ultraspherical{1}(d))
+                    $OpWrap($Op(J,n)*Conversion(S,J),n)
+                else
+                    J=JacobiWeight(-0.5,-0.5,Chebyshev(d))
+                    $OpWrap($Op(J,n)*Conversion(S,J),n)
+                end
+            else
+                error("$Op not implemented for parameters $(S.α),$(S.β)")
+            end
+        end
+
         function addentries!(H::$Op{JacobiWeight{Chebyshev}},A,kr::Range)
             m=H.order
             d=domain(H)
@@ -166,13 +197,12 @@ for (Op,Len) in ((:Hilbert,:complexlength),(:SingularIntegral,:length))
             @assert isa(d,Interval)
             @assert sp.α==sp.β==-0.5
 
+            C=(4./$Len(d))^(m-1)
             if m == 0
-                C=$Len(d)/2.
                 for k=kr
-                    A[k,k] += k==1?C*log(C/2):-C/(k-1)
+                    A[k,k] -= k==1?-2C*log(C):2C/(k-1)
                 end
             else
-                C=(4./$Len(d))^(m-1)
                 for k=kr
                     A[k,k+m] += C
                 end

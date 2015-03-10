@@ -37,104 +37,106 @@ for Op in (:OffHilbert,:OffSingularIntegral)
     end
 end
 
-## OffHilbert
+## JacobiWeight
 
+for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
+    @eval begin
+        function $Op(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace,order::Int)
+            @assert ds.α==ds.β==0.5
+            d = domain(ds)
+            C = (.5*$Len(d))^(1-order) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
 
-function OffHilbert(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace,order::Int)
-    @assert ds.α==ds.β==0.5
-    d = domain(ds)
-    C = (.5(d.b-d.a))^(1-order) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
+            if order == 0
+                z=Fun(identity,rs)
+                x=tocanonical(ds,z)
+                y=intervaloffcircle(true,x)
+                yk,ykp1=y,y*y
+                ret=Array(typeof(y),300)
+                ret[1]=-.5logabs(2y)+.25real(ykp1)
+                n,l,u = 1,length(ret[1])-1,0
+                while norm(ret[n].coefficients)>100eps()
+                    n+=1
+                    if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
+                    ykp1*=y
+                    ret[n]=chop!(.5*(real(ykp1)/(n+1)-real(yk)/(n-1)) ,100eps())  #will be length 2n-1
+                    yk*=y
+                    u+=1   # upper bandwidth
+                    l=max(l,length(ret[n])-n)
+                end
+            elseif order == 1
+                z=Fun(identity,rs)
+                x=tocanonical(ds,z)
+                y=intervaloffcircle(true,x)
+                ret=Array(typeof(y),300)
+                ret[1]=-y
+                n,l,u = 1,length(ret[1])-1,0
+                while norm(ret[n].coefficients)>100eps()
+                    n+=1
+                    if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
+                    ret[n]=chop!(y*ret[n-1],100eps())  #will be length 2n-1
+                    u+=1   # upper bandwidth
+                    l=max(l,length(ret[n])-n)
+                end
+            end
 
-    if order == 0
-        z=Fun(identity,rs)
-        x=tocanonical(ds,z)
-        y=intervaloffcircle(true,x)
-        yk,ykp1=y,y*y
-        ret=Array(typeof(y),300)
-        ret[1]=-.5logabs(2y)+.25real(ykp1)
-        n,l,u = 1,length(ret[1])-1,0
-        while norm(ret[n].coefficients)>100eps()
-            n+=1
-            if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
-            ykp1*=y
-            ret[n]=chop!(.5*(real(ykp1)/(n+1)-real(yk)/(n-1)) ,100eps())  #will be length 2n-1
-            yk*=y
-            u+=1   # upper bandwidth
-            l=max(l,length(ret[n])-n)
+            M=bazeros(promote_type(typeof(C),eltype(y)),l+1,n,l,u)
+            for k=1:n,j=1:length(ret[k])
+                M[j,k]=C*ret[k].coefficients[j]
+            end
+            $Op(M,ds,rs,order)
         end
-    elseif order == 1
-        z=Fun(identity,rs)
-        x=tocanonical(ds,z)
-        y=intervaloffcircle(true,x)
-        ret=Array(typeof(y),300)
-        ret[1]=-y
-        n,l,u = 1,length(ret[1])-1,0
-        while norm(ret[n].coefficients)>100eps()
-            n+=1
-            if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
-            ret[n]=chop!(y*ret[n-1],100eps())  #will be length 2n-1
-            u+=1   # upper bandwidth
-            l=max(l,length(ret[n])-n)
-        end
-    end
 
-    M=bazeros(Complex{Float64},l+1,n,l,u)
-    for k=1:n,j=1:length(ret[k])
-        M[j,k]=C*ret[k].coefficients[j]
+        function $Op(ds::JacobiWeight{ChebyshevDirichlet{1,1}},rs::FunctionSpace,order::Int)
+            @assert ds.α==ds.β==-0.5
+            d = domain(ds)
+            C = (.5*$Len(d))^(1-order) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
+
+            if order == 0
+                z=Fun(identity,rs)
+                x=tocanonical(ds,z)
+                y=intervaloffcircle(true,x)
+                yk,ykp1=y,y*y
+                ret=Array(typeof(y),300)
+                ret[1]=-logabs(2y/C)
+                ret[2]=-real(yk)
+                ret[3]=chop!(-ret[1]-.5real(ykp1),100eps())
+                n,l,u = 3,max(length(ret[1])-1,length(ret[2])-2,length(ret[3])-3),2
+                while norm(ret[n].coefficients)>100eps()
+                    n+=1
+                    if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
+                    ykp1*=y
+                    ret[n]=chop!(real(yk)/(n-3)-real(ykp1)/(n-1),100eps())  #will be length 2n-1
+                    yk*=y
+                    u+=1   # upper bandwidth
+                    l=max(l,length(ret[n])-n)
+                end
+            elseif order == 1
+                z=Fun(identity,rs)
+                x=tocanonical(ds,z)
+                y=intervaloffcircle(true,x)
+                ret=Array(typeof(y),300)
+                ret[1]=-1/sqrtx2(x)
+                ret[2]=x*ret[1]+1
+                ret[3]=2y
+                n,l,u = 3,max(length(ret[1])-1,length(ret[2])-2,length(ret[3])-3),2
+                while norm(ret[n].coefficients)>100eps()
+                    n+=1
+                    if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
+                    ret[n]=chop!(y*ret[n-1],100eps())  #will be length 2n-1
+                    u+=1   # upper bandwidth
+                    l=max(l,length(ret[n])-n)
+                end
+            end
+
+            M=bazeros(promote_type(typeof(C),eltype(y)),l+3,n,l,u)
+            for k=1:n,j=1:length(ret[k])
+                M[j,k]=C*ret[k].coefficients[j]
+            end
+            $Op(M,ds,rs,order)
+        end
+
     end
-    OffHilbert(M,ds,rs,order)
 end
-
-
-function OffHilbert(ds::JacobiWeight{ChebyshevDirichlet{1,1}},rs::FunctionSpace,order::Int)
-    @assert ds.α==ds.β==-0.5
-    d = domain(ds)
-    C = order==0?length(d)/2:(.5(d.b-d.a))^(1-order) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
-
-    if order == 0
-        z=Fun(identity,rs)
-        x=tocanonical(ds,z)
-        y=intervaloffcircle(true,x)
-        yk,ykp1=y,y*y
-        ret=Array(typeof(y),300)
-        ret[1]=-logabs(2y/C)
-        ret[2]=-real(yk)
-        ret[3]=chop!(-ret[1]-.5real(ykp1),100eps())
-        n,l,u = 3,max(length(ret[1])-1,length(ret[2])-2,length(ret[3])-3),2
-        while norm(ret[n].coefficients)>100eps()
-            n+=1
-            if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
-            ykp1*=y
-            ret[n]=chop!(real(yk)/(n-3)-real(ykp1)/(n-1),100eps())  #will be length 2n-1
-            yk*=y
-            u+=1   # upper bandwidth
-            l=max(l,length(ret[n])-n)
-        end
-    elseif order == 1
-        z=Fun(identity,rs)
-        x=tocanonical(ds,z)
-        y=intervaloffcircle(true,x)
-        ret=Array(typeof(y),300)
-        ret[1]=-1/sqrtx2(x)
-        ret[2]=x*ret[1]+1
-        ret[3]=2y
-        n,l,u = 3,max(length(ret[1])-1,length(ret[2])-2,length(ret[3])-3),2
-        while norm(ret[n].coefficients)>100eps()
-            n+=1
-            if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
-            ret[n]=chop!(y*ret[n-1],100eps())  #will be length 2n-1
-            u+=1   # upper bandwidth
-            l=max(l,length(ret[n])-n)
-        end
-    end
-
-    M=bazeros(order==0?Float64:Complex{Float64},l+3,n,l,u)
-    for k=1:n,j=1:length(ret[k])
-        M[j,k]=C*ret[k].coefficients[j]
-    end
-    OffHilbert(M,ds,rs,order)
-end
-
 
 function OffHilbert(DS::Laurent,RS::Laurent,order::Int)
     ds=domain(DS);rs=domain(RS)
