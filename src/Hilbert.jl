@@ -1,47 +1,85 @@
-export Hilbert
+export Hilbert,SingularIntegral
 
-################################################
-# Hilbert implements the Hilbert operator
-# Note that the Hilbert operator can be defined using
+#############
+# Hilbert implements the Hilbert operator as a contour integral:
 #
-#    H = im*C^+  +  im*C^-
+#       OH f(z) := 1/π\int_Γ f(t)/(t-z) dt,  z ∈ Γ
 #
-# where C^± are the left/right limits of the Cauchy transform
-###############################################
+# SingularIntegral implements the Hilbert operator as a line integral:
+#
+#       SI f(z) := 1/π\int_Γ f(t)/(t-z) ds(t),  z ∈ Γ
+#
+#############
 
 ApproxFun.@calculus_operator(Hilbert,AbstractHilbert,HilbertWrapper)
+ApproxFun.@calculus_operator(SingularIntegral,AbstractSingularIntegral,SingularIntegralWrapper)
 
-## Convenience routines
+for (Op,OpWrap,OffOp) in ((:Hilbert,:HilbertWrapper,:OffHilbert),(:SingularIntegral,:SingularIntegralWrapper,:OffSingularIntegral))
+    @eval begin
+        ## Convenience routines
+        $Op(d::IntervalDomain,n::Int)=$Op(JacobiWeight(-.5,-.5,Chebyshev(d)),n)
+        $Op(d::IntervalDomain)=$Op(JacobiWeight(-.5,-.5,Chebyshev(d)))
+        $Op(d::PeriodicDomain,n::Int)=$Op(Laurent(d),n)
+        $Op(d::PeriodicDomain)=$Op(Laurent(d))
+        $Op(d::Domain)=$Op(Space(d))
 
-Hilbert(d::IntervalDomain,n::Integer)=Hilbert(JacobiWeight(-.5,-.5,Chebyshev(d)),n)
-Hilbert(d::IntervalDomain)=Hilbert(JacobiWeight(-.5,-.5,Chebyshev(d)))
-Hilbert(d::PeriodicDomain,n::Integer)=Hilbert(Laurent(d),n)
-Hilbert(d::PeriodicDomain)=Hilbert(Laurent(d))
-Hilbert(d::Domain)=Hilbert(Space(d))
+        ## Modifiers for SumSpace, ArraySpace, ReImSpace, and PiecewiseSpace
 
+        #TODO: do in @calculus_operator?
+        $Op(S::SumSpace,n::Int)=$OpWrap(sumblkdiagm([$Op(S.spaces[1],n),$Op(S.spaces[2],n)]),n)
+        $Op(AS::ArraySpace,n::Int)=$OpWrap(DiagonalArrayOperator($Op(AS.space,n),size(AS)),n)
+        $Op(AS::ReImSpace,n::Int)=$OpWrap(ReImOperator($Op(AS.space,n)),n)
+        function $Op(S::PiecewiseSpace,n::Int)
+            sp=vec(S)
+            #This isn't correct, but how to anticipate the unifying type without creating every block to begin with?
+            C=BandedOperator{eltype($OffOp(sp[1],rangespace($Op(sp[2],n)),n))}[k==j?$Op(sp[k],n):$OffOp(sp[k],rangespace($Op(sp[j],n)),n) for j=1:length(sp),k=1:length(sp)]
+            $OpWrap(interlace(C),n)
+        end
 
-## Modifiers including SumSpace and ArraySpace
+        bandinds{s}(::$Op{Hardy{s}})=0,0
+        domainspace{s}(H::$Op{Hardy{s}})=H.space
+        rangespace{s}(H::$Op{Hardy{s}})=H.space
 
-#TODO: do in @calculus_operator?
-Hilbert(S::SumSpace,k::Integer)=HilbertWrapper(sumblkdiagm([Hilbert(S.spaces[1],k),Hilbert(S.spaces[2],k)]),k)
-Hilbert(AS::ArraySpace,k::Integer)=HilbertWrapper(DiagonalArrayOperator(Hilbert(AS.space,k),size(AS)),k)
-Hilbert(AS::ReImSpace,k::Integer)=HilbertWrapper(ReImOperator(Hilbert(AS.space,k)),k)
+        bandinds{F<:Fourier}(H::$Op{F})=-H.order,H.order
+        domainspace{F<:Fourier}(H::$Op{F})=H.space
+        rangespace{F<:Fourier}(H::$Op{F})=H.space
 
-## PiecewiseSpace
+        function rangespace(H::$Op{JacobiWeight{Chebyshev}})
+            @assert domainspace(H).α==domainspace(H).β==-0.5
+            Ultraspherical{H.order}(domain(H))
+        end
+        function rangespace(H::$Op{JacobiWeight{Ultraspherical{1}}})
+            @assert domainspace(H).α==domainspace(H).β==0.5
+            Ultraspherical{max(H.order-1,0)}(domain(H))
+        end
+        bandinds{λ}(H::$Op{JacobiWeight{Ultraspherical{λ}}})=-λ,H.order-λ
 
-
-function Hilbert(S::PiecewiseSpace,n::Integer)
-    sp=vec(S)
-  #This isn't correct, but how to anticipate the unifying type without creating every block to begin with?
-    C=BandedOperator{eltype(OffHilbert(sp[1],rangespace(Hilbert(sp[2],n)),n))}[k==j?Hilbert(sp[k],n):OffHilbert(sp[k],rangespace(Hilbert(sp[j],n)),n) for j=1:length(sp),k=1:length(sp)]
-    HilbertWrapper(interlace(C),n)
+        function $Op(S::JacobiWeight{Chebyshev},n::Int)
+            if S.α==S.β==-0.5
+                $Op{JacobiWeight{Chebyshev},Float64}(S,n)
+            elseif S.α==S.β==0.5
+                d=domain(S)
+                if n==1
+                    J=JacobiWeight(0.5,0.5,Ultraspherical{1}(d))
+                    $OpWrap($Op(J,n)*Conversion(S,J),n)
+                else
+                    J=JacobiWeight(-0.5,-0.5,Chebyshev(d))
+                    $OpWrap($Op(J,n)*Conversion(S,J),n)
+                end
+            else
+                error("$Op not implemented for parameters $(S.α),$(S.β)")
+            end
+        end
+    end
 end
 
-## Circle
+# Override sumspace
+Hilbert(F::Fourier,n::Int)=Hilbert{typeof(F),Complex{Float64}}(F,n)
+SingularIntegral(F::Fourier,n::Int)=SingularIntegral{typeof(F),Float64}(F,n)
 
-bandinds{s}(::Hilbert{Hardy{s}})=0,0
-domainspace{s}(H::Hilbert{Hardy{s}})=H.space
-rangespace{s}(H::Hilbert{Hardy{s}})=H.space
+### Operator Entries
+
+## Circle
 
 function addentries!(H::Hilbert{Hardy{true}},A,kr::Range)
 ##TODO: Add scale for different radii.
@@ -83,13 +121,6 @@ function addentries!(H::Hilbert{Hardy{false}},A,kr::Range)
     A
 end
 
-# Override sumspace
-Hilbert(F::Fourier,k::Integer)=Hilbert{typeof(F),k==0?Float64:Complex{Float64}}(F,k)
-
-bandinds{F<:Fourier}(H::Hilbert{F})=-H.order,H.order
-domainspace{F<:Fourier}(H::Hilbert{F})=H.space
-rangespace{F<:Fourier}(H::Hilbert{F})=H.space
-
 function addentries!{F<:Fourier}(H::Hilbert{F},A,kr::Range)
     @assert isa(domain(H),Circle)
 
@@ -125,83 +156,58 @@ end
 
 ## JacobiWeight
 
-function Hilbert(S::JacobiWeight{Chebyshev},k::Integer)
-    if S.α==S.β==-0.5
-        Hilbert{JacobiWeight{Chebyshev},Float64}(S,k)
-    elseif S.α==S.β==0.5
-        d=domain(S)
-        if k==1
-            J=JacobiWeight(0.5,0.5,Ultraspherical{1}(d))
-            HilbertWrapper(Hilbert(J,k)*Conversion(S,J),k)
-        else
-            J=JacobiWeight(-0.5,-0.5,Chebyshev(d))
-            HilbertWrapper(Hilbert(J,k)*Conversion(S,J),k)
+for (Op,Len) in ((:Hilbert,:complexlength),(:SingularIntegral,:length))
+    @eval begin
+        function addentries!(H::$Op{JacobiWeight{Chebyshev}},A,kr::Range)
+            m=H.order
+            d=domain(H)
+            sp=domainspace(H)
+
+            @assert isa(d,Interval)
+            @assert sp.α==sp.β==-0.5
+
+            if m == 0
+                C=$Len(d)/2.
+                for k=kr
+                    A[k,k] += k==1?C*log(C/2):-C/(k-1)
+                end
+            else
+                C=(4./$Len(d))^(m-1)
+                for k=kr
+                    A[k,k+m] += C
+                end
+            end
+
+            A
         end
-    else
-        error("Hilbert not implemented for parameters $(S.α),$(S.β)")
-    end
-end
 
-function rangespace(H::Hilbert{JacobiWeight{Chebyshev}})
-    @assert domainspace(H).α==domainspace(H).β==-0.5
-    Ultraspherical{H.order}(domain(H))
-end
-function rangespace(H::Hilbert{JacobiWeight{Ultraspherical{1}}})
-    @assert domainspace(H).α==domainspace(H).β==0.5
-    Ultraspherical{max(H.order-1,0)}(domain(H))
-end
-bandinds{λ}(H::Hilbert{JacobiWeight{Ultraspherical{λ}}})=-λ,H.order-λ
+        function addentries!(H::$Op{JacobiWeight{Ultraspherical{1}}},A,kr::UnitRange)
+            m=H.order
+            d=domain(H)
+            sp=domainspace(H)
 
+            @assert isa(d,Interval)
+            @assert sp.α==sp.β==0.5
 
-function addentries!(H::Hilbert{JacobiWeight{Chebyshev}},A,kr::Range)
-    m=H.order
-    d=domain(H)
-    sp=domainspace(H)
+            if m == 1
+                for k=max(kr[1],2):kr[end]
+                    A[k,k-1] -= 1.
+                end
+            else
+                C=(4./$Len(d))^(m-1)
+                for k=kr
+                    A[k,k+m-2] -= .5C*k/(m-1)
+                end
+            end
 
-    @assert isa(d,Interval)
-    @assert sp.α==sp.β==-0.5
-
-    if m == 0
-        C=length(d)/2.
-        for k=kr
-            A[k,k] += k==1?C*log(C/2):-C/(k-1)
-        end
-    else
-        C=(4./(d.b-d.a))^(m-1)
-        for k=kr
-            A[k,k+m] += C
-        end
-    end
-
-    A
-end
-
-function addentries!(H::Hilbert{JacobiWeight{Ultraspherical{1}}},A,kr::UnitRange)
-    m=H.order
-    d=domain(H)
-    sp=domainspace(H)
-
-    @assert isa(d,Interval)
-    @assert sp.α==sp.β==0.5
-
-    if m == 1
-        for k=max(kr[1],2):kr[end]
-            A[k,k-1] -= 1.
-        end
-    else
-        C=(4./(d.b-d.a))^(m-1)
-        for k=kr
-            A[k,k+m-2] -= .5C*k/(m-1)
+            A
         end
     end
-
-    A
 end
-
 
 ## CurveSpace
 
-function Hilbert(S::JacobiWeight{OpenCurveSpace{Chebyshev}},k::Integer)
+function Hilbert(S::JacobiWeight{OpenCurveSpace{Chebyshev}},k::Int)
     @assert k==1
     #TODO: choose dimensions
     m,n=40,40

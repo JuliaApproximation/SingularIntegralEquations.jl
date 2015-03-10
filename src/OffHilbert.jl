@@ -1,4 +1,4 @@
-export OffHilbert,Stieltjes,Cauchy
+export OffHilbert,OffSingularIntegral,Stieltjes,Cauchy
 
 
 #############
@@ -6,29 +6,36 @@ export OffHilbert,Stieltjes,Cauchy
 #
 #       OH f(z) := 1/π\int_Γ f(t)/(t-z) dt,  z ∉ Γ
 #
-############
+# OffSingularIntegral implements:
+#
+#       OSI f(z) := 1/π\int_Γ f(t)/(t-z) ds(t),  z ∉ Γ
+#
+#############
 
-immutable OffHilbert{D<:FunctionSpace,R<:FunctionSpace,T} <: BandedOperator{T}
-    data::BandedMatrix{T}
-    domainspace::D
-    rangespace::R
-    order::Int
+for Op in (:OffHilbert,:OffSingularIntegral)
+    @eval begin
+        immutable $Op{D<:FunctionSpace,R<:FunctionSpace,T} <: BandedOperator{T}
+            data::BandedMatrix{T}
+            domainspace::D
+            rangespace::R
+            order::Int
+        end
+
+        addentries!(C::$Op,A,kr)=addentries!(C.data,A,kr)
+
+        Base.convert{BT<:Operator}(::Type{BT},OH::$Op)=$Op{typeof(OH.domainspace),typeof(OH.rangespace),eltype(BT)}(OH.data,OH.domainspace,OH.rangespace,OH.order)
+
+        $Op{D<:FunctionSpace,R<:FunctionSpace}(ds::D,rs::R) = $Op(ds,rs,1)
+        $Op{B<:BandedMatrix,D<:FunctionSpace,R<:FunctionSpace}(data::B,ds::D,rs::R) = $Op(data,ds,rs,1)
+
+        $Op(ds::PeriodicDomain,rs::PeriodicDomain,order)=$Op(Laurent(ds),Laurent(rs),order)
+        $Op(ds::PeriodicDomain,rs::PeriodicDomain)=$Op(Laurent(ds),Laurent(rs))
+
+        domainspace(C::$Op)=C.domainspace
+        rangespace(C::$Op)=C.rangespace
+        bandinds(C::$Op)=bandinds(C.data)
+    end
 end
-
-addentries!(C::OffHilbert,A,kr)=addentries!(C.data,A,kr)
-
-Base.convert{BT<:Operator}(::Type{BT},OH::OffHilbert)=OffHilbert{typeof(OH.domainspace),typeof(OH.rangespace),eltype(BT)}(OH.data,OH.domainspace,OH.rangespace,OH.order)
-
-OffHilbert{D<:FunctionSpace,R<:FunctionSpace}(ds::D,rs::R) = OffHilbert(ds,rs,1)
-OffHilbert{B<:BandedMatrix,D<:FunctionSpace,R<:FunctionSpace}(data::B,ds::D,rs::R) = OffHilbert(data,ds,rs,1)
-
-OffHilbert(ds::PeriodicDomain,rs::PeriodicDomain,order)=OffHilbert(Laurent(ds),Laurent(rs),order)
-OffHilbert(ds::PeriodicDomain,rs::PeriodicDomain)=OffHilbert(Laurent(ds),Laurent(rs))
-
-domainspace(C::OffHilbert)=C.domainspace
-rangespace(C::OffHilbert)=C.rangespace
-bandinds(C::OffHilbert)=bandinds(C.data)
-
 
 ## OffHilbert
 

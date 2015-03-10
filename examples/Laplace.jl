@@ -56,7 +56,7 @@ using ApproxFun,SIE
 
     L,f = ⨍[G],uiΓ
 =#
-    uiΓ,H0 = chop(depiece([Fun(t->ui(real(t),imag(t)),sp[i],1024) for i=1:N]),eps()),0.5Hilbert(wsp,0)
+    uiΓ,H0 = chop(depiece([Fun(t->ui(real(t),imag(t)),sp[i],1024) for i=1:N]),eps()),0.5SingularIntegral(wsp,0)
 #    uiΓ,H0 = Fun(t->ui(real(xid[t]),imag(xid[t])),sp),0.5Hilbert(wsp,0)
     L,f = H0,uiΓ
 
