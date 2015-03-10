@@ -48,9 +48,9 @@ using ApproxFun,SIE
     G = Array(GreensFun,N,N)
     for i=1:N,j=1:N
         if i == j
-            G[i,i] = GreensFun([ProductFun(g1,cwsp[i])])
+            G[i,i] = ProductFun(g1,cwsp[i])
         else
-            G[i,j] = GreensFun([ProductFun(g3,sp[i],wsp[j];method=:convolution)])
+            G[i,j] = ProductFun(g3,sp[i],wsp[j];method=:convolution)
         end
     end
 

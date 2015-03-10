@@ -7,16 +7,20 @@ export GreensFun
 immutable GreensFun <: BivariateFun
     kernels::Vector{ProductFun}
     function GreensFun(kernels)
-        n = length(kernels)
         #[@assert eltype(kernels[i]) == eltype(kernels[1]) for i=1:n]
         # TODO: should probably be a space assertion but complicated by enrichment.
-        # TODO: ProductDomain needs equality.
-        [@assert domain(kernels[i]).domains[j] == domain(kernels[1]).domains[j] for i=1:n,j=1:length(domain(kernels[1]))]
+        [@assert domain(kernels[i]) == domain(kernels[1]) for i=2:length(kernels)]
         new(kernels)
     end
 end
 
+GreensFun(F::ProductFun) = GreensFun([F])
+
 Base.length(G::GreensFun) = length(G.kernels)
+Base.convert{B<:ProductFun}(::Type{GreensFun},F::B) = GreensFun(F)
+evaluate(G::GreensFun,x,y) = mapreduce(f->evaluate(f,x,y),+,G.kernels)
+
+
 
 # TODO: We are missing unary operation + for a ProductFun
 #=
@@ -46,23 +50,8 @@ end
 
 -(F::GreensFun,G::GreensFun) = GreensFun([F.kernels,-G.kernels])
 
-function evaluate(G::GreensFun,x,y)
-    ret = evaluate(G.kernels[1],x,y)
-    for i = 2:length(G)
-        ret += evaluate(G.kernels[i],x,y)
-    end
 
-    ret
-end
-
-function Base.getindex(⨍::DefiniteLineIntegral,G::GreensFun)
-    ret = ⨍[G.kernels[1]]
-    for i = 2:length(G)
-        ret += ⨍[G.kernels[i]]
-    end
-
-    ret
-end
+Base.getindex(⨍::Operator,G::GreensFun) = mapreduce(f->getindex(⨍,f),+,G.kernels)
 
 function Base.getindex{F<:BivariateFun}(⨍::DefiniteLineIntegral,B::Matrix{F})
     m,n = size(B)
@@ -142,7 +131,8 @@ function ConvolutionProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Functio
 
     if N ≤ 3000
         if N ≤ 3 N=3;pad!(c,3) end
-        X = zeros(T,N,N)
+        X = zeros(promote_type(T,typeof(B),typeof(C)),N,N)
+        println("This is the typeof(c): ",typeof(c)," this is B: ",B," this is C: ",C," and this is the typeof(X): ",typeof(X))
         chebyshevaddition!(c,B,C,X)
         cspu,cspv = canonicalspace(u),canonicalspace(v)
         [X[1:N+1-k,k] = coefficients(vec(X[1:N+1-k,k]),cspu,u) for k=1:N]

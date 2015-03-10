@@ -59,7 +59,7 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
         if i == j
             G[i,i] = ProductFun(g1,cwsp[i]) + ProductFun(g2,sp[i],wsp[i];method=:convolution)
         else
-            G[i,j] = GreensFun([ProductFun(g3,sp[i],wsp[j];method=:convolution)])
+            G[i,j] = ProductFun(g3,sp[i],wsp[j];method=:convolution)
         end
     end
 
