@@ -27,20 +27,18 @@ using ApproxFun,SIE
     crl = (1-2im*r)cr
     crr = (1+2im*r)cr
 
-    dom = Interval([crl[1],crr[1]])
-    [dom = dom∪Interval([crl[j],crr[j]]) for j=2:N]
+    dom = ∪(Interval(crl,crr))
 
     sp = PiecewiseSpace(map(ChebyshevDirichlet{1,1},dom.domains))
     wsp = PiecewiseSpace([JacobiWeight(-.5,-.5,sp.spaces[i]) for i=1:N])
-
+    xid = Fun(identity,sp)
 
 #=
     sp = Space(dom)
-    xid = Fun(identity,sp)
-
     csp = [CauchyWeight{0}(sp[i]⊗sp[i]) for i=1:N]
     cwsp = [CauchyWeight{0}(sp[i]⊗wsp[i]) for i=1:N]
     uiΓ,⨍ = Fun(t->ui(real(xid[t]),imag(xid[t])),sp),DefiniteLineIntegral(wsp)
+    uiΓ,H0 = chop(depiece([Fun(t->ui(real(t),imag(t)),sp[i],1024) for i=1:N]),eps()),0.5SingularIntegral(wsp,0)
 
     g1(x,y) = 1/2
     g3(x,y) = 1/2π*logabs(y-x)
@@ -56,8 +54,7 @@ using ApproxFun,SIE
 
     L,f = ⨍[G],uiΓ
 =#
-    uiΓ,H0 = chop(depiece([Fun(t->ui(real(t),imag(t)),sp[i],1024) for i=1:N]),eps()),0.5SingularIntegral(wsp,0)
-#    uiΓ,H0 = Fun(t->ui(real(xid[t]),imag(xid[t])),sp),0.5Hilbert(wsp,0)
+    uiΓ,H0 = Fun(t->ui(real(xid[t]),imag(xid[t])),sp),0.5SingularIntegral(wsp,0)
     L,f = H0,uiΓ
 
     @time ∂u∂n = L\f

@@ -134,6 +134,47 @@ function addentries!{F<:Fourier}(H::Hilbert{F},A,kr::Range)
     A
 end
 
+function addentries!(H::SingularIntegral{Hardy{true}},A,kr::Range)
+##TODO: Add scale for different radii.
+    m=H.order
+    d=domain(H)
+    sp=domainspace(H)
+    @assert isa(d,Circle)
+    r = domain(H).radius
+    if m == 0
+        for k=kr
+            A[k,k] += k==1?2r*log(r):-r./(k-1)
+        end
+    elseif m == 1
+        for k=kr
+            A[k,k] += im
+        end
+    else
+        for k=kr
+            A[k,k] += k==1?0.0:1.im*(1.im*(k-1))^(m-1)
+        end
+    end
+    A
+end
+
+function addentries!(H::SingularIntegral{Hardy{false}},A,kr::Range)
+##TODO: Add scale for different radii.
+    m=H.order
+    d=domain(H)
+    sp=domainspace(H)
+    @assert isa(d,Circle)
+    r = domain(H).radius
+    if m== 1
+        for k=kr
+            A[k,k]-= im
+        end
+    else
+        for k=kr
+            A[k,k]-=1.im*(1.im*k/r)^(m-1)
+        end
+    end
+    A
+end
 
 function addentries!{F<:Fourier}(H::SingularIntegral{F},A,kr::Range)
     @assert isa(domain(H),Circle)

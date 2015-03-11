@@ -40,8 +40,11 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     dom = ApproxFun.UnionDomain(Interval(ccr+(3-ccr[end-1])/2)[1:2:end])
 =#
 
-    N = 5
-    dom = Interval(-2.5-.5im,-1.5-.5im)∪Interval(-1.5+.5im,-.5+.5im)∪Interval(-.5-.5im,.5-.5im)∪Interval(.5+.5im,1.5+.5im)∪Interval(1.5-.5im,2.5-.5im)
+#    N = 5
+#    dom = Interval(-2.5-.5im,-1.5-.5im)∪Interval(-1.5+.5im,-.5+.5im)∪Interval(-.5-.5im,.5-.5im)∪Interval(.5+.5im,1.5+.5im)∪Interval(1.5-.5im,2.5-.5im)
+
+    N = 2
+    dom = ∪(Interval([-2.5,1.5],[-1.5,2.5]))
 
     sp = Space(dom)
     wsp = ApproxFun.PiecewiseSpace([JacobiWeight(-.5,-.5,sp.spaces[i]) for i=1:N])
@@ -68,6 +71,7 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     @time ∂u∂n = L\f
     println("The length of ∂u∂n is: ",length(∂u∂n))
     ∂u∂nv = vec(∂u∂n)
+
 function us(x,y)
     ret = Fun(t->-π*g3(x-real(xid[t]),im*(y-imag(xid[t])))*∂u∂nv[1][t],ApproxFun.ArraySpace(sp[1],length(x)),length(∂u∂nv[1])).coefficients[1:length(x)].*length(domain(sp[1]))/2
     for i=2:N
@@ -75,3 +79,17 @@ function us(x,y)
     end
     ret
 end
+
+∂u∂nvtest = vec(Fun(∂u∂n.coefficients,wsp))
+function ustest(x,y)
+
+    temp1 = vec(Fun(t->g1(x-real(xid[t]),im*(y-imag(xid[t]))),sp))
+    temp2 = vec(Fun(t->g2(x-real(xid[t]),im*(y-imag(xid[t]))),sp))
+
+    ret = -1/π*logkernel(temp1[1]*∂u∂nvtest[1],complex(x,y)) - linesum(temp2[1]*∂u∂nvtest[1])
+    for i=2:N
+        ret += -1/π*logkernel(temp1[i]*∂u∂nvtest[i],complex(x,y)) - linesum(temp2[i]*∂u∂nvtest[i])
+    end
+    ret
+end
+@vectorize_2arg Number ustest

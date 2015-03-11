@@ -162,3 +162,5 @@ function logkernel{T}(g::Fun{Fourier,T},z::Number)
         π*ret
     end
 end
+logkernel{T}(g::Fun{Fourier,T},z::Vector) = [logkernel(g,zk) for zk in z]
+logkernel{T}(g::Fun{Fourier,T},z::Matrix) = [logkernel(g,zk) for zk in z]
