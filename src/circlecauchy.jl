@@ -134,7 +134,7 @@ end
 
 stieltjesintegral(f::Fun{Fourier},z::Number)=stieltjesintegral(Fun(f,Laurent),z)
 
-function logkernel{T}(g::Fun{Fourier,T},z::Number)
+function logkernel(g::Fun{Fourier},z::Number)
     d=domain(g)
     c,r=d.center,d.radius
     z=z-c
@@ -162,5 +162,7 @@ function logkernel{T}(g::Fun{Fourier,T},z::Number)
         π*ret
     end
 end
-logkernel{T}(g::Fun{Fourier,T},z::Vector) = [logkernel(g,zk) for zk in z]
-logkernel{T}(g::Fun{Fourier,T},z::Matrix) = [logkernel(g,zk) for zk in z]
+logkernel(g::Fun{Fourier},z::Vector) = [logkernel(g,zk) for zk in z]
+logkernel(g::Fun{Fourier},z::Matrix) = [logkernel(g,zk) for zk in z]
+
+logkernel(g::Fun{Laurent},z)=logkernel(Fun(g,Fourier),z)
