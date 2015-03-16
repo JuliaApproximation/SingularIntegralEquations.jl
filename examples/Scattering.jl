@@ -40,14 +40,14 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     dom = ApproxFun.UnionDomain(Interval(ccr+(3-ccr[end-1])/2)[1:2:end])
 =#
 
-#    N = 5
-#    dom = Interval(-2.5-.5im,-1.5-.5im)∪Interval(-1.5+.5im,-.5+.5im)∪Interval(-.5-.5im,.5-.5im)∪Interval(.5+.5im,1.5+.5im)∪Interval(1.5-.5im,2.5-.5im)
+    N = 5
+    dom = Interval(-2.5-.5im,-1.5-.5im)∪Interval(-1.5+.5im,-.5+.5im)∪Interval(-.5-.5im,.5-.5im)∪Interval(.5+.5im,1.5+.5im)∪Interval(1.5-.5im,2.5-.5im)
 
-    N = 2
-    dom = ∪(Interval([-2.5,1.5],[-1.5,2.5]))
+    #N = 2
+    #dom = ∪(Interval([-2.5-im,-1.0+0.5im],[-2.5+im,-1.0+1.5im]))
 
     sp = Space(dom)
-    wsp = ApproxFun.PiecewiseSpace([JacobiWeight(-.5,-.5,sp.spaces[i]) for i=1:N])
+    wsp = PiecewiseSpace([JacobiWeight(-.5,-.5,sp.spaces[i]) for i=1:N])
     cwsp = [CauchyWeight{0}(sp[i]⊗wsp[i]) for i=1:N]
     xid = Fun(identity,sp)
     uiΓ,⨍ = Fun(t->ui(real(xid[t]),imag(xid[t])),sp),DefiniteLineIntegral(wsp)

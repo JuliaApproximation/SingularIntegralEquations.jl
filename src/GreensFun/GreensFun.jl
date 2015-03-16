@@ -122,18 +122,31 @@ end
 #
 function ConvolutionProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Function,u::Union(U,JacobiWeight{U}),v::Union(V,JacobiWeight{V}))
     du,dv = domain(u),domain(v)
-    D = (length(du)+length(dv))/2
-    ff = Fun(x->f((du.a+du.b-x)/2,(dv.b+dv.a+x)/2),Chebyshev([-D,D]))
-    T = eltype(ff)
-    fd,B,C = ff[zero(T)],(dv.b-dv.a)/2D,(du.b-du.a)/2D
+    pts,ext = points(Chebyshev(du)⊗Chebyshev(dv),3,3),extrema(du,dv)
+    A = abs2(pts[2]-pts[1])
+    ApproxFun.transform!(Chebyshev(du)⊗Chebyshev(dv),A)
+    println("These are the Chebyshev coefficients of the absolute value squared on the two intervals: ",A)
+    println("These are the extrema of the intervals in question: ",ext)
+
+    #ab2 = ProductFun((x,y)->abs2(y-x),Chebyshev(du)⊗Chebyshev(dv),3,3)
+    #println("This is the absolute value squared on the two intervals: ",ab2)
+    #ff = Fun(z->f((du.a+du.b-z)/2,(dv.b+dv.a-im*z)/2),Chebyshev([-1,1]))
+    #fd,B,C = ff[0],(dv.b-dv.a)/2D,(du.b-du.a)/2D
+    #fd,B,C = ff[zero(T)],real(length(dv)/2D),real(length(du)/2D)
+
+    ff = Fun(z->f(0,sqrt(z)),Chebyshev(Interval(ext...)))
+    fd,T = f[0],eltype(ff)
     c = chop(coefficients(ff),maxabs(coefficients(ff))*100eps(T))
     N = length(c)
 
     if N ≤ 3000
         if N ≤ 3 N=3;pad!(c,3) end
-        X = zeros(promote_type(T,typeof(B),typeof(C)),N,N)
-        println("This is the typeof(c): ",typeof(c)," this is B: ",B," this is C: ",C," and this is the typeof(X): ",typeof(X))
-        chebyshevaddition!(c,B,C,X)
+        X = zeros(promote_type(T,typeof(A)),N,N)
+        println("This is the typeof(c): ",typeof(c)," this is A: ",A," and this is the typeof(X): ",typeof(X))
+        chebyshevaddition!(c,A,X)
+
+
+
         cspu,cspv = canonicalspace(u),canonicalspace(v)
         [X[1:N+1-k,k] = coefficients(vec(X[1:N+1-k,k]),cspu,u) for k=1:N]
         [X[k,1:N+1-k] = coefficients(vec(X[k,1:N+1-k]),cspv,v) for k=1:N]
@@ -143,7 +156,7 @@ function ConvolutionProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Functio
     end
 end
 
-function chebyshevaddition!{T<:Number}(c::Vector,B,C,X::Matrix{T})
+function chebyshevaddition!{T<:Number}(c::Vector{T},A::Matrix{T},X::Matrix{T})
     N = length(c)
     un = one(T)
     C1,C2 = zeros(T,N,N),zeros(T,N,N)
@@ -201,6 +214,34 @@ function chebyshevaddition!{T<:Number}(c::Vector,B,C,X::Matrix{T})
         end
     end
 end
+
+#
+# Geometry for Intervals
+#
+function dist2(c,d::Interval)
+    if in(c,d)
+        ret = zero(c)
+    else
+        a,b = d.a,d.b
+        x1,y1 = real(a),imag(a)
+        x2,y2 = real(b),imag(b)
+        x3,y3 = real(c),imag(c)
+        px,py = x2-x1,y2-y1
+        u = ((x3-x1)px+(y3-y1)py)/(px^2+py^2)
+        u = u > 1 ? 1 : u ≥ 0 ? u : 0
+        dx,dy = x1+u*px-x3,y1+u*py-y3
+        dx^2+dy^2
+    end
+end
+dist(c,d::Interval) = sqrt(dist2(c,d))
+
+function extrema2(d1::Interval,d2::Interval)
+    a,b = d1.a,d1.b
+    c,d = d2.a,d2.b
+    extrema((dist2(a,d2),dist2(b,d2),dist2(c,d1),dist2(d,d1),abs2(a-c),abs2(a-d),abs2(b-c),abs2(b-d)))
+end
+Base.extrema(d1::Interval,d2::Interval) = sqrtuple(extrema2(d1,d2))
+sqrtuple(x) = sqrt(x[1]),sqrt(x[2])
 
 #
 # ProductFun constructors for functions on periodic intervals.
