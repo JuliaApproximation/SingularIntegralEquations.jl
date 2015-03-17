@@ -31,6 +31,16 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     println("The length of ∂u∂n is: ",length(∂u∂n))
     us(x,y) = Fun(t->-im/4.*hankelh1(0,k.*sqrt((x.-t).^2.+y.^2))*∂u∂n[t],ApproxFun.ArraySpace(sp,length(x)),length(∂u∂n)).coefficients[1:length(x)]
 =#
+#=
+    G = Array(GreensFun,N,N)
+    @time for i=1:N,j=1:N
+        if i == j
+            G[i,i] = ProductFun(g1,cwsp[i]) + ProductFun(g2,sp[i],wsp[i];method=:convolution)
+        else
+            G[i,j] = ProductFun(g3,sp[i],wsp[j];method=:convolution)
+        end
+    end
+=#
 
 #=
     N = 6
@@ -48,26 +58,19 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
 
     dom = ∪(Interval([-1.0-0.4im,-0.5-0.4im,0.1+0.4im,0.2+0.0im,-1.4-0.75im],[-0.1+0.4im,-0.2+0.0im,1.0-0.4im,0.5-0.4im,1.4-0.75im]))
 
+    #dom = ∪(Interval([-1.0,-1.5+im],[1.0,0.0+0.5im]))
+
     N = length(dom)
     sp = Space(dom)
-    wsp = PiecewiseSpace([JacobiWeight(-.5,-.5,sp.spaces[i]) for i=1:N])
-    cwsp = [CauchyWeight{0}(sp[i]⊗wsp[i]) for i=1:N]
-    xid = Fun(identity,sp)
-    uiΓ,⨍ = Fun(t->ui(real(xid[t]),imag(xid[t])),sp),DefiniteLineIntegral(wsp)
+    wsp = JacobiWeight(-.5,-.5,sp)
+    cwsp = CauchyWeight{0}(sp⊗wsp)
+    uiΓ,⨍ = Fun(t->ui(real(t),imag(t)),sp),DefiniteLineIntegral(wsp)
 
     g1(x,y) = -besselj0(k*abs(y-x))/2π
-    g2(x,y) = (besselj0(k*abs(y-x))*(im*π/2+log(abs(y-x)))/2π - bessely0(k*abs(y-x))/4)/π
-    g3(x,y) = im/4π*hankelh1(0,k*abs(y-x))
+    g2(x,y) = (besselj0(k*abs(y-x))*(im*π/2+logabs(y-x))/2π - bessely0(k*abs(y-x))/4)/π
+    g3(x,y) = im/4*hankelh1(0,k*abs(y-x))
 
-
-    G = Array(GreensFun,N,N)
-    @time for i=1:N,j=1:N
-        if i == j
-            G[i,i] = ProductFun(g1,cwsp[i]) + ProductFun(g2,sp[i],wsp[i];method=:convolution)
-        else
-            G[i,j] = ProductFun(g3,sp[i],wsp[j];method=:convolution)
-        end
-    end
+    @time G = GreensFun(g1,cwsp) + GreensFun(g2,sp⊗wsp)
 
     L,f = ⨍[G],uiΓ
 
@@ -76,9 +79,9 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     ∂u∂nv = vec(∂u∂n)
 
 function us(x,y)
-    ret = Fun(t->-π*g3(x-real(xid[t]),im*(y-imag(xid[t])))*∂u∂nv[1][t],ApproxFun.ArraySpace(sp[1],length(x)),length(∂u∂nv[1])).coefficients[1:length(x)].*length(domain(sp[1]))/2
+    ret = Fun(t->-g3(x-real(t),im*(y-imag(t)))*∂u∂nv[1][t],ApproxFun.ArraySpace(sp[1],length(x)),length(∂u∂nv[1])).coefficients[1:length(x)].*length(domain(sp[1]))/2
     for i=2:N
-        ret += Fun(t->-π*g3(x-real(xid[t]),im*(y-imag(xid[t])))*∂u∂nv[i][t],ApproxFun.ArraySpace(sp[i],length(x)),length(∂u∂nv[i])).coefficients[1:length(x)]*length(domain(sp[i]))/2
+        ret += Fun(t->-g3(x-real(t),im*(y-imag(t)))*∂u∂nv[i][t],ApproxFun.ArraySpace(sp[i],length(x)),length(∂u∂nv[i])).coefficients[1:length(x)]*length(domain(sp[i]))/2
     end
     ret
 end
@@ -86,8 +89,8 @@ end
 ∂u∂nvtest = vec(Fun(∂u∂n.coefficients,wsp))
 function ustest(x,y)
 
-    temp1 = vec(Fun(t->g1(x-real(xid[t]),im*(y-imag(xid[t]))),sp))
-    temp2 = vec(Fun(t->g2(x-real(xid[t]),im*(y-imag(xid[t]))),sp))
+    temp1 = vec(Fun(t->g1(x-real(t),im*(y-imag(t))),sp))
+    temp2 = vec(Fun(t->g2(x-real(t),im*(y-imag(t))),sp))
 
     ret = -1/π*logkernel(temp1[1]*∂u∂nvtest[1],complex(x,y)) - linesum(temp2[1]*∂u∂nvtest[1])
     for i=2:N

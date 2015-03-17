@@ -1,4 +1,5 @@
 include("CauchyWeight.jl")
+include("Geometry.jl")
 
 # GreensFun
 
@@ -21,6 +22,33 @@ Base.convert{B<:ProductFun}(::Type{GreensFun},F::B) = GreensFun(F)
 evaluate(G::GreensFun,x,y) = mapreduce(f->evaluate(f,x,y),+,G.kernels)
 
 
+GreensFun{SS<:AbstractProductSpace}(f::Function,ss::SS;method::Symbol=:convolution) = GreensFun(ProductFun(f,ss;method=method))
+
+# Array of GreensFun on TensorSpace of PiecewiseSpaces
+
+function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{PWS1,PWS2};method::Symbol=:convolution)
+    pws1,pws2 = ss.spaces
+    M,N = length(pws1),length(pws2)
+    G = Array(GreensFun,M,N)
+    for i=1:M,j=1:N
+        G[i,j] = ProductFun(f,pws1[i],pws2[j];method=method)
+    end
+    G
+end
+
+function GreensFun{O}(f::Function,ss::CauchyWeight{O};method::Symbol=:convolution)
+    pws1,pws2 = ss.space.spaces
+    M,N = length(pws1),length(pws2)
+    if M == N == 1
+        G = GreensFun(f,ss;method=method)
+    else
+        G = Array(GreensFun,M,N)
+        for i=1:M,j=1:N
+            G[i,j] = i == j ?  ProductFun(f,CauchyWeight{O}(pws1[i]⊗pws2[j]);method=method) : ProductFun((x,y)->f(x,y).*cauchyweight(O,x,y),pws1[i],pws2[j];method=method)
+        end
+    end
+    G
+end
 
 # TODO: We are missing unary operation + for a ProductFun
 #=
@@ -120,7 +148,7 @@ end
 # A new ProductFun constructor for bivariate functions on Intervals
 # defined as the distance of their arguments.
 #
-function ConvolutionProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Function,u::Union(U,JacobiWeight{U}),v::Union(V,JacobiWeight{V}))
+function ConvolutionProductFun{U<:FunctionSpace,V<:FunctionSpace}(f::Function,u::U,v::V)
     du,dv = domain(u),domain(v)
     ext2 = extrema2(du,dv)
     u1 = isa(u,JacobiWeight) ? u.space : u
@@ -130,43 +158,15 @@ function ConvolutionProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Functio
         fd,T = ff[0],eltype(ff)
         c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(T))
         N = length(c)
-        X = coefficients(ProductFun((x,y)->x==y?fd:f(x,y),u1⊗v1,N,N))
+        X = chop!(coefficients(ProductFun((x,y)->x==y?fd:f(x,y),u1⊗v1,N,N)),norm(coefficients(ff),Inf)*100eps(T))
     else
         ff = Fun(z->f(0,z),Chebyshev(Interval(ext2...)))
         c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(eltype(ff)))
         N = length(c)
-        X = coefficients(ProductFun(f,u1⊗v1,N,N))
+        X = chop!(coefficients(ProductFun(f,u1⊗v1,N,N)),norm(coefficients(ff),Inf)*100eps(eltype(ff)))
     end
     ProductFun(X,u⊗v)
 end
-
-#
-# Geometry for Intervals
-#
-function dist2(c,d::Interval)
-    if in(c,d)
-        zero(real(c))
-    else
-        a,b = d.a,d.b
-        x1,y1 = real(a),imag(a)
-        x2,y2 = real(b),imag(b)
-        x3,y3 = real(c),imag(c)
-        px,py = x2-x1,y2-y1
-        u = ((x3-x1)px+(y3-y1)py)/(px^2+py^2)
-        u = u > 1 ? 1 : u ≥ 0 ? u : 0
-        dx,dy = x1+u*px-x3,y1+u*py-y3
-        dx^2+dy^2
-    end
-end
-dist(c,d::Interval) = sqrt(dist2(c,d))
-
-function extrema2(d1::Interval,d2::Interval)
-    a,b = d1.a,d1.b
-    c,d = d2.a,d2.b
-    extrema((dist2(a,d2),dist2(b,d2),dist2(c,d1),dist2(d,d1),abs2(a-c),abs2(a-d),abs2(b-c),abs2(b-d)))
-end
-Base.extrema(d1::Interval,d2::Interval) = sqrtuple(extrema2(d1,d2))
-sqrtuple(x) = sqrt(x[1]),sqrt(x[2])
 
 #
 # ProductFun constructors for functions on periodic intervals.
