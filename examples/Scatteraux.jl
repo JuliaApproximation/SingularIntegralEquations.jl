@@ -11,7 +11,8 @@ function makegif(x,y,u,L;plotfunction=plot,seconds=1)
     for k=1:MLen
         t = 2π/ω*(k-1)/fps
         axes(aspect="equal")
-        plot(dom)
+        setplotter("PyPlot")
+        ApproxFun.plot(dom;color="black")
         plotfunction(x,y,real(u*exp(-im*ω*t)),L;vmin=-umax,vmax=umax)
         xlabel("\$x\$");ylabel("\$y\$")
         savefig(dr * "/" * lpad(k,int(ceil(log10(MLen))),0) * ".png";dpi=150,bbox_inches="tight")

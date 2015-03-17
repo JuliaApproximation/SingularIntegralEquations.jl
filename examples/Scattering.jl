@@ -12,7 +12,7 @@ include("Scatteraux.jl")
 
 k = 50.
 ω = 2π
-d = (1,-1)
+d = (1,-3)
 d = d[1]/hypot(d[1],d[2]),d[2]/hypot(d[1],d[2])
 ui(x,y) = exp(im*k*(d⋅(x,y)))
 
@@ -40,12 +40,15 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
     dom = ApproxFun.UnionDomain(Interval(ccr+(3-ccr[end-1])/2)[1:2:end])
 =#
 
-    N = 5
-    dom = Interval(-2.5-.5im,-1.5-.5im)∪Interval(-1.5+.5im,-.5+.5im)∪Interval(-.5-.5im,.5-.5im)∪Interval(.5+.5im,1.5+.5im)∪Interval(1.5-.5im,2.5-.5im)
+    #N = 5
+    #dom = Interval(-2.5-.5im,-1.5-.5im)∪Interval(-1.5+.5im,-.5+.5im)∪Interval(-.5-.5im,.5-.5im)∪Interval(.5+.5im,1.5+.5im)∪Interval(1.5-.5im,2.5-.5im)
 
-    #N = 2
-    #dom = ∪(Interval([-2.5-im,-1.0+0.5im],[-2.5+im,-1.0+1.5im]))
+#    N = 3
+#    dom = ∪(Interval([-1.0-0.4im,0.1+0.4im,-0.9-0.5im],[-0.1+0.4im,1.0-0.4im,0.9-0.5im]))
 
+    dom = ∪(Interval([-1.0-0.4im,-0.5-0.4im,0.1+0.4im,0.2+0.0im,-1.4-0.75im],[-0.1+0.4im,-0.2+0.0im,1.0-0.4im,0.5-0.4im,1.4-0.75im]))
+
+    N = length(dom)
     sp = Space(dom)
     wsp = PiecewiseSpace([JacobiWeight(-.5,-.5,sp.spaces[i]) for i=1:N])
     cwsp = [CauchyWeight{0}(sp[i]⊗wsp[i]) for i=1:N]
@@ -58,7 +61,7 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
 
 
     G = Array(GreensFun,N,N)
-    for i=1:N,j=1:N
+    @time for i=1:N,j=1:N
         if i == j
             G[i,i] = ProductFun(g1,cwsp[i]) + ProductFun(g2,sp[i],wsp[i];method=:convolution)
         else

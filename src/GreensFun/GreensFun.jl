@@ -118,101 +118,26 @@ end
 
 #
 # A new ProductFun constructor for bivariate functions on Intervals
-# defined as the difference of their arguments.
+# defined as the distance of their arguments.
 #
 function ConvolutionProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Function,u::Union(U,JacobiWeight{U}),v::Union(V,JacobiWeight{V}))
     du,dv = domain(u),domain(v)
-    pts,ext = points(Chebyshev(du)⊗Chebyshev(dv),3,3),extrema(du,dv)
-    A = abs2(pts[2]-pts[1])
-    ApproxFun.transform!(Chebyshev(du)⊗Chebyshev(dv),A)
-    println("These are the Chebyshev coefficients of the absolute value squared on the two intervals: ",A)
-    println("These are the extrema of the intervals in question: ",ext)
-
-    #ab2 = ProductFun((x,y)->abs2(y-x),Chebyshev(du)⊗Chebyshev(dv),3,3)
-    #println("This is the absolute value squared on the two intervals: ",ab2)
-    #ff = Fun(z->f((du.a+du.b-z)/2,(dv.b+dv.a-im*z)/2),Chebyshev([-1,1]))
-    #fd,B,C = ff[0],(dv.b-dv.a)/2D,(du.b-du.a)/2D
-    #fd,B,C = ff[zero(T)],real(length(dv)/2D),real(length(du)/2D)
-
-    ff = Fun(z->f(0,sqrt(z)),Chebyshev(Interval(ext...)))
-    fd,T = ff[0],eltype(ff)
-    c = chop(coefficients(ff),maxabs(coefficients(ff))*100eps(T))
-    N = length(c)
-
-    if N ≤ 3000
-        if N ≤ 3 N=3;pad!(c,3) end
-        X = zeros(promote_type(T,typeof(A)),N,N)
-        println("This is the typeof(c): ",typeof(c)," this is A: ",A," and this is the typeof(X): ",typeof(X))
-        chebyshevaddition!(c,A,X)
-
-
-
-        cspu,cspv = canonicalspace(u),canonicalspace(v)
-        [X[1:N+1-k,k] = coefficients(vec(X[1:N+1-k,k]),cspu,u) for k=1:N]
-        [X[k,1:N+1-k] = coefficients(vec(X[k,1:N+1-k]),cspv,v) for k=1:N]
-        return ProductFun(X,u⊗v)
+    ext2 = extrema2(du,dv)
+    u1 = isa(u,JacobiWeight) ? u.space : u
+    v1 = isa(v,JacobiWeight) ? v.space : v
+    if ext2[1] == 0
+        ff = Fun(z->f(0,z),Chebyshev(Interval(-ext2[2]/2,ext2[2]/2)))
+        fd,T = ff[0],eltype(ff)
+        c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(T))
+        N = length(c)
+        X = coefficients(ProductFun((x,y)->x==y?fd:f(x,y),u1⊗v1,N,N))
     else
-        return ProductFun((x,y)->x==y?fd:f(x,y),u⊗v,N,N)
+        ff = Fun(z->f(0,z),Chebyshev(Interval(ext2...)))
+        c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(eltype(ff)))
+        N = length(c)
+        X = coefficients(ProductFun(f,u1⊗v1,N,N))
     end
-end
-
-function chebyshevaddition!{T<:Number}(c::Vector{T},A::Matrix{T},X::Matrix{T})
-    N = length(c)
-    un = one(T)
-    C1,C2 = zeros(T,N,N),zeros(T,N,N)
-
-    C1[1,1] = un
-    cn = c[1]
-
-    X[1,1] += cn*C1[1,1]
-
-    C2[2,1] = -C
-    C2[1,2] = B
-
-    cn = c[2]
-
-    X[2,1] += cn*C2[2,1]
-    X[1,2] += cn*C2[1,2]
-
-    C1[1,1] = B^2+C^2-un
-    C1[3,1] = C^2
-    C1[2,2] = -4B*C
-    C1[1,3] = B^2
-    cn = c[3]
-
-    X[1,1] += cn*C1[1,1]
-    X[3,1] += cn*C1[3,1]
-    X[2,2] += cn*C1[2,2]
-    X[1,3] += cn*C1[1,3]
-
-    @inbounds for n=4:N
-        C2[1,1] = B*C1[1,2] - C*C1[2,1] - C2[1,1]
-        C2[2,1] = B*C1[2,2] - C*C1[3,1] - 2C*C1[1,1] - C2[2,1]
-        C2[n,1] = -C*C1[n-1,1]
-        C2[1,2] = B*C1[1,3]-C*C1[2,2] + 2B*C1[1,1] - C2[1,2]
-        C2[2,2] = B*C1[2,3]-C*C1[3,2] + 2B*C1[2,1] - 2C*C1[1,2] - C2[2,2]
-        C2[1,n] = B*C1[1,n-1]
-        for k=n-2:-2:3
-            C2[k,1] = B*C1[k,2]-C*C1[k-1,1]-C*C1[k+1,1] - C2[k,1]
-            C2[1,k] = B*C1[1,k+1]+B*C1[1,k-1]-C*C1[2,k] - C2[1,k]
-        end
-        for k=n-1:-2:3
-            C2[k,2] = B*C1[k,3]-C*C1[k-1,2]-C*C1[k+1,2] + 2B*C1[k,1] - C2[k,2]
-            C2[2,k] = B*C1[2,k+1]+B*C1[2,k-1]-C*C1[3,k] - 2C*C1[1,k] - C2[2,k]
-        end
-        for j=n:-1:3,i=n-j+1:-2:3
-            C2[i,j] = B*C1[i,j+1]+B*C1[i,j-1]-C*C1[i+1,j]-C*C1[i-1,j] - C2[i,j]
-        end
-
-        cn = c[n]
-        for j=n:-1:1,i=n-j+1:-2:1
-            X[i,j] += cn*C2[i,j]
-        end
-
-        for j=1:n,i=1:n-j+1
-            C1[i,j],C2[i,j] = C2[i,j],C1[i,j]
-        end
-    end
+    ProductFun(X,u⊗v)
 end
 
 #
@@ -220,7 +145,7 @@ end
 #
 function dist2(c,d::Interval)
     if in(c,d)
-        ret = zero(c)
+        zero(real(c))
     else
         a,b = d.a,d.b
         x1,y1 = real(a),imag(a)
