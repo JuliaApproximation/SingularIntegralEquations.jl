@@ -135,7 +135,7 @@ function ConvolutionProductFun{U<:PolynomialSpace,V<:PolynomialSpace}(f::Functio
     #fd,B,C = ff[zero(T)],real(length(dv)/2D),real(length(du)/2D)
 
     ff = Fun(z->f(0,sqrt(z)),Chebyshev(Interval(ext...)))
-    fd,T = f[0],eltype(ff)
+    fd,T = ff[0],eltype(ff)
     c = chop(coefficients(ff),maxabs(coefficients(ff))*100eps(T))
     N = length(c)
 
