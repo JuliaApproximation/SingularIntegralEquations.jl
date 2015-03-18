@@ -25,7 +25,13 @@ __global__ void CUDAlogkernel(const double a, const double b, const int nu, cons
     z[i] = complex<double>(x[i],y[i]);
     z[i] = (a + b - 2.0*z[i])/(a - b);  // tocanonical(u,z)
 
-    yv[i] = z[i] - sqrt(z[i]-1.0)*sqrt(z[i]+1.0);  // updownjoukowskyinverse(true,z)
+    if (z[i].real() <= 1.0 && z[i].real() >= -1.0 && abs(z[i].imag()) <= 2.0e-14) {
+        yv[i] = z[i]+complex<double>(0.0,1.0)*sqrt(1.0-z[i])*sqrt(z[i]+1.0);
+    }
+    else {
+        yv[i] = z[i] - sqrt(z[i]-1.0)*sqrt(z[i]+1.0);  // updownjoukowskyinverse(true,z)
+    }
+
     yk[i] = yv[i];
     ykp1[i] = yk[i]*yk[i];
 
