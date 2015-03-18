@@ -1,4 +1,6 @@
-#include "../cuda_complex/cuda_complex.hpp"
+#include <thrust/complex.h>
+
+using namespace thrust;
 
 extern "C"
 {
@@ -20,7 +22,7 @@ __global__ void CUDAlogkernel(const double a, const double b, const int nu, cons
     ykp1 = new complex<double>[n];
 
 
-    z[i] = complex<double>::complex(x[i],y[i]);
+    z[i] = complex<double>(x[i],y[i]);
     z[i] = (a + b - 2.0*z[i])/(a - b);  // tocanonical(u,z)
 
     yv[i] = z[i] - sqrt(z[i]-1.0)*sqrt(z[i]+1.0);  // updownjoukowskyinverse(true,z)
@@ -31,13 +33,13 @@ __global__ void CUDAlogkernel(const double a, const double b, const int nu, cons
     if ( nu >= 0 ) {
         ret[i] = -u[0]*log(abs(2.0*yk[i]/C));  // -logabs(2y/C)
         if ( nu >= 1 ) {
-            ret[i] += -u[1]*real(yk[i]);  // -real(yk)
+            ret[i] += -u[1]*yk[i].real();  // -real(yk)
             if ( nu >= 2 ) {
-                ret[i] += u[2]*(log(abs(2.0*yk[i]/C))-0.5*real(ykp1[i])); // -ret[1]-.5real(ykp1)
+                ret[i] += u[2]*(log(abs(2.0*yk[i]/C))-0.5*ykp1[i].real()); // -ret[1]-.5real(ykp1)
                 if ( nu >= 3) {
                     for (int nun = 3; nun<nu; nun++) {
                         ykp1[i] *= yv[i];
-                        ret[i] += u[nun]*( real(yk[i])/(nun-2.0)-real(ykp1[i])/(nun-0.0) ); // real(yk)/(n-3)-real(ykp1)/(n-1)
+                        ret[i] += u[nun]*( yk[i].real()/(nun-2.0)-ykp1[i].real()/(nun-0.0) ); // real(yk)/(n-3)-real(ykp1)/(n-1)
                         yk[i] *= yv[i];
                     }
                 }
