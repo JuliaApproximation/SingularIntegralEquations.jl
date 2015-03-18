@@ -1,1 +1,2 @@
 examples/.ipynb_checkpoints/Manipulate SIEs-checkpoint.ipynb
+src/CUDA/**/*.ptx
