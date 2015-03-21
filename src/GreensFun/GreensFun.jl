@@ -151,19 +151,17 @@ end
 function ConvolutionProductFun{U<:FunctionSpace,V<:FunctionSpace}(f::Function,u::U,v::V)
     du,dv = domain(u),domain(v)
     ext2 = extrema2(du,dv)
-    u1 = isa(u,JacobiWeight) ? u.space : u
-    v1 = isa(v,JacobiWeight) ? v.space : v
     if ext2[1] == 0
         ff = Fun(z->f(0,z),Chebyshev(Interval(-ext2[2]/2,ext2[2]/2)))
         fd,T = ff[0],eltype(ff)
         c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(T))
         N = length(c)
-        X = chop!(coefficients(ProductFun((x,y)->x==y?fd:f(x,y),u1⊗v1,N,N)),norm(coefficients(ff),Inf)*100eps(T))
+        X = chop!(coefficients(ProductFun((x,y)->x==y?fd:f(x,y),u⊗v,N,N)),norm(coefficients(ff),Inf)*100eps(T))
     else
         ff = Fun(z->f(0,z),Chebyshev(Interval(ext2...)))
         c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(eltype(ff)))
         N = length(c)
-        X = chop!(coefficients(ProductFun(f,u1⊗v1,N,N)),norm(coefficients(ff),Inf)*100eps(eltype(ff)))
+        X = chop!(coefficients(ProductFun(f,u⊗v,N,N)),norm(coefficients(ff),Inf)*100eps(eltype(ff)))
     end
     ProductFun(X,u⊗v)
 end

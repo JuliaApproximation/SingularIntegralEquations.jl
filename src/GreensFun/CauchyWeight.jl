@@ -30,5 +30,5 @@ evaluate{S<:FunctionSpace,V<:FunctionSpace,O,T}(f::ProductFun{S,V,CauchyWeight{O
 -{S<:FunctionSpace,V<:FunctionSpace,O,T}(F::ProductFun{S,V,CauchyWeight{O},T},G::ProductFun{S,V,CauchyWeight{O},T}) = ProductFun(ProductFun(F.coefficients,F.space.space)-ProductFun(G.coefficients,G.space.space),G.space)
 
 ##TODO: should check domainspace and rangespace and determine if it should be Op or OffOp.
-Base.getindex{S,V,O,T1,T2}(⨍::DefiniteIntegral{V,T1},f::ProductFun{S,V,CauchyWeight{O},T2}) = Hilbert(⨍.domainspace,O)[f]
-Base.getindex{S,V,O,T1,T2}(⨍::DefiniteLineIntegral{V,T1},f::ProductFun{S,V,CauchyWeight{O},T2}) = SingularIntegral(⨍.domainspace,O)[f]
+Base.getindex{S,V1,V2,O,T1,T2}(⨍::DefiniteIntegral{V1,T1},f::ProductFun{S,V2,CauchyWeight{O},T2}) = Hilbert(⨍.domainspace,O)[f]
+Base.getindex{S,V1,V2,O,T1,T2}(⨍::DefiniteLineIntegral{V1,T1},f::ProductFun{S,V2,CauchyWeight{O},T2}) = SingularIntegral(⨍.domainspace,O)[f]
