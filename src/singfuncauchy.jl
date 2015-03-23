@@ -74,13 +74,13 @@ absqrt(s::Int,a,b,z)=absqrt(s==1,a,b,z)
 
 
 function cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z::Number)
-    sp=space(u)
+    d,sp=domain(u),space(u)
 
     if sp.α == sp.β == .5
-        cfs = coefficients(u.coefficients,sp.space,Ultraspherical{1})
+        cfs = coefficients(u.coefficients,sp.space,Ultraspherical{1}(d))
         0.5im*hornersum(cfs,intervaloffcircle(true,tocanonical(u,z)))
     elseif sp.α == sp.β == -.5
-        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1})
+        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1}(d))
         z=tocanonical(u,z)
 
 
@@ -102,13 +102,13 @@ end
 
 
 function cauchy{S<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{S}},x::Number)
-    sp=space(u)
+    d,sp=domain(u),space(u)
 
     if sp.α == sp.β == .5
-        cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1})
+        cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1}(d))
         0.5im*hornersum(cfs,intervaloncircle(!s,tocanonical(u,x)))
     elseif sp.α == sp.β == -.5
-        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1})
+        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1}(d))
         x=tocanonical(u,x)
 
         if length(cfs) ≥1
@@ -141,17 +141,16 @@ realintegratejin(c,cfs,y)=.5*(-cfs[1]*(logabs(y)+logabs(c))+realdivkhornersum(cf
 #####
 
 function logkernel{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
-    d=domain(u)
+    d,sp=domain(u),space(u)
     a,b=d.a,d.b     # TODO: type not inferred right now
-    sp=space(u)
 
     if sp.α == sp.β == .5
-        cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1})
+        cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1}(d))
         z=tocanonical(u,z)
         y = updownjoukowskyinverse(true,z)
         π*length(d)*realintegratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
-        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1})
+        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1}(d))
         z=tocanonical(u,z)
         y = updownjoukowskyinverse(true,z)
 
@@ -176,16 +175,15 @@ function logkernel{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
 end
 
 function stieltjesintegral{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
-    d=domain(u)
+    d,sp=domain(u),space(u)
     a,b=d.a,d.b     # TODO: type not inferred right now
-    sp=space(u)
 
     if sp.α == sp.β == .5
-        cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1})
+        cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1}(d))
         y=intervaloffcircle(true,tocanonical(u,z))
         π*complexlength(d)*integratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
-        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1})
+        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1}(d))
         z=tocanonical(u,z)
         y=intervaloffcircle(true,z)
 
@@ -210,16 +208,15 @@ function stieltjesintegral{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
 end
 
 function stieltjesintegral{S<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{S}},z)
-    d=domain(u)
+    d,sp=domain(u),space(u)
     a,b=d.a,d.b     # TODO: type not inferred right now
-    sp=space(u)
 
     if sp.α == sp.β == .5
-        cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1})
+        cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1}(d))
         y=intervaloncircle(!s,tocanonical(u,z))
         π*complexlength(d)*integratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
-        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1})
+        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1}(d))
         z=tocanonical(u,z)
         y=intervaloncircle(!s,z)
 
