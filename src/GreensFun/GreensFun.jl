@@ -156,12 +156,12 @@ function ConvolutionProductFun{U<:FunctionSpace,V<:FunctionSpace}(f::Function,u:
         fd,T = ff[0],eltype(ff)
         c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(T))
         N = length(c)
-        X = chop!(coefficients(ProductFun((x,y)->x==y?fd:f(x,y),u⊗v,N,N)),norm(coefficients(ff),Inf)*100eps(T))
+        X = chop(coefficients(ProductFun((x,y)->x==y?fd:f(x,y),u⊗v,N,N)),norm(coefficients(ff),Inf)*100eps(T))
     else
         ff = Fun(z->f(0,z),Chebyshev(Interval(ext2...)))
         c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(eltype(ff)))
         N = length(c)
-        X = chop!(coefficients(ProductFun(f,u⊗v,N,N)),norm(coefficients(ff),Inf)*100eps(eltype(ff)))
+        X = chop(coefficients(ProductFun(f,u⊗v,N,N)),norm(coefficients(ff),Inf)*100eps(eltype(ff)))
     end
     ProductFun(X,u⊗v)
 end
