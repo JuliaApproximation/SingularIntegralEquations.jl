@@ -25,7 +25,7 @@ for (Op,OpWrap,OffOp) in ((:Hilbert,:HilbertWrapper,:OffHilbert),(:SingularInteg
         ## Modifiers for SumSpace, ArraySpace, ReImSpace, and PiecewiseSpace
 
         #TODO: do in @calculus_operator?
-        $Op(S::SumSpace,n::Int)=$OpWrap(sumblkdiagm([$Op(S.spaces[1],n),$Op(S.spaces[2],n)]),n)
+        $Op(S::SumSpace,n)=$OpWrap(sumblkdiagm([$Op(S.spaces[1],n),$Op(S.spaces[2],n)]),n)
         $Op(AS::ArraySpace,n::Int)=$OpWrap(DiagonalArrayOperator($Op(AS.space,n),size(AS)),n)
         $Op(AS::ReImSpace,n::Int)=$OpWrap(ReImOperator($Op(AS.space,n)),n)
         function $Op(S::PiecewiseSpace,n::Int)
@@ -56,9 +56,18 @@ for (Op,OpWrap,OffOp) in ((:Hilbert,:HilbertWrapper,:OffHilbert),(:SingularInteg
     end
 end
 
+# Length catch
+
+Hilbert(sp::FunctionSpace{ComplexBasis},n)=Hilbert{typeof(sp),typeof(n),Complex{real(eltype(domain(sp)))}}(sp,n)
+Hilbert(sp::FunctionSpace,n)=Hilbert{typeof(sp),typeof(n),typeof(complexlength(domain(sp)))}(sp,n)
+
+SingularIntegral(sp::FunctionSpace{ComplexBasis},n)=SingularIntegral{typeof(sp),typeof(n),Complex{real(eltype(domain(sp)))}}(sp,n)
+SingularIntegral(sp::FunctionSpace,n)=SingularIntegral{typeof(sp),typeof(n),typeof(length(domain(sp)))}(sp,n)
+
 # Override sumspace
-Hilbert(F::Fourier,n::Int)=Hilbert{typeof(F),eltype(n),Complex{Float64}}(F,n)
-SingularIntegral(F::Fourier,n::Int)=SingularIntegral{typeof(F),eltype(n),Float64}(F,n)
+
+Hilbert(F::Fourier,n)=Hilbert{typeof(F),typeof(n),Complex{Float64}}(F,n)
+SingularIntegral(F::Fourier,n)=SingularIntegral{typeof(F),typeof(n),Float64}(F,n)
 
 ### Operator Entries
 
@@ -215,7 +224,7 @@ for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),(:SingularInte
 
         function $Op(S::JacobiWeight{Chebyshev},n::Int)
             if S.α==S.β==-0.5
-                $Op{JacobiWeight{Chebyshev},eltype(n),eltype($Len(domain(S)))}(S,n)
+                $Op{JacobiWeight{Chebyshev},typeof(n),typeof($Len(domain(S)))}(S,n)
             elseif S.α==S.β==0.5
                 d=domain(S)
                 if n==1
