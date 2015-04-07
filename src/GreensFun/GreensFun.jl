@@ -1,5 +1,6 @@
 include("CauchyWeight.jl")
 include("Geometry.jl")
+include("evaluation.jl")
 
 # GreensFun
 

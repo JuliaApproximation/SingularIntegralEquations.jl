@@ -32,9 +32,9 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
 
     @time ∂u∂n = L\f
     println("The length of ∂u∂n is: ",length(∂u∂n))
-    us(x,y) = reshape(Fun(t->-g3(x-real(t),im*(y-imag(t)))*∂u∂n[t],ApproxFun.ArraySpace(space(∂u∂n),size(x)),length(∂u∂n)).coefficients[1:length(x)],size(x))
+    us(x,y) = -linesum(g3,∂u∂n,complex(x,y))/π
+    #us_old(x,y) = reshape(Fun(t->-g3(x-real(t),im*(y-imag(t)))*∂u∂n[t],ApproxFun.ArraySpace(space(∂u∂n),size(x)),length(∂u∂n)).coefficients[1:length(x)],size(x))
 =#
-
 
 #=
     N = 6
@@ -67,16 +67,21 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
 
     @time ∂u∂n = L\f
     println("The length of ∂u∂n is: ",length(∂u∂n))
+
+    us(x,y) = -linesum(g3,∂u∂n,complex(x,y))/π
+
+#=
     ∂u∂nv = vec(∂u∂n)
     wsp = map(space,∂u∂nv)
-
-function us(x,y)
+function us_old(x,y)
     ret = Fun(t->-g3(x-real(t),im*(y-imag(t)))*∂u∂nv[1][t],ApproxFun.ArraySpace(wsp[1],size(x)),length(∂u∂nv[1])).coefficients[1:length(x)].*length(domain(sp[1]))/2
     for i=2:N
         ret += Fun(t->-g3(x-real(t),im*(y-imag(t)))*∂u∂nv[i][t],ApproxFun.ArraySpace(wsp[i],size(x)),length(∂u∂nv[i])).coefficients[1:length(x)]*length(domain(sp[i]))/2
     end
     reshape(ret,size(x))
 end
+=#
+
 #=
 ∂u∂nvtest = vec(Fun(∂u∂n.coefficients,wsp))
 function ustest(x,y)
