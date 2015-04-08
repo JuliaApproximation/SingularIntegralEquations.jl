@@ -3,7 +3,7 @@ export Hilbert,SingularIntegral
 #############
 # Hilbert implements the Hilbert operator as a contour integral:
 #
-#       OH f(z) := 1/π\int_Γ f(t)/(t-z) dt,  z ∈ Γ
+#        H f(z) := 1/π\int_Γ f(t)/(t-z) dt,  z ∈ Γ
 #
 # SingularIntegral implements the Hilbert operator as a line integral:
 #
@@ -21,18 +21,18 @@ for (Op,OpWrap,OffOp) in ((:Hilbert,:HilbertWrapper,:OffHilbert),(:SingularInteg
         $Op(d::IntervalDomain)=$Op(JacobiWeight(-.5,-.5,Chebyshev(d)))
         $Op(d::PeriodicDomain,n::Int)=$Op(Laurent(d),n)
         $Op(d::PeriodicDomain)=$Op(Laurent(d))
-        $Op(d::Domain)=$Op(Space(d))
 
         ## Modifiers for SumSpace, ArraySpace, ReImSpace, and PiecewiseSpace
 
         #TODO: do in @calculus_operator?
-        $Op(S::SumSpace,n::Int)=$OpWrap(sumblkdiagm([$Op(S.spaces[1],n),$Op(S.spaces[2],n)]),n)
+        $Op(S::SumSpace,n)=$OpWrap(sumblkdiagm([$Op(S.spaces[1],n),$Op(S.spaces[2],n)]),n)
         $Op(AS::ArraySpace,n::Int)=$OpWrap(DiagonalArrayOperator($Op(AS.space,n),size(AS)),n)
         $Op(AS::ReImSpace,n::Int)=$OpWrap(ReImOperator($Op(AS.space,n)),n)
         function $Op(S::PiecewiseSpace,n::Int)
             sp=vec(S)
-            #This isn't correct, but how to anticipate the unifying type without creating every block to begin with?
-            C=BandedOperator{eltype($OffOp(sp[1],rangespace($Op(sp[2],n)),n))}[k==j?$Op(sp[k],n):$OffOp(sp[k],rangespace($Op(sp[j],n)),n) for j=1:length(sp),k=1:length(sp)]
+            m=length(sp)
+            C=[k==j?$Op(sp[k],n):$OffOp(sp[k],rangespace($Op(sp[j],n)),n) for j=1:m,k=1:m]
+            C=BandedOperator{mapreduce(i->eltype(C[i]),promote_type,1:m^2)}[C[j,k] for j=1:m,k=1:m]
             $OpWrap(interlace(C),n)
         end
 
@@ -56,9 +56,18 @@ for (Op,OpWrap,OffOp) in ((:Hilbert,:HilbertWrapper,:OffHilbert),(:SingularInteg
     end
 end
 
+# Length catch
+
+Hilbert(sp::FunctionSpace{ComplexBasis},n)=Hilbert{typeof(sp),typeof(n),Complex{real(eltype(domain(sp)))}}(sp,n)
+Hilbert(sp::FunctionSpace,n)=Hilbert{typeof(sp),typeof(n),typeof(complexlength(domain(sp)))}(sp,n)
+
+SingularIntegral(sp::FunctionSpace{ComplexBasis},n)=SingularIntegral{typeof(sp),typeof(n),Complex{real(eltype(domain(sp)))}}(sp,n)
+SingularIntegral(sp::FunctionSpace,n)=SingularIntegral{typeof(sp),typeof(n),typeof(length(domain(sp)))}(sp,n)
+
 # Override sumspace
-Hilbert(F::Fourier,n::Int)=Hilbert{typeof(F),Complex{Float64}}(F,n)
-SingularIntegral(F::Fourier,n::Int)=SingularIntegral{typeof(F),Float64}(F,n)
+
+Hilbert(F::Fourier,n)=Hilbert{typeof(F),typeof(n),Complex{Float64}}(F,n)
+SingularIntegral(F::Fourier,n)=SingularIntegral{typeof(F),typeof(n),Float64}(F,n)
 
 ### Operator Entries
 
@@ -215,7 +224,7 @@ for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),(:SingularInte
 
         function $Op(S::JacobiWeight{Chebyshev},n::Int)
             if S.α==S.β==-0.5
-                $Op{JacobiWeight{Chebyshev},eltype($Len(domain(S)))}(S,n)
+                $Op{JacobiWeight{Chebyshev},typeof(n),typeof($Len(domain(S)))}(S,n)
             elseif S.α==S.β==0.5
                 d=domain(S)
                 if n==1

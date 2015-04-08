@@ -1,5 +1,6 @@
 include("CauchyWeight.jl")
 include("Geometry.jl")
+include("evaluation.jl")
 
 # GreensFun
 
@@ -22,29 +23,29 @@ Base.convert{B<:ProductFun}(::Type{GreensFun},F::B) = GreensFun(F)
 evaluate(G::GreensFun,x,y) = mapreduce(f->evaluate(f,x,y),+,G.kernels)
 
 
-GreensFun{SS<:AbstractProductSpace}(f::Function,ss::SS;method::Symbol=:convolution) = GreensFun(ProductFun(f,ss;method=method))
+GreensFun{SS<:AbstractProductSpace}(f::Function,ss::SS;method::Symbol=:convolution,tol=100eps()) = GreensFun(ProductFun(f,ss.spaces...;method=method,tol=tol))
 
 # Array of GreensFun on TensorSpace of PiecewiseSpaces
 
-function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{PWS1,PWS2};method::Symbol=:convolution)
+function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{PWS1,PWS2};method::Symbol=:convolution,tol=100eps())
     pws1,pws2 = ss.spaces
     M,N = length(pws1),length(pws2)
     G = Array(GreensFun,M,N)
     for i=1:M,j=1:N
-        G[i,j] = ProductFun(f,pws1[i],pws2[j];method=method)
+        G[i,j] = ProductFun(f,pws1[i],pws2[j];method=method,tol=tol)
     end
     G
 end
 
-function GreensFun{O}(f::Function,ss::CauchyWeight{O};method::Symbol=:convolution)
+function GreensFun{O}(f::Function,ss::CauchyWeight{O};method::Symbol=:convolution,tol=100eps())
     pws1,pws2 = ss.space.spaces
-    M,N = length(pws1),length(pws2)
-    if M == N == 1
-        G = GreensFun(f,ss;method=method)
-    else
+    if !isa(pws1,PiecewiseSpace) && !isa(pws2,PiecewiseSpace)
+        G = GreensFun(ProductFun(f,ss;method=method,tol=tol))
+    elseif isa(pws1,PiecewiseSpace) && isa(pws2,PiecewiseSpace)
+        M,N = length(pws1),length(pws2)
         G = Array(GreensFun,M,N)
         for i=1:M,j=1:N
-            G[i,j] = i == j ?  ProductFun(f,CauchyWeight{O}(pws1[i]⊗pws2[j]);method=method) : ProductFun((x,y)->f(x,y).*cauchyweight(O,x,y),pws1[i],pws2[j];method=method)
+            G[i,j] = i == j ?  ProductFun(f,CauchyWeight{O}(pws1[i]⊗pws2[j]);method=method,tol=tol) : ProductFun((x,y)->f(x,y).*cauchyweight(O,x,y),pws1[i],pws2[j];method=method,tol=tol)
         end
     end
     G
@@ -136,11 +137,11 @@ end
 
 
 
-function ProductFun(f,u,v;method::Symbol=:standard)
+function ProductFun(f,u,v;method::Symbol=:standard,tol=eps())
     if method == :standard
-        ProductFun(f,u,v)
+        ProductFun(f,u,v;tol=tol)
     elseif method == :convolution
-        ConvolutionProductFun(f,u,v)
+        ConvolutionProductFun(f,u,v;tol=tol)
     end
 end
 
@@ -148,7 +149,7 @@ end
 # A new ProductFun constructor for bivariate functions on Intervals
 # defined as the distance of their arguments.
 #
-function ConvolutionProductFun{U<:FunctionSpace,V<:FunctionSpace}(f::Function,u::U,v::V)
+function ConvolutionProductFun{U<:FunctionSpace,V<:FunctionSpace}(f::Function,u::U,v::V;tol=eps())
     du,dv = domain(u),domain(v)
     ext2 = extrema2(du,dv)
     if ext2[1] == 0
@@ -156,14 +157,13 @@ function ConvolutionProductFun{U<:FunctionSpace,V<:FunctionSpace}(f::Function,u:
         fd,T = ff[0],eltype(ff)
         c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(T))
         N = length(c)
-        X = chop(coefficients(ProductFun((x,y)->x==y?fd:f(x,y),u⊗v,N,N)),norm(coefficients(ff),Inf)*100eps(T))
+        return ProductFun((x,y)->x==y?fd:f(x,y),u⊗v,N,N;tol=tol)
     else
         ff = Fun(z->f(0,z),Chebyshev(Interval(ext2...)))
         c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(eltype(ff)))
         N = length(c)
-        X = chop(coefficients(ProductFun(f,u⊗v,N,N)),norm(coefficients(ff),Inf)*100eps(eltype(ff)))
+        return ProductFun(f,u⊗v,N,N;tol=tol)
     end
-    ProductFun(X,u⊗v)
 end
 
 #
