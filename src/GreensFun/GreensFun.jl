@@ -23,7 +23,7 @@ Base.convert{B<:ProductFun}(::Type{GreensFun},F::B) = GreensFun(F)
 evaluate(G::GreensFun,x,y) = mapreduce(f->evaluate(f,x,y),+,G.kernels)
 
 
-GreensFun{SS<:AbstractProductSpace}(f::Function,ss::SS;method::Symbol=:convolution,tol=100eps()) = GreensFun(ProductFun(f,ss;method=method,tol=tol))
+GreensFun{SS<:AbstractProductSpace}(f::Function,ss::SS;method::Symbol=:convolution,tol=100eps()) = GreensFun(ProductFun(f,ss.spaces...;method=method,tol=tol))
 
 # Array of GreensFun on TensorSpace of PiecewiseSpaces
 
@@ -39,10 +39,10 @@ end
 
 function GreensFun{O}(f::Function,ss::CauchyWeight{O};method::Symbol=:convolution,tol=100eps())
     pws1,pws2 = ss.space.spaces
-    M,N = length(pws1),length(pws2)
-    if M == N == 1
-        G = GreensFun(f,ss;method=method,tol=tol)
-    else
+    if !isa(pws1,PiecewiseSpace) && !isa(pws2,PiecewiseSpace)
+        G = GreensFun(ProductFun(f,ss;method=method,tol=tol))
+    elseif isa(pws1,PiecewiseSpace) && isa(pws2,PiecewiseSpace)
+        M,N = length(pws1),length(pws2)
         G = Array(GreensFun,M,N)
         for i=1:M,j=1:N
             G[i,j] = i == j ?  ProductFun(f,CauchyWeight{O}(pws1[i]⊗pws2[j]);method=method,tol=tol) : ProductFun((x,y)->f(x,y).*cauchyweight(O,x,y),pws1[i],pws2[j];method=method,tol=tol)
