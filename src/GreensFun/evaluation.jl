@@ -40,3 +40,19 @@ for (Func,Len) in ((:(Base.sum),:complexlength),(:linesum,:length))
         $Func{PS<:PolynomialSpace}(G::Function,f::Fun{JacobiWeight{PS}},z)=$Func(G,Fun(f,Chebyshev(domain(f))),z)
     end
 end
+
+function Base.sum{S<:PeriodicSpace}(G::Function,u::Fun{S},z)
+    d,n=domain(u),length(u)
+    vals,t = values(u),points(d,n)
+    if isa(d,Circle)
+      return map(z->mean(G(real(z-t),im*imag(z-t)).*vals.*t),z)*2π*im
+    else
+      return map(z->mean(G(real(z-t),im*imag(z-t)).*vals),z)*length(d)
+    end
+end
+
+function linesum{S<:PeriodicSpace}(G::Function,u::Fun{S},z)
+    d,n=domain(u),length(u)
+    vals,t = values(u),points(d,n)
+    map(z->mean(G(real(z-t),im*imag(z-t)).*vals),z)*length(d)
+end

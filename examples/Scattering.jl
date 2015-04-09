@@ -3,8 +3,8 @@
 # u|Γ = 0,
 # u^i = e^{im k x⋅d},
 # u = u^i + u^s.
-# The normal derivative ∂u∂n of the entire wave is calculated on the sound-soft line [-1,1].
-# The scattered wave is calculated by convolving ∂u∂n with the fundamental solution.
+# The normal derivative ∂u/∂n of the entire wave is calculated on the sound-soft boundaries.
+# The scattered wave is calculated by convolving ∂u/∂n with the fundamental solution.
 # Then, the total wave is obtained by summing the incident and the scattered waves.
 
 using ApproxFun,SIE
@@ -17,14 +17,14 @@ d = d[1]/hypot(d[1],d[2]),d[2]/hypot(d[1],d[2])
 ui(x,y) = exp(im*k*(d⋅(x,y)))
 
 # The Helmholtz Green's function, split into singular and nonsingular pieces.
-g1(x,y) = -besselj0(k*abs(y-x))/2π
-g2(x,y) = (besselj0(k*abs(y-x))*(im*π/2+logabs(y-x))/2π - bessely0(k*abs(y-x))/4)/π
+g1(x,y) = -besselj0(k*abs(y-x))/2
+g2(x,y) = besselj0(k*abs(y-x))*(im*π/2+logabs(y-x))/2π - bessely0(k*abs(y-x))/4
 g3(x,y) = im/4*hankelh1(0,k*abs(y-x))
 
 
 # A variety of domains.
 
-    dom = Interval()
+    dom = Circle(0.0,1/π)∪Interval(-1.im,1.0)
 #=
     N = 6
     r = rand(2N+1)
@@ -35,6 +35,7 @@ g3(x,y) = im/4*hankelh1(0,k*abs(y-x))
     #dom = ∪(Interval([-2.5-.5im,-1.5+.5im,-.5-.5im,.5+.5im,1.5-.5im],[-1.5-.5im,-.5+.5im,.5-.5im,1.5+.5im,2.5-.5im]))
     #dom = ∪(Interval([-1.0-0.4im,0.1+0.4im,-0.9-0.5im],[-0.1+0.4im,1.0-0.4im,0.9-0.5im]))
     #dom = ∪(Interval([-1.0-0.4im,-0.5-0.4im,0.1+0.4im,0.2+0.0im,-1.4-0.75im],[-0.1+0.4im,-0.2+0.0im,1.0-0.4im,0.5-0.4im,1.4-0.75im]))
+    #dom = Circle(0.,0.5)∪∪(Interval([-1.5,0.5-1.0im],[-0.5-1.0im,1.5]))
 
     sp = Space(dom)
     cwsp = CauchyWeight{0}(sp⊗sp)
@@ -46,4 +47,4 @@ g3(x,y) = im/4*hankelh1(0,k*abs(y-x))
 
     @time ∂u∂n = L\f
     println("The length of ∂u∂n is: ",length(∂u∂n))
-    us(x,y) = -linesum(g3,∂u∂n,complex(x,y))/π
+    us(x,y) = -linesum(g3,∂u∂n,complex(x,y))
