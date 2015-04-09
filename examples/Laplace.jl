@@ -19,47 +19,37 @@ using ApproxFun,SIE
 =#
 
     z_0 = 2.0
-    ui(x,y) = 1/2π*logabs(complex(x,y)-z_0)
+    ui(x,y) = logabs(complex(x,y)-z_0)/2π
+    g1(x,y) = 1/2
 
+# Set the domains.
     N = 20
-    r = 2e-3
-    cr = exp(im*2π*[1:N]/N)
+    r = 1e-3
+    cr = exp(im*2π*[0:N-1]/N)
     crl = (1-2im*r)cr
     crr = (1+2im*r)cr
+    #dom = ∪(Interval(crl,crr))
+    dom = ∪(Circle(cr,r))
+    #dom = ∪(Interval(crl[1:2:end],crr[1:2:end])) ∪ ∪(Circle(cr[2:2:end],r))
+    #dom = Interval(crl[1:2:end],crr[1:2:end]) ∪ Circle(cr[2:2:end],r)
 
-    dom = ∪(Interval(crl,crr))
-
-    sp = PiecewiseSpace(map(ChebyshevDirichlet{1,1},dom.domains))
-    wsp = PiecewiseSpace([JacobiWeight(-.5,-.5,sp.spaces[i]) for i=1:N])
-    xid = Fun(identity,sp)
-
-#=
     sp = Space(dom)
-    csp = [CauchyWeight{0}(sp[i]⊗sp[i]) for i=1:N]
-    cwsp = [CauchyWeight{0}(sp[i]⊗wsp[i]) for i=1:N]
-    uiΓ,⨍ = Fun(t->ui(real(xid[t]),imag(xid[t])),sp),DefiniteLineIntegral(wsp)
-    uiΓ,H0 = chop(depiece([Fun(t->ui(real(t),imag(t)),sp[i],1024) for i=1:N]),eps()),0.5SingularIntegral(wsp,0)
+    cwsp = CauchyWeight{0}(sp⊗sp)
+    uiΓ,⨍ = Fun(t->ui(real(t),imag(t))+0im,sp),DefiniteLineIntegral(dom)
 
-    g1(x,y) = 1/2
-    g3(x,y) = 1/2π*logabs(y-x)
-
-    G = Array(GreensFun,N,N)
-    for i=1:N,j=1:N
-        if i == j
-            G[i,i] = ProductFun(g1,cwsp[i])
-        else
-            G[i,j] = ProductFun(g3,sp[i],wsp[j];method=:convolution)
-        end
-    end
+    @time G = GreensFun(g1,cwsp)
 
     L,f = ⨍[G],uiΓ
-=#
-    uiΓ,H0 = Fun(t->ui(real(xid[t]),imag(xid[t])),sp),0.5SingularIntegral(wsp,0)
+#=
+    sp = isa(dom,UnionDomain)? PiecewiseSpace(map(ChebyshevDirichlet{1,1},dom.domains)) : ChebyshevDirichlet{1,1}(dom)
+    wsp = JacobiWeight(-.5,-.5,sp)
+    uiΓ,H0 = Fun(t->ui(real(t),imag(t)),sp),0.5SingularIntegral(wsp,0)
     L,f = H0,uiΓ
-
+=#
     @time ∂u∂n = L\f
     println("The length of ∂u∂n is: ",length(∂u∂n))
 
-    us(x,y) = -1/2π*logkernel(∂u∂n,complex(x,y))
+    us(x,y) = -logkernel(∂u∂n,complex(x,y))/2π
     ut(x,y) = ui(x,y) + us(x,y)
     println("This is the approximate gradient: ",(2π*(ut(1e-5,0.)-ut(-1e-5,0.))/2e-5))
+

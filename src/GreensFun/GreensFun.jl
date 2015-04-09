@@ -87,13 +87,14 @@ function Base.getindex{F<:BivariateFun}(⨍::DefiniteLineIntegral,B::Matrix{F})
     wsp = domainspace(⨍)
     @assert m == length(wsp.spaces)
     ⨍j = DefiniteLineIntegral(wsp[1])
-    ret = Array(typeof(⨍j[B[1,1]]),m,n)
+    ret = Array(Any,m,n)
     for j=1:n
         ⨍j = DefiniteLineIntegral(wsp[j])
         for i=1:m
             ret[i,j] = ⨍j[B[i,j]]
         end
     end
+    ret = mapreduce(typeof,promote_type,ret)[ret[j,i] for j=1:n,i=1:m]
 
     ret
 end
