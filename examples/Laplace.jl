@@ -1,25 +1,24 @@
 # This file calculates the solution to Laplace's equation via the adaptive spectral method.
 # Δu = 0,
 # u|Γ = 0,
-# u^i = 1/2π*log|z-z_0|,
+# u^i = log|z-z_0|,
 # u = u^i + u^s.
-# The normal derivative ∂u∂n of the solution is calculated on the constant-charge circle.
-# The reflected solution is calculated by convolving ∂u∂n with the fundamental solution.
-# Then, the total solution is obtained by summing the incident and the scattered waves.
+# The normal derivative ∂u/∂n of the solution is calculated on the constant-charge boundary Γ.
+# The reflected solution is calculated by convolving ∂u/∂n with the fundamental solution.
+# Then, the total solution is obtained by summing the incident and the reflected solutions.
 
 using ApproxFun,SIE
 
 #=  SIE plot
-    ui(x,y) = 1/2π*(-logabs(complex(x,y)-complex(2.5,1.5)) + logabs(complex(x,y)-complex(-0.6,0.9)) + logabs(complex(x,y)-complex(0.4,-1.2)) - logabs(complex(x,y)-complex(-2.1,-0.5)) + logabs(complex(x,y)-complex(1.7,-0.5)))
+    ui(x,y) = -logabs(complex(x,y)-complex(2.5,1.5)) + logabs(complex(x,y)-complex(-0.6,0.9)) + logabs(complex(x,y)-complex(0.4,-1.2)) - logabs(complex(x,y)-complex(-2.1,-0.5)) + logabs(complex(x,y)-complex(1.7,-0.5))
     domS = Interval([-1.95+im,-1.+im])∪Interval([-2.+0.05im,-2.+.95im])∪Interval([-1.95+0.im,-1.05+0.im])∪Interval([-1.-0.05im,-1.-.95im])∪Interval([-2.-im,-1.05-im])
     domI = Interval([-1.0im,1.0im])
     domE = Interval([1.-0.95im,1.+0.95im])∪Interval([1.05+im,2.+im])∪Interval([1.05-im,2.-im])∪Interval([1.1-0.0im,1.75+0.0im])
     dom = domS∪domI∪domE
-    N = length(dom)
 =#
 
     z_0 = 2.0
-    ui(x,y) = logabs(complex(x,y)-z_0)/2π
+    ui(x,y) = logabs(complex(x,y)-z_0)
     g1(x,y) = 1/2
 
 # Set the domains.
@@ -29,9 +28,8 @@ using ApproxFun,SIE
     crl = (1-2im*r)cr
     crr = (1+2im*r)cr
     #dom = ∪(Interval(crl,crr))
-    dom = ∪(Circle(cr,r))
-    #dom = ∪(Interval(crl[1:2:end],crr[1:2:end])) ∪ ∪(Circle(cr[2:2:end],r))
-    #dom = Interval(crl[1:2:end],crr[1:2:end]) ∪ Circle(cr[2:2:end],r)
+    #dom = ∪(Circle(cr,r))
+    dom = ∪(Interval(crl[1:2:end],crr[1:2:end])) ∪ ∪(Circle(cr[2:2:end],r))
 
     sp = Space(dom)
     cwsp = CauchyWeight{0}(sp⊗sp)
@@ -51,5 +49,5 @@ using ApproxFun,SIE
 
     us(x,y) = -logkernel(∂u∂n,complex(x,y))/2π
     ut(x,y) = ui(x,y) + us(x,y)
-    println("This is the approximate gradient: ",(2π*(ut(1e-5,0.)-ut(-1e-5,0.))/2e-5))
+    println("This is the approximate gradient: ",((ut(1e-5,0.)-ut(-1e-5,0.))/2e-5))
 
