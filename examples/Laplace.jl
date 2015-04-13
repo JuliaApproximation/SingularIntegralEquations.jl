@@ -22,8 +22,8 @@ using ApproxFun,SIE
     g1(x,y) = 1/2
 
 # Set the domains.
-    N = 20
-    r = 1e-3
+    N = 6
+    r = 1e-1
     cr = exp(im*2π*[0:N-1]/N)
     crl = (1-2im*r)cr
     crr = (1+2im*r)cr
