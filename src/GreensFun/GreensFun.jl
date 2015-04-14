@@ -99,40 +99,67 @@ function Base.getindex{F<:BivariateFun}(⨍::DefiniteLineIntegral,B::Matrix{F})
     ret
 end
 
-export LowRankPositiveDefiniteFun
+export LowRankCholeskyFun
 
-function LowRankPositiveDefiniteFun(f::Function,spx::FunctionSpace,spy::FunctionSpace)
-    dx,dy = domain(spx),domain(spy)
-    dz = Interval([dx.a+dy.a,dx.b+dy.b])
-    ff = Fun(x->f(-x/2,x/2),Chebyshev(dz))
-    T,fd = eltype(ff),ff[(dx.a+dx.b)/2]
-    fnew(x,y) = x == y ? fd : f(x,y)
-    tol = maxabs(coefficients(ff))*100eps(T)
-    c = chop(coefficients(ff),tol)
-    N = length(c)
-    pts=points(Chebyshev(dz),N)
-    r=((dx.a+dx.b)/2,(dy.a+dy.b)/2)
-    rold=(r[1]+1,r[2]+1)
-    a=Fun(x->fnew(x,r[2]),dx)
-    A=typeof(a)[]
-    while norm(a.coefficients) > tol && r != rold
-        A=[A;a/sqrt(abs(a[r[1]]))]
-        r,rold=findposdefapproxmax((x,y)->fnew(x,y)-evaluate(A,A,x,y),pts),r
-        Br=map(q->q[r[2]],A)
-        a=Fun(x->fnew(x,r[2]),dx; method="abszerocoefficients") - dotu(Br,A)
-        a=chop!(a,tol)
+function findcholeskyapproxmax!(f::Function,X::Vector,pts::Vector,grid)
+    @inbounds for k=1:grid
+        X[k]+=f(pts[k],pts[k])
     end
-    LowRankFun(A,A)
+    maxabsf,impt = findmax(abs(X))
+    maxabsf,pts[impt]
 end
 
-function findposdefapproxmax(f::Function,pts::Vector)
-    fv = eltype(f(pts[1]/2,pts[1]/2))[abs(f(ptsk/2,ptsk/2)) for ptsk in pts]
-    mpt = pts[indmax(fv)]/2
-    mpt,mpt
+function findcholeskyapproxmax!(A::Fun,B::Fun,X::Vector,pts::Vector,grid)
+    dX = A[pts].*B[pts]
+    X[:] -= dX[:]
+    maxabsf,impt = findmax(abs(X))
+    maxabsf,pts[impt]
 end
 
+function LowRankCholeskyFun(f::Function,dx::FunctionSpace;grid::Integer=64,maxrank::Integer=100)
 
+    Td = eltype(domain(dx))
 
+    # We start by sampling on the given grid, find the approximate maximum and create the first rank-one approximation.
+    pts=points(dx,grid)
+    Tf = typeof(f(pts[1],pts[1]))
+    T = promote_type(Tf,Td)
+    X = zeros(T,grid)
+    maxabsf,r=findcholeskyapproxmax!(f,X,pts,grid)
+    a=Fun(x->f(x,r),dx)
+
+    # If necessary, we resize the grid to be at least as large as the
+    # length of the first row/column Fun and we recompute the values of X.
+    if grid < length(a)
+        grid = max(grid,length(a))
+        pts=points(dx,grid)
+        X = zeros(T,grid)
+        maxabsf,r=findcholeskyapproxmax!(f,X,pts,grid)
+        a=Fun(x->f(x,r),dx)
+    end
+
+    A,B,tol=typeof(a)[],typeof(a)[],100maxabsf*eps(T)
+    tol10 = tol/10
+
+    # Eat, drink, subtract rank-one, repeat.
+    for k=1:maxrank
+
+        if norm(a.coefficients,Inf) < tol return LowRankFun(A,B) end
+
+        A,B=[A;a/sqrt(abs(a[r]))],[B;a/(sqrt(abs(a[r]))*sign(a[r]))]
+
+        maxabsf,r=findcholeskyapproxmax!(A[k],B[k],X,pts,grid)
+
+        Br=map(q->q[r],B)
+
+        a=Fun(x->f(x,r),dx,grid) - dot(conj(Br),A)
+
+        chop!(a,tol10)
+
+    end
+    warn("Maximum rank of " * string(maxrank) * " reached")
+    return LowRankFun(A,B)
+end
 
 
 
