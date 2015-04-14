@@ -6,6 +6,10 @@ function Base.extrema(d1::Domain,d2::Domain)
     ext2 = extrema2(d1,d2)
     sqrt(ext2[1]),sqrt(ext2[2])
 end
+function extrema2(d1::Domain,d2::Domain)
+    ext = extrema(d1,d2)
+    ext[1]^2,ext[2]^2
+end
 
 #
 # Geometry for non-intersecting Intervals
@@ -68,9 +72,9 @@ end
 # to the Interval, adding or subtracting a radius in either direction.
 # The extremal distances are a subset.
 #
-function extrema2(d1::Interval,d2::Circle)
+function Base.extrema(d1::Interval,d2::Circle)
     a,b = d1.a,d1.b
-    c,r2=d2.center,(d2.radius)^2
-    extrema(( dist2(a,d2),dist2(b,d2),dist2(a,d2)+4r2,dist2(b,d2)+4r2,dist2(c,d1)+r2,dist2(c,d1)-r2 ))
+    c,r=d2.center,d2.radius
+    extrema(( dist(a,d2),dist(b,d2),dist(a,d2)+2r,dist(b,d2)+2r,dist(c,d1)+r,dist(c,d1)-r ))
 end
-extrema2(d1::Circle,d2::Interval) = extrema2(d2,d1)
+Base.extrema(d1::Circle,d2::Interval) = extrema(d2,d1)
