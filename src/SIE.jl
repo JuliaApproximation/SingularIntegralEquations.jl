@@ -5,8 +5,7 @@ export cauchy, cauchyintegral, stieltjes, logkernel,stieltjesintegral
 
 
 import ApproxFun
-import ApproxFun: PeriodicDomain, bandinds,
-                  Curve,CurveSpace,transform,SpaceOperator,
+import ApproxFun: bandinds,CurveSpace,transform,SpaceOperator,
                   rangespace, domainspace, addentries!, BandedOperator, AnySpace,
                   canonicalspace, domain, promotedomainspace, AnyDomain, CalculusOperator,
                   SumSpace,PiecewiseSpace, interlace,Multiplication,ArraySpace,DiagonalArrayOperator,

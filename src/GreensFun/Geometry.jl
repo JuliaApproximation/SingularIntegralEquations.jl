@@ -1,6 +1,6 @@
 
 # Nearest distance from a point to a domain
-dist(c,d::Domain) = sqrt(dist2(c,d))
+dist(c::Number,d::Domain) = sqrt(dist2(c,d))
 # Extremal distances between domains
 function Base.extrema(d1::Domain,d2::Domain)
     ext2 = extrema2(d1,d2)
@@ -14,7 +14,7 @@ end
 #
 # Geometry for non-intersecting Intervals
 #
-function dist2(c,d::Interval)
+function dist2(c::Number,d::Interval)
     if in(c,d)
         zero(real(c))
     else
@@ -40,7 +40,7 @@ end
 #
 # Geometry for non-intersecting Circles
 #
-function dist2(z,d::Circle)
+function dist2(z::Number,d::Circle)
     if in(z,d)
         zero(real(z))
     else
