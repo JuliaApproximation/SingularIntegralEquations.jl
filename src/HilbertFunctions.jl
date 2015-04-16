@@ -1,5 +1,5 @@
 export hilbert, hilbertinverse
-## 
+##
 #  hilbert and hilbertinverse on JacobiWeight space
 # hilbert is equal to im*(C^+ + C^-)
 #  hilbert(f,z)=im*(cauchy(true,f,z)+cauchy(false,f,z))
@@ -9,12 +9,12 @@ function hilbert(u::Fun{JacobiWeight{Chebyshev}})
     d=domain(u);sp=space(u)
 
     if sp.α == sp.β == .5
-        # Corollary 5.7 of Olver&Trogdon    
+        # Corollary 5.7 of Olver&Trogdon
         uf=Fun(u.coefficients,d)
         cfs=coefficients(uf,Ultraspherical{1})
         Fun([0.;-cfs],d)
     elseif sp.α == sp.β == -.5
-        # Corollary 5.11 of Olver&Trogdon    
+        # Corollary 5.11 of Olver&Trogdon
         uf = Fun(u.coefficients,d)
         cfs= coefficients(uf,ChebyshevDirichlet{1,1})
         Fun([cfs[2];2cfs[3:end]],d)
@@ -27,21 +27,21 @@ function hilbertinverse(u::Fun)
     cfs=coefficients(u,Chebyshev)
     if abs(first(cfs)) < 100eps()
         # no singularity
-        # invert Corollary 5.7 of Olver&Trogdon            
+        # invert Corollary 5.7 of Olver&Trogdon
         cfs=coefficients(cfs[2:end],Ultraspherical{1},Chebyshev)
         Fun(cfs,JacobiWeight(.5,.5,u.domain))
     else
         # no singularity
-        # invert Corollary 5.11 of Olver&Trogdon               
+        # invert Corollary 5.11 of Olver&Trogdon
         cfs=[0.,cfs[1],.5*cfs[2:end]]
-        cfs=coefficients(cfs,ChebyshevDirichlet{1,1},Chebyshev)         
+        cfs=coefficients(cfs,ChebyshevDirichlet{1,1},Chebyshev)
         Fun(cfs,JacobiWeight(-.5,-.5,u.domain))
     end
 end
 
 ## hilbert on JacobiWeight space mapped by open curves
 
-function hilbert{M,T}(f::Fun{JacobiWeight{OpenCurveSpace{M}},T})
+function hilbert{M,BT,T}(f::Fun{CurveSpace{JacobiWeight{M},BT},T})
     #project
     c=space(f).space.domain
     fm=Fun(f.coefficients,JacobiWeight(space(f).α,space(f).β))
@@ -49,7 +49,7 @@ function hilbert{M,T}(f::Fun{JacobiWeight{OpenCurveSpace{M}},T})
     Fun(q.coefficients,MappedSpace(domain(f),space(q)))
 end
 
-function hilbert{M,T}(f::Fun{JacobiWeight{OpenCurveSpace{M}},T},x::Number)
+function hilbert{M,T,BT}(f::Fun{CurveSpace{JacobiWeight{M},BT},T},x::Number)
     #project
     c=space(f).space.domain
     fm=Fun(f.coefficients,JacobiWeight(space(f).α,space(f).β))

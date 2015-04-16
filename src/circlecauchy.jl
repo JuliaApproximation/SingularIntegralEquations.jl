@@ -62,7 +62,7 @@ hilbert(f::Fun{Laurent},z)=im*(cauchy(true,f,z)+cauchy(false,f,z))
 
 
 # pseudo cauchy is not normalized at infinity
-function pseudocauchy(f::Fun{ClosedCurveSpace{Laurent,Complex{Float64}}},z::Number)
+function pseudocauchy(f::Fun{CurveSpace{Laurent,Complex{Float64}}},z::Number)
     fcirc=Fun(f.coefficients,f.space.space)  # project to circle
     c=domain(f)  # the curve that f lives on
     @assert domain(fcirc)==Circle()
@@ -70,7 +70,7 @@ function pseudocauchy(f::Fun{ClosedCurveSpace{Laurent,Complex{Float64}}},z::Numb
     sum(cauchy(fcirc,complexroots(c.curve-z)))
 end
 
-function cauchy(f::Fun{ClosedCurveSpace{Laurent,Complex{Float64}}},z::Number)
+function cauchy(f::Fun{CurveSpace{Laurent,Complex{Float64}}},z::Number)
     fcirc=Fun(f.coefficients,f.space.space)  # project to circle
     c=domain(f)  # the curve that f lives on
     @assert domain(fcirc)==Circle()
@@ -79,7 +79,7 @@ function cauchy(f::Fun{ClosedCurveSpace{Laurent,Complex{Float64}}},z::Number)
     sum(cauchy(fcirc,complexroots(c.curve-z)))-div(length(domain(f).curve),2)*cauchy(fcirc,0.)
 end
 
-function cauchy(s,f::Fun{ClosedCurveSpace{Laurent,Complex{Float64}}},z::Number)
+function cauchy(s,f::Fun{CurveSpace{Laurent,Complex{Float64}}},z::Number)
     fcirc=Fun(f.coefficients,f.space.space)  # project to circle
     c=domain(f)  # the curve that f lives on
     @assert domain(fcirc)==Circle()
@@ -95,7 +95,7 @@ function cauchy(s,f::Fun{ClosedCurveSpace{Laurent,Complex{Float64}}},z::Number)
 end
 
 
-function hilbert(f::Fun{ClosedCurveSpace{Laurent,Complex{Float64}}},z::Number)
+function hilbert(f::Fun{CurveSpace{Laurent,Complex{Float64}}},z::Number)
     fcirc=Fun(f.coefficients,f.space.space)  # project to circle
     c=domain(f)  # the curve that f lives on
     @assert domain(fcirc)==Circle()

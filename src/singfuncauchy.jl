@@ -245,14 +245,14 @@ end
 
 ## Mapped
 
-function cauchy{M,T}(f::Fun{JacobiWeight{OpenCurveSpace{M}},T},z::Number)
+function cauchy{M,T,BT}(f::Fun{CurveSpace{JacobiWeight{M},BT},T},z::Number)
     #project
     cs=space(f).space
     fm=Fun(f.coefficients,JacobiWeight(space(f).α,space(f).β,cs.space))
     sum(cauchy(fm,complexroots(cs.domain.curve-z)))
 end
 
-function cauchy{M,T}(s::Bool,f::Fun{JacobiWeight{OpenCurveSpace{M}},T},z::Number)
+function cauchy{M,BT,T}(s::Bool,f::Fun{CurveSpace{JacobiWeight{M},BT},T},z::Number)
     #project
     cs=space(f).space
     fm=Fun(f.coefficients,JacobiWeight(space(f).α,space(f).β,cs.space))

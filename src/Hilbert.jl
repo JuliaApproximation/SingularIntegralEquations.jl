@@ -289,7 +289,7 @@ end
 
 ## CurveSpace
 
-function Hilbert(S::JacobiWeight{OpenCurveSpace{Chebyshev}},k::Int)
+function Hilbert{T}(S::CurveSpace{JacobiWeight{Chebyshev},T},k::Int)
     @assert k==1
     #TODO: choose dimensions
     m,n=40,40

@@ -41,7 +41,7 @@ for (Func,Len) in ((:(Base.sum),:complexlength),(:linesum,:length))
     end
 end
 
-function Base.sum{S<:PeriodicSpace}(G::Function,u::Fun{S},z)
+function Base.sum{S<:Union(Fourier,Laurent)}(G::Function,u::Fun{S},z)
     d,n=domain(u),length(u)
     vals,t = values(u),points(d,n)
     if isa(d,Circle)
@@ -51,7 +51,7 @@ function Base.sum{S<:PeriodicSpace}(G::Function,u::Fun{S},z)
     end
 end
 
-function linesum{S<:PeriodicSpace}(G::Function,u::Fun{S},z)
+function linesum{S<:Union(Fourier,Laurent)}(G::Function,u::Fun{S},z)
     d,n=domain(u),length(u)
     vals,t = values(u),points(d,n)
     map(z->mean(G(real(z-t),im*imag(z-t)).*vals),z)*length(d)
