@@ -206,7 +206,7 @@ end
 # Suppose we are interested in K(ϕ-θ). Then, K(⋅) is periodic
 # whether it's viewed as bivariate or univariate.
 #
-function ConvolutionProductFun{S<:Fourier,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V)
+function ConvolutionProductFun{S<:Fourier,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V;tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
@@ -223,7 +223,7 @@ function ConvolutionProductFun{S<:Fourier,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u
     ProductFun(X,u⊗v)
 end
 
-function ConvolutionProductFun{S<:CosSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V)
+function ConvolutionProductFun{S<:CosSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V;tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
@@ -237,7 +237,7 @@ function ConvolutionProductFun{S<:CosSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},
     ProductFun(X,u⊗v)
 end
 
-function ConvolutionProductFun{S<:SinSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V)
+function ConvolutionProductFun{S<:SinSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V;tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
@@ -250,7 +250,7 @@ function ConvolutionProductFun{S<:SinSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},
     ProductFun(X,u⊗v)
 end
 
-function ConvolutionProductFun{S<:Laurent,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V)
+function ConvolutionProductFun{S<:Laurent,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V;tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
@@ -265,7 +265,7 @@ function ConvolutionProductFun{S<:Laurent,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u
     ProductFun(X,u⊗v)
 end
 
-function ConvolutionProductFun{S<:Taylor,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V)
+function ConvolutionProductFun{S<:Taylor,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V;tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
@@ -278,7 +278,7 @@ function ConvolutionProductFun{S<:Taylor,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u:
     ProductFun(X,u⊗v)
 end
 
-function ConvolutionProductFun{S<:Hardy{false},T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V)
+function ConvolutionProductFun{S<:Hardy{false},T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V;tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
