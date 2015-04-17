@@ -45,7 +45,7 @@ function GreensFun{O}(f::Function,ss::CauchyWeight{O};method::Symbol=:convolutio
         M,N = length(pws1),length(pws2)
         G = Array(GreensFun,M,N)
         for i=1:M,j=1:N
-            G[i,j] = i == j ?  ProductFun(f,CauchyWeight{O}(pws1[i]⊗pws2[j]);method=method,tol=tol) : ProductFun((x,y)->f(x,y).*cauchyweight(O,x,y),pws1[i],pws2[j];method=method,tol=tol)
+            G[i,j] = ProductFun(f,CauchyWeight{O}(pws1[i]⊗pws2[j]);method=method,tol=tol)
         end
     end
     G
