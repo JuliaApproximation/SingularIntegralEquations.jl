@@ -27,7 +27,7 @@ GreensFun{SS<:AbstractProductSpace}(f::Function,ss::SS;method::Symbol=:convoluti
 
 # Array of GreensFun on TensorSpace of PiecewiseSpaces
 
-function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{PWS1,PWS2};method::Symbol=:convolution,tol=100eps())
+function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{(PWS1,PWS2)};method::Symbol=:convolution,tol=100eps())
     pws1,pws2 = ss.spaces
     M,N = length(pws1),length(pws2)
     G = Array(GreensFun,M,N)
@@ -99,70 +99,6 @@ function Base.getindex{F<:BivariateFun}(⨍::DefiniteLineIntegral,B::Matrix{F})
     ret
 end
 
-export LowRankCholeskyFun
-
-function findcholeskyapproxmax!(f::Function,X::Vector,pts::Vector,grid)
-    @inbounds for k=1:grid
-        X[k]+=f(pts[k],pts[k])
-    end
-    maxabsf,impt = findmax(abs(X))
-    maxabsf,pts[impt]
-end
-
-function findcholeskyapproxmax!(A::Fun,B::Fun,X::Vector,pts::Vector,grid)
-    dX = A[pts].*B[pts]
-    X[:] -= dX[:]
-    maxabsf,impt = findmax(abs(X))
-    maxabsf,pts[impt]
-end
-
-function LowRankCholeskyFun(f::Function,dx::FunctionSpace;grid::Integer=64,maxrank::Integer=100)
-
-    Td = eltype(domain(dx))
-
-    # We start by sampling on the given grid, find the approximate maximum and create the first rank-one approximation.
-    pts=points(dx,grid)
-    Tf = typeof(f(pts[1],pts[1]))
-    T = promote_type(Tf,Td)
-    X = zeros(T,grid)
-    maxabsf,r=findcholeskyapproxmax!(f,X,pts,grid)
-    a=Fun(x->f(x,r),dx)
-
-    # If necessary, we resize the grid to be at least as large as the
-    # length of the first row/column Fun and we recompute the values of X.
-    if grid < length(a)
-        grid = max(grid,length(a))
-        pts=points(dx,grid)
-        X = zeros(T,grid)
-        maxabsf,r=findcholeskyapproxmax!(f,X,pts,grid)
-        a=Fun(x->f(x,r),dx)
-    end
-
-    A,B,tol=typeof(a)[],typeof(a)[],100maxabsf*eps(T)
-    tol10 = tol/10
-
-    # Eat, drink, subtract rank-one, repeat.
-    for k=1:maxrank
-
-        if norm(a.coefficients,Inf) < tol return LowRankFun(A,B) end
-
-        A,B=[A;a/sqrt(abs(a[r]))],[B;a/(sqrt(abs(a[r]))*sign(a[r]))]
-
-        maxabsf,r=findcholeskyapproxmax!(A[k],B[k],X,pts,grid)
-
-        Br=map(q->q[r],B)
-
-        a=Fun(x->f(x,r),dx,grid) - dot(conj(Br),A)
-
-        chop!(a,tol10)
-
-    end
-    warn("Maximum rank of " * string(maxrank) * " reached")
-    return LowRankFun(A,B)
-end
-
-
-
 
 
 function ProductFun(f,u,v;method::Symbol=:standard,tol=eps())
@@ -179,9 +115,9 @@ end
 #
 function ConvolutionProductFun{U<:FunctionSpace,V<:FunctionSpace}(f::Function,u::U,v::V;tol=eps())
     du,dv = domain(u),domain(v)
-    ext2 = extrema2(du,dv)
-    if ext2[1] == 0
-        ff = Fun(z->f(0,z),Chebyshev(Interval(-ext2[2]/2,ext2[2]/2)))
+    ext = extrema(du,dv)
+    if ext[1] == 0
+        ff = Fun(z->f(0,z),Chebyshev(Interval(-ext[2]/2,ext[2]/2)))
         fd,T = ff[0],eltype(ff)
         c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(T))
         N = length(c)
@@ -189,7 +125,7 @@ function ConvolutionProductFun{U<:FunctionSpace,V<:FunctionSpace}(f::Function,u:
         N2 = isa(dv,PeriodicDomain) ? 2N : N
         return ProductFun((x,y)->x==y?fd:f(x,y),u⊗v,N1,N2;tol=tol)
     else
-        ff = Fun(z->f(0,z),Chebyshev(Interval(ext2...)))
+        ff = Fun(z->f(0,z),Chebyshev(Interval(ext...)))
         c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(eltype(ff)))
         N = length(c)
         N1 = isa(du,PeriodicDomain) ? 2N : N

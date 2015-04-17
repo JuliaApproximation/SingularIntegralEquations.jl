@@ -2,7 +2,7 @@
 
 export CauchyWeight
 
-immutable CauchyWeight{O} <: AbstractProductSpace
+immutable CauchyWeight{O} <: AbstractProductSpace#{SV,T,2}
     space::AbstractProductSpace
     CauchyWeight(space) = new(space)
 end
