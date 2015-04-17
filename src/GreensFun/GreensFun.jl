@@ -7,7 +7,7 @@ include("evaluation.jl")
 export GreensFun
 
 immutable GreensFun <: BivariateFun
-    kernels::Vector{ProductFun}
+    kernels::Vector{Union(ProductFun,LowRankFun)}
     function GreensFun(kernels)
         #[@assert eltype(kernels[i]) == eltype(kernels[1]) for i=1:n]
         # TODO: should probably be a space assertion but complicated by enrichment.
@@ -16,40 +16,48 @@ immutable GreensFun <: BivariateFun
     end
 end
 
-GreensFun(F::ProductFun) = GreensFun([F])
+GreensFun(F::Union(ProductFun,LowRankFun)) = GreensFun([F])
 
 Base.length(G::GreensFun) = length(G.kernels)
-Base.convert{B<:ProductFun}(::Type{GreensFun},F::B) = GreensFun(F)
+Base.convert(::Type{GreensFun},F::Union(ProductFun,LowRankFun)) = GreensFun(F)
 evaluate(G::GreensFun,x,y) = mapreduce(f->evaluate(f,x,y),+,G.kernels)
 
 
-GreensFun{SS<:AbstractProductSpace}(f::Function,ss::SS;method::Symbol=:convolution,tol=100eps()) = GreensFun(ProductFun(f,ss.spaces...;method=method,tol=tol))
+function GreensFun{SS<:AbstractProductSpace}(f::Function,ss::SS;method::Symbol=:lowrank)
+    if method == :standard
+        F = ProductFun(f,ss)
+    elseif method == :convolution
+        F = ConvolutionProductFun(f,ss.space.spaces...)
+    elseif method == :lowrank
+        F = LowRankFun(f,ss;method=:standard)
+    elseif method == :Cholesky
+        F = LowRankFun(f,ss;method=method)
+    end
+    GreensFun(F)
+end
 
 # Array of GreensFun on TensorSpace of PiecewiseSpaces
 
-function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{(PWS1,PWS2)};method::Symbol=:convolution,tol=100eps())
+function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::TensorSpace{(PWS1,PWS2)};kwds...)
     pws1,pws2 = ss.spaces
     M,N = length(pws1),length(pws2)
     G = Array(GreensFun,M,N)
     for i=1:M,j=1:N
-        G[i,j] = ProductFun(f,pws1[i],pws2[j];method=method,tol=tol)
+        G[i,j] = GreensFun(f,pws1[i]⊗pws2[j];kwds...)
     end
     G
 end
 
-function GreensFun{O}(f::Function,ss::CauchyWeight{O};method::Symbol=:convolution,tol=100eps())
+function GreensFun{O,PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::CauchyWeight{O,(PWS1,PWS2)};kwds...)
     pws1,pws2 = ss.space.spaces
-    if !isa(pws1,PiecewiseSpace) && !isa(pws2,PiecewiseSpace)
-        G = GreensFun(ProductFun(f,ss;method=method,tol=tol))
-    elseif isa(pws1,PiecewiseSpace) && isa(pws2,PiecewiseSpace)
-        M,N = length(pws1),length(pws2)
-        G = Array(GreensFun,M,N)
-        for i=1:M,j=1:N
-            G[i,j] = ProductFun(f,CauchyWeight{O}(pws1[i]⊗pws2[j]);method=method,tol=tol)
-        end
+    M,N = length(pws1),length(pws2)
+    G = Array(GreensFun,M,N)
+    for i=1:M,j=1:N
+        G[i,j] = GreensFun(f,CauchyWeight(pws1[i]⊗pws2[j],O);kwds...)
     end
     G
 end
+
 
 # TODO: We are missing unary operation + for a ProductFun
 #=
@@ -100,7 +108,7 @@ function Base.getindex{F<:BivariateFun}(⨍::DefiniteLineIntegral,B::Matrix{F})
 end
 
 
-
+#=
 function ProductFun(f,u,v;method::Symbol=:standard,tol=eps())
     if method == :standard
         ProductFun(f,u,v;tol=tol)
@@ -108,6 +116,7 @@ function ProductFun(f,u,v;method::Symbol=:standard,tol=eps())
         ConvolutionProductFun(f,u,v;tol=tol)
     end
 end
+=#
 
 #
 # A new ProductFun constructor for bivariate functions on Intervals

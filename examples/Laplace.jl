@@ -32,7 +32,7 @@ using ApproxFun,SIE
     dom = ∪(Interval(crl[1:2:end],crr[1:2:end])) ∪ ∪(Circle(cr[2:2:end],r))
 
     sp = Space(dom)
-    cwsp = CauchyWeight{0}(sp⊗sp)
+    cwsp = CauchyWeight(sp⊗sp,0)
     uiΓ,⨍ = Fun(t->ui(real(t),imag(t))+0im,sp),DefiniteLineIntegral(dom)
 
     @time G = GreensFun(g1,cwsp)

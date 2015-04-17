@@ -26,12 +26,15 @@ cauchyweight{O}(C::CauchyWeight{O},x,y) = cauchyweight(O,tocanonical(C,x,y)...)
 
 ##TODO: for different domains, there should not be (x,y)->f(x,y)*cauchyweight(O,x,y)
 
-function ProductFun{O}(f::Function,cwsp::CauchyWeight{O};method::Symbol=:convolution,tol=eps())
-    cfs = domain(cwsp[1]) == domain(cwsp[2]) ? ProductFun(f,cwsp[1],cwsp[2];method=method,tol=tol).coefficients : ProductFun((x,y)->f(x,y)*cauchyweight(O,x,y),cwsp[1],cwsp[2];method=method,tol=tol).coefficients
-    ProductFun(cfs,cwsp)
+function ProductFun{O}(f::Function,cwsp::CauchyWeight{O};kwds...)
+    F = domain(cwsp[1]) == domain(cwsp[2]) ? ProductFun(f,cwsp[1],cwsp[2];kwds...) : ProductFun((x,y)->f(x,y)*cauchyweight(O,x,y),cwsp[1],cwsp[2];kwds...)
+    ProductFun(F.coefficients,cwsp)
 end
 
-
+function LowRankFun{O}(f::Function,cwsp::CauchyWeight{O};kwds...)
+    F = domain(cwsp[1]) == domain(cwsp[2]) ? LowRankFun(f,cwsp[1],cwsp[2];kwds...) : LowRankFun((x,y)->f(x,y)*cauchyweight(O,x,y),cwsp[1],cwsp[2];kwds...)
+    LowRankFun(F.A,F.B,cwsp)
+end
 
 ## Definite (Line) Integration over BivariateFuns in a CauchyWeight space
 
@@ -49,6 +52,20 @@ function Base.getindex{S,V,O,T,V1,T1}(⨍::DefiniteLineIntegral{V1,T1},f::Produc
         SingularIntegral(⨍.domainspace,O)[f]
     else
         ⨍[ProductFun(f.coefficients,f.space.space)]
+    end
+end
+function Base.getindex{S,M,O,T,V,V1,T1}(⨍::DefiniteIntegral{V1,T1},f::LowRankFun{S,M,CauchyWeight{O},T,V})
+    if domain(f.space[1]) == domain(f.space[2])
+        Hilbert(⨍.domainspace,O)[f]
+    else
+        ⨍[LowRankFun(f.A,f.B,f.space.space)]
+    end
+end
+function Base.getindex{S,M,O,T,V,V1,T1}(⨍::DefiniteLineIntegral{V1,T1},f::LowRankFun{S,M,CauchyWeight{O},T,V})
+    if domain(f.space[1]) == domain(f.space[2])
+        SingularIntegral(⨍.domainspace,O)[f]
+    else
+        ⨍[LowRankFun(f.A,f.B,f.space.space)]
     end
 end
 
