@@ -9,8 +9,8 @@ export GreensFun
 immutable GreensFun <: BivariateFun
     kernels::Vector{Union(ProductFun,LowRankFun)}
     function GreensFun(kernels)
-        #[@assert eltype(kernels[i]) == eltype(kernels[1]) for i=1:n]
-        [@assert domain(kernels[i]) == domain(kernels[1]) for i=2:length(kernels)]
+        d = domain(kernels[1])
+        [@assert domain(kernels[i]) == d for i=2:length(kernels)]
         new(kernels)
     end
 end
@@ -20,6 +20,13 @@ GreensFun(F::Union(ProductFun,LowRankFun)) = GreensFun([F])
 Base.length(G::GreensFun) = length(G.kernels)
 Base.transpose(G::GreensFun) = mapreduce(transpose,+,G.kernels)
 Base.convert(::Type{GreensFun},F::Union(ProductFun,LowRankFun)) = GreensFun(F)
+function Base.rank(G::GreensFun)
+    if all([typeof(G.kernels[i]) <: LowRankFun for i=1:length(G)])
+        return tuple(map(rank,G.kernels)...)
+    else
+        error("Not all kernels are low rank approximations.")
+    end
+end
 domain(G::GreensFun) = domain(first(G.kernels))
 evaluate(G::GreensFun,x,y) = mapreduce(f->evaluate(f,x,y),+,G.kernels)
 
