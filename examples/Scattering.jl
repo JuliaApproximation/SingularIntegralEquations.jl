@@ -18,7 +18,7 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
 
 # The Helmholtz Green's function, split into singular and nonsingular pieces.
 g1(x,y) = -besselj0(k*abs(y-x))/2
-g2(x,y) = x == y ? -0.6041667250259302 + im/4 : besselj0(k*abs(y-x))*(im*π/2+logabs(y-x))/2π - bessely0(k*abs(y-x))/4
+g2(x,y) = x == y ? -(log(k/2)+γ)/2/π + im/4 : besselj0(k*abs(y-x))*(im*π/2+logabs(y-x))/2π - bessely0(k*abs(y-x))/4
 g3(x,y) = im/4*hankelh1(0,k*abs(y-x))
 
 
@@ -41,7 +41,7 @@ g3(x,y) = im/4*hankelh1(0,k*abs(y-x))
     cwsp = CauchyWeight(sp⊗sp,0)
     uiΓ,⨍ = Fun(t->ui(real(t),imag(t)),sp),DefiniteLineIntegral(dom)
 
-    @time G = GreensFun(g1,cwsp) + GreensFun(g2,sp⊗sp)
+    @time G = GreensFun(g1,cwsp;method=:Cholesky) + GreensFun(g2,sp⊗sp;method=:Cholesky)
 
     L,f = ⨍[G],uiΓ
 

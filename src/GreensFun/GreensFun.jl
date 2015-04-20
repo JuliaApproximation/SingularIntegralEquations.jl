@@ -10,7 +10,6 @@ immutable GreensFun <: BivariateFun
     kernels::Vector{Union(ProductFun,LowRankFun)}
     function GreensFun(kernels)
         #[@assert eltype(kernels[i]) == eltype(kernels[1]) for i=1:n]
-        # TODO: should probably be a space assertion but complicated by enrichment.
         [@assert domain(kernels[i]) == domain(kernels[1]) for i=2:length(kernels)]
         new(kernels)
     end
@@ -19,44 +18,61 @@ end
 GreensFun(F::Union(ProductFun,LowRankFun)) = GreensFun([F])
 
 Base.length(G::GreensFun) = length(G.kernels)
+Base.transpose(G::GreensFun) = mapreduce(transpose,+,G.kernels)
 Base.convert(::Type{GreensFun},F::Union(ProductFun,LowRankFun)) = GreensFun(F)
+domain(G::GreensFun) = domain(first(G.kernels))
 evaluate(G::GreensFun,x,y) = mapreduce(f->evaluate(f,x,y),+,G.kernels)
 
 
-function GreensFun{SS<:AbstractProductSpace}(f::Function,ss::SS;method::Symbol=:lowrank)
+function GreensFun{SS<:AbstractProductSpace}(f::Function,ss::SS;method::Symbol=:lowrank,kwds...)
     if method == :standard
-        F = ProductFun(f,ss)
+        F = ProductFun(f,ss,kwds...)
     elseif method == :convolution
-        F = ConvolutionProductFun(f,ss.space.spaces...)
+        F = convolutionProductFun(f,ss,kwds...)
     elseif method == :lowrank
-        F = LowRankFun(f,ss;method=:standard)
+        F = LowRankFun(f,ss;method=:standard,kwds...)
     elseif method == :Cholesky
-        F = LowRankFun(f,ss;method=method)
+        F = LowRankFun(f,ss;method=method,kwds...)
     end
     GreensFun(F)
 end
 
 # Array of GreensFun on TensorSpace of PiecewiseSpaces
 
-function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::TensorSpace{(PWS1,PWS2)};kwds...)
-    pws1,pws2 = ss.spaces
+function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{(PWS1,PWS2)};method::Symbol=:lowrank,kwds...)
+    pws1,pws2 = ss[1],ss[2]
     M,N = length(pws1),length(pws2)
-    G = Array(GreensFun,M,N)
-    for i=1:M,j=1:N
-        G[i,j] = GreensFun(f,pws1[i]⊗pws2[j];kwds...)
+    @assert M == N
+    G = Array(GreensFun,N,N)
+    if method == :standard
+        for i=1:N,j=1:N
+            G[i,j] = GreensFun(f,ss[i,j];method=method,kwds...)
+        end
+    elseif method == :convolution
+        for i=1:N,j=i:N
+            G[i,j] = GreensFun(f,ss[i,j];method=method,kwds...)
+        end
+        for i=1:N,j=1:i-1
+            G[i,j] = transpose(G[j,i])
+        end
+    elseif method == :lowrank
+        for i=1:N,j=1:N
+            G[i,j] = GreensFun(f,ss[i,j];method=method,kwds...)
+        end
+    elseif method == :Cholesky
+        for i=1:N
+            G[i,i] = GreensFun(f,ss[i,i];method=method,kwds...)
+            for j=i+1:N
+                G[i,j] = GreensFun(f,ss[i,j];method=:lowrank,kwds...)
+            end
+        end
+        for i=1:N,j=1:i-1
+            G[i,j] = transpose(G[j,i])
+        end
     end
     G
 end
 
-function GreensFun{O,PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::CauchyWeight{O,(PWS1,PWS2)};kwds...)
-    pws1,pws2 = ss.space.spaces
-    M,N = length(pws1),length(pws2)
-    G = Array(GreensFun,M,N)
-    for i=1:M,j=1:N
-        G[i,j] = GreensFun(f,CauchyWeight(pws1[i]⊗pws2[j],O);kwds...)
-    end
-    G
-end
 
 
 # TODO: We are missing unary operation + for a ProductFun
@@ -108,21 +124,13 @@ function Base.getindex{F<:BivariateFun}(⨍::DefiniteLineIntegral,B::Matrix{F})
 end
 
 
-#=
-function ProductFun(f,u,v;method::Symbol=:standard,tol=eps())
-    if method == :standard
-        ProductFun(f,u,v;tol=tol)
-    elseif method == :convolution
-        ConvolutionProductFun(f,u,v;tol=tol)
-    end
-end
-=#
+export convolutionProductFun
 
 #
 # A new ProductFun constructor for bivariate functions on Intervals
 # defined as the distance of their arguments.
 #
-function ConvolutionProductFun{U<:FunctionSpace,V<:FunctionSpace}(f::Function,u::U,v::V;tol=eps())
+function convolutionProductFun{U<:FunctionSpace,V<:FunctionSpace}(f::Function,u::U,v::V;tol=eps())
     du,dv = domain(u),domain(v)
     ext = extrema(du,dv)
     if ext[1] == 0
@@ -143,6 +151,10 @@ function ConvolutionProductFun{U<:FunctionSpace,V<:FunctionSpace}(f::Function,u:
     end
 end
 
+convolutionProductFun{U<:FunctionSpace,V<:FunctionSpace,T}(f::Function,ss::TensorSpace{(U,V),T,2};kwds...) = convolutionProductFun(f,ss[1],ss[2];kwds...)
+
+
+
 #
 # ProductFun constructors for functions on periodic intervals.
 #
@@ -151,7 +163,7 @@ end
 # Suppose we are interested in K(ϕ-θ). Then, K(⋅) is periodic
 # whether it's viewed as bivariate or univariate.
 #
-function ConvolutionProductFun{S<:Fourier,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V;tol=eps())
+function convolutionProductFun{S<:Fourier,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V;tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
@@ -168,7 +180,7 @@ function ConvolutionProductFun{S<:Fourier,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u
     ProductFun(X,u⊗v)
 end
 
-function ConvolutionProductFun{S<:CosSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V;tol=eps())
+function convolutionProductFun{S<:CosSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V;tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
@@ -182,7 +194,7 @@ function ConvolutionProductFun{S<:CosSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},
     ProductFun(X,u⊗v)
 end
 
-function ConvolutionProductFun{S<:SinSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V;tol=eps())
+function convolutionProductFun{S<:SinSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V;tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
@@ -195,7 +207,7 @@ function ConvolutionProductFun{S<:SinSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},
     ProductFun(X,u⊗v)
 end
 
-function ConvolutionProductFun{S<:Laurent,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V;tol=eps())
+function convolutionProductFun{S<:Laurent,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V;tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
@@ -210,7 +222,7 @@ function ConvolutionProductFun{S<:Laurent,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u
     ProductFun(X,u⊗v)
 end
 
-function ConvolutionProductFun{S<:Taylor,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V;tol=eps())
+function convolutionProductFun{S<:Taylor,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V;tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
@@ -223,7 +235,7 @@ function ConvolutionProductFun{S<:Taylor,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u:
     ProductFun(X,u⊗v)
 end
 
-function ConvolutionProductFun{S<:Hardy{false},T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V;tol=eps())
+function convolutionProductFun{S<:Hardy{false},T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V;tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
