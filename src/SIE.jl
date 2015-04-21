@@ -48,6 +48,8 @@ include("./GreensFun/GreensFun.jl")
 include("periodicline.jl")
 include("arc.jl")
 
+include("asymptotics.jl")
+
 if isdir(Pkg.dir("TikzGraphs"))
     include("introspect.jl")
 end
