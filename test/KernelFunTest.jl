@@ -2,7 +2,7 @@ using ApproxFun, SIE, Base.Test
 
 println("Chebyshev addition test")
 
-d = Interval([-1.,1.])
+d = Interval(-1.,1.)
 fK(x,y) = exp(abs2(y-x))
 FLR = LowRankFun(fK,Chebyshev(d),Chebyshev(d))
 FPF = ProductFun(fK,Chebyshev(d),Chebyshev(d))
@@ -11,11 +11,11 @@ G1 = convolutionProductFun(fK,Ultraspherical{1}(d),Chebyshev(d))
 G2 = convolutionProductFun(fK,Ultraspherical{1}(d),ChebyshevDirichlet{1,1}(d))
 
 
-@test norm(pad(coefficients(FLR),size(coefficients(G),1),size(coefficients(G),2))-coefficients(G))<10000eps()
-@test norm(pad(coefficients(FPF),size(coefficients(G),1),size(coefficients(G),2))-coefficients(G))<10000eps()
-@test norm(fK(.123,.456)-G[.123,.456])≤100eps()
-@test norm(G[.123,.456]-G1[.123,.456])≤100eps()
-@test norm(G[.123,.456]-G2[.123,.456])≤100eps()
+@test norm(pad(coefficients(FLR),size(coefficients(G),1),size(coefficients(G),2))-coefficients(G))<100000eps()
+@test norm(pad(coefficients(FPF),size(coefficients(G),1),size(coefficients(G),2))-coefficients(G))<100000eps()
+@test norm(fK(.123,.456)-G[.123,.456])≤10000eps()
+@test norm(G[.123,.456]-G1[.123,.456])≤10000eps()
+@test norm(G[.123,.456]-G2[.123,.456])≤10000eps()
 
 println("Fourier on PeriodicInterval tests")
 
@@ -54,7 +54,7 @@ println("Timing tests: ")
 
 gc_disable()
 
-d = Interval([-2.5,-.5])
+d = Interval(-2.5,-.5)
 fK(x,y) = besselj0(100(y-x))
 convolutionProductFun(fK,Chebyshev(d),Chebyshev(d))
 @time G = convolutionProductFun(fK,Chebyshev(d),Chebyshev(d))
