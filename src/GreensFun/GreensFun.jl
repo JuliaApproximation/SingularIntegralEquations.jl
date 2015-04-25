@@ -46,7 +46,7 @@ end
 
 # Array of GreensFun on TensorSpace of PiecewiseSpaces
 
-function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{(PWS1,PWS2)};method::Symbol=:lowrank,kwds...)
+function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{(PWS1,PWS2)};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...)
     pws1,pws2 = ss[1],ss[2]
     M,N = length(pws1),length(pws2)
     @assert M == N
@@ -67,10 +67,23 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::Ab
             G[i,j] = GreensFun(f,ss[i,j];method=method,kwds...)
         end
     elseif method == :Cholesky
-        for i=1:N
-            G[i,i] = GreensFun(f,ss[i,i];method=method,kwds...)
-            for j=i+1:N
-                G[i,j] = GreensFun(f,ss[i,j];method=:lowrank,kwds...)
+        if tolerance == :relative
+            for i=1:N
+                G[i,i] = GreensFun(f,ss[i,i];method=method,kwds...)
+                for j=i+1:N
+                    G[i,j] = GreensFun(f,ss[i,j];method=:lowrank,kwds...)
+                end
+            end
+        elseif tolerance == :absolute
+            maxF = Array(Number,N)
+            for i=1:N
+                F,maxF[i] = LowRankFun(f,ss[i,i];method=method,retmax=true,kwds...)
+                G[i,i] = GreensFun(F)
+            end
+            for i=1:N
+                for j=i+1:N
+                    G[i,j] = GreensFun(f,ss[i,j];method=:lowrank,tolerance=(tolerance,max(maxF[i],maxF[j])),kwds...)
+                end
             end
         end
         for i=1:N,j=1:i-1
