@@ -16,7 +16,8 @@ ApproxFun.@calculus_operator(Hilbert,AbstractHilbert,HilbertWrapper)
 abstract AbstractSingularIntegral{SSS,OT,TTT} <: CalculusOperator{SSS,OT,TTT}
 ApproxFun.@calculus_operator(SingularIntegral,AbstractSingularIntegral,SingularIntegralWrapper)
 
-for (Op,OpWrap,OffOp) in ((:Hilbert,:HilbertWrapper,:OffHilbert),(:SingularIntegral,:SingularIntegralWrapper,:OffSingularIntegral))
+for (Op,OpWrap,OffOp) in ((:Hilbert,:HilbertWrapper,:OffHilbert),
+                          (:SingularIntegral,:SingularIntegralWrapper,:OffSingularIntegral))
     @eval begin
         ## Convenience routines
         $Op(d::IntervalDomain,n::Int)=$Op(JacobiWeight(-.5,-.5,Chebyshev(d)),n)
@@ -221,7 +222,8 @@ end
 
 ## JacobiWeight
 
-for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),(:SingularIntegral,:SingularIntegralWrapper,:length))
+for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),
+                        (:SingularIntegral,:SingularIntegralWrapper,:length))
     @eval begin
 
         function $Op(S::JacobiWeight{Chebyshev},n::Int)
