@@ -41,7 +41,7 @@ g3(x,y) = im/4*hankelh1(0,k*abs(y-x))
     #dom = ∪(Interval,[-2.5-.5im,-1.5+.5im,-.5-.5im,.5+.5im,1.5-.5im],[-1.5-.5im,-.5+.5im,.5-.5im,1.5+.5im,2.5-.5im])
     #dom = ∪(Interval,[-1.0-0.4im,0.1+0.4im,-0.9-0.5im],[-0.1+0.4im,1.0-0.4im,0.9-0.5im])
     #dom = ∪(Interval,[-1.0-0.4im,-0.5-0.4im,0.1+0.4im,0.2+0.0im,-1.4-0.75im],[-0.1+0.4im,-0.2+0.0im,1.0-0.4im,0.5-0.4im,1.4-0.75im])
-    #dom = Circle(0.,0.5)∪∪(Interval,[-1.5,0.5-1.0im],[-0.5-1.0im,1.5])
+    dom = ∪(Circle,[0.,-1.0im],[0.5,0.25])∪∪(Interval,[-1.5,0.5-1.0im,-0.5+1.0im],[-0.5-1.0im,1.5,0.5+1.0im])
 
     sp = Space(dom)
     cwsp = CauchyWeight(sp⊗sp,0)
