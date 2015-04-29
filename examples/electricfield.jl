@@ -9,7 +9,7 @@ function electricfield(N,r)
     cr = exp(im*2π*[0:N-1]/N)
     crl = (1-2im*r)cr
     crr = (1+2im*r)cr
-    dom = ∪(Interval(crl[1:2:end],crr[1:2:end])) ∪ ∪(Circle(cr[2:2:end],r))
+  dom = ∪(Interval,crl[1:2:end],crr[1:2:end]) ∪ ∪(Circle,cr[2:2:end],ones(length(cr[2:2:end]))r)
 
     sp = Space(dom)
     cwsp = CauchyWeight{0}(sp⊗sp)
