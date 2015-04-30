@@ -14,6 +14,7 @@ Requires ApproxFun master:
 Pkg.add("ApproxFun")
 Pkg.checkout("ApproxFun")
 Pkg.clone("https://github.com/ApproxFun/SIE.jl.git")
+Pkg.build("SIE")
 ```
 
 ## Usage
