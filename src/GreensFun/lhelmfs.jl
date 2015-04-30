@@ -17,6 +17,11 @@
 # E is the energy, and
 # derivs allows for calculation of partial derivatives as well.
 #
+
+const lhelmfspath = joinpath(Pkg.dir("SIE"), "deps", "liblhelmfs")
+
+export lhelmfs
+
 function lhelmfs(trg::Matrix{Float64},src::Matrix{Float64},E::Float64,derivs::Bool=false)
     trgn,trg2 = size(trg)
     srcn,src2 = size(src)
@@ -39,7 +44,7 @@ function lhelmfs(trg::Matrix{Float64},src::Matrix{Float64},E::Float64,derivs::Bo
         uy = zeros(Complex{Float64},n)
     #end
 
-    ccall((:lhfs,"/Users/Mikael/.julia/v0.3/SIE/src/lhelmfs/liblhelmfs"),Void,(Ptr{Float64},Ptr{Float64},Ptr{Float64},Int64,Int64,Ptr{Complex{Float64}},Ptr{Complex{Float64}},Ptr{Complex{Float64}},Int64,Float64,Int64,Int64,Ptr{Int64}),x1,x2,energies,derivs ? 1 : 0,n,u,ux,uy,stdquad,h,meth,gamout,nquad)
+    ccall((:lhfs,lhelmfspath),Void,(Ptr{Float64},Ptr{Float64},Ptr{Float64},Int64,Int64,Ptr{Complex{Float64}},Ptr{Complex{Float64}},Ptr{Complex{Float64}},Int64,Float64,Int64,Int64,Ptr{Int64}),x1,x2,energies,derivs ? 1 : 0,n,u,ux,uy,stdquad,h,meth,gamout,nquad)
 
     if derivs
         return u/4π,ux/4π,uy/4π

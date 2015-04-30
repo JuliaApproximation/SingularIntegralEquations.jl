@@ -24,10 +24,10 @@ See README for more updates (9/18/14 onwards)
 
 // some useful math constants.
 #define M_PI_3 1.047197551196598
-#define M_PI_2 1.5707963267948966
-#define M_PI   3.1415926535897932384
-#define M_1_PI 0.31830988618379067
-#define M_PI_4 0.785398163397448309
+//#define M_PI_2 1.5707963267948966
+//#define M_PI   3.1415926535897932384
+//#define M_1_PI 0.31830988618379067
+//#define M_PI_4 0.785398163397448309
 #define THIRD  0.333333333333333333
 
 #define W 0.363630003348128     // precomputed constant for finding stationary points
