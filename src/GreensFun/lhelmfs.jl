@@ -22,9 +22,9 @@ const lhelmfspath = joinpath(Pkg.dir("SIE"), "deps", "liblhelmfs")
 
 export lhelmfs
 
-function lhelmfs(trg::Union(Vector{Float64},Vector{Complex{Float64}}),src::Union(Vector{Float64},Vector{Complex{Float64}}),E::Float64;derivs::Bool=false)
-    trgn,srcn = length(trg),length(src)
-    @assert trgn == srcn
+function lhelmfs(trg::Union(Vector{Float64},Vector{Complex{Float64}}),energies::Vector{Float64};derivs::Bool=false)
+    trgn,energiesn = length(trg),length(energies)
+    @assert trgn == energiesn
     n = trgn
 
     meth = 1
@@ -33,9 +33,7 @@ function lhelmfs(trg::Union(Vector{Float64},Vector{Complex{Float64}}),src::Union
     gamout = 0
     nquad = zeros(Int64,1)
 
-    x1 = real(trg)-real(src)
-    x2 = imag(trg)-imag(src)
-    energies = E+imag(src)
+    x1,x2 = real(trg),imag(trg)
     u = zeros(Complex{Float64},n)
     #if derivs
         ux = zeros(Complex{Float64},n)
@@ -51,29 +49,29 @@ function lhelmfs(trg::Union(Vector{Float64},Vector{Complex{Float64}}),src::Union
     end
 end
 
-function lhelmfs(trg::Union(Float64,Complex{Float64}),src::Union(Float64,Complex{Float64}),E::Float64;derivs::Bool=false)
-    if derivs
-        u,ux,uy = lhelmfs([trg],[src],E;derivs=derivs)
-        return u[1],ux[1],uy[1]
-    else
-        u = lhelmfs([trg],[src],E;derivs=derivs)
-        return u[1]
-    end
-end
-
-function lhelmfs(trg::Union(Matrix{Float64},Matrix{Complex{Float64}}),src::Union(Matrix{Float64},Matrix{Complex{Float64}}),E::Float64;derivs::Bool=false)
-    sizetrg,sizesrc = size(trg),size(src)
-    @assert sizetrg == sizesrc
+function lhelmfs(trg::Union(Matrix{Float64},Matrix{Complex{Float64}}),E::Matrix{Float64};derivs::Bool=false)
+    sizetrg,sizeE = size(trg),size(E)
+    @assert sizetrg == sizeE
 
     if derivs
-        u,ux,uy = lhelmfs(vec(trg),vec(src),E;derivs=derivs)
+        u,ux,uy = lhelmfs(vec(trg),vec(E);derivs=derivs)
         return reshape(u,sizetrg),reshape(ux,sizetrg),reshape(uy,sizetrg)
     else
-        u = lhelmfs(vec(trg),vec(src),E;derivs=derivs)
+        u = lhelmfs(vec(trg),vec(E);derivs=derivs)
         return reshape(u,sizetrg)
     end
 end
 
-lhelmfs{T<:Union(Float64,Complex{Float64})}(trg::VecOrMat{T},src::Union(Float64,Complex{Float64}),E::Float64) = lhelmfs(trg,fill(src,size(trg)),E)
+lhelmfs(trg::Union(VecOrMat{Float64},VecOrMat{Complex{Float64}}),E::Float64;derivs::Bool=false) = lhelmfs(trg,fill(E,size(trg));derivs=derivs)
 
-lhelmfs{T<:Union(Float64,Complex{Float64})}(trg::Union(T,VecOrMat{T}),E::Float64) = lhelmfs(trg,zero(T),E)
+function lhelmfs(trg::Union(Float64,Complex{Float64}),E::Float64;derivs::Bool=false)
+    if derivs
+        u,ux,uy = lhelmfs([trg],[E];derivs=derivs)
+        return u[1],ux[1],uy[1]
+    else
+        u = lhelmfs([trg],[E];derivs=derivs)
+        return u[1]
+    end
+end
+
+lhelmfs{T1<:Union(Float64,Complex{Float64}),T2<:Union(Float64,Complex{Float64})}(trg::Union(T1,VecOrMat{T1}),src::Union(T2,VecOrMat{T2}),E::Float64;derivs::Bool=false) = lhelmfs(trg-src,E+imag(src);derivs=derivs)
