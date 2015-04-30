@@ -22,12 +22,10 @@ const lhelmfspath = joinpath(Pkg.dir("SIE"), "deps", "liblhelmfs")
 
 export lhelmfs
 
-function lhelmfs(trg::Matrix{Float64},src::Matrix{Float64},E::Float64,derivs::Bool=false)
-    trgn,trg2 = size(trg)
-    srcn,src2 = size(src)
+function lhelmfs(trg::Union(Vector{Float64},Vector{Complex{Float64}}),src::Union(Vector{Float64},Vector{Complex{Float64}}),E::Float64;derivs::Bool=false)
+    trgn,srcn = length(trg),length(src)
+    @assert trgn == srcn
     n = trgn
-    @assert n == srcn
-    @assert trg2 == src2 == 2
 
     meth = 1
     stdquad = 200
@@ -35,9 +33,9 @@ function lhelmfs(trg::Matrix{Float64},src::Matrix{Float64},E::Float64,derivs::Bo
     gamout = 0
     nquad = zeros(Int64,1)
 
-    x1 = trg[:,1]-src[:,1]
-    x2 = trg[:,2]-src[:,2]
-    energies = E+src[:,2]
+    x1 = real(trg)-real(src)
+    x2 = imag(trg)-imag(src)
+    energies = E+imag(src)
     u = zeros(Complex{Float64},n)
     #if derivs
         ux = zeros(Complex{Float64},n)
@@ -52,3 +50,31 @@ function lhelmfs(trg::Matrix{Float64},src::Matrix{Float64},E::Float64,derivs::Bo
         return u/4π
     end
 end
+
+function lhelmfs(trg::Union(Float64,Complex{Float64}),src::Union(Float64,Complex{Float64}),E::Float64;derivs::Bool=false)
+    if derivs
+        u,ux,uy = lhelmfs([trg],[src],E;derivs=derivs)
+        return u[1],ux[1],uy[1]
+    else
+        u = lhelmfs([trg],[src],E;derivs=derivs)
+        return u[1]
+    end
+end
+
+function lhelmfs(trg::Union(Matrix{Float64},Matrix{Complex{Float64}}),src::Union(Matrix{Float64},Matrix{Complex{Float64}}),E::Float64;derivs::Bool=false)
+    sizetrg,sizesrc = size(trg),size(src)
+    @assert sizetrg == sizesrc
+
+    if derivs
+        u,ux,uy = lhelmfs(vec(trg),vec(src),E;derivs=derivs)
+        return reshape(u,sizetrg),reshape(ux,sizetrg),reshape(uy,sizetrg)
+    else
+        u = lhelmfs(vec(trg),vec(src),E;derivs=derivs)
+        return reshape(u,sizetrg)
+    end
+end
+
+lhelmfs{T<:Union(Float64,Complex{Float64})}(trg::VecOrMat{T},src::Union(Float64,Complex{Float64}),E::Float64) = lhelmfs(trg,fill(src,size(trg)),E)
+
+lhelmfs{T<:Union(Float64,Complex{Float64})}(trg::VecOrMat{T},E::Float64) = lhelmfs(trg,zeros(T,size(trg)),E)
+lhelmfs{T<:Union(Float64,Complex{Float64})}(trg::T,E::Float64) = lhelmfs(trg,zero(T),E)
