@@ -9,14 +9,14 @@
 
 using ApproxFun,SIE
 
-E = 10.
-ui(x,y) = lhelmfs(complex(x,y),5.0im,E)
+E = 5.
+ui(x,y) = lhelmfs(complex(x,y),10.0im,E)
 
 # The gravity Helmholtz Green's function.
 g3(x,y) = lhelmfs(x,y,E)
 
 
-    dom = Interval(-4.0,4.0)
+    dom = Interval(-4.0+1.5im,4.0)
     sp = Space(dom)
     cwsp = CauchyWeight(sp⊗sp,0)
     uiΓ,⨍ = Fun(t->ui(real(t),imag(t)),sp),DefiniteLineIntegral(dom)
