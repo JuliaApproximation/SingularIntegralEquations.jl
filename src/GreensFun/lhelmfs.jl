@@ -28,8 +28,8 @@ function lhelmfs(trg::Union(Vector{Float64},Vector{Complex{Float64}}),energies::
     n = trgn
 
     meth = 1
-    stdquad = 200
-    h = 0.35
+    stdquad = 400
+    h = 0.25
     gamout = 0
     nquad = zeros(Int64,1)
 
