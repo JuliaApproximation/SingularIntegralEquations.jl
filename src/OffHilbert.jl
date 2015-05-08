@@ -23,7 +23,9 @@ for Op in (:OffHilbert,:OffSingularIntegral)
 
         addentries!(C::$Op,A,kr)=addentries!(C.data,A,kr)
 
-        Base.convert{BT<:Operator}(::Type{BT},OH::$Op)=$Op{typeof(OH.domainspace),typeof(OH.rangespace),eltype(BT)}(OH.data,OH.domainspace,OH.rangespace,OH.order)
+        Base.convert{BT<:Operator}(::Type{BT},OH::$Op)=$Op{typeof(OH.domainspace),
+                                                           typeof(OH.rangespace),
+                                                           eltype(BT)}(OH.data,OH.domainspace,OH.rangespace,OH.order)
 
         $Op{D<:FunctionSpace,R<:FunctionSpace}(ds::D,rs::R) = $Op(ds,rs,1)
         $Op{B<:BandedMatrix,D<:FunctionSpace,R<:FunctionSpace}(data::B,ds::D,rs::R) = $Op(data,ds,rs,1)
