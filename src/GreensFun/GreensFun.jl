@@ -38,6 +38,19 @@ function GreensFun{SS<:AbstractProductSpace}(f::Function,ss::SS;method::Symbol=:
         F = ProductFun(f,ss,kwds...)
     elseif method == :convolution
         F = convolutionProductFun(f,ss,kwds...)
+    elseif method == :unsplit
+        # Approximate imaginary & smooth part.
+        F1 = skewProductFun((x,y)->imag(f(x,y)),ss.space;kwds...)
+        # Extract diagonal value.
+        d = domain(ss)
+        xm,ym = mean([first(d[1]),last(d[1])]),mean([first(d[2]),last(d[2])])
+        F1m = F1[xm,ym]
+        # Set this normalized part to be the singular part.
+        F1 = ProductFun(-coefficients(F1)/F1m/2,ss)
+        # Approximate real & smooth part after singular extraction.
+        m,n = size(F1)
+        F2 = skewProductFun((x,y)->f(x,y) - F1[x,y],ss.space,nextpow2(m),nextpow2(n)+1)
+        F = [F1,F2]
     elseif method == :lowrank
         F = LowRankFun(f,ss;method=:standard,kwds...)
     elseif method == :Cholesky
@@ -60,6 +73,20 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::Ab
     elseif method == :convolution
         for i=1:N,j=i:N
             G[i,j] = GreensFun(f,ss[i,j];method=method,kwds...)
+        end
+        for i=1:N,j=1:i-1
+            G[i,j] = transpose(G[j,i])
+        end
+    elseif method == :unsplit
+        maxF = Array(Number,N)
+        for i=1:N
+          G[i,i] = GreensFun(f,ss[i,i];method=method,kwds...)
+          maxF[i] = one(real(mapreduce(eltype,promote_type,G[i,i].kernels)))/2π
+        end
+        for i=1:N
+          for j=i+1:N
+            G[i,j] = GreensFun(f,ss[i,j].space;method=:lowrank,tolerance=(tolerance,max(maxF[i],maxF[j])),kwds...)
+          end
         end
         for i=1:N,j=1:i-1
             G[i,j] = transpose(G[j,i])
