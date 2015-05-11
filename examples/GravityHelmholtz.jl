@@ -11,6 +11,7 @@ using ApproxFun,SIE
 include("Scatteraux.jl")
 
 E = 20.
+ω = 2π
 ui(x,y) = lhelmfs(complex(x,y),-5.0im,E)
 
 # The gravity Helmholtz Green's function.
