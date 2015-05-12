@@ -1,7 +1,7 @@
 # This file calculates the solution to Laplace's equation via the adaptive spectral method.
 # Δu = 0,
-# u|Γ = 0,
-# u^i = log|z-z_0|,
+# u|Γ = u_0,
+# u^i = log|z-z_s|,
 # u = u^i + u^s.
 # The normal derivative ∂u/∂n of the solution is calculated on the constant-charge boundary Γ.
 # The reflected solution is calculated by convolving ∂u/∂n with the fundamental solution.
@@ -17,8 +17,8 @@ using ApproxFun,SIE
     dom = domS∪domI∪domE
 =#
 
-    z_0 = 2.0
-    ui(x,y) = logabs(complex(x,y)-z_0)
+    z_s = 2.0
+    ui(x,y) = logabs(complex(x,y)-z_s)
     g1(x,y) = 1/2
 
 # Set the domains.
@@ -38,13 +38,16 @@ using ApproxFun,SIE
     @time G = GreensFun(g1,cwsp)
 
     L,f = ⨍[G],uiΓ
-#=
-    sp = isa(dom,UnionDomain)? PiecewiseSpace(map(ChebyshevDirichlet{1,1},dom.domains)) : ChebyshevDirichlet{1,1}(dom)
-    wsp = JacobiWeight(-.5,-.5,sp)
-    uiΓ,H0 = Fun(t->ui(real(t),imag(t)),sp),0.5SingularIntegral(wsp,0)
-    L,f = H0,uiΓ
-=#
-    @time ∂u∂n = L\f
+
+    if isa(dom,UnionDomain)
+        P=ApproxFun.PrependColumnsOperator([1 ApproxFun.interlace(L)])
+        @time φ0,∂u∂n=vec([mapreduce(BasisFunctional{Complex{Float64}},+,2:length(dom)+1);P]\Any[0.,f])
+    elseif isa(dom,Domain)
+        PF=ApproxFun.PrependColumnsFunctional(0,⨍)
+        PL=ApproxFun.PrependColumnsOperator([1 L])
+        @time φ0,∂u∂n=vec([PF;PL]\Any[0.,f])
+    end
+
     println("The length of ∂u∂n is: ",length(∂u∂n))
 
     us(x,y) = -logkernel(∂u∂n,complex(x,y))/2π
