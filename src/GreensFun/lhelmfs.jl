@@ -75,3 +75,66 @@ function lhelmfs(trg::Union(Float64,Complex{Float64}),E::Float64;derivs::Bool=fa
 end
 
 lhelmfs{T1<:Union(Float64,Complex{Float64}),T2<:Union(Float64,Complex{Float64})}(trg::Union(T1,VecOrMat{T1}),src::Union(T2,VecOrMat{T2}),E::Float64;derivs::Bool=false) = lhelmfs(trg-src,E+imag(src);derivs=derivs)
+
+
+require("DEQuadrature")
+
+function ψ(a::Number,b::Number,s)
+  t = exp(s)
+  a./t+b.*t-t.^3/12
+end
+
+#=
+cp = tan((π^2-6π)/(12+2π))/4
+cm = tan((π^2-2π)/(4+2π))/2
+c_1 = 1/π+1/2
+c_2 = π/4-1/2
+c_3 = 1/π+1/6
+c_4 = π/12-1/2
+=#
+
+cp = tan((big(π)^2-6big(π))/(12+2big(π)))/4
+cm = tan((big(π)^2-2big(π))/(4+2big(π)))/2
+c_1 = 1/big(π)+1/big(2)
+c_2 = big(π)/4-1/big(2)
+c_3 = 1/big(π)+1/big(6)
+c_4 = big(π)/12-1/big(2)
+
+
+function gcont(sp,sm,α)
+  val1 = c_1*atan(2(α-real(sm)+cm))-c_2
+  val2 = c_3*atan(-4(α-real(sp)-cp))-c_4
+  val1.*val2
+end
+function gcontp(sp,sm,α)
+  val1 = c_1*atan(2(α-real(sm)+cm))-c_2
+  val2 = c_3*atan(-4(α-real(sp)-cp))-c_4
+  val3 = c_1*2./(1+(2(α-real(sm)+cm)).^2)
+  val4 = c_3*(-4)./(1+(-4(α-real(sp)-cp)).^2)
+  val1.*val4+val2.*val3
+end
+
+γ(sp,sm,α) = complex(α,gcont(sp,sm,α))
+γp(sp,sm,α) = complex(1,gcontp(sp,sm,α))
+
+xDE,wDE = Main.DEQuadrature.DENodesAndWeights(BigFloat("1.0"),[BigFloat("0.0")],2^8;ga=BigFloat("1.0"),domain=Main.DEQuadrature.Infinite2)
+#xDE,wDE = Main.DEQuadrature.DENodesAndWeights(1.0,[0.0],2^9;ga=1.5,domain=Main.DEQuadrature.Infinite2)
+
+function gravityhelmholtzfs(trg::Number,energy::Number;n=2^6)
+
+  if n != 2^8
+    xDE,wDE = Main.DEQuadrature.DENodesAndWeights(BigFloat("1.0"),[BigFloat("0.0")],n;ga=BigFloat("1.0"),domain=Main.DEQuadrature.Infinite2)
+  end
+
+  a,b = trg.^2/4,energy
+  tp,tm = sqrt(2(b+sqrt(b^2-a))),sqrt(2(b-sqrt(b^2-a)))
+  sp,sm = log(tp),log(tm)
+
+  vals = exp(im*ψ(a,b,γ(sp,sm,xDE))).*γp(sp,sm,xDE)
+
+  cutoff = !isinf(vals).*!isnan(vals).*!isinf(wDE).*!isnan(wDE)
+  return float64(dot(conj(vals[cutoff]),wDE[cutoff])/4π)
+
+end
+
+gravityhelmholtzfs{T1<:Union(Float64,Complex{Float64}),T2<:Union(Float64,Complex{Float64})}(trg::Union(T1,VecOrMat{T1}),src::Union(T2,VecOrMat{T2}),E::Float64) = gravityhelmholtzfs(trg-src,E+imag(src))

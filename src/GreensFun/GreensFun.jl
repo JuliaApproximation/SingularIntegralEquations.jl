@@ -1,7 +1,7 @@
 include("CauchyWeight.jl")
 include("Geometry.jl")
 include("evaluation.jl")
-include("skewtransform.jl")
+include("skewProductFun.jl")
 include("lhelmfs.jl")
 
 # GreensFun
@@ -49,7 +49,11 @@ function GreensFun{SS<:AbstractProductSpace}(f::Function,ss::SS;method::Symbol=:
         F1 = ProductFun(-coefficients(F1)/F1m/2,ss)
         # Approximate real & smooth part after singular extraction.
         m,n = size(F1)
-        F2 = skewProductFun((x,y)->f(x,y) - F1[x,y],ss.space,nextpow2(m),nextpow2(n)+1)
+        if typeof(ss.space) <: TensorSpace{(Chebyshev,Chebyshev)}
+            F2 = skewProductFun((x,y)->f(x,y) - F1[x,y],ss.space,nextpow2(m),nextpow2(n)+1)
+        elseif typeof(ss.space) <: TensorSpace{(Laurent,Laurent)}
+            F2 = skewProductFun((x,y)->f(x,y) - F1[x,y],ss.space,nextpow2(m),nextpow2(n))
+        end
         F = [F1,F2]
     elseif method == :lowrank
         F = LowRankFun(f,ss;method=:standard,kwds...)
