@@ -8,7 +8,7 @@ for (Func,Len) in ((:(Base.sum),:complexlength),(:linesum,:length))
             #p = plan_chebyshevtransform(complex(vals))
             #X = map(z->chebyshevtransform(G(real(z-t),im*imag(z-t)).*vals,p)[1],z)
             if α == β == -0.5
-                return 0.5*$Len(d)*map(z->mean(G(real(z-t),im*imag(z-t)).*vals),z)*π
+                return 0.5*$Len(d)*map(z->mean(G(z,t).*vals),z)*π
             end
       #=
             if α ≤ -1.0 || β ≤ -1.0
@@ -45,14 +45,14 @@ function Base.sum{S<:Union(Fourier,Laurent)}(G::Function,u::Fun{S},z)
     d,n=domain(u),length(u)
     vals,t = values(u),points(d,n)
     if isa(d,Circle)
-      return map(z->mean(G(real(z-t),im*imag(z-t)).*vals.*t),z)*2π*im
+      return map(z->mean(G(z,t).*vals.*t),z)*2π*im
     else
-      return map(z->mean(G(real(z-t),im*imag(z-t)).*vals),z)*length(d)
+      return map(z->mean(G(z,t).*vals),z)*length(d)
     end
 end
 
 function linesum{S<:Union(Fourier,Laurent)}(G::Function,u::Fun{S},z)
     d,n=domain(u),length(u)
     vals,t = values(u),points(d,n)
-    map(z->mean(G(real(z-t),im*imag(z-t)).*vals),z)*length(d)
+    map(z->mean(G(z,t).*vals),z)*length(d)
 end

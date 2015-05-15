@@ -10,20 +10,21 @@
 using ApproxFun,SIE
 include("Scatteraux.jl")
 
-E = 20.
+E = 6.
 ω = 2π
 ui(x,y) = lhelmfs(complex(x,y),-5.0im,E)
 
 # The gravity Helmholtz Green's function.
 g3(x,y) = lhelmfs(x,y,E)
+r(x,y) = SIE.lhelm_riemannian(x,y,E)
 
 
-    dom = ∪(Interval,[-8.0+0.0im,2.0],[-2.0+0.0im,8.0])#Interval(-8.0-4.0im,-2.0+2.0im)#∪(Interval,[-8.0-4.0im,2.0+2.0im],[-2.0+2.0im,8.0-4.0im])
+    dom = Interval(-4.0-2im,0.0)#∪(Interval,[-8.0+0.0im,2.0],[-2.0+0.0im,8.0])#Interval(-8.0-4.0im,-2.0+2.0im)#∪(Interval,[-8.0-4.0im,2.0+2.0im],[-2.0+2.0im,8.0-4.0im])
     sp = Space(dom)
     cwsp = CauchyWeight(sp⊗sp,0)
     uiΓ,⨍ = Fun(t->ui(real(t),imag(t)),sp),DefiniteLineIntegral(dom)
 
-    @time G = GreensFun(g3,cwsp;method=:unsplit)
+    @time G = GreensFun(g3,r,cwsp;method=:unsplit)
 
     L,f = ⨍[G],uiΓ
 
