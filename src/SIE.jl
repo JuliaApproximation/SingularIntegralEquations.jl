@@ -33,6 +33,24 @@ stieltjes(s,f,z)=-2π*im*cauchy(s,f,z)
 stieltjes(f,z)=-2π*im*cauchy(f,z)
 cauchyintegral(u,z)=im/(2π)*stieltjesintegral(u,z)
 
+# Fractal set of Intervals. α is width, n is number of levels
+
+export cantor
+
+function cantor{T}(d::Interval{T},n::Int,α::Number)
+    a,b = d.a,d.b
+    if n == 0
+        return d
+    else
+        d = Interval{T}(zero(T),one(T))
+        C = d/α ∪ (α-1+d)/α
+        for k=2:n
+            C = C/α ∪ (α-1+C)/α
+        end
+        return a+(b-a)*C
+    end
+end
+
 include("Hilbert.jl")
 include("OffHilbert.jl")
 
