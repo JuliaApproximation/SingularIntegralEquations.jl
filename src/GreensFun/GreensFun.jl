@@ -38,7 +38,7 @@ function GreensFun{SS<:AbstractProductSpace}(f::Function,ss::SS;method::Symbol=:
         F = ProductFun(f,ss,kwds...)
     elseif method == :convolution
         F = convolutionProductFun(f,ss,kwds...)
-#=
+##=
     elseif method == :unsplit
         # Approximate imaginary & smooth part.
         F1 = skewProductFun((x,y)->imag(f(x,y)),ss.space;kwds...)
@@ -56,7 +56,7 @@ function GreensFun{SS<:AbstractProductSpace}(f::Function,ss::SS;method::Symbol=:
             F2 = skewProductFun((x,y)->f(x,y) - F1[x,y],ss.space,nextpow2(m),nextpow2(n))
         end
         F = [F1,F2]
-=#
+##=#
     elseif method == :lowrank
         F = LowRankFun(f,ss;method=:standard,kwds...)
     elseif method == :Cholesky
@@ -101,7 +101,7 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::Ab
         for i=1:N,j=1:i-1
             G[i,j] = transpose(G[j,i])
         end
-#=
+##=
     elseif method == :unsplit
         maxF = Array(Number,N)
         for i=1:N
@@ -116,7 +116,7 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::Ab
         for i=1:N,j=1:i-1
             G[i,j] = transpose(G[j,i])
         end
-=#
+##=#
     elseif method == :lowrank
         for i=1:N,j=1:N
             G[i,j] = GreensFun(f,ss[i,j];method=method,kwds...)

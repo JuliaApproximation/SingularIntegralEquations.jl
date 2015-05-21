@@ -1,6 +1,6 @@
 ⋅(d,z) = d[1]*z[1]+d[2]*z[2]
 
-function makegif(x,y,u,L;plotfunction=plot,seconds=1,cmap="seismic")
+function makegif(x,y,u,L;plotfunction=plot,seconds=1,cmap="seismic",vert=1)
     tm=string(time_ns())
     dr = pwd()*"/"*tm*"mov"
     mkdir(dr)
@@ -14,7 +14,7 @@ function makegif(x,y,u,L;plotfunction=plot,seconds=1,cmap="seismic")
         axes(aspect="equal")
         setplotter("PyPlot")
         ApproxFun.plot(dom;color="black")
-        plotfunction(x,y,real(u*exp(-im*ω*t)),L;vmin=-umax,vmax=umax,cmap=cmap)
+        plotfunction(x,y,real(u*exp(-im*ω*t)),L;vmin=-umax*vert,vmax=umax*vert,cmap=cmap)
         xlabel("\$x\$");ylabel("\$y\$")
         savefig(dr * "/" * lpad(k,int(ceil(log10(MLen))),0) * ".png";dpi=150,bbox_inches="tight")
     end

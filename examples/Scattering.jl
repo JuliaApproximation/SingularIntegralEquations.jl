@@ -10,9 +10,9 @@
 using ApproxFun,SIE
 include("Scatteraux.jl")
 
-k = 50.
+k = 100.
 ω = 2π
-d = (1,-1)
+d = (0,-1)
 d = d[1]/hypot(d[1],d[2]),d[2]/hypot(d[1],d[2])
 ui(x,y) = exp(im*k*(d⋅(x,y)))
 
@@ -42,7 +42,7 @@ g3(x,y) = im/4*hankelh1(0,k*abs(y-x))
     #dom = ∪(Interval,[-1.0-0.4im,0.1+0.4im,-0.9-0.5im],[-0.1+0.4im,1.0-0.4im,0.9-0.5im])
     #dom = ∪(Interval,[-1.0-0.4im,-0.5-0.4im,0.1+0.4im,0.2+0.0im,-1.4-0.75im],[-0.1+0.4im,-0.2+0.0im,1.0-0.4im,0.5-0.4im,1.4-0.75im])
     dom = ∪(Circle,[0.,-1.0im],[0.5,0.25])∪∪(Interval,[-1.5,0.5-1.0im,-0.5+1.0im],[-0.5-1.0im,1.5,0.5+1.0im])
-
+    dom = cantor(Interval(),4,3)+0im
     sp = Space(dom)
     cwsp = CauchyWeight(sp⊗sp,0)
     uiΓ,⨍ = Fun(t->ui(real(t),imag(t)),sp),DefiniteLineIntegral(dom)
