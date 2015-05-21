@@ -183,18 +183,18 @@ end
 =#
 
 
-+{S<:FunctionSpace,V<:FunctionSpace,O1,O2,T1,T2}(F::ProductFun{S,V,CauchyWeight{O1},T1},G::ProductFun{S,V,CauchyWeight{O2},T2}) = GreensFun([F,G])
-+{S<:FunctionSpace,V<:FunctionSpace,O1,SS,T1,T2}(F::ProductFun{S,V,CauchyWeight{O1},T1},G::ProductFun{S,V,SS,T2}) = GreensFun([F,G])
-+{S<:FunctionSpace,V<:FunctionSpace,SS,O1,T1,T2}(F::ProductFun{S,V,SS,T1},G::ProductFun{S,V,CauchyWeight{O1},T2}) = GreensFun([F,G])
++{S<:UnivariateSpace,V<:UnivariateSpace,O1,O2,T1,T2}(F::ProductFun{S,V,CauchyWeight{O1},T1},G::ProductFun{S,V,CauchyWeight{O2},T2}) = GreensFun([F,G])
++{S<:UnivariateSpace,V<:UnivariateSpace,O1,SS,T1,T2}(F::ProductFun{S,V,CauchyWeight{O1},T1},G::ProductFun{S,V,SS,T2}) = GreensFun([F,G])
++{S<:UnivariateSpace,V<:UnivariateSpace,SS,O1,T1,T2}(F::ProductFun{S,V,SS,T1},G::ProductFun{S,V,CauchyWeight{O1},T2}) = GreensFun([F,G])
 
 +(F::GreensFun,G::ProductFun) = GreensFun([F.kernels,G])
 +(F::ProductFun,G::GreensFun) = GreensFun([F,G.kernels])
 
 +(F::GreensFun,G::GreensFun) = GreensFun([F.kernels,G.kernels])
 
--{S<:FunctionSpace,V<:FunctionSpace,O1,O2,T1,T2}(F::ProductFun{S,V,CauchyWeight{O1},T1},G::ProductFun{S,V,CauchyWeight{O2},T2}) = GreensFun([F,-G])
--{S<:FunctionSpace,V<:FunctionSpace,O1,SS,T1,T2}(F::ProductFun{S,V,CauchyWeight{O1},T1},G::ProductFun{S,V,SS,T2}) = GreensFun([F,-G])
--{S<:FunctionSpace,V<:FunctionSpace,SS<:AbstractProductSpace,O1,T1,T2}(F::ProductFun{S,V,SS,T1},G::ProductFun{S,V,CauchyWeight{O1},T2}) = GreensFun([F,-G])
+-{S<:UnivariateSpace,V<:UnivariateSpace,O1,O2,T1,T2}(F::ProductFun{S,V,CauchyWeight{O1},T1},G::ProductFun{S,V,CauchyWeight{O2},T2}) = GreensFun([F,-G])
+-{S<:UnivariateSpace,V<:UnivariateSpace,O1,SS,T1,T2}(F::ProductFun{S,V,CauchyWeight{O1},T1},G::ProductFun{S,V,SS,T2}) = GreensFun([F,-G])
+-{S<:UnivariateSpace,V<:UnivariateSpace,SS<:AbstractProductSpace,O1,T1,T2}(F::ProductFun{S,V,SS,T1},G::ProductFun{S,V,CauchyWeight{O1},T2}) = GreensFun([F,-G])
 
 -(F::GreensFun,G::ProductFun) = GreensFun([F.kernels,-G])
 -(F::ProductFun,G::GreensFun) = GreensFun([F,-G.kernels])
@@ -228,7 +228,7 @@ export convolutionProductFun
 # A new ProductFun constructor for bivariate functions on Intervals
 # defined as the distance of their arguments.
 #
-function convolutionProductFun{U<:FunctionSpace,V<:FunctionSpace}(f::Function,u::U,v::V;tol=eps())
+function convolutionProductFun{U<:UnivariateSpace,V<:UnivariateSpace}(f::Function,u::U,v::V;tol=eps())
     du,dv = domain(u),domain(v)
     ext = extrema(du,dv)
     if ext[1] == 0
@@ -249,7 +249,7 @@ function convolutionProductFun{U<:FunctionSpace,V<:FunctionSpace}(f::Function,u:
     end
 end
 
-convolutionProductFun{U<:FunctionSpace,V<:FunctionSpace,T}(f::Function,ss::TensorSpace{(U,V),T,2};kwds...) = convolutionProductFun(f,ss[1],ss[2];kwds...)
+convolutionProductFun{U<:UnivariateSpace,V<:UnivariateSpace,T}(f::Function,ss::TensorSpace{(U,V),T,2};kwds...) = convolutionProductFun(f,ss[1],ss[2];kwds...)
 
 
 

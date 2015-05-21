@@ -76,8 +76,8 @@ end
 
 ## Evaluation of bivariate functions in a CauchyWeight space
 
-evaluate{S<:FunctionSpace,V<:FunctionSpace,O,T1,T2}(f::ProductFun{S,V,CauchyWeight{O,(S,V),T1},T2},x::Range,y::Range) = evaluate(f,[x],[y])
-evaluate{S<:FunctionSpace,V<:FunctionSpace,O,T1,T2}(f::ProductFun{S,V,CauchyWeight{O,(S,V),T1},T2},x,y) = ProductFun{S,V,typeof(space(f).space),T2}(f.coefficients,space(f).space)[x,y].*cauchyweight(space(f),x,y)
+evaluate{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(f::ProductFun{S,V,CauchyWeight{O,(S,V),T1},T2},x::Range,y::Range) = evaluate(f,[x],[y])
+evaluate{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(f::ProductFun{S,V,CauchyWeight{O,(S,V),T1},T2},x,y) = ProductFun{S,V,typeof(space(f).space),T2}(f.coefficients,space(f).space)[x,y].*cauchyweight(space(f),x,y)
 
-+{S<:FunctionSpace,V<:FunctionSpace,O,T}(F::ProductFun{S,V,CauchyWeight{O,(S,V),T},T},G::ProductFun{S,V,CauchyWeight{O,(S,V),T},T}) = ProductFun(ProductFun(F.coefficients,F.space.space)+ProductFun(G.coefficients,G.space.space),G.space)
--{S<:FunctionSpace,V<:FunctionSpace,O,T}(F::ProductFun{S,V,CauchyWeight{O,(S,V),T},T},G::ProductFun{S,V,CauchyWeight{O,(S,V),T},T}) = ProductFun(ProductFun(F.coefficients,F.space.space)-ProductFun(G.coefficients,G.space.space),G.space)
++{S<:UnivariateSpace,V<:UnivariateSpace,O,T}(F::ProductFun{S,V,CauchyWeight{O,(S,V),T},T},G::ProductFun{S,V,CauchyWeight{O,(S,V),T},T}) = ProductFun(ProductFun(F.coefficients,F.space.space)+ProductFun(G.coefficients,G.space.space),G.space)
+-{S<:UnivariateSpace,V<:UnivariateSpace,O,T}(F::ProductFun{S,V,CauchyWeight{O,(S,V),T},T},G::ProductFun{S,V,CauchyWeight{O,(S,V),T},T}) = ProductFun(ProductFun(F.coefficients,F.space.space)-ProductFun(G.coefficients,G.space.space),G.space)
