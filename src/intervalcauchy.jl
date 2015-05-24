@@ -11,14 +11,21 @@ end
 
 # This solves via forward substitution
 function forwardsubstitution(R,n,μ1,μ2)
-    B=BandedMatrix(R,n-1)
-    ret=Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n)
-    ret[1]=μ1
-    ret[2]=μ2
-    for k=2:n-1
-        ret[k+1]=-(B[k,k-1]*ret[k-1]+B[k,k]*ret[k])/B[k,k+1]
+    T=promote_type(eltype(R),typeof(μ1),typeof(μ2))
+    if n==1
+        T[μ1]
+    elseif n==2
+        T[μ1,μ2]
+    else
+        B=BandedMatrix(R,n-1)
+        ret=Array(T,n)
+        ret[1]=μ1
+        ret[2]=μ2
+        for k=2:n-1
+            ret[k+1]=-(B[k,k-1]*ret[k-1]+B[k,k]*ret[k])/B[k,k+1]
+        end
+        ret
     end
-    ret
 end
 
 cauchylegendreforward(n,z)=forwardsubstitution(Recurrence(Jacobi(0.,0.)).'-z,n,
