@@ -12,7 +12,7 @@ import ApproxFun: bandinds,CurveSpace,transform,itransform,transform!,itransform
                   BandedMatrix,bazeros,ChebyshevDirichlet,PolynomialSpace,AbstractProductSpace,evaluate,order,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,BivariateFun,linesum,complexlength,
                   ProductFun, LowRankFun, mappoint, PeriodicLineSpace, PeriodicLineDirichlet,Recurrence, CompactFunctional,
-                  real,UnivariateSpace
+                  real,UnivariateSpace, setdomain
 
 function cauchy(s,f,z)
     if isa(s,Bool)

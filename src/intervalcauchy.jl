@@ -34,19 +34,23 @@ cauchylegendreforward(n,z)=forwardsubstitution(Recurrence(Jacobi(0.,0.)).'-z,n,
 cauchylegendreforward(s::Bool,n,z)=forwardsubstitution(Recurrence(Jacobi(0.,0.)).'-z,n,
                         (log(1-z)+(s?1:-1)*π*im-log(z+1))/(2π*im),(2-z*log(1+z)+z*log(1-z) + (s?1:-1)*π*im*z)/(2π*im))
 
-
+#.'
 function cauchy(f::Fun{Jacobi},z::Number)
-    @assert space(f).a==0 && space(f).b==0
-    @assert domain(f)==Interval()
-    #TODO: check tolerance
-    tol=1./ifloor(Int,sqrt(length(f)))
-    if (abs(real(z))≤1.+tol) && (abs(imag(z))≤tol)
-       cfs=cauchylegendreforward(length(f),z)
-       dotu(cfs,f.coefficients)
+    if domain(f)==Interval()
+        @assert space(f).a==0 && space(f).b==0
+        #TODO: check tolerance
+        tol=1./ifloor(Int,sqrt(length(f)))
+        if (abs(real(z))≤1.+tol) && (abs(imag(z))≤tol)
+           cfs=cauchylegendreforward(length(f),z)
+           dotu(cfs,f.coefficients)
+        else
+           cfs=cauchylegendrebackward(z)
+           m=min(length(f),length(cfs))
+           dotu(cfs[1:m],f.coefficients[1:m])
+        end
     else
-       cfs=cauchylegendrebackward(z)
-       m=min(length(f),length(cfs))
-       dotu(cfs[1:m],f.coefficients[1:m])
+        @assert isa(domain(f),Interval)
+        cauchy(setdomain(f,Interval()),tocanonical(f,z))
     end
 end
 
