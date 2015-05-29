@@ -137,7 +137,7 @@ realintegratejin(c,cfs,y)=.5*(-cfs[1]*(logabs(y)+logabs(c))+realdivkhornersum(cf
 #########
 # stieltjesintegral is an indefinite integral of stieltjes
 # normalized so that there is no constant term
-# logkernel is the real part of stieljes
+# logkernel is the real part of stieljes normalized by π.
 #####
 
 function logkernel{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
@@ -148,21 +148,21 @@ function logkernel{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
         cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1}(d))
         z=tocanonical(u,z)
         y = updownjoukowskyinverse(true,z)
-        π*length(d)*realintegratejin(4/(b-a),cfs,y)/2
+        length(d)*realintegratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
         cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1}(d))
         z=tocanonical(u,z)
         y = updownjoukowskyinverse(true,z)
 
         if length(cfs) ≥1
-            ret = -cfs[1]*π*length(d)*(logabs(y)+logabs(4/(b-a)))/2
+            ret = -cfs[1]*length(d)*(logabs(y)+logabs(4/(b-a)))/2
 
             if length(cfs) ≥2
-                ret += -π*length(d)*cfs[2]*real(y)/2
+                ret += -length(d)*cfs[2]*real(y)/2
             end
 
             if length(cfs) ≥3
-                ret - π*length(d)*realintegratejin(4/(b-a),slice(cfs,3:length(cfs)),y)
+                ret - length(d)*realintegratejin(4/(b-a),slice(cfs,3:length(cfs)),y)
             else
                 ret
             end

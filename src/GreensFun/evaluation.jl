@@ -6,7 +6,7 @@ for (Func,Len) in ((:(Base.sum),:complexlength),(:linesum,:length))
             vals,t = ichebyshevtransform(u.coefficients),points(d,n)
             #vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(d,n)
             #p = plan_chebyshevtransform(complex(vals))
-            #X = map(z->chebyshevtransform(G(real(z-t),im*imag(z-t)).*vals,p)[1],z)
+            #X = map(z->chebyshevtransform(G(z,t).*vals,p)[1],z)
             if α == β == -0.5
                 return 0.5*$Len(d)*map(z->mean(G(z,t).*vals),z)*π
             end
@@ -56,3 +56,18 @@ function linesum{S<:Union(Fourier,Laurent)}(G::Function,u::Fun{S},z)
     vals,t = values(u),points(d,n)
     map(z->mean(G(z,t).*vals),z)*length(d)
 end
+
+function logkernel(G::Function,u::Fun{JacobiWeight{Chebyshev}},z)
+    sp,n=space(u),length(u)
+    vals,t = ichebyshevtransform(u.coefficients),points(sp,n)
+    p = plan_chebyshevtransform(complex(vals))
+    return map(z->logkernel(Fun(chebyshevtransform(G(z,t).*vals,p),sp),z),z)
+end
+function logkernel{S<:Union(Fourier,Laurent)}(G::Function,u::Fun{S},z)
+    sp,n=space(u),length(u)
+    vals,t = values(u),points(sp,n)
+    return map(z->logkernel(Fun(transform(sp,G(z,t).*vals),sp),z),z)
+end
+logkernel{F<:Fun}(G::Function,u::Vector{F},z)=mapreduce(u->logkernel(G,u,z),+,u)
+logkernel{P<:PiecewiseSpace,T}(G::Function,u::Fun{P,T},z)=logkernel(G,vec(u),z)
+logkernel{PS<:PolynomialSpace}(G::Function,f::Fun{JacobiWeight{PS}},z)=logkernel(G,Fun(f,Chebyshev(domain(f))),z)

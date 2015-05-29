@@ -20,7 +20,7 @@ function electricfield(N,r)
 
     ∂u∂n = Fun(sparse(ApproxFun.interlace(L)[1:3N,1:3N])\pad(f.coefficients,3N),domainspace(L))
 
-    us(x,y) = -logkernel(∂u∂n,complex(x,y))/2π
+    us(x,y) = -logkernel(∂u∂n,complex(x,y))/2
     ut(x,y) = ui(x,y) + us(x,y)
     h = 1e-5
     abs((ut(h,0.)-ut(-h,0.))/2h)

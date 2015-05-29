@@ -4,7 +4,7 @@ function LogKernelAsymptotics(S::Fourier,k)
     d=domain(S)
     r=d.radius
     if k==-1  # coefficient in front of logabs term
-        CompactFunctional([2π*r],S)
+        CompactFunctional([2r],S)
     else
         error("Not implemented")
     end
@@ -19,7 +19,7 @@ function LogKernelAsymptotics(S::JacobiWeight{ChebyshevDirichlet{1,1}},k)
     @assert S.α==S.β==-0.5
     d=domain(S)
     if k==-1  # coefficient in front of logabs term
-        CompactFunctional([π*length(d)/2,0,-π*length(d)/2],S)
+        CompactFunctional([length(d)/2,0,-length(d)/2],S)
     else
         error("Not implemented")
     end
@@ -30,7 +30,7 @@ function LogKernelAsymptotics(S::JacobiWeight{Chebyshev},k)
     @assert S.α==S.β==-0.5
     d=domain(S)
     if k==-1  # coefficient in front of logabs term
-        CompactFunctional([π*length(d)/2],S)
+        CompactFunctional([length(d)/2],S)
     else
         error("Not implemented")
     end

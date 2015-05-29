@@ -50,7 +50,7 @@ using ApproxFun,SIE
 
     println("The length of ∂u∂n is: ",length(∂u∂n))
 
-    us(x,y) = -logkernel(∂u∂n,complex(x,y))/2π
+    us(x,y) = -logkernel(∂u∂n,complex(x,y))/2
     ut(x,y) = ui(x,y) + us(x,y)
     println("This is the approximate gradient: ",((ut(1e-5,0.)-ut(-1e-5,0.))/2e-5))
 

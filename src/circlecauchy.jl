@@ -148,7 +148,7 @@ function logkernel(g::Fun{Fourier},z::Number)
             k=div(j,2)
             ret+=-g.coefficients[j]*cos(k*angle(z))*abs(z)^k/(k*r^(k-1))
         end
-        π*ret
+        ret
     else
         ret=2r*logabs(z)*g.coefficients[1]
         for j=2:2:length(g)
@@ -159,10 +159,10 @@ function logkernel(g::Fun{Fourier},z::Number)
             k=div(j,2)
             ret+=-g.coefficients[j]*cos(k*angle(z))*r^(k+1)/(k*abs(z)^k)
         end
-        π*ret
+        ret
     end
 end
-logkernel(g::Fun{Fourier},z::Vector) = [logkernel(g,zk) for zk in z]
-logkernel(g::Fun{Fourier},z::Matrix) = [logkernel(g,zk) for zk in z]
+logkernel(g::Fun{Fourier},z::Vector) = promote_type(eltype(g),eltype(z))[logkernel(g,zk) for zk in z]
+logkernel(g::Fun{Fourier},z::Matrix) = reshape(promote_type(eltype(g),eltype(z))[logkernel(g,zk) for zk in z],size(z))
 
 logkernel(g::Fun{Laurent},z)=logkernel(Fun(g,Fourier),z)

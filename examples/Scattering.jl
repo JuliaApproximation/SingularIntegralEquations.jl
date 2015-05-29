@@ -10,16 +10,15 @@
 using ApproxFun,SIE
 include("Scatteraux.jl")
 
-k = 100.
+k = 50.
 ω = 2π
-d = (0,-1)
+d = (1,-1)
 d = d[1]/hypot(d[1],d[2]),d[2]/hypot(d[1],d[2])
 ui(x,y) = exp(im*k*(d⋅(x,y)))
 
 # The Helmholtz Green's function, split into singular and nonsingular pieces.
 g1(x,y) = -besselj0(k*abs(y-x))/2
-g2(x,y) = x == y ? -(log(k/2)+γ)/2/π + im/4 : besselj0(k*abs(y-x))*(im*π/2+logabs(y-x))/2π - bessely0(k*abs(y-x))/4
-g3(x,y) = im/4*hankelh1(0,k*abs(y-x))
+g2(x,y) = x == y ? -(log(k/2)+γ)/2/π + im/4 : im/4*hankelh1(0,k*abs(y-x)) - g1(x,y).*logabs(y-x)/π
 
 
 # A variety of domains.
@@ -53,4 +52,4 @@ g3(x,y) = im/4*hankelh1(0,k*abs(y-x))
 
     @time ∂u∂n = L\f
     println("The length of ∂u∂n is: ",length(∂u∂n))
-    us(x,y) = -linesum(g3,∂u∂n,complex(x,y))
+    us(x,y) = -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y))
