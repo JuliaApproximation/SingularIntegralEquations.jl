@@ -2,8 +2,8 @@
 for (Func,Len) in ((:(Base.sum),:complexlength),(:linesum,:length))
     @eval begin
         function $Func(G::Function,u::Fun{JacobiWeight{Chebyshev}},z)
-            d,α,β,n=domain(u),u.space.α,u.space.β,length(u)
-            vals,t = ichebyshevtransform(u.coefficients),points(d,n)
+            d,α,β,n=domain(u),u.space.α,u.space.β,2length(u)
+            vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(d,n)
             if α == β == -0.5
                 return 0.5*$Len(d)*map(z->mean(G(z,t).*vals),z)*π
             else
@@ -15,15 +15,15 @@ for (Func,Len) in ((:(Base.sum),:complexlength),(:linesum,:length))
 end
 
 function logkernel(G::Function,u::Fun{JacobiWeight{Chebyshev}},z)
-    sp,n=space(u),length(u)
-    vals,t = ichebyshevtransform(u.coefficients),points(sp,n)
+    sp,n=space(u),2length(u)
+    vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(sp,n)
     p = plan_chebyshevtransform(complex(vals))
     return map(z->logkernel(Fun(chebyshevtransform(G(z,t).*vals,p),sp),z),z)
 end
 
 function Base.sum{S<:Union(Fourier,Laurent)}(G::Function,u::Fun{S},z)
-    d,n=domain(u),length(u)
-    vals,t = values(u),points(d,n)
+    d,n=domain(u),2length(u)
+    vals,t = values(pad(u,n)),points(d,n)
     if isa(d,Circle)
       return map(z->mean(G(z,t).*vals.*t),z)*2π*im
     else
@@ -32,15 +32,16 @@ function Base.sum{S<:Union(Fourier,Laurent)}(G::Function,u::Fun{S},z)
 end
 
 function linesum{S<:Union(Fourier,Laurent)}(G::Function,u::Fun{S},z)
-    d,n=domain(u),length(u)
-    vals,t = values(u),points(d,n)
+    d,n=domain(u),2length(u)
+    vals,t = values(pad(u,n)),points(d,n)
     map(z->mean(G(z,t).*vals),z)*length(d)
 end
 
 function logkernel{S<:Union(Fourier,Laurent)}(G::Function,u::Fun{S},z)
-    sp,n=space(u),length(u)
-    vals,t = values(u),points(sp,n)
-    return map(z->logkernel(Fun(transform(sp,G(z,t).*vals),sp),z),z)
+    sp,n=space(u),2length(u)
+    vals,t = values(pad(u,n)),points(sp,n)
+    p = plan_transform(sp,vals)
+    return map(z->logkernel(Fun(transform(sp,G(z,t).*vals,p),sp),z),z)
 end
 
 for Func in (:(Base.sum),:linesum,:logkernel)

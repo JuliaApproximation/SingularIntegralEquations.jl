@@ -38,24 +38,29 @@ end
 function skewtransform!{T}(S::TensorSpace{(Chebyshev,Chebyshev)},M::Matrix{T};kindx::Int=1,kindy::Int=2)
     n=size(M,1)
 
+    planc=plan_chebyshevtransform(M[:,1];kind=kindx)
     for k=1:size(M,2)
-        M[:,k]=chebyshevtransform(M[:,k];kind=kindx)
+        M[:,k]=chebyshevtransform(M[:,k],planc;kind=kindx)
     end
 
+    planr=plan_chebyshevtransform(vec(M[1,:]);kind=kindy)
     for k=1:n
-        M[k,:]=chebyshevtransform(vec(M[k,:]);kind=kindy)
+        M[k,:]=chebyshevtransform(vec(M[k,:]),planr;kind=kindy)
     end
     M
 end
 
 function iskewtransform!{T}(S::TensorSpace{(Chebyshev,Chebyshev)},M::Matrix{T};kindx::Int=1,kindy::Int=2)
     n=size(M,1)
+
+    planc=plan_ichebyshevtransform(M[:,1];kind=kindx)
     for k=1:size(M,2)
-        M[:,k]=ichebyshevtransform(M[:,k];kind=kindx)
+        M[:,k]=ichebyshevtransform(M[:,k],planc;kind=kindx)
     end
 
+    planr=plan_ichebyshevtransform(vec(M[1,:]);kind=kindy)
     for k=1:n
-        M[k,:]=ichebyshevtransform(vec(M[k,:]);kind=kindy)
+        M[k,:]=ichebyshevtransform(vec(M[k,:]),planr;kind=kindy)
     end
     M
 end
@@ -63,24 +68,29 @@ end
 function skewtransform!{T}(S::TensorSpace{(Laurent,Laurent)},M::Matrix{T})
     n=size(M,1)
 
+    planc=plan_transform(S[1],M[:,1])
     for k=1:size(M,2)
-        M[:,k]=transform(S[1],M[:,k])
+        M[:,k]=transform(S[1],M[:,k],planc)
     end
 
+    planr=plan_transform(S[2],vec(M[1,:]))
     for k=1:n
-        M[k,:]=process!(transform(S[2],vec(M[k,:])))
+        M[k,:]=process!(transform(S[2],vec(M[k,:]),planr))
     end
     M
 end
 
 function iskewtransform!{T}(S::TensorSpace{(Laurent,Laurent)},M::Matrix{T})
     n=size(M,1)
+
+    planc=plan_itransform(S[1],M[:,1])
     for k=1:size(M,2)
-        M[:,k]=itransform(S[1],M[:,k])
+        M[:,k]=itransform(S[1],M[:,k],planc)
     end
 
+    planr=plan_itransform(S[2],vec(M[1,:]))
     for k=1:n
-        M[k,:]=itransform(S[2],iprocess!(vec(M[k,:])))
+        M[k,:]=itransform(S[2],iprocess!(vec(M[k,:])),planr)
     end
     M
 end
