@@ -1,4 +1,4 @@
-Copyright (c) 2014: Sheehan Olver, Richard Mikael Slevinsky, and other contributors:
+Copyright (c) 2014-2015: Sheehan Olver, Richard Mikael Slevinsky, and other contributors:
 
 https://github.com/ApproxFun/SIE.jl/graphs/contributors
 
