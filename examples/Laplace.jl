@@ -23,13 +23,13 @@ using ApproxFun,SIE
 
 # Set the domains.
     N = 10
-    r = 1e-2
+    r = 1e-1
     cr = exp(im*2π*[0:N-1]/N)
     crl = (1-2im*r)cr
     crr = (1+2im*r)cr
-    #dom = ∪(Interval,crl,crr)
+    dom = ∪(Interval,crl,crr)
     #dom = ∪(Circle,cr,ones(length(cr))r)
-    dom = ∪(Interval,crl[1:2:end],crr[1:2:end]) ∪ ∪(Circle,cr[2:2:end],ones(length(cr[2:2:end]))r)
+    #dom = ∪(Interval,crl[1:2:end],crr[1:2:end]) ∪ ∪(Circle,cr[2:2:end],ones(length(cr[2:2:end]))r)
 
     sp = Space(dom)
     cwsp = CauchyWeight(sp⊗sp,0)
@@ -39,14 +39,9 @@ using ApproxFun,SIE
 
     L,f = ⨍[G],uiΓ
 
-    if isa(dom,UnionDomain)
-        P=ApproxFun.PrependColumnsOperator([1 ApproxFun.interlace(L)])
-        @time φ0,∂u∂n=vec([mapreduce(BasisFunctional{Complex{Float64}},+,2:length(dom)+1);P]\Any[0.,f])
-    elseif isa(dom,Domain)
-        PF=ApproxFun.PrependColumnsFunctional(0,⨍)
-        PL=ApproxFun.PrependColumnsOperator([1 L])
-        @time φ0,∂u∂n=vec([PF;PL]\Any[0.,f])
-    end
+    PL = isa(dom,UnionDomain) ? ApproxFun.PrependColumnsOperator([1 ApproxFun.interlace(L)]) : ApproxFun.PrependColumnsOperator([1 L])
+    PF=ApproxFun.PrependColumnsFunctional(0,⨍)
+    @time φ0,∂u∂n=vec([PF;PL]\Any[0.,f])
 
     println("The length of ∂u∂n is: ",length(∂u∂n))
 
