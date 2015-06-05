@@ -19,8 +19,12 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
 # The Helmholtz Green's function, split into singular and nonsingular pieces.
 g1(x,y) = besselj0(k*abs(y-x))/2
 g2(x,y) = x == y ? -k^2/4 : -k*besselj1(k*abs(y-x))./abs(y-x)/2
-g3(x,y) = x == y ? -(log(k/2)+γ)*k^2/4π + k^2/4π + im*k^2/8 : im*k/4*hankelh1(1,k*abs(y-x))./abs(y-x) - g1(x,y)./(y-x).^2/π -g2(x,y).*logabs(y-x)/π
-g4(x,y) = im*k/4*hankelh1(1,k*abs(y-x))./abs(y-x).*imag(y-x)
+g3(x,y) = g3neumann(x,y)#x == y ? -(log(k/2)+γ)*k^2/4π + k^2/4π + im*k^2/8 : im*k/4*hankelh1(1,k*abs(y-x))./abs(y-x) - g1(x,y)./abs(y-x).^2/π -g2(x,y).*logabs(y-x)/π
+g4old(x,y) = im*k/4*hankelh1(1,k*abs(y-x))./abs(y-x).*imag(y-x)
+g4(x,y) = im*k/4*besselj1(k*abs(y-x))./abs(y-x).*imag(y-x)  # For linesum
+g5(x,y) = -k/2*besselj1(k*abs(y-x))./abs(y-x).*imag(y-x)  # For logkernel
+g6(x,y) = k/2*abs(y-x).*(bessely1(k*abs(y-x)) - 2besselj1(k*abs(y-x)).*logabs(y-x)/π) # For Re{Cauchy}
+
 
     dom = Interval()
     sp = Space(dom)
@@ -31,5 +35,6 @@ g4(x,y) = im*k/4*hankelh1(1,k*abs(y-x))./abs(y-x).*imag(y-x)
 
     @time u = ⨍[G]\-∂ui∂nΓ
     println("The length of u is: ",length(u))
-#    us(x,y) = -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y))
-    us(x,y) = linesum(g4,u,complex(x,y))
+    us(x,y) = linesum(g4,u,complex(x,y))+logkernel(g5,u,complex(x,y))+π*real(cauchy(g6,real(u),complex(x,y)))+π*im*real(cauchy(g6,imag(u),complex(x,y)))
+    #us(x,y) = linesum(g4old,pad(u,3length(u)),complex(x,y))
+    dom += 0im

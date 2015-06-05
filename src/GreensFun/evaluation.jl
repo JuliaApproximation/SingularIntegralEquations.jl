@@ -21,6 +21,13 @@ function logkernel(G::Function,u::Fun{JacobiWeight{Chebyshev}},z)
     return map(z->logkernel(Fun(chebyshevtransform(G(z,t).*vals,p),sp),z),z)
 end
 
+function cauchy(G::Function,u::Fun{JacobiWeight{Chebyshev}},z)
+    sp,n=space(u),2length(u)
+    vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(sp,n)
+    p = plan_chebyshevtransform(vals)#complex(vals))
+    return map(z->cauchy(Fun(chebyshevtransform(G(z,t).*vals,p),sp),z),z)
+end
+
 function Base.sum{S<:Union(Fourier,Laurent)}(G::Function,u::Fun{S},z)
     d,n=domain(u),2length(u)
     vals,t = values(pad(u,n)),points(d,n)
@@ -44,7 +51,7 @@ function logkernel{S<:Union(Fourier,Laurent)}(G::Function,u::Fun{S},z)
     return map(z->logkernel(Fun(transform(sp,G(z,t).*vals,p),sp),z),z)
 end
 
-for Func in (:(Base.sum),:linesum,:logkernel)
+for Func in (:(Base.sum),:linesum,:logkernel,:cauchy)
     @eval begin
         $Func{F<:Fun}(G::Function,u::Vector{F},z)=mapreduce(u->$Func(G,u,z),+,u)
         $Func{P<:PiecewiseSpace,T}(G::Function,u::Fun{P,T},z)=$Func(G,vec(u),z)
