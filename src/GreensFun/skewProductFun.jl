@@ -8,8 +8,8 @@ export skewProductFun, skewpoints, skewtransform!, iskewtransform!
 function skewProductFun(f::Function,sp::TensorSpace{(Chebyshev,Chebyshev)};tol=100eps())
     for logn = 4:10
         X = coefficients(skewProductFun(f,sp,2^logn,2^logn+1;tol=tol))
-        if size(X,1)<2^logn && size(X,2)<2^logn
-            return ProductFun(X,sp;tol=tol)
+        if size(X,1)<2^logn && size(X,2)<2^logn+1
+            return ProductFun(X,sp;tol=tol,chopping=true)
         end
     end
     warn("Maximum grid size of ("*string(2^11)*","*string(2^11+1)*") reached")
@@ -20,7 +20,7 @@ function skewProductFun(f::Function,sp::TensorSpace{(Laurent,Laurent)};tol=100ep
     for logn = 4:10
         X = coefficients(skewProductFun(f,sp,2^logn,2^logn;tol=tol))
         if size(X,1)<2^logn && size(X,2)<2^logn
-            return ProductFun(X,sp;tol=tol)
+            return ProductFun(X,sp;tol=tol,chopping=true)
         end
     end
     warn("Maximum grid size of ("*string(2^11)*","*string(2^11)*") reached")
@@ -32,7 +32,7 @@ function skewProductFun(f::Function,S::TensorSpace,M::Integer,N::Integer;tol=100
     T = promote_type(eltype(f(first(xy)...)),eltype(S))
     ptsx,ptsy=skewpoints(S,M,N)
     vals=T[f(ptsx[k,j],ptsy[k,j]) for k=1:size(ptsx,1), j=1:size(ptsx,2)]
-    ProductFun(skewtransform!(S,vals),S;tol=tol)
+    ProductFun(skewtransform!(S,vals),S;tol=tol,chopping=true)
 end
 
 function skewtransform!{T}(S::TensorSpace{(Chebyshev,Chebyshev)},M::Matrix{T};kindx::Int=1,kindy::Int=2)
