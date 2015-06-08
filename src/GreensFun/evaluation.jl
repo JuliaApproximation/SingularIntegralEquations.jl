@@ -8,7 +8,7 @@ for (Func,Len) in ((:(Base.sum),:complexlength),(:linesum,:length))
                 return 0.5*$Len(d)*map(z->mean(G(z,t).*vals),z)*π
             else
                 sp,p = space(u),plan_chebyshevtransform(complex(vals))
-                map(z->$Func(Fun(chebyshevtransform(G(z,t).*vals,p),sp),z),z)
+                map(z->$Func(Fun(chebyshevtransform(G(z,t).*vals,p),sp)),z)
             end
         end
     end
@@ -55,6 +55,6 @@ for Func in (:(Base.sum),:linesum,:logkernel,:cauchy)
     @eval begin
         $Func{F<:Fun}(G::Function,u::Vector{F},z)=mapreduce(u->$Func(G,u,z),+,u)
         $Func{P<:PiecewiseSpace,T}(G::Function,u::Fun{P,T},z)=$Func(G,vec(u),z)
-        $Func{PS<:PolynomialSpace}(G::Function,f::Fun{JacobiWeight{PS}},z)=$Func(G,Fun(f,Chebyshev(domain(f))),z)
+        $Func{PS<:PolynomialSpace}(G::Function,f::Fun{JacobiWeight{PS}},z)=$Func(G,Fun(f,JacobiWeight(f.space.α,f.space.β,Chebyshev(domain(f)))),z)
     end
 end

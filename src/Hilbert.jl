@@ -7,7 +7,7 @@ export Hilbert,SingularIntegral
 #
 # SingularIntegral implements the Hilbert operator as a line integral:
 #
-#       SI f(z) := 1/π\int_Γ f(t)/(t-z) ds(t),  z ∈ Γ
+#       SI f(z) := 1/π\int_Γ f(t)/(t-z) ds(t),  z ∉ Γ
 #
 #############
 
@@ -56,6 +56,8 @@ for (Op,OpWrap,OffOp) in ((:Hilbert,:HilbertWrapper,:OffHilbert),
             Ultraspherical{max(H.order-1,0)}(domain(H))
         end
         bandinds{λ}(H::$Op{JacobiWeight{Ultraspherical{λ}}})=-λ,H.order-λ
+        bandinds(H::$Op{JacobiWeight{Chebyshev}})=0,H.order
+        bandinds(H::$Op{JacobiWeight{Ultraspherical{1}}})=H.order > 0 ? (-1,H.order-1) : (-2,0)
     end
 end
 
@@ -273,12 +275,19 @@ for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),
             @assert isa(d,Interval)
             @assert sp.α==sp.β==0.5
 
-            if m == 1
+            C=(4./$Len(d))^(m-1)
+            if m == 0
+                for k=kr
+                    A[k,k] -= k==1? -C*log(C) : C/(k-1)
+                end
+                for k=max(kr[1],3):kr[end]
+                    A[k,k-2] += C/(k-1)
+                end
+            elseif m == 1
                 for k=max(kr[1],2):kr[end]
                     A[k,k-1] -= 1.
                 end
             else
-                C=(4./$Len(d))^(m-1)
                 for k=kr
                     A[k,k+m-2] -= .5C*k/(m-1)
                 end
