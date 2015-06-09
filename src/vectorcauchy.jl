@@ -24,13 +24,21 @@ function cauchy{S,T}(s,f::Fun{S,T},z::Array)
 end
 =#
 
-for op in (:(hilbert),:(stieltjes),:(cauchy),:(logkernel),:(stieltjesintegral),:(cauchyintegral))
+for op in (:(stieltjes),:(cauchy),:(logkernel),:(stieltjesintegral),:(cauchyintegral))
     @eval begin
         $op{F<:Fun}(v::Vector{F},z)=mapreduce(f->$op(f,z),+,v)
         $op(v::Vector{Any},z)=mapreduce(f->$op(f,z),+,v)
         $op{P<:PiecewiseSpace,T}(v::Fun{P,T},z)=$op(vec(v),z)
+
+        $op{F<:Fun}(s::Bool,v::Vector{F},z)=mapreduce(f->(z in domain(f))?$op(s,f,z):$op(f,z),+,v)
+        $op(s::Bool,v::Vector{Any},z)=mapreduce(f->(z in domain(f))?$op(s,f,z):$op(f,z),+,v)
+        $op{P<:PiecewiseSpace,T}(s::Bool,v::Fun{P,T},z)=$op(s,pieces(v),z)
     end
 end
+
+hilbert{F<:Union(Fun,Any)}(v::Vector{F},x)=mapreduce(f->(x in domain(f))?hilbert(f,x):-stieltjes(f,x)/π,+,v)
+hilbert{P<:PiecewiseSpace,T}(v::Fun{P,T},z)=hilbert(pieces(v),z)
+
 
 
 function cauchy{S<:ArraySpace,T}(v::Fun{S,T},z::Number)
