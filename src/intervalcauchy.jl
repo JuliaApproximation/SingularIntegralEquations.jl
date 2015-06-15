@@ -3,9 +3,10 @@ import ApproxFun: dotu,SliceOperator
 
 # This solves as a boundary value provblem
 function cauchylegendrebackward(z::Number)
-    J=SliceOperator(Recurrence(Jacobi(0.,0.)).'-z,1,0,1)  # drop first row
+    S=Legendre()
+    J=SliceOperator(Recurrence(S).'-z,1,0,1)  # drop first row
     [BasisFunctional(1),
-        J]\[(log(z-1)-log(z+1))/(2π*im)]
+        J]\[cauchymoment(S,1,z)]
 end
 
 
@@ -29,10 +30,10 @@ function forwardsubstitution(R,n,μ1,μ2)
 end
 
 cauchylegendreforward(n,z)=forwardsubstitution(Recurrence(Jacobi(0.,0.)).'-z,n,
-                        (log(z-1)-log(z+1))/(2π*im),(2-z*log(1+z)+z*log(z-1))/(2π*im))
+                        cauchymoment(Legendre(),1,z),cauchymoment(Legendre(),2,z))
 
 cauchylegendreforward(s::Bool,n,z)=forwardsubstitution(Recurrence(Jacobi(0.,0.)).'-z,n,
-                        (log(1-z)+(s?1:-1)*π*im-log(z+1))/(2π*im),(2-z*log(1+z)+z*log(1-z) + (s?1:-1)*π*im*z)/(2π*im))
+                        cauchymoment(s,Legendre(),1,z),cauchymoment(Legendre(),2,z))
 
 #.'
 function cauchy(f::Fun{Jacobi},z::Number)

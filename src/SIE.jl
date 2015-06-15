@@ -57,6 +57,8 @@ include("OffHilbert.jl")
 
 include("HilbertFunctions.jl")
 
+include("stieltjesmoment.jl")
+
 include("circlecauchy.jl")
 include("intervalcauchy.jl")
 include("singfuncauchy.jl")
