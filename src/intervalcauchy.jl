@@ -33,7 +33,7 @@ cauchylegendreforward(n,z)=forwardsubstitution(Recurrence(Jacobi(0.,0.)).'-z,n,
                         cauchymoment(Legendre(),1,z),cauchymoment(Legendre(),2,z))
 
 cauchylegendreforward(s::Bool,n,z)=forwardsubstitution(Recurrence(Jacobi(0.,0.)).'-z,n,
-                        cauchymoment(s,Legendre(),1,z),cauchymoment(Legendre(),2,z))
+                        cauchymoment(s,Legendre(),1,z),cauchymoment(s,Legendre(),2,z))
 
 #.'
 function cauchy(f::Fun{Jacobi},z::Number)
