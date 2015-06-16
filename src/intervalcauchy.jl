@@ -2,9 +2,12 @@ import ApproxFun: dotu,SliceOperator
 
 
 # This solves as a boundary value provblem
-function cauchylegendrebackward(z::Number)
-    S=Legendre()
-    J=SliceOperator(Recurrence(S).'-z,1,0,1)  # drop first row
+
+jacobiop(S::PolynomialSpace)=Recurrence(S).'  #.'
+jacobiop(S::JacobiWeight)=jacobiop(S.space)
+
+function cauchybackward(S::FunctionSpace,z::Number)
+    J=SliceOperator(jacobiop(S)-z,1,0,1)  # drop first row
     [BasisFunctional(1),
         J]\[cauchymoment(S,1,z)]
 end
@@ -29,38 +32,41 @@ function forwardsubstitution(R,n,μ1,μ2)
     end
 end
 
-cauchylegendreforward(n,z)=forwardsubstitution(Recurrence(Jacobi(0.,0.)).'-z,n,
-                        cauchymoment(Legendre(),1,z),cauchymoment(Legendre(),2,z))
+cauchyforward(sp::FunctionSpace,n,z)=forwardsubstitution(jacobiop(sp)-z,n,
+                        cauchymoment(sp,1,z),cauchymoment(sp,2,z))
 
-cauchylegendreforward(s::Bool,n,z)=forwardsubstitution(Recurrence(Jacobi(0.,0.)).'-z,n,
-                        cauchymoment(s,Legendre(),1,z),cauchymoment(s,Legendre(),2,z))
+cauchyforward(s::Bool,sp::FunctionSpace,n,z)=forwardsubstitution(jacobiop(sp)-z,n,
+                        cauchymoment(s,sp,1,z),cauchymoment(s,sp,2,z))
 
-#.'
-function cauchy(f::Fun{Jacobi},z::Number)
+
+function cauchyintervalrecurrence(f::Fun,z)
+    tol=1./ifloor(Int,sqrt(length(f)))
+    if (abs(real(z))≤1.+tol) && (abs(imag(z))≤tol)
+       cfs=cauchyforward(space(f),length(f),z)
+       dotu(cfs,coefficients(f))
+    else
+       cfs=cauchybackward(space(f),z)
+       m=min(length(f),length(cfs))
+       dotu(cfs[1:m],coefficients(f)[1:m])
+    end
+end
+
+
+function cauchy{PS<:PolynomialSpace}(f::Fun{PS},z::Number)
     if domain(f)==Interval()
-        @assert space(f).a==0 && space(f).b==0
         #TODO: check tolerance
-        tol=1./ifloor(Int,sqrt(length(f)))
-        if (abs(real(z))≤1.+tol) && (abs(imag(z))≤tol)
-           cfs=cauchylegendreforward(length(f),z)
-           dotu(cfs,f.coefficients)
-        else
-           cfs=cauchylegendrebackward(z)
-           m=min(length(f),length(cfs))
-           dotu(cfs[1:m],f.coefficients[1:m])
-        end
+        cauchyintervalrecurrence(Fun(f,Legendre()),z)
     else
         @assert isa(domain(f),Interval)
         cauchy(setdomain(f,Interval()),tocanonical(f,z))
     end
 end
 
-function cauchy(s::Bool,f::Fun{Jacobi},z::Number)
-    @assert space(f).a==0 && space(f).b==0
+function cauchy{PS<:PolynomialSpace}(s::Bool,f::Fun{PS},z::Number)
     @assert domain(f)==Interval()
 
-   cfs=cauchylegendreforward(s,length(f),z)
-   dotu(cfs,f.coefficients)
+   cfs=cauchyforward(s,Legendre(),length(f),z)
+   dotu(cfs,coefficients(f,Legendre()))
 end
 
 
@@ -70,6 +76,6 @@ function cauchy{S,L<:Line,T}(f::Fun{MappedSpace{S,L,T}},z)
     p=Fun(f.coefficients,space(f).space)
     cauchy(p,tocanonical(f,z)) + cauchy(p,(-1-sqrt(1+4z.^2))./(2z))
 end
-cauchy(f::Fun{Chebyshev},z)=cauchy(Fun(f,Legendre(domain(f))),z)
-cauchy(s,f::Fun{Chebyshev},z)=cauchy(s,Fun(f,Legendre(domain(f))),z)
+
+
 

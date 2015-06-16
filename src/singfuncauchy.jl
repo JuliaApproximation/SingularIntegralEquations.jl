@@ -96,7 +96,12 @@ function cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z::Number)
             0.0+0.0im
         end
     else
-        error("cauchy only implemented for Chebyshev weights")
+        if domain(u)==Interval()
+            cauchyintervalrecurrence(Fun(u,JacobiWeight(sp.α,sp.β,Jacobi(sp.β,sp.α))),z)
+        else
+            @assert isa(domain(u),Interval)
+            cauchy(setdomain(u,Interval()),tocanonical(u,z))
+        end
     end
 end
 
@@ -123,7 +128,14 @@ function cauchy{S<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{S}},x::Number)
             0.0+0.0im
         end
     else
-        error("cauchy only implemented for Chebyshev weights")
+        if domain(f)==Interval()
+            S=JacobiWeight(S.α,S.β,Jacobi(S.β,S.α))
+            cfs=cauchyforward(s,S,length(f),z)
+            dotu(cfs,coefficients(f,S))
+        else
+            @assert isa(domain(u),Interval)
+            cauchy(s,setdomain(u,Interval()),tocanonical(u,z))
+        end
     end
 end
 
