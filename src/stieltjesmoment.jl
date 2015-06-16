@@ -30,12 +30,14 @@ end
 function stieltjesmoment(S::JacobiWeight,k::Integer,z)
     if S.α == S.β == 0
         return stieltjesmoment(S.space,k,z)
-    elseif S.β == 0.5 && S.b == 0
+    elseif S.α == 0 && S.β == 0.5
         if k==1
-            return 2*(sqrt(z-1)*atan(sqrt(2)/sqrt(z-1))-sqrt(2))
+            return -2*(sqrt(z-1)*atan(sqrt(2)/sqrt(z-1))-sqrt(2))
         elseif k==2
             return 2*sqrt(2)/3*(3z-2)-2*sqrt(1-z)*z*atanh(sqrt(2)/sqrt(1-z))
         end
+    elseif S.α == 0.5 && S.β == 0.
+        return (-1)^k*stieltjesmoment(JacobiWeight(0.,0.5,S.space),k,-z)
     end
     error("stieltjesmoment not implemented for JacobiWeight "*string(S.α)*string(S.β))
 end

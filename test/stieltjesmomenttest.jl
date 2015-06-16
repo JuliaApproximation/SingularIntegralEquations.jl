@@ -10,3 +10,10 @@ x=Fun()
 @test_approx_eq stieltjesmoment(JacobiWeight(0.,0.,Legendre()),2,z) sum(x/(z-x))
 
 
+@test_approx_eq stieltjesmoment(JacobiWeight(0.,0.5,Jacobi(0.5,0.)),1,z) sum(sqrt(1-x)/(z-x))
+@test_approx_eq stieltjesmoment(JacobiWeight(0.,0.5,Jacobi(0.5,0.)),2,z) sum(x*sqrt(1-x)/(z-x))
+
+
+@test_approx_eq stieltjesmoment(JacobiWeight(0.5,0.,Jacobi(0.5,0.)),1,z) sum(sqrt(1+x)/(z-x))
+@test_approx_eq stieltjesmoment(JacobiWeight(0.5,0.,Jacobi(0.5,0.)),2,z) sum(x*sqrt(1+x)/(z-x))
+
