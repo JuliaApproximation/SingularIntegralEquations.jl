@@ -26,13 +26,24 @@ function stieltjesmoment(s::Bool,S::PolynomialSpace,k::Integer,z)
     error("stieltjesmoment not implemented for "*string(S.a)*string(S.b))
 end
 
+# represents sqrt(z)*atan(sqrt(z))
+sqrtatansqrt(z)=sqrt(1/z)*atan(sqrt(z))
+function sqrtatansqrt(x::Real)
+    if  x ≤0
+        y=sqrt(-x)
+        (log(1+y)-log(1-y))/(2y)
+    else
+        sqrt(1/x)*atan(sqrt(x))
+    end
+end
+
 
 function stieltjesmoment(S::JacobiWeight,k::Integer,z)
     if S.α == S.β == 0
         return stieltjesmoment(S.space,k,z)
     elseif S.α == 0 && S.β == 0.5
         if k==1
-            return -2*(sqrt(z-1)*atan(sqrt(2)/sqrt(z-1))-sqrt(2))
+            return -2*sqrt(2)*(sqrtatansqrt(2/(z-1))-1)
         elseif k==2
             return 2*sqrt(2)/3*(3z-2)-2*sqrt(1-z)*z*atanh(sqrt(2)/sqrt(1-z))
         end
