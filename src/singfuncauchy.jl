@@ -106,7 +106,7 @@ function cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z::Number)
 end
 
 
-function cauchy{S<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{S}},x::Number)
+function cauchy{SS<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{SS}},x::Number)
     d,sp=domain(u),space(u)
 
     if sp.α == sp.β == .5
@@ -129,7 +129,7 @@ function cauchy{S<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{S}},x::Number)
         end
     else
         if domain(f)==Interval()
-            S=JacobiWeight(S.α,S.β,Jacobi(S.β,S.α))
+            S=JacobiWeight(sp.α,sp.β,Jacobi(sp.β,sp.α))
             cfs=cauchyforward(s,S,length(f),z)
             dotu(cfs,coefficients(f,S))
         else
