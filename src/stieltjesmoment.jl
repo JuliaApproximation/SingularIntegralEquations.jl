@@ -27,14 +27,18 @@ function stieltjesmoment(s::Bool,S::PolynomialSpace,k::Integer,z)
 end
 
 # represents sqrt(z)*atan(sqrt(z))
-sqrtatansqrt(z)=sqrt(1/z)*atan(sqrt(z))
-function sqrtatansqrt(x::Real)
-    if  x ≤0
+function sqrtatansqrt(x)
+    if  isreal(x) && x ≤ 0
         y=sqrt(-x)
-        (log(1+y)-log(1-y))/(2y)
+        log((1+y)/(1-y))/(2y)
     else
         sqrt(1/x)*atan(sqrt(x))
     end
+end
+
+function sqrtatansqrt(s::Bool,x)
+    y=sqrt(-x)
+    (log((1+y)/(y-1))-(s?1:-1)*π*im)/(2y)
 end
 
 
@@ -45,10 +49,26 @@ function stieltjesmoment(S::JacobiWeight,k::Integer,z)
         if k==1
             return -2*sqrt(2)*(sqrtatansqrt(2/(z-1))-1)
         elseif k==2
-            return 2*sqrt(2)/3*(3z-2)-2*sqrt(1-z)*z*atanh(sqrt(2)/sqrt(1-z))
+            return 2*sqrt(2)*(1/3*(3z-2)-z*sqrtatansqrt(2/(z-1)))
         end
     elseif S.α == 0.5 && S.β == 0.
         return (-1)^k*stieltjesmoment(JacobiWeight(0.,0.5,S.space),k,-z)
+    end
+    error("stieltjesmoment not implemented for JacobiWeight "*string(S.α)*string(S.β))
+end
+
+
+function stieltjesmoment(s::Bool,S::JacobiWeight,k::Integer,z)
+    if S.α == S.β == 0
+        return stieltjesmoment(s,S.space,k,z)
+    elseif S.α == 0 && S.β == 0.5
+        if k==1
+            return -2*sqrt(2)*(sqrtatansqrt(!s,2/(z-1))-1)
+        elseif k==2
+            return 2*sqrt(2)*(1/3*(3z-2)-z*sqrtatansqrt(!s,2/(z-1)))
+        end
+    elseif S.α == 0.5 && S.β == 0.
+        return (-1)^k*stieltjesmoment(s,JacobiWeight(0.,0.5,S.space),k,-z)
     end
     error("stieltjesmoment not implemented for JacobiWeight "*string(S.α)*string(S.β))
 end
