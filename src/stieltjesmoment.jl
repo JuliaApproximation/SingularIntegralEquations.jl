@@ -7,6 +7,8 @@
 cauchymoment(S...)=stieltjesmoment(S...)/(-2π*im)
 
 function stieltjesmoment(S::PolynomialSpace,k::Integer,z)
+    z=tocanonical(S,z)
+
     if k==1
         return -(log(z-1)-log(z+1))
     elseif k==2
@@ -17,6 +19,8 @@ function stieltjesmoment(S::PolynomialSpace,k::Integer,z)
 end
 
 function stieltjesmoment(s::Bool,S::PolynomialSpace,k::Integer,z)
+    z=tocanonical(S,z)
+
     if k==1
         return -(log(1-z)+(s?1:-1)*π*im-log(z+1))
     elseif k==2
@@ -43,6 +47,8 @@ end
 
 
 function stieltjesmoment(S::JacobiWeight,k::Integer,z)
+    z=tocanonical(S,z)
+
     if S.α == S.β == 0
         return stieltjesmoment(S.space,k,z)
     elseif S.α == 0 && S.β == 0.5
@@ -59,6 +65,8 @@ end
 
 
 function stieltjesmoment(s::Bool,S::JacobiWeight,k::Integer,z)
+    z=tocanonical(S,z)
+
     if S.α == S.β == 0
         return stieltjesmoment(s,S.space,k,z)
     elseif S.α == 0 && S.β == 0.5
@@ -72,3 +80,26 @@ function stieltjesmoment(s::Bool,S::JacobiWeight,k::Integer,z)
     end
     error("stieltjesmoment not implemented for JacobiWeight "*string(S.α)*string(S.β))
 end
+
+
+function hilbertmoment(S::JacobiWeight,k::Integer,x)
+    x=tocanonical(S,x)
+
+    if S.α == 0 && S.β == 0.5
+        if k==1
+            if isapprox(x,1.0)
+                return 2*sqrt(2)/π
+            else
+                y=sqrt(-2/(x-1))
+                return (2*sqrt(2)-sqrt(2)*(log((1+y)/(y-1))/y))/π
+            end
+        elseif k==2
+
+        end
+    elseif S.α == 0.5 && S.β == 0.
+
+    end
+    (stieltjesmoment(true,S,k,x)+stieltjesmoment(false,S,k,x))/(2π)::Float64
+end
+
+
