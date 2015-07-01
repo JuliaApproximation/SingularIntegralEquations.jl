@@ -10,7 +10,7 @@
 using ApproxFun,SIE
 include("Scatteraux.jl")
 
-k = 50.
+k = 100.
 ω = 2π
 d = (1,-1)
 d = d[1]/hypot(d[1],d[2]),d[2]/hypot(d[1],d[2])

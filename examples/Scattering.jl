@@ -41,15 +41,30 @@ g2(x,y) = x == y ? -(log(k/2)+γ)/2/π + im/4 : im/4*hankelh1(0,k*abs(y-x)) - g1
     #dom = ∪(Interval,[-1.0-0.4im,0.1+0.4im,-0.9-0.5im],[-0.1+0.4im,1.0-0.4im,0.9-0.5im])
     #dom = ∪(Interval,[-1.0-0.4im,-0.5-0.4im,0.1+0.4im,0.2+0.0im,-1.4-0.75im],[-0.1+0.4im,-0.2+0.0im,1.0-0.4im,0.5-0.4im,1.4-0.75im])
     dom = ∪(Circle,[0.,-1.0im],[0.5,0.25])∪∪(Interval,[-1.5,0.5-1.0im,-0.5+1.0im],[-0.5-1.0im,1.5,0.5+1.0im])
-    dom = cantor(Interval(),4,3)+0im
+
+    N = 10
+    r = 5e-2
+    cr = exp(im*2π*[-0.5:N-1.5]/N)
+    crl = (1-2im*r)cr
+    crr = (1+2im*r)cr
+    dom = ∪(Interval,crl[1:2:end],crr[1:2:end]) ∪ ∪(Circle,cr[2:2:end],ones(length(cr[2:2:end]))r)∪Circle(0.,0.5)
+
+function ui(x,y)
+    c = 2exp(im*2π*(0.)/N)
+    val = hankelh1(0,k*abs(complex(x,y)-c))
+    for i=2:N
+        c = 2exp(im*2π*(i-1.)/N)
+        val = val + hankelh1(0,k*abs(complex(x,y)-c))
+    end
+    im/4*val
+end
+
     sp = Space(dom)
     cwsp = CauchyWeight(sp⊗sp,0)
     uiΓ,⨍ = Fun(t->ui(real(t),imag(t)),sp),DefiniteLineIntegral(dom)
 
     @time G = GreensFun(g1,cwsp;method=:Cholesky) + GreensFun(g2,sp⊗sp;method=:Cholesky)
 
-    L,f = ⨍[G],uiΓ
-
-    @time ∂u∂n = L\f
+    @time ∂u∂n = ⨍[G]\uiΓ
     println("The length of ∂u∂n is: ",length(∂u∂n))
     us(x,y) = -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y))
