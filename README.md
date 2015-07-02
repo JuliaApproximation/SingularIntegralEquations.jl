@@ -16,7 +16,7 @@ using ApproxFun, SIE
 
 # The Faraday Cage
 
-[Laplace.jl](https://github.com/ApproxFun/SIE.jl/raw/master/examples/Laplace.jl) calculates the solution to the Laplace equation with the origin shielded by infinitesimal plates. The essential lines of code are:
+[Laplace.jl](https://github.com/ApproxFun/SIE.jl/blob/master/examples/Laplace.jl) calculates the solution to the Laplace equation with the origin shielded by infinitesimal plates. The essential lines of code are:
 
 ```julia
 test
@@ -27,7 +27,7 @@ test
 
 # Acoustic Scattering
 
-[Scattering.jl](https://github.com/ApproxFun/SIE.jl/raw/master/examples/Scattering.jl) and [ScatteringNeumann.jl](https://github.com/ApproxFun/SIE.jl/raw/master/examples/ScatteringNeumann.jl) calculate the solution to the Helmholtz equation with Dirichlet and Neumann boundary conditions. The essential lines of code are:
+[Scattering.jl](https://github.com/ApproxFun/SIE.jl/blob/master/examples/Scattering.jl) and [ScatteringNeumann.jl](https://github.com/ApproxFun/SIE.jl/blob/master/examples/ScatteringNeumann.jl) calculate the solution to the Helmholtz equation with Dirichlet and Neumann boundary conditions. The essential lines of code are:
 
 ```julia
 test
@@ -35,7 +35,7 @@ test
 
 ![Helmholtz Scattering](https://github.com/ApproxFun/SIE.jl/raw/master/images/Helmholtz.gif)
 
-[GravityHelmholtz.jl](https://github.com/ApproxFun/SIE.jl/raw/master/examples/GravityHelmholtz.jl) calculates the solution to the gravity Helmholtz equation with Dirichlet boundary conditions. The essential lines of code are:
+[GravityHelmholtz.jl](https://github.com/ApproxFun/SIE.jl/blob/master/examples/GravityHelmholtz.jl) calculates the solution to the gravity Helmholtz equation with Dirichlet boundary conditions. The essential lines of code are:
 
 ```julia
 test
