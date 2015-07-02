@@ -22,7 +22,7 @@ using ApproxFun, SIE
 test
 ```
 
-![Faraday Cage](https://github.com/ApproxFun/SIE.jl/raw/master/images/FaradayCage.pdf)
+![Faraday Cage](https://github.com/ApproxFun/SIE.jl/raw/master/images/FaradayCage.png)
 
 
 # Acoustic Scattering
