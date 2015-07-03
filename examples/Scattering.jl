@@ -23,48 +23,19 @@ g2(x,y) = x == y ? -(log(k/2)+γ)/2/π + im/4 : im/4*hankelh1(0,k*abs(y-x)) - g1
 
 # A variety of domains.
 
-    dom = Circle(0.0,1/π)∪Interval(-1.im,1.0)
-#=
-    N = 6
-    r = rand(2N+1)
-    cr = cumsum(r)
-    ccr = -3+(cr-cr[1])*6/(cr[end]-cr[1]) # For a nice plot, try: [-3.0,-2.4710248798864565,-1.7779535080542614,-0.999257770563108,-0.9160576190726175,-0.5056650643725802,0.7258681480228484,1.2291671942613505,1.3417993440008456,1.485081132919861,1.7601585357456848,2.9542404467603642,3.0]
-    dom = ∪(Interval(ccr+(3-ccr[end-1])/2)[1:2:end])
-=#
-#=
-    domS = ∪(Interval,[-1.95+im,-2.+0.05im,-1.95+0.im,-1.-0.05im,-2.-im],[-1.+im,-2.+.95im,-1.05+0.im,-1.-.95im,-1.05-im])
-    domI = Interval([-1.0im,0.25im])∪Circle(0.5im,0.125)
-    domE = ∪(Interval,[1.-0.95im,1.05+im,1.05-im,1.1-0.0im],[1.+0.95im,2.+im,2.-im,1.75+0.0im])
-    dom = domS∪domI∪domE
-=#
-    #dom = ∪(Interval,[-2.5-.5im,-1.5+.5im,-.5-.5im,.5+.5im,1.5-.5im],[-1.5-.5im,-.5+.5im,.5-.5im,1.5+.5im,2.5-.5im])
-    #dom = ∪(Interval,[-1.0-0.4im,0.1+0.4im,-0.9-0.5im],[-0.1+0.4im,1.0-0.4im,0.9-0.5im])
-    #dom = ∪(Interval,[-1.0-0.4im,-0.5-0.4im,0.1+0.4im,0.2+0.0im,-1.4-0.75im],[-0.1+0.4im,-0.2+0.0im,1.0-0.4im,0.5-0.4im,1.4-0.75im])
-    dom = ∪(Circle,[0.,-1.0im],[0.5,0.25])∪∪(Interval,[-1.5,0.5-1.0im,-0.5+1.0im],[-0.5-1.0im,1.5,0.5+1.0im])
+#dom = Circle(0.0,1/π)∪Interval(-1.im,1.0)
+#dom = ∪(Interval,[-2.5-.5im,-1.5+.5im,-.5-.5im,.5+.5im,1.5-.5im],[-1.5-.5im,-.5+.5im,.5-.5im,1.5+.5im,2.5-.5im])
+#dom = ∪(Interval,[-1.0-0.4im,0.1+0.4im,-0.9-0.5im],[-0.1+0.4im,1.0-0.4im,0.9-0.5im])
+#dom = ∪(Interval,[-1.0-0.4im,-0.5-0.4im,0.1+0.4im,0.2+0.0im,-1.4-0.75im],[-0.1+0.4im,-0.2+0.0im,1.0-0.4im,0.5-0.4im,1.4-0.75im])
+#dom = ∪(Circle,[0.,-1.0im],[0.5,0.25])∪∪(Interval,[-1.5,0.5-1.0im,-0.5+1.0im],[-0.5-1.0im,1.5,0.5+1.0im])
+dom = Interval()
 
-    N = 10
-    r = 5e-2
-    cr = exp(im*2π*[-0.5:N-1.5]/N)
-    crl = (1-2im*r)cr
-    crr = (1+2im*r)cr
-    dom = ∪(Interval,crl[1:2:end],crr[1:2:end]) ∪ ∪(Circle,cr[2:2:end],ones(length(cr[2:2:end]))r)∪Circle(0.,0.5)
+sp = Space(dom)
+cwsp = CauchyWeight(sp⊗sp,0)
+uiΓ,⨍ = Fun(t->ui(real(t),imag(t)),sp),DefiniteLineIntegral(dom)
 
-function ui(x,y)
-    c = 2exp(im*2π*(0.)/N)
-    val = hankelh1(0,k*abs(complex(x,y)-c))
-    for i=2:N
-        c = 2exp(im*2π*(i-1.)/N)
-        val = val + hankelh1(0,k*abs(complex(x,y)-c))
-    end
-    im/4*val
-end
+@time G = GreensFun(g1,cwsp;method=:Cholesky) + GreensFun(g2,sp⊗sp;method=:Cholesky)
 
-    sp = Space(dom)
-    cwsp = CauchyWeight(sp⊗sp,0)
-    uiΓ,⨍ = Fun(t->ui(real(t),imag(t)),sp),DefiniteLineIntegral(dom)
-
-    @time G = GreensFun(g1,cwsp;method=:Cholesky) + GreensFun(g2,sp⊗sp;method=:Cholesky)
-
-    @time ∂u∂n = ⨍[G]\uiΓ
-    println("The length of ∂u∂n is: ",length(∂u∂n))
-    us(x,y) = -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y))
+@time ∂u∂n = ⨍[G]\uiΓ
+println("The length of ∂u∂n is: ",length(∂u∂n))
+us(x,y) = -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y))

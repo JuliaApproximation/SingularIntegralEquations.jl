@@ -19,13 +19,13 @@ g3(x,y) = lhelmfs(x,y,E)
 r(x,y) = SIE.lhelm_riemannian(x,y,E)
 
 
-    dom = ∪(Interval,[-10.0-3.0im,5.0,-2+5im],[-5.0+0.0im,10.0-3im,2+5im])#∪(Interval,[-8.0+0.0im,2.0],[-2.0+0.0im,8.0])
-    sp = Space(dom)
-    cwsp = CauchyWeight(sp⊗sp,0)
-    uiΓ,⨍ = Fun(t->ui(real(t),imag(t)),sp),DefiniteLineIntegral(dom)
+dom = ∪(Interval,[-10.0-3.0im,5.0,-2+5im],[-5.0+0.0im,10.0-3im,2+5im])
+sp = Space(dom)
+cwsp = CauchyWeight(sp⊗sp,0)
+uiΓ,⨍ = Fun(t->ui(real(t),imag(t)),sp),DefiniteLineIntegral(dom)
 
-    @time G = GreensFun(g3,cwsp;method=:unsplit)
+@time G = GreensFun(g3,cwsp;method=:unsplit)
 
-    @time ∂u∂n = ⨍[G]\uiΓ
-    println("The length of ∂u∂n is: ",length(∂u∂n))
-    us(x,y) = -linesum(g3,∂u∂n,complex(x,y))
+@time ∂u∂n = ⨍[G]\uiΓ
+println("The length of ∂u∂n is: ",length(∂u∂n))
+us(x,y) = -linesum(g3,∂u∂n,complex(x,y))

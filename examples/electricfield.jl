@@ -1,3 +1,5 @@
+# This file calculates the field strength at the center of a Faraday cage. Warning, the run-time is long.
+# See /Laplace.jl for a more interactive version.
 using ApproxFun,SIE
 
 z_0 = 2.0
@@ -18,9 +20,8 @@ function electricfield(N,r)
     uiΓ,⨍ = Fun(t->ui(real(t),imag(t))+0im,sp),DefiniteLineIntegral(dom)
 
     G = GreensFun(g1,cwsp)
-    L,f = ⨍[G],uiΓ
 
-    ∂u∂n = L\f#Fun(sparse(ApproxFun.interlace(L)[1:3N,1:3N])\pad(f.coefficients,3N),domainspace(L))
+    ∂u∂n = ⨍[G]\uiΓ
 
     us(x,y) = -logkernel(∂u∂n,complex(x,y))/2
     ut(x,y) = ui(x,y) + us(x,y)

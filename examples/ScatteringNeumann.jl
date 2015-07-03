@@ -19,23 +19,22 @@ ui(x,y) = exp(im*k*(d⋅(x,y)))
 # The Helmholtz Green's function, split into singular and nonsingular pieces.
 g1(x,y) = besselj0(k*abs(y-x))/2
 g2(x,y) = x == y ? -k^2/4 : -k*besselj1(k*abs(y-x))./abs(y-x)/2
-g3(x,y) = g3neumann(x,y)#x == y ? -(log(k/2)+γ)*k^2/4π + k^2/4π + im*k^2/8 : im*k/4*hankelh1(1,k*abs(y-x))./abs(y-x) - g1(x,y)./abs(y-x).^2/π -g2(x,y).*logabs(y-x)/π
+g3(x,y) = g3neumann(x,y) # In /Scatteraux.jl
 g4old(x,y) = im*k/4*hankelh1(1,k*abs(y-x))./abs(y-x).*imag(y-x)
 g4(x,y) = im*k/4*besselj1(k*abs(y-x))./abs(y-x).*imag(y-x)  # For linesum
 g5(x,y) = -k/2*besselj1(k*abs(y-x))./abs(y-x).*imag(y-x)  # For logkernel
 g6(x,y) = k/2*abs(y-x).*(bessely1(k*abs(y-x)) - 2besselj1(k*abs(y-x)).*logabs(y-x)/π) # For Re{Cauchy}
 
 
-    ccr = [-3.0,-2.4710248798864565,-1.7779535080542614,-0.999257770563108,-0.9160576190726175,-0.5056650643725802,0.7258681480228484,1.2291671942613505,1.3417993440008456,1.485081132919861,1.7601585357456848,2.9542404467603642,3.0]
-    dom = ∪(Interval,(ccr+(3-ccr[end-1])/2)[1:2:end-1],(ccr+(3-ccr[end-1])/2)[2:2:end])
-    sp = Space(dom)
-    cwsp,cwsp2 = CauchyWeight(sp⊗sp,0),CauchyWeight(sp⊗sp,2)
-    ∂ui∂nΓ,⨍ = Fun(t->-im*k*d[2]*ui(real(t),imag(t)),sp),DefiniteLineIntegral(PiecewiseSpace(map(d->JacobiWeight(.5,.5,Ultraspherical{1}(d)),dom.domains)))#DefiniteLineIntegral(dom)
+ccr = [-3.0,-2.4710248798864565,-1.7779535080542614,-0.999257770563108,-0.9160576190726175,-0.5056650643725802,0.7258681480228484,1.2291671942613505,1.3417993440008456,1.485081132919861,1.7601585357456848,2.9542404467603642,3.0]
+dom = ∪(Interval,(ccr+(3-ccr[end-1])/2)[1:2:end-1],(ccr+(3-ccr[end-1])/2)[2:2:end])
+sp = Space(dom)
+cwsp,cwsp2 = CauchyWeight(sp⊗sp,0),CauchyWeight(sp⊗sp,2)
+∂ui∂nΓ,⨍ = Fun(t->-im*k*d[2]*ui(real(t),imag(t)),sp),DefiniteLineIntegral(PiecewiseSpace(map(d->JacobiWeight(.5,.5,Ultraspherical{1}(d)),dom.domains)))#DefiniteLineIntegral(dom)
 
-    @time G = GreensFun(g1,cwsp2;method=:Cholesky) + GreensFun(g2,cwsp;method=:Cholesky) + GreensFun(g3,sp⊗sp;method=:Cholesky)
+@time G = GreensFun(g1,cwsp2;method=:Cholesky) + GreensFun(g2,cwsp;method=:Cholesky) + GreensFun(g3,sp⊗sp;method=:Cholesky)
 
-    @time u = ⨍[G]\-∂ui∂nΓ
-    println("The length of u is: ",length(u))
-    us(x,y) = linesum(g4,u,complex(x,y))+logkernel(g5,u,complex(x,y))+π*real(cauchy(g6,real(u),complex(x,y)))+π*im*real(cauchy(g6,imag(u),complex(x,y)))
-    #usold(x,y) = linesum(g4old,pad(u,3length(u)),complex(x,y))
-    dom += 0im
+@time u = ⨍[G]\-∂ui∂nΓ
+println("The length of u is: ",length(u))
+us(x,y) = linesum(g4,u,complex(x,y))+logkernel(g5,u,complex(x,y))+π*real(cauchy(g6,real(u),complex(x,y)))+π*im*real(cauchy(g6,imag(u),complex(x,y)))
+dom += 0im

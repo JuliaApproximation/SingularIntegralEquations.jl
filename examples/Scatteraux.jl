@@ -36,3 +36,22 @@ function makegif(x,y,u,L;plotfunction=plot,seconds=1,cmap="seismic",vert=1)
     run(`convert -delay 6 -loop 0 $dr/*.png $dr/scattering.gif`)
     run(`open $dr/scattering.gif`)
 end
+
+#=
+# This is for the landing Helmholtz gif.
+N = 10
+r = 5e-2
+cr = exp(im*2π*[-0.5:N-1.5]/N)
+crl = (1-2im*r)cr
+crr = (1+2im*r)cr
+dom = ∪(Interval,crl[1:2:end],crr[1:2:end]) ∪ ∪(Circle,cr[2:2:end],ones(length(cr[2:2:end]))r)∪Circle(0.,0.5)
+function ui(x,y)
+    c = 2exp(im*2π*(0.)/N)
+    val = hankelh1(0,k*abs(complex(x,y)-c))
+    for i=2:N
+        c = 2exp(im*2π*(i-1.)/N)
+        val = val + hankelh1(0,k*abs(complex(x,y)-c))
+    end
+    im/4*val
+end
+=#
