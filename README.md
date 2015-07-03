@@ -23,7 +23,7 @@ k = 50 # Set wavenumber and fundamental solution for Helmholtz equation
 g1(x,y) = -besselj0(k*abs(y-x))/2
 g2(x,y) = x == y ? -(log(k/2)+γ)/2/π + im/4 : im/4*hankelh1(0,k*abs(y-x)) - g1(x,y).*logabs(y-x)/π
 
-ui(x,y) = exp(im*k*(x+y)/sqrt(2)) # Incident plane wave at 45°
+ui(x,y) = exp(im*k*(x-y)/sqrt(2)) # Incident plane wave at 45°
 
 dom = Interval() # Set the domain
 sp = Space(dom) # Canonical space on the domain
