@@ -26,7 +26,7 @@ cauchyweight{O}(C::CauchyWeight{O},x,y) = cauchyweight(O,tocanonical(C,x,y)...)
 ## BivariateFun constructors in a CauchyWeight space
 
 ## TODO: for different domains, there should not be (x,y)->f(x,y)*cauchyweight(O,x,y)
-## This will change when we switch to ChebyshevDirichlet bases
+## This will change for v0.0.2 with the switch to ChebyshevDirichlet{1,1} bases
 
 for Func in (:ProductFun,:convolutionProductFun)
     @eval begin
@@ -50,7 +50,7 @@ end
 ## Definite (Line) Integration over BivariateFuns in a CauchyWeight space
 
 ## TODO: for different domains, should be OffOp instead of ⨍
-## This will change when we switch to ChebyshevDirichlet bases
+## This will change for v0.0.2 with the switch to ChebyshevDirichlet{1,1} bases
 
 for (Func,Op) in ((:DefiniteIntegral,:Hilbert),(:DefiniteLineIntegral,:SingularIntegral))
     @eval begin
@@ -77,7 +77,15 @@ end
 ## Evaluation of bivariate functions in a CauchyWeight space
 
 evaluate{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(f::ProductFun{S,V,CauchyWeight{O,(S,V),T1},T2},x::Range,y::Range) = evaluate(f,[x],[y])
-evaluate{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(f::ProductFun{S,V,CauchyWeight{O,(S,V),T1},T2},x,y) = ProductFun{S,V,typeof(space(f).space),T2}(f.coefficients,space(f).space)[x,y].*cauchyweight(space(f),x,y)
+evaluate{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(f::ProductFun{S,V,CauchyWeight{O,(S,V),T1},T2},x,y) = evaluate(ProductFun(f.coefficients,space(f).space),x,y).*cauchyweight(space(f),x,y)
 
-+{S<:UnivariateSpace,V<:UnivariateSpace,O,T}(F::ProductFun{S,V,CauchyWeight{O,(S,V),T},T},G::ProductFun{S,V,CauchyWeight{O,(S,V),T},T}) = ProductFun(ProductFun(F.coefficients,F.space.space)+ProductFun(G.coefficients,G.space.space),G.space)
--{S<:UnivariateSpace,V<:UnivariateSpace,O,T}(F::ProductFun{S,V,CauchyWeight{O,(S,V),T},T},G::ProductFun{S,V,CauchyWeight{O,(S,V),T},T}) = ProductFun(ProductFun(F.coefficients,F.space.space)-ProductFun(G.coefficients,G.space.space),G.space)
++{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(F::ProductFun{S,V,CauchyWeight{O},T1},G::ProductFun{S,V,CauchyWeight{O},T2}) = ProductFun(ProductFun(F.coefficients,F.space.space)+ProductFun(G.coefficients,G.space.space),G.space)
+-{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(F::ProductFun{S,V,CauchyWeight{O},T1},G::ProductFun{S,V,CauchyWeight{O},T2}) = ProductFun(ProductFun(F.coefficients,F.space.space)-ProductFun(G.coefficients,G.space.space),G.space)
+
+evaluate{S<:FunctionSpace,M<:FunctionSpace,O,T<:Number,V<:Number}(f::LowRankFun{S,M,CauchyWeight{O},T,V},::Colon,::Colon) = error("Not callable.")
+evaluate{S<:FunctionSpace,M<:FunctionSpace,O,T<:Number,V<:Number}(f::LowRankFun{S,M,CauchyWeight{O},T,V},x,::Colon) = error("Not callable.")
+evaluate{S<:FunctionSpace,M<:FunctionSpace,O,T<:Number,V<:Number}(f::LowRankFun{S,M,CauchyWeight{O},T,V},::Colon,y) = error("Not callable.")
+evaluate{S<:FunctionSpace,M<:FunctionSpace,O,T<:Number,V<:Number}(f::LowRankFun{S,M,CauchyWeight{O},T,V},x,y) = evaluate(f.A,f.B,x,y).*cauchyweight(space(f),x,y)
+
++{S<:FunctionSpace,M<:FunctionSpace,O,T1<:Number,V1<:Number,T2<:Number,V2<:Number}(F::LowRankFun{S,M,CauchyWeight{O},T1,V1},G::LowRankFun{S,M,CauchyWeight{O},T2,V2}) = LowRankFun([F.A,G.A],[F.B,G.B],F.space)
+-{S<:FunctionSpace,M<:FunctionSpace,O,T1<:Number,V1<:Number,T2<:Number,V2<:Number}(F::LowRankFun{S,M,CauchyWeight{O},T1,V1},G::LowRankFun{S,M,CauchyWeight{O},T2,V2}) = LowRankFun([F.A,-G.A],[F.B,G.B],F.space)

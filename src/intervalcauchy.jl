@@ -3,7 +3,7 @@ import ApproxFun: dotu,SliceOperator
 
 # This solves as a boundary value provblem
 
-jacobiop(S::PolynomialSpace)=Recurrence(S).'  #.'
+jacobiop(S::PolynomialSpace)=transpose(Recurrence(S))
 jacobiop(S::JacobiWeight)=jacobiop(S.space)
 
 function cauchybackward(S::FunctionSpace,z::Number)

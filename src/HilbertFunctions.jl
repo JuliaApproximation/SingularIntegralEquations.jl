@@ -1,7 +1,7 @@
 export hilbert, hilbertinverse
 ##
 #  hilbert and hilbertinverse on JacobiWeight space
-# hilbert is equal to im*(C^+ + C^-)
+#  hilbert is always equal to im*(C^+ + C^-)
 #  hilbert(f,z)=im*(cauchy(true,f,z)+cauchy(false,f,z))
 ##
 

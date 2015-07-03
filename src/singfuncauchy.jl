@@ -64,14 +64,6 @@ function realdivkhornersum(cfs,y0,ys,s)
     ret
 end
 
-# Mothballed via canonicalization.
-#=
-absqrt(a,b,z::Complex)=sqrt(z-a)*sqrt(z-b)
-absqrt(a,b,x::Real)=x<a?-sqrt(a-x)*sqrt(b-x):sqrt(x-a)*sqrt(x-b)
-absqrt(s::Bool,a,b,z)=(s?1:-1)*im*sqrt(z-a)*sqrt(b-z)
-absqrt(s::Int,a,b,z)=absqrt(s==1,a,b,z)
-=#
-
 
 function cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z::Number)
     d,sp=domain(u),space(u)
