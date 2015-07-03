@@ -45,12 +45,16 @@ test
 
 # Riemann--Hilbert Problems
 
-SIE has support for Riemann--Hilbert problems:
+SIE has support for Riemann--Hilbert problems and Wiener--Hopf factorizations.  [Wiener-Hopf.jl](https://github.com/ApproxFun/SIE.jl/blob/master/examples/Wiener-Hopf.jl) uses the Winer--Hopf factorization to calculate the UL decomposition of a scalar and a block Toeplitz operator.  The essential lines of code in the matrix case are:
 
 ```julia
-Cp=Cauchy(1)
-Cm=Cauchy(-1)
-g=Fun(z->1.+.1z-.1z.^(-2),Circle())
-u=(Cp-g*Cm)\g-1.
-cauchy(u,.1+.1im)
+G=Fun(z->[-1 -3; -3 -1]/z +
+         [ 2  2;  1 -3] +
+         [ 2 -1;  1  2]*z,Circle())
+
+C  = Cauchy(-1)
+V  = V=(I+(I-G)*C)\(G-I)
+
+L  = ToeplitzOperator(inv(I+C*V))
+U  = ToeplitzOperator(I+V+C*V)
 ```
