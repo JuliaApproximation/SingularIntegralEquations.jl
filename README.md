@@ -43,9 +43,9 @@ test
 
 ![Gravity Helmholtz Scattering](https://github.com/ApproxFun/SIE.jl/raw/master/images/GravityHelmholtz.gif)
 
-# Riemann--Hilbert Problems
+# Riemann–Hilbert Problems
 
-SIE has support for Riemann--Hilbert problems and Wiener--Hopf factorizations.  [Wiener-Hopf.jl](https://github.com/ApproxFun/SIE.jl/blob/master/examples/Wiener-Hopf.jl) uses the Winer--Hopf factorization to calculate the UL decomposition of a scalar and a block Toeplitz operator.  The essential lines of code in the matrix case are:
+SIE has support for Riemann–Hilbert problems and Wiener–Hopf factorizations.  [Wiener-Hopf.jl](https://github.com/ApproxFun/SIE.jl/blob/master/examples/Wiener-Hopf.jl) uses the Winer–Hopf factorization to calculate the UL decomposition of a scalar and a block Toeplitz operator.  The essential lines of code in the matrix case are:
 
 ```julia
 G=Fun(z->[-1 -3; -3 -1]/z +
