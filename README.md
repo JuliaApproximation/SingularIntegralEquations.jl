@@ -33,7 +33,11 @@ uiΓ = Fun(t->ui(real(t),imag(t)),sp) # Incident wave on Γ
 # Instantiate the fundamental solution
 G = GreensFun(g1,CauchyWeight(sp⊗sp,0)) + GreensFun(g2,sp⊗sp)
 
-∂u∂n = ⨍[G]\uiΓ                      # Solve for the density
+# Solve for the density
+∂u∂n = ⨍[G]\uiΓ
+
+# What is the forward error?
+norm(⨍[G]*∂u∂n-uiΓ)
 
 # Represent the scattered field
 us(x,y) = -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y))
@@ -67,7 +71,7 @@ G = GreensFun((x,y)->1/2,CauchyWeight(sp⊗sp,0))
 
 # The first column augments the system for global unknown constant charge φ0
 # The first row ensure constant charge φ0 on all plates
-φ0,∂u∂n=vec([0 ⨍;1 ⨍[G]]\Any[0.,uiΓ])   # Solve for the density
+φ0,∂u∂n=vec([0 ⨍;1 ⨍[G]]\Any[0.,uiΓ])
 
 # Represent the scattered field
 us(x,y) = -logkernel(∂u∂n,complex(x,y))/2
