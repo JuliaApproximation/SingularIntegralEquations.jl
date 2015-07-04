@@ -1,3 +1,11 @@
+# This file calcules the ellipticintegral
+#
+#    ∫_0^z dz/(sqrt(1-z^2)*sqrt(a^2-z^2))
+#
+# by writing the integrand as a Cauchy transform
+# cauchyintegral is an integral of the Cauchy transform
+
+
 using ApproxFun, SIE
 
 function ellipticintegral(a)

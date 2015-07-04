@@ -55,7 +55,7 @@ function Base.getindex{F<:BivariateFun}(⨍::DefiniteLineIntegral,B::Matrix{F})
             ret[i,j] = ⨍j[B[i,j]]
         end
     end
-    mapreduce(typeof,promote_type,ret)[ret[j,i] for j=1:n,i=1:m]
+    interlace(mapreduce(typeof,promote_type,ret)[ret[j,i] for j=1:n,i=1:m])
 end
 
 # Algebra with KernelFun's

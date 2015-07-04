@@ -29,9 +29,7 @@ uiΓ,⨍ = Fun(t->ui(real(t),imag(t))+0im,sp),DefiniteLineIntegral(dom)
 
 @time G = GreensFun(g1,cwsp)
 
-PL = isa(dom,UnionDomain) ? ApproxFun.PrependColumnsOperator([1 ApproxFun.interlace(⨍[G])]) : ApproxFun.PrependColumnsOperator([1 ⨍[G]])
-PF = ApproxFun.PrependColumnsFunctional(0,⨍)
-@time φ0,∂u∂n=vec([PF;PL]\Any[0.,uiΓ])
+@time φ0,∂u∂n=vec([0 ⨍;1 ⨍[G]]\[0.,uiΓ])
 
 println("The length of ∂u∂n is: ",length(∂u∂n))
 

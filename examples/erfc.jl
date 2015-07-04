@@ -1,3 +1,10 @@
+##
+# This file calcules erfc from the representation as a
+# cauchy transform
+##
+
+
+
 using ApproxFun, SIE
 
 f=Fun(z->2exp(z^2),Space(PeriodicLine(0.,π/2)))
