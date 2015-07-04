@@ -4,6 +4,7 @@ export convolutionProductFun
 # A ProductFun constructor for bivariate functions on Intervals
 # defined as the distance of their arguments.
 #
+
 function convolutionProductFun{U<:UnivariateSpace,V<:UnivariateSpace}(f::Function,u::U,v::V;tol=eps())
     du,dv = domain(u),domain(v)
     ext = extrema(du,dv)
@@ -37,6 +38,7 @@ convolutionProductFun{U<:UnivariateSpace,V<:UnivariateSpace,T}(f::Function,ss::T
 # Suppose we are interested in K(ϕ-θ). Then, K(⋅) is periodic
 # whether it's viewed as bivariate or univariate.
 #
+
 function convolutionProductFun{S<:Fourier,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V;tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)

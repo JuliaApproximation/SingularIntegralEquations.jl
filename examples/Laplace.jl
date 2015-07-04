@@ -27,9 +27,9 @@ sp = Space(dom)
 cwsp = CauchyWeight(sp⊗sp,0)
 uiΓ,⨍ = Fun(t->ui(real(t),imag(t))+0im,sp),DefiniteLineIntegral(dom)
 
-@time G = GreensFun(g1,cwsp)
+@time G = GreensFun(g1,cwsp;method=:Cholesky)
 
-@time φ0,∂u∂n=vec([0 ⨍;1 ⨍[G]]\[0.,uiΓ])
+@time φ0,∂u∂n=vec([0 ⨍;1 ⨍[G]]\Any[0.,uiΓ])
 
 println("The length of ∂u∂n is: ",length(∂u∂n))
 

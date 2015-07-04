@@ -10,7 +10,7 @@
 using ApproxFun,SIE
 include("Scatteraux.jl")
 
-k = 100.
+k = 50.
 ω = 2π
 d = (1,-1)
 d = d[1]/hypot(d[1],d[2]),d[2]/hypot(d[1],d[2])
@@ -26,8 +26,7 @@ g5(x,y) = -k/2*besselj1(k*abs(y-x))./abs(y-x).*imag(y-x)  # For logkernel
 g6(x,y) = k/2*abs(y-x).*(bessely1(k*abs(y-x)) - 2besselj1(k*abs(y-x)).*logabs(y-x)/π) # For Re{Cauchy}
 
 
-ccr = [-3.0,-2.4710248798864565,-1.7779535080542614,-0.999257770563108,-0.9160576190726175,-0.5056650643725802,0.7258681480228484,1.2291671942613505,1.3417993440008456,1.485081132919861,1.7601585357456848,2.9542404467603642,3.0]
-dom = ∪(Interval,(ccr+(3-ccr[end-1])/2)[1:2:end-1],(ccr+(3-ccr[end-1])/2)[2:2:end])
+dom = ∪(Interval,[-2.,1.],[-1.,2.])
 sp = Space(dom)
 cwsp,cwsp2 = CauchyWeight(sp⊗sp,0),CauchyWeight(sp⊗sp,2)
 ∂ui∂nΓ,⨍ = Fun(t->-im*k*d[2]*ui(real(t),imag(t)),sp),DefiniteLineIntegral(PiecewiseSpace(map(d->JacobiWeight(.5,.5,Ultraspherical{1}(d)),dom.domains)))#DefiniteLineIntegral(dom)
@@ -37,4 +36,4 @@ cwsp,cwsp2 = CauchyWeight(sp⊗sp,0),CauchyWeight(sp⊗sp,2)
 @time u = ⨍[G]\-∂ui∂nΓ
 println("The length of u is: ",length(u))
 us(x,y) = linesum(g4,u,complex(x,y))+logkernel(g5,u,complex(x,y))+π*real(cauchy(g6,real(u),complex(x,y)))+π*im*real(cauchy(g6,imag(u),complex(x,y)))
-dom += 0im
+#dom += 0im

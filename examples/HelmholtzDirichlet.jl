@@ -4,7 +4,7 @@
 # u^i = e^{im k x⋅d},
 # u = u^i + u^s.
 # The normal derivative ∂u/∂n of the entire wave is calculated on the sound-soft boundaries.
-# The scattered wave is calculated by convolving ∂u/∂n with the fundamental solution.
+# The scattered wave is calculated by convolving [∂u/∂n] with the fundamental solution.
 # Then, the total wave is obtained by summing the incident and the scattered waves.
 
 using ApproxFun,SIE

@@ -19,7 +19,7 @@ function electricfield(N,r)
     cwsp = CauchyWeight(sp⊗sp,0)
     uiΓ,⨍ = Fun(t->ui(real(t),imag(t))+0im,sp),DefiniteLineIntegral(dom)
 
-    G = GreensFun(g1,cwsp)
+    G = GreensFun(g1,cwsp;method=:Cholesky)
 
     ∂u∂n = ⨍[G]\uiΓ
 

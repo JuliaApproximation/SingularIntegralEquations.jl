@@ -16,25 +16,27 @@ using ApproxFun, SIE
 
 # Acoustic Scattering
 
-[Scattering.jl](https://github.com/ApproxFun/SIE.jl/blob/master/examples/Scattering.jl) and [ScatteringNeumann.jl](https://github.com/ApproxFun/SIE.jl/blob/master/examples/ScatteringNeumann.jl) calculate the solution to the Helmholtz equation with Dirichlet and Neumann boundary conditions. The essential lines of code are:
+[HelmholtzDirichlet.jl](https://github.com/ApproxFun/SIE.jl/blob/master/examples/HelmholtzDirichlet.jl) and [HelmholtzNeumann.jl](https://github.com/ApproxFun/SIE.jl/blob/master/examples/HelmholtzNeumann.jl) calculate the solution to the Helmholtz equation with Dirichlet and Neumann boundary conditions. The essential lines of code are:
 
 ```julia
 k = 50 # Set wavenumber and fundamental solution for Helmholtz equation
 g1(x,y) = -besselj0(k*abs(y-x))/2
 g2(x,y) = x == y ? -(log(k/2)+γ)/2/π + im/4 : im/4*hankelh1(0,k*abs(y-x)) - g1(x,y).*logabs(y-x)/π
 
-ui(x,y) = exp(im*k*(x-y)/sqrt(2)) # Incident plane wave at 45°
+ui(x,y) = exp(im*k*(x-y)/sqrt(2))    # Incident plane wave at 45°
 
-dom = Interval() # Set the domain
-sp = Space(dom) # Canonical space on the domain
-⨍ = DefiniteLineIntegral(dom) # Line integration functional
+dom = Interval()                     # Set the domain
+sp = Space(dom)                      # Canonical space on the domain
+⨍ = DefiniteLineIntegral(dom)        # Line integration functional
 uiΓ = Fun(t->ui(real(t),imag(t)),sp) # Incident wave on Γ
 
-G = GreensFun(g1,CauchyWeight(sp⊗sp,0)) + GreensFun(g2,sp⊗sp) # Instantiate the fundamental solution
+# Instantiate the fundamental solution
+G = GreensFun(g1,CauchyWeight(sp⊗sp,0)) + GreensFun(g2,sp⊗sp)
 
-∂u∂n = ⨍[G]\uiΓ # Solve for the density
+∂u∂n = ⨍[G]\uiΓ                      # Solve for the density
 
-us(x,y) = -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y)) # Represent the scattered field
+# Represent the scattered field
+us(x,y) = -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y))
 ```
 
 ![Helmholtz Scattering](https://github.com/ApproxFun/SIE.jl/raw/master/images/Helmholtz.gif)
@@ -54,19 +56,21 @@ ui(x,y) = logabs(complex(x,y)-2)     # Single source at (2,0) of strength 2π
 N,r = 10,1e-1
 cr = exp(im*2π*[0:N-1]/N)
 crl,crr = (1-2im*r)cr,(1+2im*r)cr
-dom = ∪(Interval,crl,crr) # Set the shielding domain
+dom = ∪(Interval,crl,crr)            # Set the shielding domain
 
 sp = Space(dom)                      # Canonical space on the domain
 ⨍ = DefiniteLineIntegral(dom)        # Line integration functional
 uiΓ = Fun(t->ui(real(t),imag(t)),sp) # Action of source on shields
 
-G = GreensFun((x,y)->1/2,CauchyWeight(sp⊗sp,0)) # Instantiate the fundamental solution
+# Instantiate the fundamental solution
+G = GreensFun((x,y)->1/2,CauchyWeight(sp⊗sp,0))
 
 # The first column augments the system for global unknown constant charge φ0
 # The first row ensure constant charge φ0 on all plates
-φ0,∂u∂n=vec([0 ⨍;1 ⨍[G]]\Any[0.,uiΓ]) # Solve for the density
+φ0,∂u∂n=vec([0 ⨍;1 ⨍[G]]\Any[0.,uiΓ])   # Solve for the density
 
-us(x,y) = -logkernel(∂u∂n,complex(x,y))/2 # Represent the scattered field
+# Represent the scattered field
+us(x,y) = -logkernel(∂u∂n,complex(x,y))/2
 ```
 
 ![Faraday Cage](https://github.com/ApproxFun/SIE.jl/raw/master/images/FaradayCage.png)

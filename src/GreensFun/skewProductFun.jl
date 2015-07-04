@@ -97,9 +97,6 @@ end
 
 skewpoints(d::TensorSpace,n,m;kwds...) = skewpoints(d,n,m,1;kwds...),skewpoints(d,n,m,2;kwds...)
 
-#skewpoints(d::TensorSpace{(Chebyshev,Chebyshev)},n,m;kindx::Int=1,kindy::Int=2)=skewpoints(d,n,m,1;kindx=kindx,kindy=kindy),skewpoints(d,n,m,2;kindx=kindx,kindy=kindy)
-#skewpoints(d::TensorSpace{(Laurent,Laurent)},n,m)=skewpoints(d,n,m,1),skewpoints(d,n,m,2)
-
 function skewpoints(d::TensorSpace{(Chebyshev,Chebyshev)},n,m,k;kindx::Int=1,kindy::Int=2)
     ptsx=fromcanonical(d[1],chebyshevpoints(n;kind=kindx))
     ptsy=fromcanonical(d[2],chebyshevpoints(m;kind=kindy))
