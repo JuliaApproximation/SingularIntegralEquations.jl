@@ -49,22 +49,22 @@ us(x,y) = -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y))
 [Laplace.jl](https://github.com/ApproxFun/SIE.jl/blob/master/examples/Laplace.jl) calculates the solution to the Laplace equation with the origin shielded by infinitesimal plates centred at the Nth roots of unity. The essential lines of code are:
 
 ```julia
-ui(x,y) = logabs(complex(x,y)-2) # Single source at (2,0) of strength 2π
+ui(x,y) = logabs(complex(x,y)-2)     # Single source at (2,0) of strength 2π
 
 N,r = 10,1e-1
 cr = exp(im*2π*[0:N-1]/N)
 crl,crr = (1-2im*r)cr,(1+2im*r)cr
 dom = ∪(Interval,crl,crr) # Set the shielding domain
 
-sp = Space(dom) # Canonical space on the domain
-⨍ = DefiniteLineIntegral(dom) # Line integration functional
+sp = Space(dom)                      # Canonical space on the domain
+⨍ = DefiniteLineIntegral(dom)        # Line integration functional
 uiΓ = Fun(t->ui(real(t),imag(t)),sp) # Action of source on shields
 
 G = GreensFun((x,y)->1/2,CauchyWeight(sp⊗sp,0)) # Instantiate the fundamental solution
 
-PL = ApproxFun.PrependColumnsOperator([1 ApproxFun.interlace(⨍[G])]) # Augment system for unknown constant charge
-PF=ApproxFun.PrependColumnsFunctional(0,⨍) # Ensure constant charge on all plates
-φ0,∂u∂n=vec([PF;PL]\Any[0.,uiΓ]) # Solve for the density
+# The first column augments the system for global unknown constant charge φ0
+# The first row ensure constant charge φ0 on all plates
+φ0,∂u∂n=vec([0 ⨍;1 ⨍[G]]\Any[0.,uiΓ]) # Solve for the density
 
 us(x,y) = -logkernel(∂u∂n,complex(x,y))/2 # Represent the scattered field
 ```
