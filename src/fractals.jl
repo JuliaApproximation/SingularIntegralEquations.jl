@@ -29,7 +29,6 @@ function cantor{T,V}(d::Circle{T,V},n::Int,α::Number)
         return d
     else
         C = cantor(Interval{T}(),n,α)
-        twon = length(C)
-        return ∪(map(d->Arc(c,r,((getfield(d,:a)+1/2α)π,(getfield(d,:b)+1/2α)π)),C[1:div(twon,2)])) ∪ ∪(map(d->Arc(c,r,((getfield(d,:a)-1/2α)π,(getfield(d,:b)-1/2α)π)),C[div(twon,2)+1:twon]))
+        return ∪(map(d->Arc(c,r,(d.a+1/2α)π,(d.b+1/2α)π),C[1:div(length(C),2)])) ∪ ∪(map(d->Arc(c,r,(d.a-1/2α)π,(d.b-1/2α)π),C[div(length(C),2)+1:length(C)]))
     end
 end
