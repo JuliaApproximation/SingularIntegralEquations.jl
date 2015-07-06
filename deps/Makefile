@@ -1,7 +1,16 @@
-all: liblhelmfs.dylib
+ifeq ($(OS), Windows_NT)
+	SLIB = dll
+else
+	UNAME := $(shell uname)
+	ifeq ($(UNAME), Darwin)		
+		SLIB = dylib
+	else
+		SLIB = so
+	endif
+endif
 
-liblhelmfs.dylib: fundsol.o
-	gcc-4.9 -shared -o liblhelmfs.dylib fundsol.o -lm -lgomp
+OBJ = fundsol.c
+CFLAGS = -shared -fPIC -fopenmp -O3 -std=c99 -lm -lgomp
 
-.c.o:
-	gcc-4.9 -fPIC -fopenmp -O3 -std=c99 -c $<
+all:
+	gcc-4.9 $(CFLAGS) $(OBJ) -o liblhelmfs.$(SLIB)
