@@ -10,7 +10,7 @@ Requires ApproxFun master:
 Pkg.add("ApproxFun")
 Pkg.checkout("ApproxFun","development")
 Pkg.clone("https://github.com/ApproxFun/SIE.jl.git")
-Pkg.build("SIE")
+Pkg.build("SIE")  # Only required for gravity Helmholtz equation
 using ApproxFun, SIE
 ```
 
