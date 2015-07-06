@@ -1,4 +1,4 @@
-# SIE.jl
+# SingularIntegralEquations.jl
 
 An experimental Julia package for solving singular integral equations.
 
@@ -9,14 +9,14 @@ Requires ApproxFun master:
 ```julia
 Pkg.add("ApproxFun")
 Pkg.checkout("ApproxFun","development")
-Pkg.clone("https://github.com/ApproxFun/SIE.jl.git")
-Pkg.build("SIE")  # Only required for gravity Helmholtz equation
-using ApproxFun, SIE
+Pkg.clone("https://github.com/ApproxFun/SingularIntegralEquations.jl.git")
+Pkg.build("SingularIntegralEquations")  # Only required for gravity Helmholtz equation
+using ApproxFun, SingularIntegralEquations
 ```
 
 # Acoustic Scattering
 
-[HelmholtzDirichlet.jl](https://github.com/ApproxFun/SIE.jl/blob/master/examples/HelmholtzDirichlet.jl) and [HelmholtzNeumann.jl](https://github.com/ApproxFun/SIE.jl/blob/master/examples/HelmholtzNeumann.jl) calculate the solution to the Helmholtz equation with Dirichlet and Neumann boundary conditions. The essential lines of code are:
+[HelmholtzDirichlet.jl](https://github.com/ApproxFun/SingularIntegralEquations.jl/blob/master/examples/HelmholtzDirichlet.jl) and [HelmholtzNeumann.jl](https://github.com/ApproxFun/SingularIntegralEquations.jl/blob/master/examples/HelmholtzNeumann.jl) calculate the solution to the Helmholtz equation with Dirichlet and Neumann boundary conditions. The essential lines of code are:
 
 ```julia
 k = 50 # Set wavenumber and fundamental solution for Helmholtz equation
@@ -43,16 +43,16 @@ norm(⨍[G]*∂u∂n-uiΓ)
 us(x,y) = -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y))
 ```
 
-![Helmholtz Scattering](https://github.com/ApproxFun/SIE.jl/raw/master/images/Helmholtz.gif)
+![Helmholtz Scattering](https://github.com/ApproxFun/SingularIntegralEquations.jl/raw/master/images/Helmholtz.gif)
 
-[GravityHelmholtz.jl](https://github.com/ApproxFun/SIE.jl/blob/master/examples/GravityHelmholtz.jl) calculates the solution to the gravity Helmholtz equation with Dirichlet boundary conditions.
+[GravityHelmholtz.jl](https://github.com/ApproxFun/SingularIntegralEquations.jl/blob/master/examples/GravityHelmholtz.jl) calculates the solution to the gravity Helmholtz equation with Dirichlet boundary conditions.
 
-![Gravity Helmholtz Scattering](https://github.com/ApproxFun/SIE.jl/raw/master/images/GravityHelmholtz.gif)
+![Gravity Helmholtz Scattering](https://github.com/ApproxFun/SingularIntegralEquations.jl/raw/master/images/GravityHelmholtz.gif)
 
 
 # The Faraday Cage
 
-[Laplace.jl](https://github.com/ApproxFun/SIE.jl/blob/master/examples/Laplace.jl) calculates the solution to the Laplace equation with the origin shielded by infinitesimal plates centred at the Nth roots of unity. The essential lines of code are:
+[Laplace.jl](https://github.com/ApproxFun/SingularIntegralEquations.jl/blob/master/examples/Laplace.jl) calculates the solution to the Laplace equation with the origin shielded by infinitesimal plates centred at the Nth roots of unity. The essential lines of code are:
 
 ```julia
 ui(x,y) = logabs(complex(x,y)-2)     # Single source at (2,0) of strength 2π
@@ -77,12 +77,12 @@ G = GreensFun((x,y)->1/2,CauchyWeight(sp⊗sp,0))
 us(x,y) = -logkernel(∂u∂n,complex(x,y))/2
 ```
 
-![Faraday Cage](https://github.com/ApproxFun/SIE.jl/raw/master/images/FaradayCage.png)
+![Faraday Cage](https://github.com/ApproxFun/SingularIntegralEquations.jl/raw/master/images/FaradayCage.png)
 
 
 # Riemann–Hilbert Problems
 
-SIE has support for Riemann–Hilbert problems and Wiener–Hopf factorizations.  [Wiener-Hopf.jl](https://github.com/ApproxFun/SIE.jl/blob/master/examples/Wiener-Hopf.jl) uses the Winer–Hopf factorization to calculate the UL decomposition of a scalar and a block Toeplitz operator.  The essential lines of code in the matrix case are:
+SingularIntegralEquations.jl has support for Riemann–Hilbert problems and Wiener–Hopf factorizations.  [Wiener-Hopf.jl](https://github.com/ApproxFun/SingularIntegralEquations.jl/blob/master/examples/Wiener-Hopf.jl) uses the Winer–Hopf factorization to calculate the UL decomposition of a scalar and a block Toeplitz operator.  The essential lines of code in the matrix case are:
 
 ```julia
 G=Fun(z->[-1 -3; -3 -1]/z +

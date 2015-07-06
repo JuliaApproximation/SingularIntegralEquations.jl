@@ -7,7 +7,7 @@
 # The scattered wave is calculated by convolving [∂u/∂n] with the fundamental solution.
 # Then, the total wave is obtained by summing the incident and the scattered waves.
 
-using ApproxFun,SIE
+using ApproxFun, SingularIntegralEquations
 include("Scatteraux.jl")
 
 k = 50.

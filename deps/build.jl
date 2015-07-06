@@ -1,4 +1,4 @@
 p = pwd()
-cd(Pkg.dir("SIE/deps/"))
+cd(Pkg.dir("SingularIntegralEquations/deps/"))
 run(`make`)
 cd(p)

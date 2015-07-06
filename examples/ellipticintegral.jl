@@ -6,7 +6,7 @@
 # cauchyintegral is an integral of the Cauchy transform
 
 
-using ApproxFun, SIE
+using ApproxFun, SingularIntegralEquations
 
 function ellipticintegral(a)
     xp=Fun(identity,[a,1.])
