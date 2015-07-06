@@ -18,7 +18,7 @@
 # derivs allows for calculation of partial derivatives as well.
 #
 
-const lhelmfspath = joinpath(Pkg.dir("SIE"), "deps", "liblhelmfs")
+const lhelmfspath = joinpath(Pkg.dir("SingularIntegralEquations"), "deps", "liblhelmfs")
 
 export lhelmfs
 

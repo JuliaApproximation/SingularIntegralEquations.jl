@@ -1,4 +1,4 @@
-module SIE
+module SingularIntegralEquations
     using Base, ApproxFun
 
 export cauchy, cauchyintegral, stieltjes, logkernel,stieltjesintegral

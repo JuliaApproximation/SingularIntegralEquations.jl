@@ -2,7 +2,7 @@
 # Integral equations with hypersingular kernels -- theory and applications to fracture mechanics,
 # Int. J. Eng. Sci., 41:683--720, 2003.
 
-using ApproxFun,SIE
+using ApproxFun, SingularIntegralEquations
 
 
 x = Fun(identity)

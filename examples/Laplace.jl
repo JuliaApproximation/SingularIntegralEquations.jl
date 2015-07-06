@@ -7,7 +7,7 @@
 # The reflected solution is calculated by convolving ∂u/∂n with the fundamental solution.
 # Then, the total solution is obtained by summing the incident and the reflected solutions.
 
-using ApproxFun,SIE
+using ApproxFun, SingularIntegralEquations
 
 z_s = 2.0
 ui(x,y) = logabs(complex(x,y)-z_s)

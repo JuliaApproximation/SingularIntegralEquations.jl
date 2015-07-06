@@ -1,6 +1,6 @@
 # This file calculates the field strength at the center of a Faraday cage. Warning, the run-time is long.
 # See /Laplace.jl for a more interactive version.
-using ApproxFun,SIE
+using ApproxFun, SingularIntegralEquations
 
 z_0 = 2.0
 ui(x,y) = logabs(complex(x,y)-z_0)

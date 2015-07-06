@@ -1,4 +1,4 @@
-using ApproxFun, SIE, CUDA
+using ApproxFun, SingularIntegralEquations, CUDA
 
 # select a CUDA device
 dev = CuDevice(0)

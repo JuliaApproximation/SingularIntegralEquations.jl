@@ -27,7 +27,7 @@
 
 
 
-using ApproxFun, SIE
+using ApproxFun, SingularIntegralEquations
 
 
 # Scalar case

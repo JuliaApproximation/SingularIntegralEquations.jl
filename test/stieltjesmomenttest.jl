@@ -1,5 +1,5 @@
-using ApproxFun,SIE,Base.Test
-    import SIE.stieltjesmoment
+using ApproxFun,SingularIntegralEquations,Base.Test
+    import SingularIntegralEquations.stieltjesmoment
 
 z=1.+1.im
 x=Fun()
