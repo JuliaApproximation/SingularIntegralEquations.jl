@@ -27,19 +27,22 @@ immutable GreensFun{K<:BivariateFun} <: BivariateFun
 end
 GreensFun{K<:BivariateFun}(kernels::Vector{K}) = GreensFun{eltype(kernels)}(kernels)
 
-GreensFun{K<:KernelFun}(F::K) = GreensFun(K[F])
+GreensFun{K<:BivariateFun}(F::K) = GreensFun(K[F])
 
 Base.length(G::GreensFun) = length(G.kernels)
 Base.transpose(G::GreensFun) = mapreduce(transpose,+,G.kernels)
 Base.convert(::Type{GreensFun},F::KernelFun) = GreensFun(F)
-
-Base.rank{L<:LowRankFun}(G::GreensFun{L}) = length(G) == 1 ? rank(G.kernels[1]) : tuple(map(rank,G.kernels)...)
-Base.rank{K<:BivariateFun}(G::GreensFun{K}) = error("Not all kernels are low rank approximations.")
+Base.eltype(G::GreensFun) = mapreduce(eltype,promote_type,G.kernels)
+Base.rank(G::GreensFun) = error("Not all kernels are low rank approximations.")
 
 domain(G::GreensFun) = domain(first(G.kernels))
 evaluate(G::GreensFun,x,y) = mapreduce(f->evaluate(f,x,y),+,G.kernels)
 kernels(B::BivariateFun) = B
 kernels(G::GreensFun) = G.kernels
+
+Base.rank{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(rank,+,G.kernels)
+allrows{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(x->x.A,vcat,G.kernels)
+allcolumns{L<:LowRankFun}(G::GreensFun{L}) = transpose(mapreduce(x->x.B,vcat,G.kernels))
 
 Base.getindex(⨍::Operator,G::GreensFun) = mapreduce(f->getindex(⨍,f),+,G.kernels)
 
@@ -188,7 +191,7 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::Ab
             G[i,j] = transpose(G[j,i])
         end
     end
-    G
+    mapreduce(typeof,promote_type,G)[G[i,j] for i=1:N,j=1:N]
 end
 
 function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,g::Function,ss::AbstractProductSpace{(PWS1,PWS2)};method::Symbol=:unsplit,tolerance::Symbol=:absolute,kwds...)
@@ -211,5 +214,5 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,g::Fun
             G[i,j] = transpose(G[j,i])
         end
     end
-    G
+    mapreduce(typeof,promote_type,G)[G[i,j] for i=1:N,j=1:N]
 end
