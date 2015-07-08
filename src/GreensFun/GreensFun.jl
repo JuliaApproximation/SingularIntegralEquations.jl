@@ -9,8 +9,6 @@ include("convolutionProductFun.jl")
 
 export GreensFun
 
-typealias KernelFun Union(ProductFun,LowRankFun)
-
 # In GreensFun, K must be <: BivariateFun, since a kernel
 # could consist of a Vector of ProductFun's and LowRankFun's.
 # If there are GreensFun's in the Vector, then we recurse.
@@ -31,7 +29,7 @@ GreensFun{K<:BivariateFun}(F::K) = GreensFun(K[F])
 
 Base.length(G::GreensFun) = length(G.kernels)
 Base.transpose(G::GreensFun) = mapreduce(transpose,+,G.kernels)
-Base.convert(::Type{GreensFun},F::KernelFun) = GreensFun(F)
+Base.convert(::Type{GreensFun},F::Union(ProductFun,LowRankFun)) = GreensFun(F)
 Base.eltype(G::GreensFun) = mapreduce(eltype,promote_type,G.kernels)
 Base.rank(G::GreensFun) = error("Not all kernels are low rank approximations.")
 
@@ -41,8 +39,8 @@ kernels(B::BivariateFun) = B
 kernels(G::GreensFun) = G.kernels
 
 Base.rank{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(rank,+,G.kernels)
-allrows{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(x->x.A,vcat,G.kernels)
-allcolumns{L<:LowRankFun}(G::GreensFun{L}) = transpose(mapreduce(x->x.B,vcat,G.kernels))
+slices{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(x->x.A,vcat,G.kernels),mapreduce(x->conj(x.B),vcat,G.kernels)
+slices{L<:LowRankFun}(G::GreensFun{L},k::Int) = slices(G)[k]
 
 Base.getindex(⨍::Operator,G::GreensFun) = mapreduce(f->getindex(⨍,f),+,G.kernels)
 
@@ -61,14 +59,28 @@ function Base.getindex{F<:BivariateFun}(⨍::DefiniteLineIntegral,B::Matrix{F})
     interlace(mapreduce(typeof,promote_type,ret)[ret[j,i] for j=1:n,i=1:m])
 end
 
-# Algebra with KernelFun's
+# Algebra with BivariateFun's
 
 +(F::GreensFun,G::GreensFun) = GreensFun([F.kernels,G.kernels])
 -(F::GreensFun,G::GreensFun) = GreensFun([F.kernels,-G.kernels])
-+(G::GreensFun,K::KernelFun) = GreensFun([G.kernels,K])
--(G::GreensFun,K::KernelFun) = GreensFun([G.kernels,-K])
-+(K::KernelFun,G::GreensFun) = GreensFun([K,G.kernels])
--(K::KernelFun,G::GreensFun) = GreensFun([K,-G.kernels])
++(G::GreensFun,B::BivariateFun) = GreensFun([G.kernels,kernels(B)])
+-(G::GreensFun,B::BivariateFun) = GreensFun([G.kernels,-kernels(B)])
++(B::BivariateFun,G::GreensFun) = GreensFun([kernels(B),G.kernels])
+-(B::BivariateFun,G::GreensFun) = GreensFun([kernels(B),-G.kernels])
+
+# Custom operations on Arrays required to infer type of resulting Array{GreensFun}
+
+for op in (:+,:-)
+    @eval begin
+        function $op{F<:BivariateFun,G<:BivariateFun}(A::Array{GreensFun{F}},B::Array{GreensFun{G}})
+            C = similar(A, GreensFun{promote_type(F,G)}, promote_shape(size(A),size(B)))
+            for i=1:length(A)
+                @inbounds C[i] = $op(A[i],B[i])
+            end
+            return C
+        end
+    end
+end
 
 ## TODO: Get ProductFun & LowRankFun in different CauchyWeight spaces to promote to GreensFun.
 #=
