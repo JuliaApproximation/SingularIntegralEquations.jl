@@ -43,6 +43,8 @@ norm(⨍[G]*∂u∂n-uiΓ)
 us(x,y) = -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y))
 ```
 
+Here is an example with 10 sources at the roots of unity scaled by 2 scattered by multiple disjoint intervals and circles.
+
 ![Helmholtz Scattering](https://github.com/ApproxFun/SingularIntegralEquations.jl/raw/master/images/Helmholtz.gif)
 
 [GravityHelmholtz.jl](https://github.com/ApproxFun/SingularIntegralEquations.jl/blob/master/examples/GravityHelmholtz.jl) calculates the solution to the gravity Helmholtz equation with Dirichlet boundary conditions.

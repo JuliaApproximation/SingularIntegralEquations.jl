@@ -32,13 +32,13 @@ function makegif(x,y,u,L;plotfunction=plot,seconds=1,cmap="seismic",vert=1)
         xlabel("\$x\$");ylabel("\$y\$")
         savefig(dr * "/" * lpad(k,int(ceil(log10(MLen))),0) * ".png";dpi=150,bbox_inches="tight")
     end
-    # If it fails, try: brew install imagemagick
+    # Requires: brew install imagemagick
     run(`convert -delay 6 -loop 0 $dr/*.png $dr/scattering.gif`)
     run(`open $dr/scattering.gif`)
 end
 
 #=
-# This is for the landing Helmholtz gif.
+# This is for the landing Helmholtz gif. Solve time on the order of ~70 seconds.
 N = 10
 r = 5e-2
 cr = exp(im*2π*[-0.5:N-1.5]/N)
@@ -57,7 +57,7 @@ end
 =#
 
 #=
-# This is the random screen in Figure 6.3 of Slevinsky & Olver 2015
+# This is the random screen in Figure 6.3 of Slevinsky & Olver 2015. Solve time on the order of ~70 seconds.
 ccr = [-3.0,-2.4710248798864565,-1.7779535080542614,-0.999257770563108,-0.9160576190726175,-0.5056650643725802,0.7258681480228484,1.2291671942613505,1.3417993440008456,1.485081132919861,1.7601585357456848,2.9542404467603642,3.0]
 dom = ∪(Interval,(ccr+(3-ccr[end-1])/2)[1:2:end-1],(ccr+(3-ccr[end-1])/2)[2:2:end])
 =#
