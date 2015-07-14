@@ -17,7 +17,11 @@ function hilbert(u::Fun{JacobiWeight{Chebyshev}})
         # Corollary 5.11 of Olver&Trogdon
         uf = Fun(u.coefficients,d)
         cfs= coefficients(uf,ChebyshevDirichlet{1,1})
-        Fun([cfs[2];2cfs[3:end]],d)
+        if length(cfs)≥2
+            Fun([cfs[2];2cfs[3:end]],d)
+        else
+            Fun(zeros(eltype(cfs),1),d)
+        end
     else
         error("hilbert only implemented for Chebyshev weights")
     end
