@@ -1,5 +1,5 @@
 module SingularIntegralEquations
-    using Base, ApproxFun
+    using Base, ApproxFun, Compat
 
 export cauchy, cauchyintegral, stieltjes, logkernel,stieltjesintegral
 
@@ -35,6 +35,8 @@ stieltjes(f,z)=-2π*im*cauchy(f,z)
 cauchyintegral(u,z)=im/(2π)*stieltjesintegral(u,z)
 
 
+include("LinearAlgebra/LinearAlgebra.jl")
+
 include("Hilbert.jl")
 include("OffHilbert.jl")
 
@@ -48,7 +50,7 @@ include("singfuncauchy.jl")
 
 include("vectorcauchy.jl")
 
-include("./GreensFun/GreensFun.jl")
+include("GreensFun/GreensFun.jl")
 
 include("periodicline.jl")
 include("arc.jl")

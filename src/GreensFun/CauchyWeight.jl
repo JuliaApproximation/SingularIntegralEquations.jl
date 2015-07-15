@@ -12,7 +12,7 @@ order{O}(C::CauchyWeight{O}) = O
 domain(C::CauchyWeight)=domain(C.space)
 Base.getindex(C::CauchyWeight,k::Integer)=C.space[k]
 ApproxFun.columnspace(C::CauchyWeight,::)=C[1]
-Base.getindex{O,PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(C::CauchyWeight{O,(PWS1,PWS2)},i::Integer,j::Integer)=CauchyWeight(C[1][i]⊗C[2][j],O)
+Base.getindex{O,PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(C::CauchyWeight{O,(PWS1,PWS2)},i,j)=CauchyWeight(C.space[i,j],O)
 Base.transpose{O}(C::CauchyWeight{O}) = CauchyWeight(transpose(C.space),O)
 
 cauchyweight(O,x,y) = O == 0 ? logabs(y-x)/π : (y-x).^(-O)/π
