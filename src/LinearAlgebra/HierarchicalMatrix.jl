@@ -6,8 +6,7 @@
 #   x x / \
 #   \ / x x
 #   / \ x x ]
-# ordering the data from the main diagonal outward
-# starting with the lower block
+# where the diagonal blocks are of the same type.
 ##
 
 export HierarchicalMatrix
