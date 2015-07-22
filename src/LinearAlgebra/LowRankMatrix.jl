@@ -59,3 +59,4 @@ Base.getindex{T}(L::LowRankMatrix{T},ir::Range,jr::Range) = T[L[i,j] for i=ir,j=
 Base.full(L::LowRankMatrix)=L[1:L.m,1:L.n]
 
 *{S,T}(L::LowRankMatrix{S},v::Vector{T}) = mapreduce(k->L.U[:,k]*dotu(L.V[:,k],v),+,1:L.r)
+\{S,T}(L::LowRankMatrix{S},b::VecOrMat{T}) = full(L)\b
