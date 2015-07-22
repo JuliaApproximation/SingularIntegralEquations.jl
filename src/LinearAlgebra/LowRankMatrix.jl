@@ -13,6 +13,7 @@ type LowRankMatrix{T} <: AbstractSparseMatrix{T,Int}
     m::Int
     n::Int
     r::Int
+
     function LowRankMatrix(U::Matrix{T},V::Matrix{T},m::Int,n::Int,r::Int)
         mu,ru = size(U)
         nv,rv = size(V)
@@ -46,10 +47,9 @@ end
 
 Base.eltype{T}(::LowRankMatrix{T})=T
 Base.convert{T}(::Type{LowRankMatrix{T}},M::LowRankMatrix) = LowRankMatrix{T}(convert(Matrix{T},M.U),convert(Matrix{T},M.V))
-
+Base.convert{T}(::Type{Matrix{T}},M::LowRankMatrix) = convert(Matrix{T},full(M))
 Base.promote_rule{T,V}(::Type{LowRankMatrix{T}},::Type{LowRankMatrix{V}})=LowRankMatrix{promote_type(T,V)}
 
-Base.size(L::LowRankMatrix,k) = k==1? L.m : k == 2? L.n : Nothing
 Base.size(L::LowRankMatrix) = L.m,L.n
 Base.rank(L::LowRankMatrix) = L.r
 Base.getindex(L::LowRankMatrix,i::Int,j::Int) = mapreduce(k->L.U[i,k]*L.V[j,k],+,1:L.r)
