@@ -36,9 +36,10 @@ end
 function LowRankMatrix{T}(A::Matrix{T})
     U,Σ,V=svd(A)
     r=max(1,count(s->s>10eps(T),Σ))
+    sqrtΣ = sqrt(Σ)
     for k=1:r
-        U[:,k] .*= sqrt(Σ[k])
-        V[:,k] = conj(V[:,k]).*sqrt(Σ[k])
+        U[:,k] .*= sqrtΣ[k]
+        V[:,k] = conj(V[:,k]).*sqrtΣ[k]
     end
     LowRankMatrix(U[:,1:r],V[:,1:r])
 end
@@ -46,17 +47,21 @@ end
 
 
 Base.eltype{T}(::LowRankMatrix{T})=T
-Base.convert{T}(::Type{LowRankMatrix{T}},M::LowRankMatrix) = LowRankMatrix{T}(convert(Matrix{T},M.U),convert(Matrix{T},M.V))
-Base.convert{T}(::Type{Matrix{T}},M::LowRankMatrix) = convert(Matrix{T},full(M))
+Base.convert{T}(::Type{LowRankMatrix{T}},L::LowRankMatrix) = LowRankMatrix{T}(convert(Matrix{T},L.U),convert(Matrix{T},L.V))
+Base.convert{T}(::Type{Matrix{T}},L::LowRankMatrix) = convert(Matrix{T},full(L))
 Base.promote_rule{T,V}(::Type{LowRankMatrix{T}},::Type{LowRankMatrix{V}})=LowRankMatrix{promote_type(T,V)}
 
 Base.size(L::LowRankMatrix) = L.m,L.n
 Base.rank(L::LowRankMatrix) = L.r
+Base.transpose(L::LowRankMatrix) = LowRankMatrix(L.V,L.U)
+Base.ctranspose{T<:Real}(L::LowRankMatrix{T}) = LowRankMatrix(L.V,L.U)
+Base.ctranspose(L::LowRankMatrix) = LowRankMatrix(conj(L.V),conj(L.U))
+
 Base.getindex(L::LowRankMatrix,i::Int,j::Int) = mapreduce(k->L.U[i,k]*L.V[j,k],+,1:L.r)
-Base.getindex{T}(L::LowRankMatrix{T},i::Int,jr::Range) = transpose(T[L[i,j] for j=jr])
+Base.getindex{T}(L::LowRankMatrix{T},i::Int,jr::Range) = T[L[i,j] for j=jr].'#'
 Base.getindex{T}(L::LowRankMatrix{T},ir::Range,j::Int) = T[L[i,j] for i=ir]
 Base.getindex{T}(L::LowRankMatrix{T},ir::Range,jr::Range) = T[L[i,j] for i=ir,j=jr]
 Base.full(L::LowRankMatrix)=L[1:L.m,1:L.n]
 
-*{S,T}(L::LowRankMatrix{S},v::Vector{T}) = mapreduce(k->L.U[:,k]*dotu(L.V[:,k],v),+,1:L.r)
-\{S,T}(L::LowRankMatrix{S},b::VecOrMat{T}) = full(L)\b
+*{S,T}(L::LowRankMatrix{S},v::AbstractVecOrMat{T}) = L.U*(L.V.'*v)#'
+\{S,T}(L::LowRankMatrix{S},b::AbstractVecOrMat{T}) = full(L)\b
