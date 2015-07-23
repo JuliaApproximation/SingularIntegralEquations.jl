@@ -148,6 +148,9 @@ end
 function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{(PWS1,PWS2)};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...)
     pws1,pws2 = ss[1],ss[2]
     M,N = length(pws1),length(pws2)
+    if method == :hierarchical
+        return hierarchicalGreensFun(f,ss;tolerance=tolerance,kwds...)
+    end
     @assert M == N
     G = Array(GreensFun,N,N)
     if method == :standard
@@ -227,4 +230,35 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,g::Fun
         end
     end
     mapreduce(typeof,promote_type,G)[G[i,j] for i=1:N,j=1:N]
+end
+
+function hierarchicalGreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{(PWS1,PWS2)};tolerance::Symbol=:absolute,kwds...)
+    pws1,pws2 = ss[1],ss[2]
+    M,N = length(pws1),length(pws2)
+    @assert M == N && ispow2(N)
+    G = Array(GreensFun,3*2^N-2)
+
+    if tolerance == :relative
+      for i=1:N
+        G[i,i] = GreensFun(f,ss[i,i];method=method,kwds...)
+        for j=i+1:N
+          G[i,j] = GreensFun(f,ss[i,j];method=:lowrank,kwds...)
+        end
+      end
+    elseif tolerance == :absolute
+      maxF = Array(Number,N)
+      for i=1:N
+        F,maxF[i] = LowRankFun(f,ss[i,i];method=method,retmax=true,kwds...)
+        G[i,i] = GreensFun(F)
+      end
+      for i=1:N
+        for j=i+1:N
+          G[i,j] = GreensFun(f,ss[i,j];method=:lowrank,tolerance=(tolerance,max(maxF[i],maxF[j])),kwds...)
+        end
+      end
+    end
+    for i=1:N,j=1:i-1
+      G[i,j] = transpose(G[j,i])
+    end
+    mapreduce(typeof,promote_type,G)[G[i] for i=1:N]
 end
