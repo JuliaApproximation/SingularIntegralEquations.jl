@@ -6,14 +6,19 @@
 #   x x / \
 #   \ / x x
 #   / \ x x ]
-# where the diagonal blocks are of the same type.
+# where the diagonal blocks are of one type, and
+# the off-diagonal blocks are of another type.
+#
 # To have simple recursive construction, we use the ordering:
-# [ 5   4
-#     ⋯      2
-#   3   6
-#          9   8
-#     1      ⋯
-#          7   10 ]
+# [ D₁   L₄
+#      ⋯      L₂
+#   L₃   D₂
+#          D₃   L₆
+#      L₁     ⋯
+#          L₅   D₄ ]
+# where it can be seen that the diagonal blocks are ordered along the diagonal,
+# and the off-diagonal blocks are ordered from bottom left, top right, then
+# followed recursively by top left and bottom right.
 ##
 
 export HierarchicalMatrix, partitionmatrix
