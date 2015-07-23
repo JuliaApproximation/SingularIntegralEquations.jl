@@ -1,4 +1,4 @@
-import ApproxFun: eps
+
 
 ##
 # Represent an m x n rank-r matrix
@@ -7,7 +7,7 @@ import ApproxFun: eps
 
 export LowRankMatrix
 
-type LowRankMatrix{T} <: AbstractSparseMatrix{T,Int}
+type LowRankMatrix{T} <: AbstractMatrix{T}
     U::Matrix{T} # m x r Matrix
     V::Matrix{T} # n x r Matrix
     m::Int
@@ -63,5 +63,5 @@ Base.getindex{T}(L::LowRankMatrix{T},ir::Range,j::Int) = T[L[i,j] for i=ir]
 Base.getindex{T}(L::LowRankMatrix{T},ir::Range,jr::Range) = T[L[i,j] for i=ir,j=jr]
 Base.full(L::LowRankMatrix)=L[1:L.m,1:L.n]
 
-*{S,T}(L::LowRankMatrix{S},v::AbstractVecOrMat{T}) = L.U*(L.V.'*v)#'
+*{S,T}(L::LowRankMatrix{S},b::AbstractVecOrMat{T}) = L.U*(L.V.'*b)#'
 \{S,T}(L::LowRankMatrix{S},b::AbstractVecOrMat{T}) = full(L)\b
