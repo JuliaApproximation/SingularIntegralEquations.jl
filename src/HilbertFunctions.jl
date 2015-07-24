@@ -33,13 +33,13 @@ function hilbertinverse(u::Fun)
         # no singularity
         # invert Corollary 5.7 of Olver&Trogdon
         cfs=coefficients(cfs[2:end],Ultraspherical{1},Chebyshev)
-        Fun(cfs,JacobiWeight(.5,.5,u.domain))
+        Fun(cfs,JacobiWeight(.5,.5,Chebyshev(domain(u))))
     else
         # no singularity
         # invert Corollary 5.11 of Olver&Trogdon
         cfs=[0.,cfs[1],.5*cfs[2:end]]
         cfs=coefficients(cfs,ChebyshevDirichlet{1,1},Chebyshev)
-        Fun(cfs,JacobiWeight(-.5,-.5,u.domain))
+        Fun(cfs,JacobiWeight(-.5,-.5,Chebyshev(domain(u))))
     end
 end
 
