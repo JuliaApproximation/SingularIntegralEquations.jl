@@ -16,16 +16,14 @@
 #          D₃   L₆
 #      L₁     ⋯
 #          L₅   D₄ ]
-# where it can be seen that the diagonal blocks are ordered along the diagonal,
-# and the off-diagonal blocks are ordered from bottom left, top right, then
-# followed recursively by top left and bottom right.
+# The diagonal blocks are ordered along the diagonal,
+# and the off-diagonal blocks are ordered from: bottom left,
+# top right, then followed recursively by top left and bottom right.
 ##
 
 export HierarchicalMatrix, partitionmatrix
 
-# TODO: how to extract the element-types of S and T into the Abstract supertype?
-
-type HierarchicalMatrix{S,T} <: AbstractMatrix{promote_type(S,T)}
+type HierarchicalMatrix{S,T} <: AbstractMatrix{Union(S,T)}
     diagonaldata::Union(@compat(Tuple{HierarchicalMatrix{S,T},HierarchicalMatrix{S,T}}),@compat(Tuple{S,S})) # n ≥ 2 ? Tuple of two on-diagonal HierarchicalMatrix{S,T} : Tuple of two on-diagonal S
     offdiagonaldata::@compat(Tuple{T,T}) # Tuple of two off-diagonal T
     n::Int # Power of hierarchy (i.e. 2^n)
@@ -46,8 +44,8 @@ end
 HierarchicalMatrix{S,T}(diagonaldata::Vector{S},offdiagonaldata::Vector{T},n::Int)=HierarchicalMatrix{S,T}(diagonaldata,offdiagonaldata,n)
 HierarchicalMatrix{S,T}(diagonaldata::Vector{S},offdiagonaldata::Vector{T})=HierarchicalMatrix(diagonaldata,offdiagonaldata,round(Int,log2(length(diagonaldata))))
 
-HierarchicalMatrix{S,T}(diagonaldata::Union(@compat(Tuple{HierarchicalMatrix{S,T},HierarchicalMatrix{S,T}}),@compat(Tuple{S,S})),offdiagonaldata::@compat(Tuple{T,T}),n::Int) = HierarchicalMatrix{S,T}(diagonaldata,offdiagonaldata,n)
-HierarchicalMatrix{S,T}(diagonaldata::Union(@compat(Tuple{HierarchicalMatrix{S,T},HierarchicalMatrix{S,T}}),@compat(Tuple{S,S})),offdiagonaldata::@compat(Tuple{T,T})) = HierarchicalMatrix(diagonaldata,offdiagonaldata,round(Int,log2(length(diagonaldata))))
+HierarchicalMatrix{S,T}(diagonaldata::@compat(Tuple{S,S}),offdiagonaldata::@compat(Tuple{T,T}),n::Int) = HierarchicalMatrix{S,T}(diagonaldata,offdiagonaldata,n)
+HierarchicalMatrix{S,T,U}(diagonaldata::@compat(Tuple{HierarchicalMatrix{S,T},HierarchicalMatrix{S,T}}),offdiagonaldata::@compat(Tuple{U,U}),n::Int) = HierarchicalMatrix{S,promote_type(T,U)}(diagonaldata,offdiagonaldata,n)
 
 
 function collectoffdiagonaldata{S,T}(H::HierarchicalMatrix{S,T})

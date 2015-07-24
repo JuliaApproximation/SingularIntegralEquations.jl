@@ -146,10 +146,9 @@ end
 # Array of GreensFun on TensorSpace of PiecewiseSpaces
 
 function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{(PWS1,PWS2)};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...)
-    pws1,pws2 = ss[1],ss[2]
-    M,N = length(pws1),length(pws2)
+    M,N = length(ss[1]),length(ss[2])
     if method == :hierarchical
-        return hierarchicalGreensFun(f,ss;tolerance=tolerance,kwds...)
+        return hierarchicalGreensFun(f,ss;kwds...)#tolerance=tolerance,kwds...)
     end
     @assert M == N
     G = Array(GreensFun,N,N)
@@ -210,8 +209,7 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::Ab
 end
 
 function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,g::Function,ss::AbstractProductSpace{(PWS1,PWS2)};method::Symbol=:unsplit,tolerance::Symbol=:absolute,kwds...)
-    pws1,pws2 = ss[1],ss[2]
-    M,N = length(pws1),length(pws2)
+    M,N = length(ss[1]),length(ss[2])
     @assert M == N
     G = Array(GreensFun,N,N)
     if method == :unsplit
@@ -232,33 +230,21 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,g::Fun
     mapreduce(typeof,promote_type,G)[G[i,j] for i=1:N,j=1:N]
 end
 
-function hierarchicalGreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{(PWS1,PWS2)};tolerance::Symbol=:absolute,kwds...)
-    pws1,pws2 = ss[1],ss[2]
-    M,N = length(pws1),length(pws2)
-    @assert M == N && ispow2(N)
-    G = Array(GreensFun,3*2^N-2)
-
-    if tolerance == :relative
-      for i=1:N
-        G[i,i] = GreensFun(f,ss[i,i];method=method,kwds...)
-        for j=i+1:N
-          G[i,j] = GreensFun(f,ss[i,j];method=:lowrank,kwds...)
-        end
-      end
-    elseif tolerance == :absolute
-      maxF = Array(Number,N)
-      for i=1:N
-        F,maxF[i] = LowRankFun(f,ss[i,i];method=method,retmax=true,kwds...)
-        G[i,i] = GreensFun(F)
-      end
-      for i=1:N
-        for j=i+1:N
-          G[i,j] = GreensFun(f,ss[i,j];method=:lowrank,tolerance=(tolerance,max(maxF[i],maxF[j])),kwds...)
-        end
-      end
+function hierarchicalGreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{(PWS1,PWS2)};kwds...)
+    N = length(ss[2])
+    @assert length(ss[1]) == N && ispow2(N)
+    N2 = div(N,2)
+    if N2 == 1
+        G11 = GreensFun(LowRankFun(f,ss[1,1];method=:standard,kwds...))
+        G22 = GreensFun(LowRankFun(f,ss[2,2];method=:standard,kwds...))
+        G21 = GreensFun(LowRankFun(f,ss[2:2,1:1];method=:standard,kwds...))
+        G12 = GreensFun(LowRankFun(f,ss[1:1,2:2];method=:standard,kwds...))
+        return HierarchicalMatrix((G11,G22),(G21,G12),round(Int,log2(N)))
+    elseif N2 ≥ 2
+        G21 = GreensFun(LowRankFun(f,ss[1+N2:N,1:N2];method=:standard,kwds...))
+        G12 = GreensFun(LowRankFun(f,ss[1:N2,1+N2:N];method=:standard,kwds...))
+        return HierarchicalMatrix((hierarchicalGreensFun(f,ss[1:N2,1:N2];kwds...),hierarchicalGreensFun(f,ss[1+N2:N,1+N2:N];kwds...)),(G21,G12),round(Int,log2(N)))
     end
-    for i=1:N,j=1:i-1
-      G[i,j] = transpose(G[j,i])
-    end
-    mapreduce(typeof,promote_type,G)[G[i] for i=1:N]
 end
+
+Base.size{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = 2^H.n,2^H.n
