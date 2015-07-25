@@ -27,12 +27,12 @@ function hilbert(u::Fun{JacobiWeight{Chebyshev}})
     end
 end
 
-function hilbertinverse(u::Fun)
+function hilbertinverse(u::Fun;tolerance=100eps())
     cfs=coefficients(u,Chebyshev)
-    if abs(first(cfs)) < 100eps()
+    if abs(first(cfs)) < tolerance
         # no singularity
         # invert Corollary 5.7 of Olver&Trogdon
-        cfs=coefficients(cfs[2:end],Ultraspherical{1},Chebyshev)
+        cfs=-coefficients(cfs[2:end],Ultraspherical{1},Chebyshev)
         Fun(cfs,JacobiWeight(.5,.5,Chebyshev(domain(u))))
     else
         # no singularity
