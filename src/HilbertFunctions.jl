@@ -1,6 +1,6 @@
-export hilbert, hilbertinverse
+export hilbert
 ##
-#  hilbert and hilbertinverse on JacobiWeight space
+#  hilbert on JacobiWeight space
 #  hilbert is always equal to im*(C^+ + C^-)
 #  hilbert(f,z)=im*(cauchy(true,f,z)+cauchy(false,f,z))
 ##
@@ -27,21 +27,7 @@ function hilbert(u::Fun{JacobiWeight{Chebyshev}})
     end
 end
 
-function hilbertinverse(u::Fun;tolerance=100eps())
-    cfs=coefficients(u,Chebyshev)
-    if abs(first(cfs)) < tolerance
-        # no singularity
-        # invert Corollary 5.7 of Olver&Trogdon
-        cfs=-coefficients(cfs[2:end],Ultraspherical{1},Chebyshev)
-        Fun(cfs,JacobiWeight(.5,.5,Chebyshev(domain(u))))
-    else
-        # no singularity
-        # invert Corollary 5.11 of Olver&Trogdon
-        cfs=[0.,cfs[1],.5*cfs[2:end]]
-        cfs=coefficients(cfs,ChebyshevDirichlet{1,1},Chebyshev)
-        Fun(cfs,JacobiWeight(-.5,-.5,Chebyshev(domain(u))))
-    end
-end
+
 
 ## hilbert on JacobiWeight space mapped by open curves
 
