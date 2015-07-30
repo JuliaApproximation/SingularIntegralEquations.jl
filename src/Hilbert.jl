@@ -300,7 +300,7 @@ end
 
 ## CurveSpace
 
-function Hilbert{T}(S::CurveSpace{JacobiWeight{Chebyshev},T},k::Int)
+function Hilbert{C<:Curve,T}(S::MappedSpace{JacobiWeight{Chebyshev},C,T},k::Int)
     @assert k==1
     #TODO: choose dimensions
     m,n=40,40

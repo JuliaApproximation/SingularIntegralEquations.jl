@@ -31,7 +31,7 @@ end
 
 ## hilbert on JacobiWeight space mapped by open curves
 
-function hilbert{M,BT,T}(f::Fun{CurveSpace{JacobiWeight{M},BT},T})
+function hilbert{C<:Curve,M,BT,T}(f::Fun{MappedSpace{JacobiWeight{M},C,BT},T})
     #project
     c=space(f).space.domain
     fm=Fun(f.coefficients,JacobiWeight(space(f).α,space(f).β))
@@ -39,7 +39,7 @@ function hilbert{M,BT,T}(f::Fun{CurveSpace{JacobiWeight{M},BT},T})
     Fun(q.coefficients,MappedSpace(domain(f),space(q)))
 end
 
-function hilbert{M,T,BT}(f::Fun{CurveSpace{JacobiWeight{M},BT},T},x::Number)
+function hilbert{C<:Curve,M,T,BT}(f::Fun{MappedSpace{JacobiWeight{M},C,BT},T},x::Number)
     #project
     c=space(f).space.domain
     fm=Fun(f.coefficients,JacobiWeight(space(f).α,space(f).β))

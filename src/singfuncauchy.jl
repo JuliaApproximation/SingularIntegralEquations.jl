@@ -65,6 +65,9 @@ function realdivkhornersum(cfs,y0,ys,s)
 end
 
 
+cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},zv::Vector)=Complex128[cauchy(u,z) for z in zv]
+cauchy{S<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{S}},zv::Vector)=Complex128[cauchy(s,u,z) for z in zv]
+
 function cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z::Number)
     d,sp=domain(u),space(u)
 
@@ -249,18 +252,16 @@ end
 
 ## Mapped
 
-function cauchy{M,T,BT}(f::Fun{CurveSpace{JacobiWeight{M},BT},T},z::Number)
+function cauchy{C<:Curve,S,T,BT}(f::Fun{MappedSpace{S,C,BT},T},z::Number)
     #project
-    cs=space(f).space
-    fm=Fun(f.coefficients,JacobiWeight(space(f).α,space(f).β,cs.space))
-    sum(cauchy(fm,complexroots(cs.domain.curve-z)))
+    fm=Fun(f.coefficients,space(f).space)
+    sum(cauchy(fm,complexroots(domain(f).curve-z)))
 end
 
-function cauchy{M,BT,T}(s::Bool,f::Fun{CurveSpace{JacobiWeight{M},BT},T},z::Number)
+function cauchy{C<:Curve,S,BT,T}(s::Bool,f::Fun{MappedSpace{S,C,BT},T},z::Number)
     #project
-    cs=space(f).space
-    fm=Fun(f.coefficients,JacobiWeight(space(f).α,space(f).β,cs.space))
-    rts=complexroots(cs.domain.curve-z)
+    fm=Fun(f.coefficients,space(f).space)
+    rts=complexroots(domain(f).curve-z)
     di=Interval()
     mapreduce(rt->in(rt,di)?cauchy(s,fm,rt):cauchy(fm,rt),+,rts)
 end
