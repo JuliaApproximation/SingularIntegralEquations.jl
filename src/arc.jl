@@ -30,11 +30,26 @@ end
 ## cauchyintegral
 
 function cauchyintegral{LS,RR<:Arc,TT}(w::Fun{MappedSpace{LS,RR,TT}},z)
-    d=domain(w)
-    g=Fun(w.coefficients,w.space.space)*ApproxFun.fromcanonicalD(d,Fun())
-    cauchyintegral(g,tocanonical(d,z))-
-    cauchyintegral(g,tocanonical(d,Inf))-
-    sum(w)*(-log(z-fromcanonical(d,Inf)))/(-2π*im)
+    g=Fun(w.coefficients,w.space.space)*ApproxFun.fromcanonicalD(w,Fun())
+    cauchyintegral(g,tocanonical(w,z))-
+        cauchyintegral(g,tocanonical(w,Inf))-
+        sum(w)*(-log(z-fromcanonical(w,Inf)))/(-2π*im)
+end
+
+
+function linesumcauchyintegral{LS,RR<:Arc,TT}(w::Fun{MappedSpace{LS,RR,TT}},z)
+    g=Fun(w.coefficients,w.space.space)*abs(ApproxFun.fromcanonicalD(w,Fun()))
+    cauchyintegral(g,tocanonical(w,z))-
+        cauchyintegral(g,tocanonical(w,Inf))-
+        linesum(w)*(-log(z-fromcanonical(w,Inf)))/(-2π*im)
+end
+
+
+function logkernel{LS,RR<:Arc,TT}(w::Fun{MappedSpace{LS,RR,TT}},z)
+    g=Fun(w.coefficients,w.space.space)*abs(ApproxFun.fromcanonicalD(w,Fun()))
+    logkernel(g,tocanonical(w,z))-
+        logkernel(g,tocanonical(w,Inf))-
+        linesum(w)*(-log(abs(z-fromcanonical(w,Inf))))/(π)
 end
 
 
