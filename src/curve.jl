@@ -144,7 +144,7 @@ function SingularIntegral{JW,TT}(S::MappedSpace{JW,Curve{Chebyshev,TT}},k::Integ
     A=Σ+SpaceOperator(CompactOperator(K),S.space,rs)+(log(abs(b))/π)*DefiniteLineIntegral(S.space)
 
     # Multiply by |r'(t)| to get arclength
-    M=Multiplication(abs(fromcanonicalD(d,Fun())),S.space)
+    M=Multiplication(abs(fromcanonicalD(d,Fun(identity,S.space))),S.space)
 
     SpaceOperator(A*M,S,MappedSpace(d,rs))
 end

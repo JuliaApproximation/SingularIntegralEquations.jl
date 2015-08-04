@@ -78,3 +78,9 @@ z=10.;
 @test_approx_eq sum(w/(x-z))/(2π*im) cauchy(w,z)
 @test_approx_eq sum(w*log(z-x))/(-2π*im) cauchyintegral(w,z)
 @test_approx_eq linesum(w*log(abs(z-x)))/π logkernel(w,z)
+
+w=1/(sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x)))
+@test_approx_eq sum(w/(x-z))/(2π*im) cauchy(w,z)
+@test_approx_eq sum(w*log(z-x))/(-2π*im) cauchyintegral(w,z)
+@test_approx_eq linesum(w*log(abs(z-x)))/π logkernel(w,z)
+@test_approx_eq (SingularIntegral(0)*w)[fromcanonical(d,0.1)] logkernel(w,fromcanonical(d,0.1))
