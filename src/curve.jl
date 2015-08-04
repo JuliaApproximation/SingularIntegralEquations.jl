@@ -114,7 +114,7 @@ function Hilbert{C<:Curve,T}(S::MappedSpace{JacobiWeight{Chebyshev},C,T},k::Int)
 end
 
 
-function SingularIntegral{TT}(S::MappedSpace{JacobiWeight{Chebyshev},Curve{Chebyshev,TT}},k::Integer)
+function SingularIntegral{JW,TT}(S::MappedSpace{JW,Curve{Chebyshev,TT}},k::Integer)
     @assert k==0
     tol=1E-15
     # the mapped logkernel
