@@ -11,10 +11,8 @@ export Hilbert,SingularIntegral
 #
 #############
 
-abstract AbstractHilbert{SSS,OT,TTT} <: CalculusOperator{SSS,OT,TTT}
-ApproxFun.@calculus_operator(Hilbert,AbstractHilbert,HilbertWrapper)
-abstract AbstractSingularIntegral{SSS,OT,TTT} <: CalculusOperator{SSS,OT,TTT}
-ApproxFun.@calculus_operator(SingularIntegral,AbstractSingularIntegral,SingularIntegralWrapper)
+ApproxFun.@calculus_operator(Hilbert)
+ApproxFun.@calculus_operator(SingularIntegral)
 
 for (Op,OpWrap,OffOp) in ((:Hilbert,:HilbertWrapper,:OffHilbert),
                           (:SingularIntegral,:SingularIntegralWrapper,:OffSingularIntegral))
