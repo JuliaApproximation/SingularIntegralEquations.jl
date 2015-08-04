@@ -298,22 +298,3 @@ for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),
     end
 end
 
-## CurveSpace
-
-function Hilbert{C<:Curve,T}(S::MappedSpace{JacobiWeight{Chebyshev},C,T},k::Int)
-    @assert k==1
-    #TODO: choose dimensions
-    m,n=40,40
-    c=domain(S)
-    Sproj=JacobiWeight(S.α,S.β)
-
-    rts=[filter(y->!in(y,Interval()),complexroots(c.curve-c.curve[x])) for x in points(Interval(),n)]
-    Hc=Hilbert(Sproj)
-
-     M=2im*hcat(Vector{Complex{Float64}}[transform(rangespace(Hc),Complex{Float64}[sum(cauchy(Fun([zeros(k-1),1.0],Sproj),rt))
-        for rt in rts]) for k=1:m]...)
-
-    rs=MappedSpace(c,rangespace(Hc))
-
-    SpaceOperator(Hc,S,rs)+SpaceOperator(CompactOperator(M),S,rs)
-end

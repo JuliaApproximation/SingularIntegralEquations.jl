@@ -14,6 +14,15 @@ w=sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x))
 @test_approx_eq logkernel(w,2.) linesum(w*log(abs(x-2.)))/π
 
 
+w=1/(sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x)))
+
+@test_approx_eq cauchy(w,2.) sum(w/(x-2.))/(2π*im)
+@test_approx_eq logkernel(w,2.) linesum(w*log(abs(x-2.)))/π
+@test_approx_eq (SingularIntegral(0)*w)[fromcanonical(d,0.1)]-logkernel(w,fromcanonical(d,0.1))
+
+
+
+
 ## cubic
 
 a=1+10*im;b=2-6*im
@@ -27,6 +36,15 @@ w=sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x))
 @test_approx_eq cauchy(w,2.) sum(w/(x-2.))/(2π*im)
 @test_approx_eq logkernel(w,2.) linesum(w*log(abs(x-2.)))/π
 
+
+w=1/(sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x)))
+
+@test_approx_eq cauchy(w,2.) sum(w/(x-2.))/(2π*im)
+@test_approx_eq logkernel(w,2.) linesum(w*log(abs(x-2.)))/π
+@test_approx_eq (SingularIntegral(0)*w)[fromcanonical(d,0.1)]-logkernel(w,fromcanonical(d,0.1))
+
+
+
 ## quartic
 
 a=1+10*im;b=2-6*im
@@ -36,9 +54,18 @@ d=Curve(Fun(x->1+a*x+x^2+x^3+b*x^4))
 x=Fun(d)
 w=sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x))
 
+@test_approx_eq cauchy(w,2.) sum(w/(x-2.))/(2π*im)
+@test_approx_eq logkernel(w,2.) linesum(w*log(abs(x-2.)))/π
+
+
+
+w=1/(sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x)))
 
 @test_approx_eq cauchy(w,2.) sum(w/(x-2.))/(2π*im)
 @test_approx_eq logkernel(w,2.) linesum(w*log(abs(x-2.)))/π
+@test_approx_eq (SingularIntegral(0)*w)[fromcanonical(d,0.1)]-logkernel(w,fromcanonical(d,0.1))
+
+
 
 ## Arc
 

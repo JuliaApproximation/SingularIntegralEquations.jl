@@ -90,3 +90,61 @@ function hilbert{C<:Curve}(f::Fun{MappedSpace{Laurent,C,Complex{Float64}}},z::Nu
     end
     ret
 end
+
+
+
+## CurveSpace
+
+function Hilbert{C<:Curve,T}(S::MappedSpace{JacobiWeight{Chebyshev},C,T},k::Int)
+    @assert k==1
+    #TODO: choose dimensions
+    m,n=40,40
+    c=domain(S)
+    Sproj=JacobiWeight(S.α,S.β)
+
+    rts=[filter(y->!in(y,Interval()),complexroots(c.curve-c.curve[x])) for x in points(Interval(),n)]
+    Hc=Hilbert(Sproj)
+
+     M=2im*hcat(Vector{Complex{Float64}}[transform(rangespace(Hc),Complex{Float64}[sum(cauchy(Fun([zeros(k-1),1.0],Sproj),rt))
+        for rt in rts]) for k=1:m]...)
+
+    rs=MappedSpace(c,rangespace(Hc))
+
+    SpaceOperator(Hc,S,rs)+SpaceOperator(CompactOperator(M),S,rs)
+end
+
+
+function SingularIntegral{TT}(S::MappedSpace{JacobiWeight{Chebyshev},Curve{Chebyshev,TT}},k::Integer)
+    @assert k==0
+    tol=1E-15
+    # the mapped logkernel
+    Σ=SingularIntegral(S.space,0)
+    rs=rangespace(Σ)
+    d=domain(S)
+
+    # hiighest order coeff
+    b=d.curve.coefficients[end]*2^(max(length(d.curve)-2,0))
+
+
+    # find the number of coefficients needed to resolve the first column
+    m=length(Fun(x->sum(logkernel(Fun([1.0],S.space),filter(y->!in(y,Interval()),complexroots(d.curve-fromcanonical(d,x))))),rs))
+    #precompute the roots
+    rts=Vector{Complex128}[filter(y->!in(y,Interval()),complexroots(d.curve-x)) for x in fromcanonical(d,points(rs,m))]
+
+    # generate cols until smaller than tol
+    cols=Array(Vector{Float64},0)
+    for k=1:10000
+        push!(cols,transform(rs,Float64[sum(logkernel(Fun([zeros(k-1);1.0],S.space),rt)) for rt in rts]))
+        if norm(last(cols))<tol
+            break
+        end
+    end
+
+    K=hcat(cols...)
+    A=Σ+SpaceOperator(CompactOperator(K),S.space,rs)+(log(abs(b))/π)*DefiniteLineIntegral(S.space)
+
+    # Multiply by |r'(t)| to get arclength
+    M=Multiplication(abs(fromcanonicalD(d,Fun())),S.space)
+
+    SpaceOperator(A*M,S,MappedSpace(d,rs))
+end
