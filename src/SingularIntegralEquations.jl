@@ -54,7 +54,7 @@ include("GreensFun/GreensFun.jl")
 
 include("periodicline.jl")
 include("arc.jl")
-
+include("curve.jl")
 include("asymptotics.jl")
 
 include("fractals.jl")

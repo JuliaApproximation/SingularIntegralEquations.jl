@@ -58,58 +58,6 @@ hilbert(f::Fun{Laurent},z)=im*(cauchy(true,f,z)+cauchy(false,f,z))
 
 
 
-## mapped Cauchy
-
-
-# pseudo cauchy is not normalized at infinity
-function pseudocauchy{C<:Curve}(f::Fun{MappedSpace{Laurent,C,Complex{Float64}}},z::Number)
-    fcirc=Fun(f.coefficients,f.space.space)  # project to circle
-    c=domain(f)  # the curve that f lives on
-    @assert domain(fcirc)==Circle()
-
-    sum(cauchy(fcirc,complexroots(c.curve-z)))
-end
-
-function cauchy{C<:Curve}(f::Fun{MappedSpace{Laurent,C,Complex{Float64}}},z::Number)
-    fcirc=Fun(f.coefficients,f.space.space)  # project to circle
-    c=domain(f)  # the curve that f lives on
-    @assert domain(fcirc)==Circle()
-    # subtract out value at infinity, determined by the fact that leading term is poly
-    # we find the
-    sum(cauchy(fcirc,complexroots(c.curve-z)))-div(length(domain(f).curve),2)*cauchy(fcirc,0.)
-end
-
-function cauchy{C<:Curve}(s::Bool,f::Fun{MappedSpace{Laurent,C,Complex{Float64}}},z::Number)
-    fcirc=Fun(f.coefficients,f.space.space)  # project to circle
-    c=domain(f)  # the curve that f lives on
-    @assert domain(fcirc)==Circle()
-    rts=complexroots(c.curve-z)
-
-
-    ret=-div(length(domain(f).curve),2)*cauchy(fcirc,0.)
-
-    for k=2:length(rts)
-        ret+=in(rts[k],Circle())?cauchy(s,fcirc,rts[k]):cauchy(fcirc,rts[k])
-    end
-    ret
-end
-
-
-function hilbert{C<:Curve}(f::Fun{MappedSpace{Laurent,C,Complex{Float64}}},z::Number)
-    fcirc=Fun(f.coefficients,f.space.space)  # project to circle
-    c=domain(f)  # the curve that f lives on
-    @assert domain(fcirc)==Circle()
-    rts=complexroots(c.curve-z)
-
-
-    ret=-2im*div(length(domain(f).curve),2)*cauchy(fcirc,0.)
-
-    for k=2:length(rts)
-        ret+=in(rts[k],Circle())?hilbert(fcirc,rts[k]):2im*cauchy(fcirc,rts[k])
-    end
-    ret
-end
-
 
 
 

@@ -250,21 +250,3 @@ end
 
 
 
-## Mapped
-
-function cauchy{C<:Curve,S,T,BT}(f::Fun{MappedSpace{S,C,BT},T},z::Number)
-    #project
-    fm=Fun(f.coefficients,space(f).space)
-    sum(cauchy(fm,complexroots(domain(f).curve-z)))
-end
-
-function cauchy{C<:Curve,S,BT,T}(s::Bool,f::Fun{MappedSpace{S,C,BT},T},z::Number)
-    #project
-    fm=Fun(f.coefficients,space(f).space)
-    rts=complexroots(domain(f).curve-z)
-    di=Interval()
-    mapreduce(rt->in(rt,di)?cauchy(s,fm,rt):cauchy(fm,rt),+,rts)
-end
-
-
-
