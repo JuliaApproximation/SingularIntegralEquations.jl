@@ -65,10 +65,10 @@ function realdivkhornersum(cfs,y0,ys,s)
 end
 
 
-cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},zv::Array)=Complex128[cauchy(u,zv[k,j]) for k=1:size(zv,1), j=1:size(zv,2)]
+#cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},zv::Array)=Complex128[cauchy(u,zv[k,j]) for k=1:size(zv,1), j=1:size(zv,2)]
 cauchy{S<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{S}},zv::Array)=Complex128[cauchy(s,u,zv[k,j]) for k=1:size(zv,1), j=1:size(zv,2)]
 
-function cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z::Number)
+function cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
     d,sp=domain(u),space(u)
 
     if sp.α == sp.β == .5
@@ -78,17 +78,21 @@ function cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z::Number)
         cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1}(d))
         z=tocanonical(u,z)
 
+        sx2z=sqrtx2(z)
+        sx2zi=1./sx2z
+
 
         if length(cfs) ≥1
-            ret = cfs[1]*0.5im/sqrtx2(z)
+            ret = cfs[1]*0.5im*sx2zi
 
             if length(cfs) ≥2
-                ret += cfs[2]*.5im*(z/sqrtx2(z)-1)
+                ret += cfs[2]*.5im*(z.*sx2zi-1)
             end
 
-            ret - 1.im*hornersum(cfs[3:end],intervaloffcircle(true,z))
+#            ret - 1.im*hornersum(cfs[3:end],intervaloffcircle(true,z))
+            ret - 1.im*hornersum(cfs[3:end],z-sx2z)
         else
-            0.0+0.0im
+            zero(z)
         end
     else
         if domain(u)==Interval()
