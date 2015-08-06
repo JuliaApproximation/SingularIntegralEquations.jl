@@ -65,8 +65,8 @@ function realdivkhornersum(cfs,y0,ys,s)
 end
 
 
-cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},zv::Vector)=Complex128[cauchy(u,z) for z in zv]
-cauchy{S<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{S}},zv::Vector)=Complex128[cauchy(s,u,z) for z in zv]
+cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},zv::Array)=Complex128[cauchy(u,zv[k,j]) for k=1:size(zv,1), j=1:size(zv,2)]
+cauchy{S<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{S}},zv::Array)=Complex128[cauchy(s,u,zv[k,j]) for k=1:size(zv,1), j=1:size(zv,2)]
 
 function cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z::Number)
     d,sp=domain(u),space(u)

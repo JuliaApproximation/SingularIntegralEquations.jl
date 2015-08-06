@@ -56,6 +56,8 @@ for (Op,OpWrap,OffOp) in ((:Hilbert,:HilbertWrapper,:OffHilbert),
         bandinds{λ}(H::$Op{JacobiWeight{Ultraspherical{λ}}})=-λ,H.order-λ
         bandinds(H::$Op{JacobiWeight{Chebyshev}})=0,H.order
         bandinds(H::$Op{JacobiWeight{Ultraspherical{1}}})=H.order > 0 ? (-1,H.order-1) : (-2,0)
+
+        choosedomainspace(H::$Op{UnsetSpace},sp::Ultraspherical)=ChebyshevWeight(domain(sp))
     end
 end
 
@@ -225,7 +227,6 @@ end
 for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),
                         (:SingularIntegral,:SingularIntegralWrapper,:length))
     @eval begin
-
         function $Op(S::JacobiWeight{Chebyshev},n::Int)
             if S.α==S.β==-0.5
                 $Op{JacobiWeight{Chebyshev},typeof(n),typeof($Len(domain(S)))}(S,n)
@@ -239,7 +240,7 @@ for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),
                     $OpWrap($Op(J,n)*Conversion(S,J),n)
                 end
             else
-                error("$Op not implemented for parameters $(S.α),$(S.β)")
+                error(string($Op)*" not implemented for parameters $(S.α),$(S.β)")
             end
         end
 
