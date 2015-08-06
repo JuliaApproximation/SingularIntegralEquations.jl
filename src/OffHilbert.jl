@@ -357,7 +357,7 @@ Cauchy(ds,rs)=Cauchy(ds,rs,1)
 ## Stiejles Functional
 
 
-function HornerFunctional(y0,sp)
+function hornervector(y0)
     r=Array(typeof(y0),200)
     r[1]=y0
     k=1
@@ -370,11 +370,16 @@ function HornerFunctional(y0,sp)
         r[k]=r[k-1]*y0
     end
 
-    CompactFunctional(r[1:k],sp)
+    r[1:k]
 end
+
+HornerFunctional(y0,sp)=CompactFunctional(hornervector(y0),sp)
 
 function OffHilbert(sp::JacobiWeight{Ultraspherical{1}},z::Number)
     if sp.α == sp.β == 0.5
+        # this translates the following cauchy to a functional
+        #    0.5im*hornersum(cfs,intervaloffcircle(true,tocanonical(u,z)))
+        # which consists of multiplying by 2*im
         -HornerFunctional(intervaloffcircle(true,tocanonical(sp,z)),sp)
     else
         error("Not implemented")
@@ -385,6 +390,20 @@ function OffHilbert(sp::JacobiWeight{Chebyshev},z::Number)
     if sp.α == sp.β == 0.5
         us=JacobiWeight(0.5,0.5,Ultraspherical{1}(domain(sp)))
         OffHilbert(us,z)*Conversion(sp,us)
+    else
+        error("Not implemented")
+    end
+end
+
+
+function OffHilbert(sp::JacobiWeight{ChebyshevDirichlet{1,1}},z::Number)
+    if sp.α == sp.β == -0.5
+        z=tocanonical(sp,z)
+
+        sx2z=sqrtx2(z)
+        sx2zi=1./sx2z
+
+        CompactFunctional([-sx2zi;1-sx2zi;2*hornervector(z-sx2z)],sp)
     else
         error("Not implemented")
     end
