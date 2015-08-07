@@ -382,17 +382,22 @@ function OffHilbert(sp::JacobiWeight{Ultraspherical{1}},z::Number)
         # which consists of multiplying by 2*im
         -HornerFunctional(intervaloffcircle(true,tocanonical(sp,z)),sp)
     else
-        error("Not implemented")
+        # calculate directly
+        r=Array(eltype(z),0)
+        for k=1:10000
+            push!(r,-stieltjes(Fun([zeros(k-1);1.],sp),z)/π)
+            if abs(last(r)) < eps()
+                break
+            end
+        end
+        CompactFunctional(r,sp)
     end
 end
 
 function OffHilbert(sp::JacobiWeight{Chebyshev},z::Number)
-    if sp.α == sp.β == 0.5
-        us=JacobiWeight(0.5,0.5,Ultraspherical{1}(domain(sp)))
-        OffHilbert(us,z)*Conversion(sp,us)
-    else
-        error("Not implemented")
-    end
+    #try converting to Ultraspherical{1}
+    us=JacobiWeight(sp.α,sp.β,Ultraspherical{1}(domain(sp)))
+    OffHilbert(us,z)*Conversion(sp,us)
 end
 
 
@@ -405,6 +410,8 @@ function OffHilbert(sp::JacobiWeight{ChebyshevDirichlet{1,1}},z::Number)
 
         CompactFunctional([-sx2zi;1-sx2zi;2*hornervector(z-sx2z)],sp)
     else
-        error("Not implemented")
+        # try converting to Canonical
+        us=JacobiWeight(sp.α,sp.β,Chebyshev(domain(sp)))
+        OffHilbert(us,z)*Conversion(sp,us)
     end
 end

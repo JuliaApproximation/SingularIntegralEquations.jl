@@ -62,7 +62,7 @@ for (Op,OpWrap,OffOp) in ((:PseudoHilbert,:PseudoHilbertWrapper,:OffPseudoHilber
         bandinds(H::$Op{JacobiWeight{Chebyshev}})=0,H.order
         bandinds(H::$Op{JacobiWeight{Ultraspherical{1}}})=H.order > 0 ? (-1,H.order-1) : (-2,0)
 
-        choosedomainspace(H::$Op{UnsetSpace},sp::Ultraspherical)=ChebyshevWeight(domain(sp))
+        choosedomainspace(H::$Op{UnsetSpace},sp::Ultraspherical)=ChebyshevWeight(ChebyshevDirichlet{1,1}(domain(sp)))
         choosedomainspace(H::$Op{UnsetSpace},sp::MappedSpace)=MappedSpace(domain(sp),choosedomainspace(H,sp.space))
     end
 end
