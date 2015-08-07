@@ -1,4 +1,4 @@
-export Hilbert,SingularIntegral
+export PseudoHilbert,Hilbert,SingularIntegral
 
 #############
 # Hilbert implements the Hilbert operator as a contour integral:
@@ -9,12 +9,17 @@ export Hilbert,SingularIntegral
 #
 #       SI f(z) := 1/π\int_Γ f(t)/(t-z) ds(t),  z ∉ Γ
 #
+# PseudoHilbert corresponds to pseudocauchy, which may not be normalized at
+# infinity.
 #############
 
+
+ApproxFun.@calculus_operator(PseudoHilbert)
 ApproxFun.@calculus_operator(Hilbert)
 ApproxFun.@calculus_operator(SingularIntegral)
 
-for (Op,OpWrap,OffOp) in ((:Hilbert,:HilbertWrapper,:OffHilbert),
+for (Op,OpWrap,OffOp) in ((:PseudoHilbert,:PseudoHilbertWrapper,:OffPseudoHilbert),
+                          (:Hilbert,:HilbertWrapper,:OffHilbert),
                           (:SingularIntegral,:SingularIntegralWrapper,:OffSingularIntegral))
     @eval begin
         ## Convenience routines
@@ -58,6 +63,7 @@ for (Op,OpWrap,OffOp) in ((:Hilbert,:HilbertWrapper,:OffHilbert),
         bandinds(H::$Op{JacobiWeight{Ultraspherical{1}}})=H.order > 0 ? (-1,H.order-1) : (-2,0)
 
         choosedomainspace(H::$Op{UnsetSpace},sp::Ultraspherical)=ChebyshevWeight(domain(sp))
+        choosedomainspace(H::$Op{UnsetSpace},sp::MappedSpace)=MappedSpace(domain(sp),choosedomainspace(H,sp.space))
     end
 end
 
@@ -297,3 +303,13 @@ for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),
     end
 end
 
+
+
+
+
+## PseudoHilbert
+# The default is Hilbert
+
+
+addentries!(H::PseudoHilbert,A,kr)=addentries!(Hilbert(H.space,H.order),A,kr)
+bandinds(H::PseudoHilbert)=bandinds(Hilbert(H.space,H.order))

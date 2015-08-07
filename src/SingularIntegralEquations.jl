@@ -1,7 +1,7 @@
 module SingularIntegralEquations
     using Base, ApproxFun, Compat
 
-export cauchy, cauchyintegral, stieltjes, logkernel,stieltjesintegral
+export cauchy, cauchyintegral, stieltjes, logkernel,stieltjesintegral,hilbert,pseudohilbert,pseudocauchy
 
 
 import ApproxFun
@@ -40,7 +40,6 @@ include("LinearAlgebra/LinearAlgebra.jl")
 include("Hilbert.jl")
 include("OffHilbert.jl")
 
-include("HilbertFunctions.jl")
 
 include("stieltjesmoment.jl")
 

@@ -10,9 +10,20 @@ function cauchy{C<:Curve,S,BT,T}(s::Bool,f::Fun{MappedSpace{S,C,BT},T},z::Number
     #project
     fm=Fun(f.coefficients,space(f).space)
     rts=complexroots(domain(f).curve-z)
-    di=Interval()
+    di=domain(fm)
     mapreduce(rt->in(rt,di)?cauchy(s,fm,rt):cauchy(fm,rt),+,rts)
 end
+
+## hilbert on JacobiWeight space mapped by open curves
+
+function hilbert{C<:Curve,M,T,BT}(f::Fun{MappedSpace{JacobiWeight{M},C,BT},T},x::Number)
+    #project
+    fm=Fun(f.coefficients,space(f).space)
+    rts=complexroots(domain(f).curve-x)
+    di=domain(fm)
+    mapreduce(rt->in(rt,di)?hilbert(fm,rt):-stieltjes(fm,rt)/π,+,rts)
+end
+
 
 
 
@@ -97,20 +108,32 @@ end
 
 function Hilbert{C<:Curve,T}(S::MappedSpace{JacobiWeight{Chebyshev},C,T},k::Int)
     @assert k==1
-    #TODO: choose dimensions
-    m,n=40,40
-    c=domain(S)
-    Sproj=JacobiWeight(S.α,S.β)
+    tol=1E-15
+    # the mapped logkernel
+    Σ=Hilbert(S.space)
+    rs=rangespace(Σ)
+    d=domain(S)
 
-    rts=[filter(y->!in(y,Interval()),complexroots(c.curve-c.curve[x])) for x in points(Interval(),n)]
-    Hc=Hilbert(Sproj)
+    # find the number of coefficients needed to resolve the first column
+    m=length(Fun(x->sum(stieltjes(Fun([1.0],S.space),filter(y->!in(y,Interval()),complexroots(d.curve-fromcanonical(d,x))))/π),rs))
+    #precompute the roots
+    rts=Vector{Complex128}[filter(y->!in(y,Interval()),complexroots(d.curve-x)) for x in fromcanonical(d,points(rs,m))]
 
-     M=2im*hcat(Vector{Complex{Float64}}[transform(rangespace(Hc),Complex{Float64}[sum(cauchy(Fun([zeros(k-1),1.0],Sproj),rt))
-        for rt in rts]) for k=1:m]...)
+    # generate cols until smaller than tol
+    cols=Array(Vector{Complex128},0)
+    for k=1:10000
+        push!(cols,transform(rs,Complex128[-sum(stieltjes(Fun([zeros(k-1);1.0],S.space),rt)/π) for rt in rts]))
+        if norm(last(cols))<tol
+            break
+        end
+    end
 
-    rs=MappedSpace(c,rangespace(Hc))
+    K=hcat(cols...)
+    A=Σ+SpaceOperator(CompactOperator(K),S.space,rs)
 
-    SpaceOperator(Hc,S,rs)+SpaceOperator(CompactOperator(M),S,rs)
+    # Multiply by |r'(t)| to get arclength
+
+    SpaceOperator(A,S,MappedSpace(d,rs))
 end
 
 

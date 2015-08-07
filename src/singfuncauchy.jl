@@ -140,6 +140,36 @@ end
 
 
 
+##
+#  hilbert on JacobiWeight space
+#  hilbert is always equal to im*(C^+ + C^-)
+#  hilbert(f,z)=im*(cauchy(true,f,z)+cauchy(false,f,z))
+##
+
+function hilbert(u::Fun{JacobiWeight{Chebyshev}})
+    d=domain(u);sp=space(u)
+
+    if sp.α == sp.β == .5
+        # Corollary 5.7 of Olver&Trogdon
+        uf=Fun(u.coefficients,d)
+        cfs=coefficients(uf,Ultraspherical{1})
+        Fun([0.;-cfs],d)
+    elseif sp.α == sp.β == -.5
+        # Corollary 5.11 of Olver&Trogdon
+        uf = Fun(u.coefficients,d)
+        cfs= coefficients(uf,ChebyshevDirichlet{1,1})
+        if length(cfs)≥2
+            Fun([cfs[2];2cfs[3:end]],d)
+        else
+            Fun(zeros(eltype(cfs),1),d)
+        end
+    else
+        error("hilbert only implemented for Chebyshev weights")
+    end
+end
+
+
+
 
 
 integratejin(c,cfs,y)=.5*(-cfs[1]*(log(y)+log(c))+divkhornersum(cfs,y,y,1)-divkhornersum(slice(cfs,2:length(cfs)),y,zero(y)+1,0))
