@@ -1,5 +1,5 @@
 using ApproxFun,SingularIntegralEquations
-,Gadfly
+using Gadfly
 
 
 
@@ -26,10 +26,10 @@ k=102;
     c=exp(-k/50im)
     ui=[BasisFunctional(1);Hilbert()]\[0.;imag(c*z)]
     Gadfly.plot(ApproxFun.layer(Γ),
-    layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-2.5:.05:2.5])))
+                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-2.5:.05:2.5])))
 
 ##
-# On the arc, the Hilbert transform no longer gives the imaginary part
+# On an arc, the Hilbert transform no longer gives the imaginary part
 #  However, pseudohilbert gives the imaginary part of pseudocauchy
 #  So if we want to find ui defined on Γ so that pseudohilbert(ui) = imag(c*z)
 #  then c*z + 2pseudocauchy(u,z) vanishes on Γ
@@ -42,74 +42,34 @@ m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
 k=201;
-    Γ=exp(im*Interval(0.1,3))
+    Γ=exp(im*Interval(0.1,4))
     z=Fun(Γ)
     c=exp(-k/50im)
     ui=[BasisFunctional(1);PseudoHilbert()]\[0.;imag(c*z)]
     Gadfly.plot(ApproxFun.layer(Γ),
-    layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3:.05:3])))
+                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3:.05:3])))
 
 
+##
+# On an curve, the Hilbert transform may be complex, so we
+# take the real part
+##
 
+u(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
 
 m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
-k=201;
-    Γ=Curve(Fun(x->x+im*(x+2)^2))
+
+Γ=Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))
     z=Fun(Γ)
-    c=exp(-k/50im)
-    ui=real(H)\imag(c*z)
+    c=im
+    ui=[BasisFunctional(1);real(Hilbert())]\Any[0.;imag(c*z)]
+    Gadfly.plot(ApproxFun.layer(Γ),
+                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3:.05:3])))
 
 
 
 
-a,b=first(Γ),last(Γ)
-w=1/(sqrt(abs(z-a))*sqrt(abs(z-b)))
 
-real(hilbert(w,4*im))
-
-H=Hilbert(space(w))
-
-
-
-
-[1:10,1:10]
-(real(H)*w)[4im]
-
-H[1:10,1:10]
-H\imag(c*z)
-
-(H*w)[4im]
-
-[1:10,1:10]
-
-
-2cauchy(+1,w,4im)
-
-im*(cauchy(+1,w,4im)+cauchy(-1,w,4im))
-
-f=w
-fm=Fun(f.coefficients,space(f).space)
-
-im*(cauchy(+1,fm,0.)+cauchy(-1,fm,0.))
-hilbert(fm,0.)
-stieltjes(fm,3.)
--2π*im*cauchy(fm,3.)
-
-z=4im
-rts=complexroots(domain(f).curve-z)
-di=domain(fm)
-    mapreduce(rt->in(rt,di)?hilbert(fm,rt):-stieltjes(fm,rt)/π,+,rts)
-
-
-
-w[4im]
-
-cauchy(+1,w,4im)
-
-+cauchy(-1,w,4im)
-
-
-ApproxFun.plot(Γ)
 

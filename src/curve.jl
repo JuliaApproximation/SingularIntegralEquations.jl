@@ -14,6 +14,9 @@ function cauchy{C<:Curve,S,BT,T}(s::Bool,f::Fun{MappedSpace{S,C,BT},T},z::Number
     mapreduce(rt->in(rt,di)?cauchy(s,fm,rt):cauchy(fm,rt),+,rts)
 end
 
+cauchy{C<:Curve,S,T,BT}(f::Fun{MappedSpace{S,C,BT},T},z::Vector)=Complex128[cauchy(f,z[k]) for k=1:size(z,1)]
+cauchy{C<:Curve,S,T,BT}(f::Fun{MappedSpace{S,C,BT},T},z::Matrix)=Complex128[cauchy(f,z[k,j]) for k=1:size(z,1),j=1:size(z,2)]
+
 ## hilbert on JacobiWeight space mapped by open curves
 
 function hilbert{C<:Curve,M,T,BT}(f::Fun{MappedSpace{JacobiWeight{M},C,BT},T},x::Number)

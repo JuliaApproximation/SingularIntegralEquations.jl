@@ -311,5 +311,5 @@ end
 # The default is Hilbert
 
 
-addentries!(H::PseudoHilbert,A,kr)=addentries!(Hilbert(H.space,H.order),A,kr)
+addentries!(H::PseudoHilbert,A,kr::Range)=addentries!(Hilbert(H.space,H.order),A,kr)
 bandinds(H::PseudoHilbert)=bandinds(Hilbert(H.space,H.order))
