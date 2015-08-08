@@ -19,6 +19,7 @@ w=1/(sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x)))
 @test_approx_eq cauchy(w,2.) sum(w/(x-2.))/(2π*im)
 @test_approx_eq logkernel(w,2.) linesum(w*log(abs(x-2.)))/π
 @test_approx_eq (SingularIntegral(0)*w)[fromcanonical(d,0.1)] logkernel(w,fromcanonical(d,0.1))
+@test_approx_eq (Hilbert()*w)[fromcanonical(d,0.1)] hilbert(w,fromcanonical(d,0.1))
 
 
 
@@ -42,6 +43,7 @@ w=1/(sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x)))
 @test_approx_eq cauchy(w,2.) sum(w/(x-2.))/(2π*im)
 @test_approx_eq logkernel(w,2.) linesum(w*log(abs(x-2.)))/π
 @test_approx_eq (SingularIntegral(0)*w)[fromcanonical(d,0.1)] logkernel(w,fromcanonical(d,0.1))
+@test_approx_eq (Hilbert()*w)[fromcanonical(d,0.1)] hilbert(w,fromcanonical(d,0.1))
 
 
 
@@ -64,6 +66,7 @@ w=1/(sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x)))
 @test_approx_eq cauchy(w,2.) sum(w/(x-2.))/(2π*im)
 @test_approx_eq logkernel(w,2.) linesum(w*log(abs(x-2.)))/π
 @test_approx_eq (SingularIntegral(0)*w)[fromcanonical(d,0.1)] logkernel(w,fromcanonical(d,0.1))
+@test_approx_eq (Hilbert()*w)[fromcanonical(d,0.1)] hilbert(w,fromcanonical(d,0.1))
 
 
 
@@ -84,3 +87,4 @@ w=1/(sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x)))
 @test_approx_eq sum(w*log(z-x))/(-2π*im) cauchyintegral(w,z)
 @test_approx_eq linesum(w*log(abs(z-x)))/π logkernel(w,z)
 @test_approx_eq (SingularIntegral(0)*w)[fromcanonical(d,0.1)] logkernel(w,fromcanonical(d,0.1))
+@test_approx_eq (Hilbert()*w)[fromcanonical(d,0.1)] hilbert(w,fromcanonical(d,0.1))
