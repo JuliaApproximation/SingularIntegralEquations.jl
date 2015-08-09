@@ -64,6 +64,7 @@ for (Op,OpWrap,OffOp) in ((:PseudoHilbert,:PseudoHilbertWrapper,:OffPseudoHilber
 
         choosedomainspace(H::$Op{UnsetSpace},sp::Ultraspherical)=ChebyshevWeight(ChebyshevDirichlet{1,1}(domain(sp)))
         choosedomainspace(H::$Op{UnsetSpace},sp::MappedSpace)=MappedSpace(domain(sp),choosedomainspace(H,sp.space))
+        choosedomainspace(H::$Op{UnsetSpace},sp::PiecewiseSpace)=PiecewiseSpace(map(s->choosedomainspace(H,s),sp.spaces))
     end
 end
 

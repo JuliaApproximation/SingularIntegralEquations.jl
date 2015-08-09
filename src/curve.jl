@@ -109,7 +109,7 @@ end
 
 ## CurveSpace
 
-function Hilbert{C<:Curve,T}(S::MappedSpace{JacobiWeight{Chebyshev},C,T},k::Int)
+function Hilbert{C<:Curve,SS,T}(S::MappedSpace{JacobiWeight{SS},C,T},k::Int)
     @assert k==1
     tol=1E-15
     # the mapped logkernel

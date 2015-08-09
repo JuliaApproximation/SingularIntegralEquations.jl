@@ -22,11 +22,13 @@ u(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
 m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
-k=102;
+k=107;
     c=exp(-k/50im)
     ui=[BasisFunctional(1);Hilbert()]\[0.;imag(c*z)]
     Gadfly.plot(ApproxFun.layer(Γ),
                 layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-2.5:.05:2.5])))
+
+
 
 ##
 # On an arc, the Hilbert transform no longer gives the imaginary part
@@ -41,8 +43,8 @@ u(x,y)=c*(x+im*y)+2pseudocauchy(ui,x+im*y)
 m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
-k=201;
-    Γ=exp(im*Interval(0.1,4))
+k=264;
+    Γ=exp(im*Interval(0.1,7))
     z=Fun(Γ)
     c=exp(-k/50im)
     ui=[BasisFunctional(1);PseudoHilbert()]\[0.;imag(c*z)]
@@ -71,5 +73,26 @@ m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
 
 
 
+##
+#  Two intervals requires explicitely stating the space (for now)
+##
 
+
+
+Γ=Interval(-1.,-0.5)∪Interval(0.5,1.)
+z=Fun(Γ)
+
+
+u(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
+
+m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
+    xx,yy = x.+0.*y',0.*x.+y'
+
+k=20;
+    c=exp(-k/50im)
+    ui=[BasisFunctional(1);
+        BasisFunctional(2);
+        Hilbert()]\[0.;0.;imag(c*z)]
+    Gadfly.plot(ApproxFun.layer(Γ),
+                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-2.5:.05:2.5])))
 
