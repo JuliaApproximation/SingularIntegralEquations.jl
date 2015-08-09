@@ -27,8 +27,8 @@ for Op in (:OffHilbert,:OffSingularIntegral)
                                                            typeof(OH.rangespace),
                                                            eltype(BT)}(OH.data,OH.domainspace,OH.rangespace,OH.order)
 
-        $Op{D<:FunctionSpace,R<:FunctionSpace}(ds::D,rs::R) = $Op(ds,rs,1)
-        $Op{B<:BandedMatrix,D<:FunctionSpace,R<:FunctionSpace}(data::B,ds::D,rs::R) = $Op(data,ds,rs,1)
+        $Op(ds::FunctionSpace,rs::FunctionSpace) = $Op(ds,rs,1)
+        $Op(data::BandedMatrix,ds::FunctionSpace,rs::FunctionSpace) = $Op(data,ds,rs,1)
 
         $Op(ds::PeriodicDomain,rs::PeriodicDomain,order)=$Op(Laurent(ds),Laurent(rs),order)
         $Op(ds::PeriodicDomain,rs::PeriodicDomain)=$Op(Laurent(ds),Laurent(rs))
@@ -37,6 +37,26 @@ for Op in (:OffHilbert,:OffSingularIntegral)
         rangespace(C::$Op)=C.rangespace
         bandinds(C::$Op)=bandinds(C.data)
     end
+end
+
+function OffHilbert(ds::FunctionSpace,rs::FunctionSpace,order::Int)
+    @assert order==1
+    tol=1E-13
+
+    b=Fun([1.],ds);
+    v1=Fun(x->-stieltjes(b,x)/π,rs).coefficients
+    m=length(v1)
+    C=Array(Complex128,m,1000)
+
+    for k=2:1000
+        b=Fun([zeros(k-1);1.],ds)
+        cfs=Fun(x->-stieltjes(b,x)/π,rs,m).coefficients
+        C[:,k]=cfs
+        if norm(cfs)<tol
+            return OffHilbert(convert(BandedMatrix,C[:,1:k]),ds,rs,order)
+        end
+    end
+    error("Max Iteration Reached")
 end
 
 ## JacobiWeight
@@ -88,7 +108,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
             $Op(M,ds,rs,order)
         end
 
-        function $Op(ds::JacobiWeight{ChebyshevDirichlet{1,1}},rs::FunctionSpace,order::Int)
+        function $Op(ds::JacobiWeight{ChebyshevDirichlet{1,1}},rs::PolynomialSpace,order::Int)
             @assert ds.α==ds.β==-0.5
             d = domain(ds)
             C = (.5*$Len(d))^(1-order) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
