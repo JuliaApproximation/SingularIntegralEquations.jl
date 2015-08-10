@@ -247,4 +247,20 @@ function hierarchicalGreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Fun
     end
 end
 
+include("LowRankOperator.jl")
+include("woodburysolve.jl")
+
+
 Base.size{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = 2^H.n,2^H.n
+
+function Base.getindex{G<:GreensFun,L<:LowRankFun}(⨍::DefiniteLineIntegral,H::HierarchicalMatrix{G,GreensFun{L}})
+    #m,n = size(H)
+    #wsp = domainspace(⨍)
+    #@assert m == length(wsp.spaces)
+    #⨍ = DefiniteLineIntegral()
+    val1 = collectdiagonaldata(H)
+    val2 = collectoffdiagonaldata(H)
+    diagonaldata = map(A->DefiniteLineIntegral(domain(A)[1])[A],val1)
+    offdiagonaldata = map(LowRankOperator,val2)
+    HO = HierarchicalMatrix(diagonaldata,offdiagonaldata)
+end
