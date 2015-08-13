@@ -94,6 +94,8 @@ function cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
         else
             zero(z)
         end
+    elseif isapproxinteger(sp.α) && isapproxinteger(sp.β)
+        cauchy(Fun(u,sp.space),z)
     else
         if domain(u)==Interval()
             cauchyintervalrecurrence(Fun(u,JacobiWeight(sp.α,sp.β,Jacobi(sp.β,sp.α))),z)

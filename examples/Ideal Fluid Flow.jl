@@ -125,13 +125,17 @@ z=Fun(Γ)
 u(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
 
 k=20;
-    c=exp(-k/50im)
+    c=exp(-π*k/50im)
     ui=[BasisFunctional(1);
         BasisFunctional(2);
         real(Hilbert())]\Any[0.;0.;imag(c*z)]
 
-m=80;x = linspace(-2.,2.,m);y = linspace(-2.,1.,m+1)
+m=100;x = linspace(-3.,3.,m);y = linspace(-3.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
-    Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-2.5:.05:2.5])))
+    myplot=Gadfly.plot(ApproxFun.layer(Γ),
+                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-5.:.07:4.])))
+
+draw(SVG("/Users/solver/Desktop/myplot.svg", 4inch, 3inch), myplot)
+
+Pkg.add("Cairo")
 
