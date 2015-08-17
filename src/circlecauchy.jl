@@ -36,6 +36,7 @@ function cauchy(d::Circle,cfs::Vector,z::Number)
 end
 
 cauchy(d::Circle,cfs::Vector,z::Vector)=[cauchy(d,cfs,zk) for zk in z]
+cauchy(d::Circle,cfs::Vector,z::Matrix)=reshape(cauchy(d,cfs,vec(z)),size(z,1),size(z,2))
 
 function cauchy(s::Bool,d::Circle,cfs::Vector,z::Number)
     @assert in(z,d)
@@ -45,11 +46,11 @@ end
 
 
 
-cauchy(s::Bool,f::Fun{Laurent},z::Number)=cauchy(s,domain(f),coefficients(f),z)
-cauchy(f::Fun{Laurent},z::Number)=cauchy(domain(f),coefficients(f),z)
+cauchy(s::Bool,f::Fun{Laurent},z)=cauchy(s,domain(f),coefficients(f),z)
+cauchy(f::Fun{Laurent},z)=cauchy(domain(f),coefficients(f),z)
 
-cauchy(s::Bool,f::Fun{Fourier},z::Number)=cauchy(s,Fun(f,Laurent(domain(f))),z)
-cauchy(f::Fun{Fourier},z::Number)=cauchy(Fun(f,Laurent(domain(f))),z)
+cauchy(s::Bool,f::Fun{Fourier},z)=cauchy(s,Fun(f,Laurent(domain(f))),z)
+cauchy(f::Fun{Fourier},z)=cauchy(Fun(f,Laurent(domain(f))),z)
 
 
 

@@ -44,11 +44,16 @@ function OffHilbert(ds::FunctionSpace,rs::FunctionSpace,order::Int)
     tol=1E-13
 
     b=Fun([1.],ds);
-    v1=Fun(x->-stieltjes(b,x)/π,rs).coefficients
-    m=length(v1)
+    v1=chop(Fun(x->-stieltjes(b,x)/π,rs).coefficients,tol)
+    b=Fun([0.,1.],ds);
+    v2=chop(Fun(x->-stieltjes(b,x)/π,rs).coefficients,tol)
+    m=max(length(v1),length(v2))
     C=Array(Complex128,m,1000)
 
-    for k=2:1000
+    C[:,1]=pad!(v1,m)
+    C[:,2]=pad!(v2,m)
+
+    for k=3:1000
         b=Fun([zeros(k-1);1.],ds)
         cfs=Fun(x->-stieltjes(b,x)/π,rs,m).coefficients
         C[:,k]=cfs
@@ -56,7 +61,8 @@ function OffHilbert(ds::FunctionSpace,rs::FunctionSpace,order::Int)
             return OffHilbert(convert(BandedMatrix,C[:,1:k]),ds,rs,order)
         end
     end
-    error("Max Iteration Reached")
+    warn("Max Iteration Reached for "*string(ds)*" to "*string(rs))
+    OffHilbert(convert(BandedMatrix,C),ds,rs,order)
 end
 
 ## JacobiWeight
