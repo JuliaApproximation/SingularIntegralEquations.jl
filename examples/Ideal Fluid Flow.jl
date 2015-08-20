@@ -19,22 +19,14 @@ u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
 m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
-k=25
-    Γ=Interval(0.,1.)
+
+k=101;
+    Γ=Interval(0.,1+0.5im)
     z=Fun(Γ)
     α=exp(-π*k/50im)
-
     c,ui=[1 Hilbert()]\imag(α*z)
-
-Gadfly.plot(ApproxFun.layer(Γ),
+    Gadfly.plot(ApproxFun.layer(Γ),
                 layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-2.5:.05:2.5])))
-A=[1 Hilbert()]
-P=ApproxFun.PrependColumnsOperator(A)
-
-
-
-ApproxFun.promotedomainspace(P,ApproxFun.choosedomainspace(P,space(z)))
-
 ##
 # On an arc, the Hilbert transform no longer gives the imaginary part
 #  However, pseudohilbert gives the imaginary part of pseudocauchy
@@ -43,16 +35,16 @@ ApproxFun.promotedomainspace(P,ApproxFun.choosedomainspace(P,space(z)))
 ##
 
 
-u(x,y)=c*(x+im*y)+2pseudocauchy(ui,x+im*y)
+u(x,y)=α*(x+im*y)+2pseudocauchy(ui,x+im*y)
 
 m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
-k=200;
-    Γ=exp(im*Interval(0.1,2))
+k=217;
+    Γ=0.5+exp(im*Interval(0.1,8))
     z=Fun(Γ)
-    c=exp(-k/50im)
-    ui=[BasisFunctional(1);PseudoHilbert()]\[0.;imag(c*z)]
+    α=exp(-k/50im)
+    c,ui=[1 PseudoHilbert()]\imag(α*z)
     Gadfly.plot(ApproxFun.layer(Γ),
                 layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3:.05:3])))
 
@@ -62,20 +54,112 @@ k=200;
 ##
 
 Γ=Circle()
-z=Fun(identity,Fourier(Γ))
+z=Fun(Fourier(Γ))
 
 
-u(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
+u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
 
 m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
 k=107;
-    c=exp(-k/50im)
-    ui=ApproxFun.SliceOperator(real(Hilbert(space(z))),1,1,1)\imag(c*z)
-    ui=Fun(ui,space(ui).space)
+    α=exp(-k/50im)
+    #TODO: fix current bug by using SumSpace instead of TupleSpace
+    c,a,b=[0 BasisFunctional(1);
+          1 real(Hilbert())]\[0.,imag(α*z)]
+    ui=a+b
+
     Gadfly.plot(ApproxFun.layer(Γ),
                 layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-2.5:.05:2.5])))
+
+##
+# On a curve, the Hilbert transform may be complex, so we
+# take the real part
+##
+
+u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
+
+m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
+    xx,yy = x.+0.*y',0.*x.+y'
+
+
+Γ=Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))
+    z=Fun(Γ)
+    α=im
+    c,ui=[1 real(Hilbert())]\imag(α*z)
+    Gadfly.plot(ApproxFun.layer(Γ),
+                    layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3:.05:3])))
+
+
+
+
+##
+#  Two intervals requires explicitely stating the space (for now)
+##
+
+using ApproxFun,SingularIntegralEquations
+
+Γ=Interval(-1.,-0.5)∪Interval(0.5,1.)
+z=Fun(Γ)
+
+
+ds=ApproxFun.choosedomainspace(Hilbert(),space(z))
+H=Hilbert(ds)
+
+
+A=[ones(Γ[1]) ones(Γ[2]) real(H)]
+
+c=exp(1.0*im)
+a,b,ui=ApproxFun.PrependColumnsOperator(A)\imag(c*z)
+
+u2(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
+
+m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
+    xx,yy = x.+0.*y',0.*x.+y'
+using Gadfly
+Gadfly.plot(ApproxFun.layer(Γ),
+                layer(x=x,y=y,z=imag(u2(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3.:.05:3.])))
+
+
+Γ=Interval(-1.,0.)∪Interval(0.5im,1.)
+z=Fun(Γ)
+
+
+u(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
+
+m=80;x = linspace(-2.,2.,m);y = linspace(-2.,1.,m+1)
+    xx,yy = x.+0.*y',0.*x.+y'
+
+k=20;
+    c=exp(-k/50im)
+    ui=[BasisFunctional(1);
+        BasisFunctional(2);
+        real(Hilbert())]\[0.;0.;imag(c*z)]
+    Gadfly.plot(ApproxFun.layer(Γ),
+                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-2.5:.05:2.5])))
+
+
+
+
+Γ=Interval(-im,1.0-im)∪Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))
+z=Fun(Γ)
+u(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
+
+k=20;
+    c=exp(-π*k/50im)
+    ui=[BasisFunctional(1);
+        BasisFunctional(2);
+        real(Hilbert())]\Any[0.;0.;imag(c*z)]
+
+m=100;x = linspace(-3.,3.,m);y = linspace(-3.,2.,m+1)
+    xx,yy = x.+0.*y',0.*x.+y'
+    myplot=Gadfly.plot(ApproxFun.layer(Γ),
+                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-5.:.07:4.])))
+
+draw(SVG("/Users/solver/Desktop/myplot.svg", 4inch, 3inch), myplot)
+
+Pkg.add("Cairo")
+
 
 
 ## Channel
@@ -246,92 +330,3 @@ Conversion(S,MappedSpace(Γ,ApproxFun.Laurent(PeriodicInterval())))
 
 Hilbert(MappedSpace(Γ,ApproxFun.LaurentDirichlet()))[1:10,1:10]
 Hilbert(ApproxFun.PeriodicLineDirichlet(Γ))[1:10,1:10]
-
-##
-# On a curve, the Hilbert transform may be complex, so we
-# take the real part
-##
-
-u(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
-
-m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
-    xx,yy = x.+0.*y',0.*x.+y'
-
-
-Γ=Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))
-    z=Fun(Γ)
-    c=im
-    ui=[BasisFunctional(1);real(Hilbert())]\Any[0.;imag(c*z)]
-    Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3:.05:3])))
-
-
-
-
-##
-#  Two intervals requires explicitely stating the space (for now)
-##
-
-using ApproxFun,SingularIntegralEquations
-
-Γ=Interval(-1.,-0.5)∪Interval(0.5,1.)
-z=Fun(Γ)
-
-
-ds=ApproxFun.choosedomainspace(Hilbert(),space(z))
-H=Hilbert(ds)
-
-
-A=[ones(Γ[1]) ones(Γ[2]) real(H)]
-
-c=exp(1.0*im)
-a,b,ui=ApproxFun.PrependColumnsOperator(A)\imag(c*z)
-
-u2(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
-
-m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
-    xx,yy = x.+0.*y',0.*x.+y'
-using Gadfly
-Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u2(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3.:.05:3.])))
-
-
-Γ=Interval(-1.,0.)∪Interval(0.5im,1.)
-z=Fun(Γ)
-
-
-u(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
-
-m=80;x = linspace(-2.,2.,m);y = linspace(-2.,1.,m+1)
-    xx,yy = x.+0.*y',0.*x.+y'
-
-k=20;
-    c=exp(-k/50im)
-    ui=[BasisFunctional(1);
-        BasisFunctional(2);
-        real(Hilbert())]\[0.;0.;imag(c*z)]
-    Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-2.5:.05:2.5])))
-
-
-
-
-Γ=Interval(-im,1.0-im)∪Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))
-z=Fun(Γ)
-u(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
-
-k=20;
-    c=exp(-π*k/50im)
-    ui=[BasisFunctional(1);
-        BasisFunctional(2);
-        real(Hilbert())]\Any[0.;0.;imag(c*z)]
-
-m=100;x = linspace(-3.,3.,m);y = linspace(-3.,2.,m+1)
-    xx,yy = x.+0.*y',0.*x.+y'
-    myplot=Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-5.:.07:4.])))
-
-draw(SVG("/Users/solver/Desktop/myplot.svg", 4inch, 3inch), myplot)
-
-Pkg.add("Cairo")
-

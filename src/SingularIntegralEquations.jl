@@ -14,7 +14,7 @@ import ApproxFun: bandinds,SpaceOperator,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,BivariateFun,linesum,complexlength,
                   ProductFun, LowRankFun, mappoint, PeriodicLineSpace, PeriodicLineDirichlet,Recurrence, CompactFunctional,
                   real, UnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, PrependColumnsOperator,
-                  ConstantSpace
+                  ConstantSpace,ReOperator
 
 function cauchy(s,f,z)
     if isa(s,Bool)

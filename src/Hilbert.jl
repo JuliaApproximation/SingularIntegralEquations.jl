@@ -64,14 +64,25 @@ for (Op,OpWrap,OffOp) in ((:PseudoHilbert,:PseudoHilbertWrapper,:OffPseudoHilber
         bandinds(H::$Op{JacobiWeight{Ultraspherical{1}}})=H.order > 0 ? (-1,H.order-1) : (-2,0)
 
         choosedomainspace(H::$Op{UnsetSpace},sp::Ultraspherical)=ChebyshevWeight(ChebyshevDirichlet{1,1}(domain(sp)))
+        choosedomainspace(H::$Op{UnsetSpace},sp::MappedSpace)=MappedSpace(domain(sp),choosedomainspace(H,sp.space))
+        choosedomainspace(H::$Op{UnsetSpace},sp::PiecewiseSpace)=PiecewiseSpace(map(s->choosedomainspace(H,s),sp.spaces))
+
+
+
         # PrependColumnsOperator [1 Hilbert()] which allows for bounded solutions
         #TODO: Array values?
-        choosedomainspace{T,V}(P::PrependColumnsOperator{$Op{UnsetSpace,T,V}},
+        choosedomainspace{T,V,W}(P::Union(PrependColumnsOperator{$Op{UnsetSpace,T,V}},
+                                          PrependColumnsOperator{ReOperator{$Op{UnsetSpace,T,V},W}}),
                                sp::Ultraspherical)=SumSpace(ConstantSpace(),
                                                             JacobiWeight(0.5,0.5,
                                                                          Ultraspherical{1}(domain(sp))))
-        choosedomainspace(H::$Op{UnsetSpace},sp::MappedSpace)=MappedSpace(domain(sp),choosedomainspace(H,sp.space))
-        choosedomainspace(H::$Op{UnsetSpace},sp::PiecewiseSpace)=PiecewiseSpace(map(s->choosedomainspace(H,s),sp.spaces))
+        function choosedomainspace{T,V,W}(P::Union(PrependColumnsOperator{$Op{UnsetSpace,T,V}},
+                                                   PrependColumnsOperator{ReOperator{$Op{UnsetSpace,T,V},W}}),
+                               sp::MappedSpace)
+            r=choosedomainspace(P,sp.space)
+            @assert isa(r,SumSpace) && length(r.spaces)==2 && isa(r.spaces[1],ConstantSpace)
+            SumSpace(ConstantSpace(),MappedSpace(domain(sp),r.spaces[2]))
+        end
     end
 end
 
@@ -280,6 +291,9 @@ for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),
             A
         end
 
+        # we always have real for n==1
+        $Op(sp::JacobiWeight{Ultraspherical{1}},n)=Hilbert{typeof(sp),typeof(n),
+                                                           n==1?real(eltype(domain(sp))):typeof($Len(domain(S)))}(sp,n)
         function addentries!(H::$Op{JacobiWeight{Ultraspherical{1}}},A,kr::UnitRange)
             m=H.order
             d=domain(H)
