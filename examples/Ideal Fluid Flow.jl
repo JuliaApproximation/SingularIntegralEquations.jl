@@ -12,22 +12,28 @@ using Gadfly
 #  then c*z + 2cauchy(u,z) vanishes on Γ
 ##
 
-Γ=Interval()
-z=Fun(Γ)
 
 
-u(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
+u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
 
 m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
-k=107;
-    c=exp(-k/50im)
-    ui=[BasisFunctional(1);Hilbert()]\[0.;imag(c*z)]
-    Gadfly.plot(ApproxFun.layer(Γ),
+k=25
+    Γ=Interval(0.,1.)
+    z=Fun(Γ)
+    α=exp(-π*k/50im)
+
+    c,ui=[1 Hilbert()]\imag(α*z)
+
+Gadfly.plot(ApproxFun.layer(Γ),
                 layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-2.5:.05:2.5])))
+A=[1 Hilbert()]
+P=ApproxFun.PrependColumnsOperator(A)
 
 
+
+ApproxFun.promotedomainspace(P,ApproxFun.choosedomainspace(P,space(z)))
 
 ##
 # On an arc, the Hilbert transform no longer gives the imaginary part
@@ -272,97 +278,22 @@ using ApproxFun,SingularIntegralEquations
 z=Fun(Γ)
 
 
-A=[ones(Γ[1]) ones(Γ[2]) real(H)]
-
-
-ApproxFun.isconstop(A[1])
-ApproxFun.interlace(A)
-
 ds=ApproxFun.choosedomainspace(Hilbert(),space(z))
 H=Hilbert(ds)
-c=exp(0.5im)
-⨍=DefiniteLineIntegral(Γ)
-ui=[0. ⨍;
-    1. H]\Any[0.,imag(c*z)]
-
-vec(ui)
-u(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
 
 
-help(ntuple)
-tuple(ntuple(5,i->Int)...,Float64)
-import ApproxFun.PrependColumnsOperator
+A=[ones(Γ[1]) ones(Γ[2]) real(H)]
 
-length(space(ui)[1])
+c=exp(1.0*im)
+a,b,ui=ApproxFun.PrependColumnsOperator(A)\imag(c*z)
 
+u2(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
 
-ui=[BasisFunctional(2),BasisFunctional(3),ApproxFun.PrependColumnsOperator([1.],H)]\[0.,0.,imag(c*z)]
-ui=vec(ui,2)
-
-ui=ApproxFun.PrependColumnsOperator(eye(2),H)\imag(c*z)
-ui=Fun(ui.coefficients[3:end],space(ui)[2])
-
-next([1,2,6],1)
-
-
-help(next)
-a,b,c=ui
-vec(ui)
-
-vec(ui,3)
 m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
-
-Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3.:.05:3.])))
 using Gadfly
-ApproxFun.interlace([1. H])
-⨍=DefiniteLineIntegral(Γ)
-A=[0. ⨍;
-    1. H]|>ApproxFun.interlace
-c=im
-s1=ApproxFun.choosedomainspace(A[2],space(imag(c*z)))
-s2=ApproxFun.choosedomainspace(A[1],space(imag(c*z)))
-
-ApproxFun.conversion_type(s1,s2)
-c=im
-
-P=ApproxFun.interlace([0. ⨍;
-    1. H])[1]
-
-kr=1:1
-lcols = length(P.cols)
-opr = intersect(kr,length(P.cols)+1:kr[end])
-intersect(kr,1:length(P.cols))
-[P.cols[intersect(kr,1:length(P.cols))],P.op[opr[1]-lcols:opr[end]-lcols]]
-
-ui=[0. ⨍;
-    1. H]\Any[0.,imag(c*z)]
-ui=vec(ui,2)
 Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-2.5:.05:2.5])))
-
-
-ui=real(ApproxFun.PrependColumnsOperator(eye(2),H))\imag(c*z)
-    ui=Fun(ui.coefficients[3:end],domainspace(H))
-Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-2.5:.05:2.5])))
-
-
-ui
-ApproxFun.interlace([0. DefiniteLineIntegral(Γ);
-                      H])
-H[1:10,1:10]
-
-
-k=20;
-    c=exp(-k/50im*π)
-    ui=[BasisFunctional(1);
-        BasisFunctional(2);
-        Hilbert()]\[0.;0.;imag(c*z)]
-    Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-2.5:.05:2.5])))
-
+                layer(x=x,y=y,z=imag(u2(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3.:.05:3.])))
 
 
 Γ=Interval(-1.,0.)∪Interval(0.5im,1.)

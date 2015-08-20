@@ -64,6 +64,12 @@ for (Op,OpWrap,OffOp) in ((:PseudoHilbert,:PseudoHilbertWrapper,:OffPseudoHilber
         bandinds(H::$Op{JacobiWeight{Ultraspherical{1}}})=H.order > 0 ? (-1,H.order-1) : (-2,0)
 
         choosedomainspace(H::$Op{UnsetSpace},sp::Ultraspherical)=ChebyshevWeight(ChebyshevDirichlet{1,1}(domain(sp)))
+        # PrependColumnsOperator [1 Hilbert()] which allows for bounded solutions
+        #TODO: Array values?
+        choosedomainspace{T,V}(P::PrependColumnsOperator{$Op{UnsetSpace,T,V}},
+                               sp::Ultraspherical)=SumSpace(ConstantSpace(),
+                                                            JacobiWeight(0.5,0.5,
+                                                                         Ultraspherical{1}(domain(sp))))
         choosedomainspace(H::$Op{UnsetSpace},sp::MappedSpace)=MappedSpace(domain(sp),choosedomainspace(H,sp.space))
         choosedomainspace(H::$Op{UnsetSpace},sp::PiecewiseSpace)=PiecewiseSpace(map(s->choosedomainspace(H,s),sp.spaces))
     end
