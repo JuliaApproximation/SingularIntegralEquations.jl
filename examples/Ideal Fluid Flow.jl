@@ -64,10 +64,8 @@ m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
 
 k=107;
     α=exp(-k/50im)
-    #TODO: fix current bug by using SumSpace instead of TupleSpace
-    c,a,b=[0 BasisFunctional(1);
+    c,ui=[0 BasisFunctional(1);
           1 real(Hilbert())]\[0.,imag(α*z)]
-    ui=a+b
 
     Gadfly.plot(ApproxFun.layer(Γ),
                 layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-2.5:.05:2.5])))
@@ -97,19 +95,28 @@ m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
 #  Two intervals requires explicitely stating the space (for now)
 ##
 
-using ApproxFun,SingularIntegralEquations
-
 Γ=Interval(-1.,-0.5)∪Interval(0.5,1.)
 z=Fun(Γ)
 
 
-ds=ApproxFun.choosedomainspace(Hilbert(),space(z))
-H=Hilbert(ds)
+
+ds=PiecewiseSpace([JacobiWeight(0.5,0.5,Ultraspherical{1}(Γ[1])),
+                       JacobiWeight(0.5,0.5,Ultraspherical{1}(Γ[2]))])
 
 
-A=[ones(Γ[1]) ones(Γ[2]) real(H)]
+    A=[ones(Γ[1]) ones(Γ[2]) real(Hilbert(ds))]
+    α=exp(1.0*im)
+    P=ApproxFun.interlace(A)
 
-c=exp(1.0*im)
+
+P\imag(α*z)
+
+
+
+
+
+
+
 a,b,ui=ApproxFun.PrependColumnsOperator(A)\imag(c*z)
 
 u2(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
