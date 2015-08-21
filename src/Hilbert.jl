@@ -40,10 +40,10 @@ for (Op,OpWrap,OffOp) in ((:PseudoHilbert,:PseudoHilbertWrapper,:OffPseudoHilber
         function $Op(S::PiecewiseSpace,n::Int)
             sp=vec(S)
             m=length(sp)
-            diag=[$Op(sp[k],n) for k=1:m]
-            C=[k==j?diag[k]:$OffOp(sp[k],rangespace(diag[j]),n) for j=1:m,k=1:m]
-            C=BandedOperator{mapreduce(i->eltype(C[i]),promote_type,1:m^2)}[C[j,k] for j=1:m,k=1:m]
-            $OpWrap(interlace(C),n)
+            diag=Any[$Op(sp[k],n) for k=1:m]
+            C=Any[k==j?diag[k]:$OffOp(sp[k],rangespace(diag[j]),n) for j=1:m,k=1:m]
+            D=BandedOperator{mapreduce(i->eltype(C[i]),promote_type,1:m^2)}[C[j,k] for j=1:m,k=1:m]
+            $OpWrap(interlace(D),n)
         end
 
         bandinds{s}(::$Op{Hardy{s}})=0,0
