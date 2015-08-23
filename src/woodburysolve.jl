@@ -32,8 +32,8 @@ function woodburysolve{S<:AbstractMatrix,U<:LowRankMatrix,V}(H::HierarchicalMatr
 
     # Solve again with updated right-hand sides
 
-    RHS1 = f1-U12*v12
-    RHS2 = f2-U21*v21
+    RHS1 = f1 - At_mul_B(v12,U12)
+    RHS2 = f2 - At_mul_B(v21,U21)
     reshape([woodburysolve(H11,RHS1);woodburysolve(H22,RHS2)],size(f))
 end
 
@@ -43,54 +43,10 @@ end
 woodburysolve{V<:Operator}(H::V,f::Fun) = H\f
 woodburysolve{V<:Operator,F<:Fun}(H::V,f::Vector{F}) = vec(H\transpose(f))
 
-function woodburysolve{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun)
-    sol = woodburysolve(H,[f])
-    Fun(coefficients(sol),space(sol).space)
-end
+woodburysolve{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = woodburysolve(H,[f])[1]
 
 function woodburysolve{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F})
     N,nf = length(space(first(f))),length(f)
-    N2 = div(N,2)
-
-    if N == 2 return woodburysolve2x2(H,f) end
-
-    # Partition HierarchicalMatrix
-
-    (H11,H22),(H21,H12) = partitionmatrix(H)
-
-    # Off-diagonal low-rank matrix assembly
-
-    U12,V12 = H12.U,H12.V
-    U21,V21 = H21.U,H21.V
-
-    # Partition the right-hand side
-
-    (f1,f2) = (map(x->depiece(pieces(x)[1:N2]),f),map(x->depiece(pieces(x)[1+N2:N]),f))
-
-    # Solve recursively
-
-    A2U21f2,A1U12f1 = vec(woodburysolve(H22,vcat(U21,f2))),vec(woodburysolve(H11,vcat(U12,f1)))
-
-    # Compute pivots
-
-    v12,v21 = computepivots(V12,V21,A1U12f1,A2U21f2,nf)
-
-    RHS1,RHS2 = f1,f2
-    for i=1:nf
-        RHS1[i] -= dotu(v12[:,i],U12)
-        RHS2[i] -= dotu(v21[:,i],U21)
-    end
-
-    # Solve again with updated right-hand sides
-
-    sol = [vec(woodburysolve(H11,RHS1)),vec(woodburysolve(H22,RHS2))]
-    ls = length(sol)
-    devec([mapreduce(i->devec(mapreduce(k->vec(sol[k]),vcat,i:nf:ls)),vcat,1:nf)])
-end
-
-function woodburysolve2x2{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F})
-    N,nf = length(space(first(f))),length(f)
-    N2 = div(N,2)
 
     # Partition HierarchicalMatrix
 
@@ -103,7 +59,7 @@ function woodburysolve2x2{U<:Operator,V<:LowRankOperator,F<:Fun}(H::Hierarchical
 
     # Partition the right-hand side
 
-    (f1,f2) = (map(x->depiece(pieces(x)[1:N2]),f),map(x->depiece(pieces(x)[1+N2:N]),f))
+    (f1,f2) = partitionfun(f)
 
     # Solve recursively
 
@@ -113,18 +69,37 @@ function woodburysolve2x2{U<:Operator,V<:LowRankOperator,F<:Fun}(H::Hierarchical
 
     v12,v21 = computepivots(V12,V21,A1U12f1,A2U21f2,nf)
 
-    RHS1,RHS2 = f1,f2
-    for i=1:nf
-        RHS1[i] -= dotu(v12[:,i],U12)
-        RHS2[i] -= dotu(v21[:,i],U21)
-    end
+    # Solve again with updated right-hand sides
+
+    RHS1 = f1 - At_mul_B(v12,U12)
+    RHS2 = f2 - At_mul_B(v21,U21)
 
     sol = [woodburysolve(H11,RHS1),woodburysolve(H22,RHS2)]
-    devec([mapreduce(i->devec(sol[i:nf:end]),vcat,1:nf)])
+    if N == 2
+        return [mapreduce(i->depiece(sol[i:nf:end]),vcat,1:nf)]
+    else
+        ls = length(sol)
+        return [mapreduce(i->depiece(mapreduce(k->pieces(sol[k]),vcat,i:nf:ls)),vcat,1:nf)]
+    end
 end
 
-strippiecewisespace{PWS<:PiecewiseSpace,T}(U::Vector{Fun{PWS,T}}) = mapreduce(pieces,vcat,U)
+# strippiecewisespace is used for the 2 x 2 case, since the off-diagonal blocks had
+# to be in a PiecewiseSpace to conform with higher levels in the hierarchy, yet they only have one space.
 
+strippiecewisespace{PWS<:PiecewiseSpace,T}(U::Fun{PWS,T}) = length(space(U)) == 1 ? pieces(U) : U
+strippiecewisespace{PWS<:PiecewiseSpace,T}(U::Vector{Fun{PWS,T}}) = length(space(first(U))) == 1 ? mapreduce(pieces,vcat,U) : U
+
+function partitionfun{PWS<:PiecewiseSpace,T}(f::Fun{PWS,T})
+    N = length(space(f))
+    N2 = div(N,2)
+    (depiece(pieces(f)[1:N2])),(depiece(pieces(f)[1+N2:N]))
+end
+
+function partitionfun{PWS<:PiecewiseSpace,T}(f::Vector{Fun{PWS,T}})
+    N = length(space(first(f)))
+    N2 = div(N,2)
+    (map(x->depiece(pieces(x)[1:N2]),f),map(x->depiece(pieces(x)[1+N2:N]),f))
+end
 
 # Pivot computation
 
