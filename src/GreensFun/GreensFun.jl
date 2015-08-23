@@ -248,8 +248,6 @@ function hierarchicalGreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Fun
 end
 
 include("LowRankOperator.jl")
-include("woodburysolve.jl")
-
 
 Base.size{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = 2^H.n,2^H.n
 

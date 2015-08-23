@@ -51,6 +51,8 @@ include("vectorcauchy.jl")
 
 include("GreensFun/GreensFun.jl")
 
+include("woodburysolve.jl")
+
 include("periodicline.jl")
 include("arc.jl")
 include("curve.jl")
