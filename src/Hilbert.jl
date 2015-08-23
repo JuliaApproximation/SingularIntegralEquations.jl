@@ -305,7 +305,7 @@ for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),
 
         # we always have real for n==1
         $Op(sp::JacobiWeight{Ultraspherical{1}},n)=Hilbert{typeof(sp),typeof(n),
-                                                           n==1?real(eltype(domain(sp))):typeof($Len(domain(S)))}(sp,n)
+                                                           n==1?real(eltype(domain(sp))):typeof($Len(domain(sp)))}(sp,n)
         function addentries!(H::$Op{JacobiWeight{Ultraspherical{1}}},A,kr::UnitRange)
             m=H.order
             d=domain(H)

@@ -75,7 +75,7 @@ k=107;
 # take the real part
 ##
 
-u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
+u=(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 
 m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
