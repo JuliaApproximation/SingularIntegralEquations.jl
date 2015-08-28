@@ -1,5 +1,4 @@
-using ApproxFun,SingularIntegralEquations
-using Gadfly
+using ApproxFun,SingularIntegralEquations,Gadfly
 
 
 ##
@@ -41,7 +40,7 @@ m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
 k=217;
-    Γ=0.5+exp(im*Interval(0.1,8))
+    Γ=0.5+exp(im*Interval(0.1,9))
     z=Fun(Γ)
     α=exp(-k/50im)
     c,ui=[1 PseudoHilbert()]\imag(α*z)
@@ -62,8 +61,8 @@ u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
 m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
-k=107;
-    α=exp(-k/50im)
+k=154;
+    α=exp(-k/45im)
     c,ui=[0 BasisFunctional(1);
           1 real(Hilbert())]\[0.,imag(α*z)]
 
@@ -75,7 +74,7 @@ k=107;
 # take the real part
 ##
 
-u=(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
+u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
 
 m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
@@ -94,38 +93,21 @@ m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
 ##
 #  Two intervals requires explicitely stating the space (for now)
 ##
-
-Γ=Interval(-1.,-0.5)∪Interval(0.5,1.)
+using ApproxFun,SingularIntegralEquations
+Γ=Interval(-1.,-0.5)∪Interval(-0.3,1.)
 z=Fun(Γ)
 
+ds=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical{1}(d)),Γ.domains))
 
+a,b,ui=[ones(Γ[1]) ones(Γ[2]) Hilbert(ds)]\imag(α*z)
 
-ds=PiecewiseSpace([JacobiWeight(0.5,0.5,Ultraspherical{1}(Γ[1])),
-                       JacobiWeight(0.5,0.5,Ultraspherical{1}(Γ[2]))])
-
-
-    A=[ones(Γ[1]) ones(Γ[2]) real(Hilbert(ds))]
-    α=exp(1.0*im)
-    P=ApproxFun.interlace(A)
-
-
-P\imag(α*z)
-
-
-
-
-
-
-
-a,b,ui=ApproxFun.PrependColumnsOperator(A)\imag(c*z)
-
-u2(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
-
+u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
+imag(u(xx,yy))|>maximum
 m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
-using Gadfly
+
 Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u2(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3.:.05:3.])))
+                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3.:.05:3.])))
 
 
 Γ=Interval(-1.,0.)∪Interval(0.5im,1.)
@@ -150,11 +132,38 @@ k=20;
 
 Γ=Interval(-im,1.0-im)∪Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))
 z=Fun(Γ)
+
+ds=PiecewiseSpace([JacobiWeight(0.5,0.5,Ultraspherical{1}(Γ[1])),
+                       MappedSpace(Γ[2],JacobiWeight(0.5,0.5,Ultraspherical{1}()))])
+
+
+A=[ones(Γ[1]) ones(Γ[2]) real(Hilbert(ds))]
+α=exp(1.0*im)
+P=ApproxFun.interlace(A)
+
+ui=Fun(ApproxFun.adaptiveqr(P,imag(α*z).coefficients),domainspace(P))
+    a,b,ui=ui.coefficients[1],ui.coefficients[2],Fun(ui.coefficients[3:end],space(ui)[3])
+
+u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
+
+m=80;x = linspace(-2.,2.,m);y = linspace(-3.,2.,m+1)
+    xx,yy = x.+0.*y',0.*x.+y'
+
+myplot=Gadfly.plot(ApproxFun.layer(Γ),
+                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3.:.05:3.])))
+
+draw(PDF("/Users/solver/Desktop/myplot.pdf", 4inch, 3inch), myplot)
+draw(SVG("/Users/solver/Desktop/myplot.svg", 4inch, 3inch), myplot)
+Pkg.build("Cairo")
+
+z=Fun(Γ)
 u(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
 
 k=20;
     c=exp(-π*k/50im)
     ui=[BasisFunctional(1);
+
+
         BasisFunctional(2);
         real(Hilbert())]\Any[0.;0.;imag(c*z)]
 
