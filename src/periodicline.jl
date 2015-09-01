@@ -21,20 +21,20 @@
 
 #TODO: use hilbert instead of cauchy(g,-1)
 function cauchy{L<:PeriodicLine,S,T}(f::Fun{MappedSpace{S,L,T}},z::Number)
-    g=Fun(f.coefficients,Fourier(Circle()))
+    g=Fun(f.coefficients,setdomain(space(f).space,Circle()))
     cauchy(g,mappoint(domain(f),Circle(),z))-hilbert(g,-1)/(2im)
     # use im*(C^+ + C^-)=H
     #-cauchy(g,-1)
 end
 
 function cauchy{L<:PeriodicLine,S,T}(s::Bool,f::Fun{MappedSpace{S,L,T}},z::Number)
-    g=Fun(f.coefficients,Fourier(Circle()))
+    g=Fun(f.coefficients,setdomain(space(f).space,Circle()))
     cauchy(s,g,mappoint(domain(f),Circle(),z))-hilbert(g,-1)/(2im)
 end
 
 
 function hilbert{L<:PeriodicLine,S,T}(f::Fun{MappedSpace{S,L,T}},z::Number)
-    g=Fun(f.coefficients,Fourier(Circle()))
+    g=Fun(f.coefficients,setdomain(space(f).space,Circle()))
     hilbert(g,mappoint(domain(f),Circle(),z))-hilbert(g,-1)
     # use im*(C^+ + C^-)=H
     #-cauchy(g,-1)

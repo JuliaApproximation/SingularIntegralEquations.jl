@@ -1,5 +1,5 @@
 using ApproxFun,SingularIntegralEquations,Gadfly
-
+set_default_plot_format(:svg)
 
 ##
 #  Ideal fluid flow consists of level sets of the imagainary part of a function
@@ -40,7 +40,7 @@ m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
 k=217;
-    Γ=0.5+exp(im*Interval(0.1,9))
+    Γ=0.5+exp(im*Interval(0.1,5))
     z=Fun(Γ)
     α=exp(-k/50im)
     c,ui=[1 PseudoHilbert()]\imag(α*z)
@@ -93,39 +93,40 @@ m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
 ##
 #  Two intervals requires explicitely stating the space (for now)
 ##
-using ApproxFun,SingularIntegralEquations
+
 Γ=Interval(-1.,-0.5)∪Interval(-0.3,1.)
 z=Fun(Γ)
 
 ds=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical{1}(d)),Γ.domains))
 
-a,b,ui=[ones(Γ[1]) ones(Γ[2]) Hilbert(ds)]\imag(α*z)
 
 u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
-imag(u(xx,yy))|>maximum
+
 m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
-Gadfly.plot(ApproxFun.layer(Γ),
+k=114;
+    α=exp(k/50*im)
+    a,b,ui=[ones(Γ[1]) ones(Γ[2]) Hilbert(ds)]\imag(α*z)
+    Gadfly.plot(ApproxFun.layer(Γ),
                 layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3.:.05:3.])))
 
 
 Γ=Interval(-1.,0.)∪Interval(0.5im,1.)
 z=Fun(Γ)
+ds=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical{1}(d)),Γ.domains))
 
+u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
 
-u(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
-
-m=80;x = linspace(-2.,2.,m);y = linspace(-2.,1.,m+1)
+m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
-k=20;
-    c=exp(-k/50im)
-    ui=[BasisFunctional(1);
-        BasisFunctional(2);
-        real(Hilbert())]\[0.;0.;imag(c*z)]
+
+k=114;
+    α=exp(k/50*im)
+    a,b,ui=[ones(Γ[1]) ones(Γ[2]) real(Hilbert(ds))]\imag(α*z)
     Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-2.5:.05:2.5])))
+                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3.:.05:3.])))
 
 
 
@@ -137,44 +138,15 @@ ds=PiecewiseSpace([JacobiWeight(0.5,0.5,Ultraspherical{1}(Γ[1])),
                        MappedSpace(Γ[2],JacobiWeight(0.5,0.5,Ultraspherical{1}()))])
 
 
-A=[ones(Γ[1]) ones(Γ[2]) real(Hilbert(ds))]
-α=exp(1.0*im)
-P=ApproxFun.interlace(A)
-
-ui=Fun(ApproxFun.adaptiveqr(P,imag(α*z).coefficients),domainspace(P))
-    a,b,ui=ui.coefficients[1],ui.coefficients[2],Fun(ui.coefficients[3:end],space(ui)[3])
-
-u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
-
 m=80;x = linspace(-2.,2.,m);y = linspace(-3.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
-myplot=Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3.:.05:3.])))
 
-draw(PDF("/Users/solver/Desktop/myplot.pdf", 4inch, 3inch), myplot)
-draw(SVG("/Users/solver/Desktop/myplot.svg", 4inch, 3inch), myplot)
-Pkg.build("Cairo")
-
-z=Fun(Γ)
-u(x,y)=c*(x+im*y)+2cauchy(ui,x+im*y)
-
-k=20;
-    c=exp(-π*k/50im)
-    ui=[BasisFunctional(1);
-
-
-        BasisFunctional(2);
-        real(Hilbert())]\Any[0.;0.;imag(c*z)]
-
-m=100;x = linspace(-3.,3.,m);y = linspace(-3.,2.,m+1)
-    xx,yy = x.+0.*y',0.*x.+y'
-    myplot=Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-5.:.07:4.])))
-
-draw(SVG("/Users/solver/Desktop/myplot.svg", 4inch, 3inch), myplot)
-
-Pkg.add("Cairo")
+k=114;
+    α=exp(k/50*im)
+    a,b,ui=[ones(Γ[1]) ones(Γ[2]) real(Hilbert(ds))]\imag(α*z)
+Gadfly.plot(ApproxFun.layer(Γ),
+                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3.:.05:4.])))
 
 
 
@@ -185,6 +157,7 @@ Pkg.add("Cairo")
 using ApproxFun,SingularIntegralEquations,SO
     import ApproxFun:RealUnivariateSpace,ComplexBasis,canonicalspace,bandinds,addentries!,conversion_rule,
             spacescompatible,toeplitz_addentries!,domainscompatible,rangespace
+    import SingularIntegralEquations:cauchy
 immutable FourierDirichlet <: RealUnivariateSpace
     domain::PeriodicDomain
 end
@@ -195,9 +168,9 @@ FourierDirichlet()=FourierDirichlet(PeriodicInterval())
 
     canonicalspace(S::FourierDirichlet)=Fourier(domain(S))
 
-    bandinds(::Conversion{FourierDirichlet,Fourier})=0,2
+    bandinds(::Conversion{FourierDirichlet,Fourier})=-1,1
     function addentries!(C::Conversion{FourierDirichlet,Fourier},A,kr::Range)
-        toeplitz_addentries!([],[1.,0.,1.],A,kr)
+        toeplitz_addentries!([1.],[0.,1.],A,kr)
     end
 
 
@@ -207,142 +180,80 @@ FourierDirichlet()=FourierDirichlet(PeriodicInterval())
 
 
 
-bandinds{L<:PeriodicLine,T}(H::Hilbert{MappedSpace{FourierDirichlet,L,T}})=-1,3
+bandinds{L<:PeriodicLine,T}(H::Hilbert{MappedSpace{FourierDirichlet,L,T}})=-2,2
     rangespace{L<:PeriodicLine,T}(H::Hilbert{MappedSpace{FourierDirichlet,L,T}})=MappedSpace(domain(H),Fourier())
 
     function addentries!{L<:PeriodicLine,T}(H::Hilbert{MappedSpace{FourierDirichlet,L,T}},A,kr::Range)
         if 1 in kr
-            A[1,2]+=1
+            A[1,1]+=1
         end
         addentries!(real(Hilbert(FourierDirichlet(Circle()))),A,kr)
         A
     end
 
-S=MappedSpace(PeriodicLine()-2im,FourierDirichlet())
 
-PS=PiecewiseSpace([S,ChebyshevWeight(ChebyshevDirichlet{1,1}(Interval(2.im,.1+2.im)))])
+cauchy(f::Fun{FourierDirichlet},z)=cauchy(Fun(f,Fourier),z)
+cauchy{PL,T}(f::Fun{MappedSpace{Fourier,PL,T}},z::Vector)=Complex128[cauchy(f,zk) for zk in z]
+cauchy{PL,T}(f::Fun{MappedSpace{Fourier,PL,T}},z::Matrix)=reshape(cauchy(f,vec(z)),size(z,1),size(z,2))::Matrix{Complex128}
+cauchy{PL,T}(f::Fun{MappedSpace{FourierDirichlet,PL,T}},z)=cauchy(Fun(f,MappedSpace(domain(f),Fourier())),z)
+
+
+
+S=MappedSpace(PeriodicLine()-1.im,FourierDirichlet())
+
+PS=PiecewiseSpace([S,JacobiWeight(0.5,0.5,Ultraspherical{1}(Interval(-0.5im,1.+1.1im)))])
 H=Hilbert(PS)
-f=Fun(z->imag(z),rangespace(H))
-ui=linsolve([BasisFunctional(1);BasisFunctional(2);real(H)],Any[0.,0.,f];maxlength=1000)
-bandinds(H)
-length(ui)
 
-f.coefficients
-u=Fun([0.;ui.coefficients[2:end]],space(ui))
-hilbert(ui,.1-2.im)
+f=Fun(z->imag(z+1.im),rangespace(H))
+Γ=domain(PS)
 
-hilbert(f,.1-2.im)
-(real(H)*f)[.1-2.im]
+a,ui=linsolve([ones(Γ[2]) real(H)],f;tolerance=1E-10)
+m=80;x = linspace(-2.,3.,m);y = linspace(-1.5,2.,m+1)
+    xx,yy = x.+0.*y',0.*x.+y'
 
-real(H)[1:10,1:10]
-
-ui=linsolve([real(H)],Any[f];maxlength=10000)
-ui=linsolve([BasisFunctional(1);real(H)],Any[0.,f];maxlength=10000)
-ui=linsolve([BasisFunctional(2);real(H)],Any[0.,f];maxlength=10000)
-ui=linsolve([BasisFunctional(1);BasisFunctional(2);real(H)],Any[0.,0.,f];maxlength=10000)
-
-f=Fun([0.,0.,0.,0.,1.],domainspace(H))
-q=H*f
-
-(OH*pieces(f)[1])[2.6im]
-(H.op.ops[2,1]*pieces(f)[1])[2.6im]
-(H.op.ops[2,2]*pieces(f)[2])[2.6im]
-hilbert(f,2.6im)
-(H*f)[2.6im]
--stieltjes(pieces(f)[1],2.6im)/π
-q[2.6im]
-q[-2.im+1.]
-ui.coefficients
-
-H22=ApproxFun.SliceOperator(real(Hilbert(PS[2])),1,1,1)
-real(Hilbert(PS[2]))[1:10,1:10]
-H.op.ops[2,1][1:10,1:10]
+u(x,y)=(x+im*y)+2cauchy(ui,x+im*y)
+Gadfly.plot(ApproxFun.layer(Γ[2]),
+            ApproxFun.layer(Interval(-2.-im,3.0-im)),
+                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-1.:0.05:2.])))
 
 
-ui.coefficients
+pieces(ui)[2]|>ApproxFun.plot
+g=pieces(ui)[1]
+    g=Fun(g.coefficients,space(g).space)
+    g=Fun(g,Fourier)
 
-Hilbert(S)[1:10,1:10]
-
-pieces(f)[1][20.]
-(imag(z)|>space)[1]
-H[1:20,1:20]
+g|>ApproxFun.plot
 
 
 
-OH.data
-f=Fun([zeros(4);1.],S)
-    (OH*f)[1.]
+S1=MappedSpace(PeriodicLine()-1.im,FourierDirichlet())
+S2=MappedSpace(PeriodicLine()+1.im,FourierDirichlet())
 
--stieltjes(f,1.)/π
+PS=PiecewiseSpace([S1,S2])
+H=Hilbert(PS)
 
-v1=chop(Fun(x->-stieltjes(f,x)/π,rs).coefficients,1E-14)
+using SO
 
+ds=PS[1]
+rs=MappedSpace(domain(PS[2]),Fourier())
+b=Fun([zeros(18);1.],ds);
+    Fun(x->-stieltjes(b,x)/π,rs).coefficients|>chopm
 
+g=Fun(b,MappedSpace(domain(PS[1]),Fourier()))
+@which cauchy(b,5.0-1.im)
+cauchy(g,5.0-1.im)
+Fun(x->-stieltjes(b,x)/π,rs,20)
 
-rs=rangespace(OH)
--stieltjes(f,1.)/π
+v1=chop(Fun(x->-stieltjes(b,x)/π,rs).coefficients,tol)
 
-A=rand(2,2)+im*rand(2,2)
+f=Fun(z->imag(z+1.im),rangespace(H))
+Γ=domain(PS)
 
-convert(ApproxFun.BandedMatrix,A)
-methods(OffHilbert)
+a,ui=linsolve([ones(Γ[2]) real(H)],f;tolerance=1E-5)
+m=80;x = linspace(-2.,3.,m);y = linspace(-1.5,2.,m+1)
+    xx,yy = x.+0.*y',0.*x.+y'
 
-OH[1:10,1:10]
-
-k=1;f=Fun([zeros(k-1);1],S);(Hilbert(S)*f)[2.]
-
-hilbert(Fun(f,MappedSpace(domain(S),ApproxFun.LaurentDirichlet())),2.)|>chopm
-
-hilbert(Fun([1.],Circle()),exp(0.1im))-hilbert(Fun([1.],Circle()),-1.)
-[1:10,1:10]
-domain(S)|>last
-
-
-k=3;
-[hilbert(Fun(Fun([zeros(k-1);1.],FourierDirichlet(Circle())),Fourier),-1.) for k=1:10]|>chopm
-[cauchy(+1,Fun(Fun([zeros(k-1);1.],FourierDirichlet(Circle())),Fourier),-1.) for k=1:10]|>chopm
-Hilbert(FourierDirichlet(Circle()))|>bandinds
-Hilbert(FourierDirichlet(Circle()))[1:10,1:10]|>chopm
-
-Hilbert(FourierDirichlet(Circle()))[1:10,1:10]|>chopm
-
-Conversion(FourierDirichlet(),Fourier())[1:10,1:10]|>chopm>
-
-
-
-
-
-Γ=(PeriodicLine()-im)
-d=Circle()
-S=ApproxFun.CosDirichlet(d)⊕ApproxFun.SinSpace(d)
-S2=Fourier(d)
-k=3;cauchy(+1,Fun(Fun([zeros(k-1);1.],FourierDirichlet(Circle())),Fourier),-1.)
-k=6;cauchy(+1,Fun(Fun([zeros(k-1);1.],FourierDirichlet(Circle())),Fourier),-1.)
-k=10;cauchy(+1,Fun(Fun([zeros(k-1);1.],S),S2),-1.)
-
-C=TimesOperator(Conversion(S2,Laurent(d)),Conversion(S,S2))
-C=Conversion(S,S2)
-
-Hilbert(rangespace(C))[1:10,1:10]
-
-TimesOperator(Hilbert(rangespace(C)),C)[1:10,1:10]|>chopm
-
-TimesOperator(Hilbert(rangespace(C)),C)[1:10,1:10]|>chopm
-Hilbert(rangespace(C))[1:10,1:10]
-C[1:10,1:10]|>chopm
-
-S
-[1:10,1:10]
-
-
-S=MappedSpace(Γ,S)
-
-conversion_type(Chebyshev(),Ultraspherical{1}())
-all(map((a,b)->!isa(conversion_type(a,b),NoSpace),S.spaces,S2.spaces))
-[map(Conversion,S.spaces,S2.spaces)...]
-S2.spaces
-
-Conversion(S,MappedSpace(Γ,ApproxFun.Laurent(PeriodicInterval())))
-
-Hilbert(MappedSpace(Γ,ApproxFun.LaurentDirichlet()))[1:10,1:10]
-Hilbert(ApproxFun.PeriodicLineDirichlet(Γ))[1:10,1:10]
+u(x,y)=(x+im*y)+2cauchy(ui,x+im*y)
+Gadfly.plot(ApproxFun.layer(Γ[2]),
+            ApproxFun.layer(Interval(-2.-im,3.0-im)),
+                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-1.:0.05:2.])))

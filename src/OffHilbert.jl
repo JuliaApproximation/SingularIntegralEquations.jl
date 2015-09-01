@@ -61,7 +61,7 @@ function OffHilbert(ds::FunctionSpace,rs::FunctionSpace,order::Int)
             return OffHilbert(convert(BandedMatrix,C[:,1:k]),ds,rs,order)
         end
     end
-    warn("Max Iteration Reached for "*string(ds)*" to "*string(rs))
+    warn("Max Iteration Reached for OffHilbert from "*string(ds)*" to "*string(rs))
     OffHilbert(convert(BandedMatrix,C),ds,rs,order)
 end
 
@@ -92,9 +92,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
                     l=max(l,length(ret[n])-n)
                 end
             elseif order == 1
-                z=Fun(identity,rs)
-                x=tocanonical(ds,z)
-                y=intervaloffcircle(true,x)
+                y=Fun(z->intervaloffcircle(true,tocanonical(ds,z)),rs)
                 ret=Array(typeof(y),300)
                 ret[1]=-y
                 n,l,u = 1,length(ret[1])-1,0
