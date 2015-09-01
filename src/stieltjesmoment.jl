@@ -46,6 +46,7 @@ function sqrtatansqrt(s::Bool,x)
 end
 
 
+#These formulae are from mathematica
 function stieltjesmoment(S::JacobiWeight,k::Integer,z)
     z=tocanonical(S,z)
 
