@@ -30,7 +30,7 @@ function stieltjesmoment(s::Bool,S::PolynomialSpace,k::Integer,z)
     error("stieltjesmoment not implemented for "*string(S.a)*string(S.b))
 end
 
-# represents sqrt(z)*atan(sqrt(z))
+# represents atan(sqrt(z))/sqrt(z)
 function sqrtatansqrt(x)
     if  isreal(x) && x ≤ 0
         y=sqrt(-x)
@@ -46,20 +46,29 @@ function sqrtatansqrt(s::Bool,x)
 end
 
 
+#TODO: this is for x^k but we probably want P_k
+
 #These formulae are from mathematica
 function stieltjesmoment(S::JacobiWeight,k::Integer,z)
     z=tocanonical(S,z)
 
     if S.α == S.β == 0
         return stieltjesmoment(S.space,k,z)
-    elseif S.α == 0 && S.β == 0.5
+    elseif isapprox(S.α,0) && isapprox(S.β,0.5)
         if k==1
             return -2*sqrt(2)*(sqrtatansqrt(2/(z-1))-1)
         elseif k==2
             return 2*sqrt(2)*(1/3*(3z-2)-z*sqrtatansqrt(2/(z-1)))
         end
-    elseif S.α == 0.5 && S.β == 0.
-        return (-1)^k*stieltjesmoment(JacobiWeight(0.,0.5,S.space),k,-z)
+    elseif isapprox(S.α,0) && isapprox(S.β,-0.5)
+        if k==1
+            return 2sqrt(1/(z-1))*atan(sqrt(2/(z-1)))
+        elseif k==2
+            return z/sqrt(1-z)*log((1+1/sqrt(1-z))*(1-sqrt(2)/sqrt(1-z))/((1-1/sqrt(1-z))*(1+sqrt(2)/sqrt(1-z))))-
+                2*sqrt(2)-2z/sqrt(1-z)*asinh(sqrt(-1/z))
+        end
+    elseif !isapprox(S.α,0) && isapprox(S.β,0.)
+        return (-1)^k*stieltjesmoment(JacobiWeight(S.β,S.α,S.space),k,-z)
     end
     error("stieltjesmoment not implemented for JacobiWeight "*string(S.α)*string(S.β))
 end
@@ -79,7 +88,7 @@ function stieltjesmoment(s::Bool,S::JacobiWeight,k::Integer,z)
     elseif S.α == 0.5 && S.β == 0.
         return (-1)^k*stieltjesmoment(s,JacobiWeight(0.,0.5,S.space),k,-z)
     end
-    error("stieltjesmoment not implemented for JacobiWeight "*string(S.α)*string(S.β))
+    error("stieltjesmoment signed not implemented for JacobiWeight "*string(S.α)*string(S.β))
 end
 
 
