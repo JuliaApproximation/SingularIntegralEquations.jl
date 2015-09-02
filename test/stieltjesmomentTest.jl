@@ -1,5 +1,5 @@
 using ApproxFun,SingularIntegralEquations,Base.Test
-    import SingularIntegralEquations.stieltjesmoment
+    import SingularIntegralEquations:stieltjesmoment,stieltjesjacobimoment
 
 z=1.+1.im
 x=Fun()
@@ -11,19 +11,20 @@ x=Fun()
 
 
 @test_approx_eq stieltjesmoment(JacobiWeight(0.,0.5,Jacobi(0.5,0.)),1,z) sum(sqrt(1-x)/(z-x))
-@test_approx_eq stieltjesmoment(JacobiWeight(0.,0.5,Jacobi(0.5,0.)),2,z) sum(x*sqrt(1-x)/(z-x))
+@test_approx_eq stieltjesjacobimoment(0.,0.5,2,z) sum(x*sqrt(1-x)/(z-x))
+@test_approx_eq stieltjesmoment(JacobiWeight(0.,0.5,Jacobi(0.5,0.)),2,z) sum(Fun([0.,1.],JacobiWeight(0.,0.5,Jacobi(0.5,0.)))/(z-x))
 
 
 @test_approx_eq stieltjesmoment(JacobiWeight(0.5,0.,Jacobi(0.5,0.)),1,z) sum(sqrt(1+x)/(z-x))
-@test_approx_eq stieltjesmoment(JacobiWeight(0.5,0.,Jacobi(0.5,0.)),2,z) sum(x*sqrt(1+x)/(z-x))
+@test_approx_eq stieltjesmoment(JacobiWeight(0.5,0.,Jacobi(0.5,0.)),2,z) sum(Fun([0.,1.],JacobiWeight(0.5,0.,Jacobi(0.5,0.)))/(z-x))
 
 
 @test_approx_eq stieltjesmoment(JacobiWeight(0.,-0.5,Jacobi(-0.5,0.)),1,z) sum(1/(sqrt(1-x)*(z-x)))
-@test_approx_eq stieltjesmoment(JacobiWeight(0.,-0.5,Jacobi(-0.5,0.)),2,z) sum(x/(sqrt(1-x)*(z-x)))
+@test_approx_eq stieltjesmoment(JacobiWeight(0.,-0.5,Jacobi(-0.5,0.)),2,z) sum(Fun([0.,1.],JacobiWeight(0.,-0.5,Jacobi(-0.5,0.)))/(z-x))
 
 
 @test_approx_eq stieltjesmoment(JacobiWeight(-0.5,0.,Jacobi(-0.5,0.)),1,z) sum(1/(sqrt(1+x)*(z-x)))
-@test_approx_eq stieltjesmoment(JacobiWeight(-0.5,0.,Jacobi(-0.5,0.)),2,z) sum(x/(sqrt(1+x)*(z-x)))
+@test_approx_eq stieltjesmoment(JacobiWeight(-0.5,0.,Jacobi(-0.5,0.)),2,z) sum(Fun([0.,1.],JacobiWeight(-0.5,0.,Jacobi(-0.5,0.)))/(z-x))
 
 
 
