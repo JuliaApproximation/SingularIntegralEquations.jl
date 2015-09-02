@@ -92,13 +92,21 @@ strippiecewisespace{PWS<:PiecewiseSpace,T}(U::Vector{Fun{PWS,T}}) = length(space
 function partitionfun{PWS<:PiecewiseSpace,T}(f::Fun{PWS,T})
     N = length(space(f))
     N2 = div(N,2)
-    (depiece(pieces(f)[1:N2])),(depiece(pieces(f)[1+N2:N]))
+    if N2 == 1
+        return (pieces(f)[1]),(pieces(f)[2])
+    else
+        return (depiece(pieces(f)[1:N2])),(depiece(pieces(f)[1+N2:N]))
+    end
 end
 
 function partitionfun{PWS<:PiecewiseSpace,T}(f::Vector{Fun{PWS,T}})
     N = length(space(first(f)))
     N2 = div(N,2)
-    (map(x->depiece(pieces(x)[1:N2]),f),map(x->depiece(pieces(x)[1+N2:N]),f))
+    if N2 == 1
+        return (map(x->pieces(x)[1],f),map(x->pieces(x)[2],f))
+    else
+        return (map(x->depiece(pieces(x)[1:N2]),f),map(x->depiece(pieces(x)[1+N2:N]),f))
+    end
 end
 
 # Pivot computation
