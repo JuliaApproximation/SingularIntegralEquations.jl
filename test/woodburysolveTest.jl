@@ -16,8 +16,10 @@ b = rand(size(H,1))
 
 full(H)\b
 @time x = full(H)\b
-H\b
-@time xw = H\b
+H\b # includes compile time
+H = HierarchicalMatrix(D,L)
+@time xw = H\b # includes precomputation
+@time xw = H\b # H.A's precomputed :)
 
 CH = cond(full(H))
 
