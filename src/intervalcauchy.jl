@@ -72,9 +72,13 @@ end
 
 # Sum over all inverses of fromcanonical, see [Olver,2014]
 function cauchy{S,L<:Line,T}(f::Fun{MappedSpace{S,L,T}},z)
-    @assert domain(f)==Line()
-    p=Fun(f.coefficients,space(f).space)
-    cauchy(p,tocanonical(f,z)) + cauchy(p,(-1-sqrt(1+4z.^2))./(2z))
+    if domain(f)==Line()
+        p=Fun(f.coefficients,space(f).space)
+        cauchy(p,tocanonical(f,z)) + cauchy(p,(-1-sqrt(1+4z.^2))./(2z))
+    else
+        p=Fun(f.coefficients,MappedSpace(Line(),space(f).space))
+        cauchy(p,mappoint(domain(f),Line(),z))
+    end
 end
 
 

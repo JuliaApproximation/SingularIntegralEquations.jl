@@ -31,15 +31,19 @@ for (Op,OpWrap,OffOp) in ((:PseudoHilbert,:PseudoHilbertWrapper,:OffPseudoHilber
         ## Modifiers for SumSpace, ArraySpace, ReImSpace, and PiecewiseSpace
 
         #TODO: do in @calculus_operator?
-        $Op(S::SumSpace,n)=$OpWrap(sumblkdiagm([$Op(S.spaces[1],n),$Op(S.spaces[2],n)]),n)
+        function $Op(S::DirectSumSpace,n)
+            @assert length(S.spaces)==2
+            $OpWrap(sumblkdiagm([$Op(S.spaces[1],n),$Op(S.spaces[2],n)]),n)
+        end
         $Op(AS::ArraySpace,n::Int)=$OpWrap(DiagonalArrayOperator($Op(AS.space,n),size(AS)),n)
         $Op(AS::ReImSpace,n::Int)=$OpWrap(ReImOperator($Op(AS.space,n)),n)
         function $Op(S::PiecewiseSpace,n::Int)
             sp=vec(S)
             m=length(sp)
-            C=[k==j?$Op(sp[k],n):$OffOp(sp[k],rangespace($Op(sp[j],n)),n) for j=1:m,k=1:m]
-            C=BandedOperator{mapreduce(i->eltype(C[i]),promote_type,1:m^2)}[C[j,k] for j=1:m,k=1:m]
-            $OpWrap(interlace(C),n)
+            diag=Any[$Op(sp[k],n) for k=1:m]
+            C=Any[k==j?diag[k]:$OffOp(sp[k],rangespace(diag[j]),n) for j=1:m,k=1:m]
+            D=BandedOperator{mapreduce(i->eltype(C[i]),promote_type,1:m^2)}[C[j,k] for j=1:m,k=1:m]
+            $OpWrap(interlace(D),n)
         end
 
         bandinds{s}(::$Op{Hardy{s}})=0,0
@@ -65,6 +69,32 @@ for (Op,OpWrap,OffOp) in ((:PseudoHilbert,:PseudoHilbertWrapper,:OffPseudoHilber
         choosedomainspace(H::$Op{UnsetSpace},sp::Ultraspherical)=ChebyshevWeight(ChebyshevDirichlet{1,1}(domain(sp)))
         choosedomainspace(H::$Op{UnsetSpace},sp::MappedSpace)=MappedSpace(domain(sp),choosedomainspace(H,sp.space))
         choosedomainspace(H::$Op{UnsetSpace},sp::PiecewiseSpace)=PiecewiseSpace(map(s->choosedomainspace(H,s),sp.spaces))
+
+
+
+        # PrependColumnsOperator [1 Hilbert()] which allows for bounded solutions
+        #TODO: Array values?
+        choosedomainspace{T,V}(P::PrependColumnsOperator{$Op{UnsetSpace,T,V}},
+                               sp::Ultraspherical)=TupleSpace(ConstantSpace(),
+                                                            JacobiWeight(0.5,0.5,
+                                                                         Ultraspherical{1}(domain(sp))))
+        function choosedomainspace{T,V}(P::PrependColumnsOperator{$Op{UnsetSpace,T,V}},
+                                        sp::MappedSpace)
+            r=choosedomainspace(P,sp.space)
+            @assert isa(r,TupleSpace) && length(r.spaces)==2 && isa(r.spaces[1],ConstantSpace)
+            TupleSpace(ConstantSpace(),MappedSpace(domain(sp),r.spaces[2]))
+        end
+
+        choosedomainspace{T,V,W}(P::PrependColumnsOperator{ReOperator{$Op{UnsetSpace,T,V},W}},
+                               sp::Ultraspherical)=TupleSpace(ConstantSpace(),
+                                                            JacobiWeight(0.5,0.5,
+                                                                         Ultraspherical{1}(domain(sp))))
+        function choosedomainspace{T,V,W}(P::PrependColumnsOperator{ReOperator{$Op{UnsetSpace,T,V},W}},
+                               sp::MappedSpace)
+            r=choosedomainspace(P,sp.space)
+            @assert isa(r,TupleSpace) && length(r.spaces)==2 && isa(r.spaces[1],ConstantSpace)
+            TupleSpace(ConstantSpace(),MappedSpace(domain(sp),r.spaces[2]))
+        end
     end
 end
 
@@ -273,6 +303,9 @@ for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),
             A
         end
 
+        # we always have real for n==1
+        $Op(sp::JacobiWeight{Ultraspherical{1}},n)=Hilbert{typeof(sp),typeof(n),
+                                                           n==1?real(eltype(domain(sp))):typeof($Len(domain(sp)))}(sp,n)
         function addentries!(H::$Op{JacobiWeight{Ultraspherical{1}}},A,kr::UnitRange)
             m=H.order
             d=domain(H)

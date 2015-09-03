@@ -16,7 +16,8 @@ end
 # intervaloffcircle maps the slit plane to the interior(true)/exterior(false) disk
 # intervaloncircle maps the interval to the upper(true)/lower(false) half circle
 
-intervaloffcircle(s::Bool,z)=z-(s?1:-1).*sqrtx2(z)
+# it is more accurate near infinity to do 1/J_- as it avoids round off
+intervaloffcircle(s::Bool,z)=s?1./intervaloffcircle(false,z):(z+sqrtx2(z))
 intervaloncircle(s::Bool,x)=x+1.im*(s?1:-1).*sqrt(1-x).*sqrt(x+1)
 
 intervaloffcircle(s::Int,x)=intervaloffcircle(s==1,x)
@@ -80,6 +81,7 @@ function cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
 
         sx2z=sqrtx2(z)
         sx2zi=1./sx2z
+        Jm=1./(z+sx2z)  # intervaloffcircle(true,z)
 
 
         if length(cfs) ≥1
@@ -89,11 +91,12 @@ function cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
                 ret += cfs[2]*.5im*(z.*sx2zi-1)
             end
 
-#            ret - 1.im*hornersum(cfs[3:end],intervaloffcircle(true,z))
-            ret - 1.im*hornersum(cfs[3:end],z-sx2z)
+            ret - 1.im*hornersum(cfs[3:end],Jm)
         else
             zero(z)
         end
+    elseif isapproxinteger(sp.α) && isapproxinteger(sp.β)
+        cauchy(Fun(u,sp.space),z)
     else
         if domain(u)==Interval()
             cauchyintervalrecurrence(Fun(u,JacobiWeight(sp.α,sp.β,Jacobi(sp.β,sp.α))),z)
@@ -127,13 +130,13 @@ function cauchy{SS<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{SS}},x::Number)
             0.0+0.0im
         end
     else
-        if domain(f)==Interval()
+        if domain(u)==Interval()
             S=JacobiWeight(sp.α,sp.β,Jacobi(sp.β,sp.α))
-            cfs=cauchyforward(s,S,length(f),z)
-            dotu(cfs,coefficients(f,S))
+            cfs=cauchyforward(s,S,length(u),x)
+            dotu(cfs,coefficients(u,S))
         else
             @assert isa(domain(u),Interval)
-            cauchy(s,setdomain(u,Interval()),tocanonical(u,z))
+            cauchy(s,setdomain(u,Interval()),tocanonical(u,x))
         end
     end
 end
