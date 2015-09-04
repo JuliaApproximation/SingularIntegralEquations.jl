@@ -4,15 +4,16 @@
 
 # Classical matrix case
 
-function \{S<:AbstractMatrix,U<:LowRankMatrix,V}(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat{V})
-    if H.A[1] == 0 precomputation!(H) end
-    woodburysolve(H,f)
-end
+\{S<:AbstractMatrix,U<:LowRankMatrix,V}(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat{V}) = woodburysolve(H,f)
 
 woodburysolve{S<:AbstractMatrix,V}(H::S,f::AbstractVecOrMat{V}) = H\f
 
 function woodburysolve{S<:AbstractMatrix,U<:LowRankMatrix,V}(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat{V})
     T,nf = promote_type(eltype(H),V),size(f,2)
+
+    # Pre-compute Factorization
+
+    if !isfactored(H) factorize!(H) end
 
     # Partition HierarchicalMatrix
 
@@ -29,7 +30,7 @@ function woodburysolve{S<:AbstractMatrix,U<:LowRankMatrix,V}(H::HierarchicalMatr
 
     # Solve recursively
 
-    H22f2,H11f1 = H22\f2,H11\f1
+    H22f2,H11f1 = woodburysolve(H22,f2),woodburysolve(H11,f1)
 
     # Compute pivots
 
@@ -39,10 +40,10 @@ function woodburysolve{S<:AbstractMatrix,U<:LowRankMatrix,V}(H::HierarchicalMatr
 
     RHS1 = f1-U12*v12
     RHS2 = f2-U21*v21
-    reshape([H11\RHS1;H22\RHS2],size(f))
+    reshape([woodburysolve(H11,RHS1);woodburysolve(H22,RHS2)],size(f))
 end
 
-function precomputation!{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMatrix{S,U})
+function factorize!{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMatrix{S,U})
     # Partition HierarchicalMatrix
 
     (H11,H22),(H21,H12) = partitionmatrix(H)
@@ -54,22 +55,20 @@ function precomputation!{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMatr
 
     # Solve recursively
 
-    H22U21,H11U12 = H22\U21,H11\U12
+    H22U21,H11U12 = woodburysolve(H22,U21),woodburysolve(H11,U12)
 
     # Compute A
 
-    computeA!(V12,V21,H11U12,H22U21,H)
-end
-
-function computeA!{V1,V2,A1,A2}(V12::Matrix{V1},V21::Matrix{V2},H11U12::Matrix{A1},H22U21::Matrix{A2},H::HierarchicalMatrix)
     r1,r2 = size(V12,2),size(V21,2)
-    for k=1:r1+r2
-        H.A[k,k] += 1
-    end
     for i=1:r1,j=1:r2
         H.A[i,j+r1] += dot(V12[:,i],H22U21[:,j])
         H.A[j+r2,i] += dot(V21[:,j],H11U12[:,i])
     end
+
+    # Compute factorization
+
+    H.factorization = lufact(H.A)
+    H.factored = true
 end
 
 function computepivots{V1,V2,A1,A2}(V12::Matrix{V1},V21::Matrix{V2},H11f1::Matrix{A1},H22f2::Matrix{A2},H::HierarchicalMatrix,nf::Int)
@@ -84,30 +83,16 @@ function computepivots{V1,V2,A1,A2}(V12::Matrix{V1},V21::Matrix{V2},H11f1::Matri
             b[j+r1,i] = dot(V21[:,j],H11f1[:,i])
         end
     end
-    vc = H.A\b
+    vc = H.factorization\b
     vc[1:r1,1:nf],vc[r1+1:r1+r2,1:nf]
 end
 
 
 
-
-
-
-
-
-
-
 # Continuous analogues for low-rank operators case
 
-function \{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun)
-    if H.A[1] == 0 precomputation!(H) end
-    woodburysolve(H,f)
-end
-
-function \{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F})
-    if H.A[1] == 0 precomputation!(H) end
-    woodburysolve(H,f)
-end
+\{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = woodburysolve(H,f)
+\{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F}) = woodburysolve(H,f)
 
 woodburysolve{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = woodburysolve(H,[f])[1]
 
@@ -116,6 +101,10 @@ woodburysolve{V<:Operator,F<:Fun}(H::V,f::Vector{F}) = vec(H\transpose(f))
 
 function woodburysolve{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F})
     N,nf = length(space(first(f))),length(f)
+
+    # Pre-compute Factorization
+
+    if !isfactored(H) factorize!(H) end
 
     # Partition HierarchicalMatrix
 
@@ -132,11 +121,7 @@ function woodburysolve{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMat
 
     # Solve recursively
 
-    if typeof(H22) <: HierarchicalMatrix
-        H22f2,H11f1 = H22\f2,H11\f1
-    else
-        H22f2,H11f1 = vec(H22\transpose(f2)),vec(H11\transpose(f1))
-    end
+    H22f2,H11f1 = woodburysolve(H22,f2),woodburysolve(H11,f1)
 
     # Compute pivots
 
@@ -147,11 +132,7 @@ function woodburysolve{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMat
     RHS1 = f1 - At_mul_B(v12,U12)
     RHS2 = f2 - At_mul_B(v21,U21)
 
-    if typeof(H22) <: HierarchicalMatrix
-        sol = [H11\RHS1,H22\RHS2]
-    else
-        sol = [vec(H11\transpose(RHS1)),vec(H22\transpose(RHS2))]
-    end
+    sol = [woodburysolve(H11,RHS1),woodburysolve(H22,RHS2)]
     if N == 2
         return [mapreduce(i->depiece(sol[i:nf:end]),vcat,1:nf)]
     else
@@ -160,7 +141,7 @@ function woodburysolve{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMat
     end
 end
 
-function precomputation!{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V})
+function factorize!{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V})
     # Partition HierarchicalMatrix
 
     (H11,H22),(H21,H12) = partitionmatrix(H)
@@ -172,26 +153,20 @@ function precomputation!{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U
 
     # Solve recursively
 
-    if typeof(H22) <: HierarchicalMatrix
-        H22U21,H11U12 = H22\U21,H11\U12
-    else
-        H22U21,H11U12 = vec(H22\transpose(U21)),vec(H11\transpose(U12))
-    end
+    H22U21,H11U12 = woodburysolve(H22,U21),woodburysolve(H11,U12)
 
     # Compute A
 
-    computeA!(V12,V21,H11U12,H22U21,H)
-end
-
-function computeA!{V1,V2,A1,A2}(V12::Vector{V1},V21::Vector{V2},H11U12::Vector{A1},H22U21::Vector{A2},H::HierarchicalMatrix)
     r1,r2 = length(V12),length(V21)
-    for k=1:r1+r2
-        H.A[k,k] += 1
-    end
     for i=1:r1,j=1:r2
         H.A[i,j+r1] += dot(V12[i],H22U21[j])
         H.A[j+r2,i] += dot(V21[j],H11U12[i])
     end
+
+    # Compute factorization
+
+    H.factorization = lufact(H.A)
+    H.factored = true
 end
 
 function computepivots{V1,V2,A1,A2}(V12::Vector{V1},V21::Vector{V2},H11f1::Vector{A1},H22f2::Vector{A2},H::HierarchicalMatrix,nf::Int)
@@ -206,9 +181,15 @@ function computepivots{V1,V2,A1,A2}(V12::Vector{V1},V21::Vector{V2},H11f1::Vecto
             b[j+r1,i] = dot(V21[j],H11f1[i])
         end
     end
-    vc = H.A\b
+    vc = H.factorization\b
     vc[1:r1,1:nf],vc[r1+1:r1+r2,1:nf]
 end
+
+
+
+
+
+
 
 
 
