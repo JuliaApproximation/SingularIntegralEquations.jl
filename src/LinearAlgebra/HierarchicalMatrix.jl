@@ -21,32 +21,59 @@
 # top right, then followed recursively by top left and bottom right.
 ##
 
-export HierarchicalMatrix, partitionmatrix
+import Base.LinAlg: Factorization
 
-type HierarchicalMatrix{S,T} <: AbstractMatrix{Union(S,T)}
+export HierarchicalMatrix, partitionmatrix, isfactored
+
+type HierarchicalMatrix{S,T,P} <: AbstractMatrix{Union(S,T)}
     diagonaldata::Union(@compat(Tuple{HierarchicalMatrix{S,T},HierarchicalMatrix{S,T}}),@compat(Tuple{S,S})) # n ≥ 2 ? Tuple of two on-diagonal HierarchicalMatrix{S,T} : Tuple of two on-diagonal S
     offdiagonaldata::@compat(Tuple{T,T}) # Tuple of two off-diagonal T
+    A::Matrix{P} # Cache of matrix for pivot computation
+    factorization::Factorization{P} # Cache of factorization of A for pivot computation
+    factored::Bool
     n::Int # Power of hierarchy (i.e. 2^n)
 
-    function HierarchicalMatrix(diagonaldata::Vector{S},offdiagonaldata::Vector{T},n::Int)
+    function HierarchicalMatrix(diagonaldata::Vector{S},offdiagonaldata::Vector{T},A::Matrix{P},factorization::Factorization{P},factored::Bool,n::Int)
         @assert length(diagonaldata) == 2^n
         @assert length(offdiagonaldata) == 2^(n+1)-2
         if n == 1
-            return new(tuple(diagonaldata...),tuple(offdiagonaldata...),n)
+            return new(tuple(diagonaldata...),tuple(offdiagonaldata...),A,factorization,factored,n)
         elseif n ≥ 2
             dldp2 = div(length(offdiagonaldata)+2,2)
-            return new((HierarchicalMatrix(diagonaldata[1:2^(n-1)],offdiagonaldata[3:dldp2],n-1),HierarchicalMatrix(diagonaldata[1+2^(n-1):end],offdiagonaldata[dldp2+1:end],n-1)),(offdiagonaldata[1],offdiagonaldata[2]),n)
+            return new((HierarchicalMatrix(diagonaldata[1:2^(n-1)],offdiagonaldata[3:dldp2],n-1),HierarchicalMatrix(diagonaldata[1+2^(n-1):end],offdiagonaldata[dldp2+1:end],n-1)),(offdiagonaldata[1],offdiagonaldata[2]),A,factorization,factored,n)
         end
     end
-    HierarchicalMatrix(diagonaldata::Union(@compat(Tuple{HierarchicalMatrix{S,T},HierarchicalMatrix{S,T}}),@compat(Tuple{S,S})),offdiagonaldata::@compat(Tuple{T,T}),n::Int) = new(diagonaldata,offdiagonaldata,n)
+    HierarchicalMatrix(diagonaldata::Union(@compat(Tuple{HierarchicalMatrix{S,T},HierarchicalMatrix{S,T}}),@compat(Tuple{S,S})),offdiagonaldata::@compat(Tuple{T,T}),A::Matrix{P},factorization::Factorization{P},factored::Bool,n::Int) = new(diagonaldata,offdiagonaldata,A,factorization,factored,n)
 end
 
-HierarchicalMatrix{S,T}(diagonaldata::Vector{S},offdiagonaldata::Vector{T},n::Int)=HierarchicalMatrix{S,T}(diagonaldata,offdiagonaldata,n)
+#HierarchicalMatrix{S,T,P}(diagonaldata::Vector{S},offdiagonaldata::Vector{T},A::AbstractMatrix{P},n::Int)=HierarchicalMatrix{S,T,P}(diagonaldata,offdiagonaldata,A,n)
+#HierarchicalMatrix{S,T}(diagonaldata::Vector{S},offdiagonaldata::Vector{T},n::Int)=HierarchicalMatrix{S,T,promote_type(eltype(S),eltype(T))}(diagonaldata,offdiagonaldata,zeros(promote_type(eltype(S),eltype(T)),mapreduce(rank,+,offdiagonaldata[1:2]),mapreduce(rank,+,offdiagonaldata[1:2])),n)
+
+function HierarchicalMatrix{S,T}(diagonaldata::Vector{S},offdiagonaldata::Vector{T},n::Int)
+    P = promote_type(eltype(S),eltype(T))
+    r1,r2 = rank(offdiagonaldata[1]),rank(offdiagonaldata[2])
+    A = eye(P,r1+r2,r1+r2)
+    factorization = lufact(A)
+    HierarchicalMatrix{S,T,P}(diagonaldata,offdiagonaldata,A,factorization,false,n)
+end
 HierarchicalMatrix{S,T}(diagonaldata::Vector{S},offdiagonaldata::Vector{T})=HierarchicalMatrix(diagonaldata,offdiagonaldata,round(Int,log2(length(diagonaldata))))
 
-HierarchicalMatrix{S,T}(diagonaldata::@compat(Tuple{S,S}),offdiagonaldata::@compat(Tuple{T,T}),n::Int) = HierarchicalMatrix{S,T}(diagonaldata,offdiagonaldata,n)
-HierarchicalMatrix{S,T,U}(diagonaldata::@compat(Tuple{HierarchicalMatrix{S,T},HierarchicalMatrix{S,T}}),offdiagonaldata::@compat(Tuple{U,U}),n::Int) = HierarchicalMatrix{S,promote_type(T,U)}(diagonaldata,offdiagonaldata,n)
 
+HierarchicalMatrix{S,T,P}(diagonaldata::Union(@compat(Tuple{HierarchicalMatrix{S,T},HierarchicalMatrix{S,T}}),@compat(Tuple{S,S})),offdiagonaldata::@compat(Tuple{T,T}),A::Matrix{P},factorization::Factorization{P},n::Int) = HierarchicalMatrix{S,T,P}(diagonaldata,offdiagonaldata,A,factorization,false,n)
+function HierarchicalMatrix{S,T}(diagonaldata::@compat(Tuple{S,S}),offdiagonaldata::@compat(Tuple{T,T}),n::Int)
+    P = promote_type(eltype(diagonaldata[1]),eltype(diagonaldata[2]),eltype(offdiagonaldata[1]),eltype(offdiagonaldata[2]))
+    r1,r2 = rank(offdiagonaldata[1]),rank(offdiagonaldata[2])
+    A = eye(P,r1+r2,r1+r2)
+    factorization = lufact(A)
+    HierarchicalMatrix{S,T,P}(diagonaldata,offdiagonaldata,A,factorization,false,n)
+end
+function HierarchicalMatrix{S,T,U,V}(diagonaldata::@compat(Tuple{HierarchicalMatrix{S,T,U},HierarchicalMatrix{S,T,U}}),offdiagonaldata::@compat(Tuple{V,V}),n::Int)
+    P = promote_type(U,eltype(offdiagonaldata[1]),eltype(offdiagonaldata[2]))
+    r1,r2 = rank(offdiagonaldata[1]),rank(offdiagonaldata[2])
+    A = eye(P,r1+r2,r1+r2)
+    factorization = lufact(A)
+    HierarchicalMatrix{S,promote_type(T,V),P}(diagonaldata,offdiagonaldata,A,factorization,false,n)
+end
 
 function collectoffdiagonaldata{S,T}(H::HierarchicalMatrix{S,T})
     data = collect(H.offdiagonaldata)
@@ -104,6 +131,8 @@ Base.full{S<:AbstractMatrix,T<:AbstractMatrix}(H::HierarchicalMatrix{S,T})=H[1:s
 
 partitionmatrix{S,T}(H::HierarchicalMatrix{S,T}) = H.diagonaldata,H.offdiagonaldata
 
+isfactored(H::HierarchicalMatrix) = H.factored
+
 function *{S,T,V}(H::HierarchicalMatrix{S,T},b::AbstractVecOrMat{V})
     m1,m2 = size(H.offdiagonaldata[2],1),size(H.offdiagonaldata[1],1)
     n = size(b,2)
@@ -112,4 +141,3 @@ function *{S,T,V}(H::HierarchicalMatrix{S,T},b::AbstractVecOrMat{V})
 end
 
 \{S,T,V}(H::HierarchicalMatrix{S,T},b::AbstractVecOrMat{V}) = full(H)\b
-\{S<:AbstractMatrix,T<:LowRankMatrix,V}(H::HierarchicalMatrix{S,T},f::AbstractVecOrMat{V}) = woodburysolve(H,f)
