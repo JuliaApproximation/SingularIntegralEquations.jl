@@ -1,14 +1,14 @@
 #
-# woodburysolve
+# hierarchicalsolve
 #
 
 # Classical matrix case
 
-\{S<:AbstractMatrix,U<:LowRankMatrix,V}(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat{V}) = woodburysolve(H,f)
+\{S<:AbstractMatrix,U<:LowRankMatrix,V}(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat{V}) = hierarchicalsolve(H,f)
 
-woodburysolve{S<:AbstractMatrix,V}(H::S,f::AbstractVecOrMat{V}) = H\f
+hierarchicalsolve{S<:AbstractMatrix,V}(H::S,f::AbstractVecOrMat{V}) = H\f
 
-function woodburysolve{S<:AbstractMatrix,U<:LowRankMatrix,V}(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat{V})
+function hierarchicalsolve{S<:AbstractMatrix,U<:LowRankMatrix,V}(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat{V})
     T,nf = promote_type(eltype(H),V),size(f,2)
 
     # Pre-compute Factorization
@@ -30,7 +30,7 @@ function woodburysolve{S<:AbstractMatrix,U<:LowRankMatrix,V}(H::HierarchicalMatr
 
     # Solve recursively
 
-    H22f2,H11f1 = woodburysolve(H22,f2),woodburysolve(H11,f1)
+    H22f2,H11f1 = hierarchicalsolve(H22,f2),hierarchicalsolve(H11,f1)
 
     # Compute pivots
 
@@ -40,7 +40,7 @@ function woodburysolve{S<:AbstractMatrix,U<:LowRankMatrix,V}(H::HierarchicalMatr
 
     RHS1 = f1-U12*v12
     RHS2 = f2-U21*v21
-    reshape([woodburysolve(H11,RHS1);woodburysolve(H22,RHS2)],size(f))
+    reshape([hierarchicalsolve(H11,RHS1);hierarchicalsolve(H22,RHS2)],size(f))
 end
 
 function factorize!{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMatrix{S,U})
@@ -55,7 +55,7 @@ function factorize!{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMatrix{S,
 
     # Solve recursively
 
-    H22U21,H11U12 = woodburysolve(H22,U21),woodburysolve(H11,U12)
+    H22U21,H11U12 = hierarchicalsolve(H22,U21),hierarchicalsolve(H11,U12)
 
     # Compute A
 
@@ -91,15 +91,15 @@ end
 
 # Continuous analogues for low-rank operators case
 
-\{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = woodburysolve(H,f)
-\{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F}) = woodburysolve(H,f)
+\{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,f)
+\{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F}) = hierarchicalsolve(H,f)
 
-woodburysolve{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = woodburysolve(H,[f])[1]
+hierarchicalsolve{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,[f])[1]
 
-woodburysolve{V<:Operator}(H::V,f::Fun) = H\f
-woodburysolve{V<:Operator,F<:Fun}(H::V,f::Vector{F}) = vec(H\transpose(f))
+hierarchicalsolve{V<:Operator}(H::V,f::Fun) = H\f
+hierarchicalsolve{V<:Operator,F<:Fun}(H::V,f::Vector{F}) = vec(H\transpose(f))
 
-function woodburysolve{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F})
+function hierarchicalsolve{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F})
     N,nf = length(space(first(f))),length(f)
 
     # Pre-compute Factorization
@@ -121,7 +121,7 @@ function woodburysolve{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMat
 
     # Solve recursively
 
-    H22f2,H11f1 = woodburysolve(H22,f2),woodburysolve(H11,f1)
+    H22f2,H11f1 = hierarchicalsolve(H22,f2),hierarchicalsolve(H11,f1)
 
     # Compute pivots
 
@@ -132,7 +132,7 @@ function woodburysolve{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMat
     RHS1 = f1 - At_mul_B(v12,U12)
     RHS2 = f2 - At_mul_B(v21,U21)
 
-    sol = [woodburysolve(H11,RHS1),woodburysolve(H22,RHS2)]
+    sol = [hierarchicalsolve(H11,RHS1),hierarchicalsolve(H22,RHS2)]
     if N == 2
         return [mapreduce(i->depiece(sol[i:nf:end]),vcat,1:nf)]
     else
@@ -153,7 +153,7 @@ function factorize!{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V})
 
     # Solve recursively
 
-    H22U21,H11U12 = woodburysolve(H22,U21),woodburysolve(H11,U12)
+    H22U21,H11U12 = hierarchicalsolve(H22,U21),hierarchicalsolve(H11,U12)
 
     # Compute A
 

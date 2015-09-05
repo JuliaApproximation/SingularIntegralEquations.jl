@@ -52,7 +52,7 @@ include("vectorcauchy.jl")
 
 include("GreensFun/GreensFun.jl")
 
-include("woodburysolve.jl")
+include("hierarchicalsolve.jl")
 
 include("periodicline.jl")
 include("arc.jl")
