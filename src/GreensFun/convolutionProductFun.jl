@@ -26,7 +26,7 @@ function convolutionProductFun{U<:UnivariateSpace,V<:UnivariateSpace}(f::Functio
     end
 end
 
-convolutionProductFun{U<:UnivariateSpace,V<:UnivariateSpace,T}(f::Function,ss::TensorSpace{(U,V),T,2};kwds...) = convolutionProductFun(f,ss[1],ss[2];kwds...)
+convolutionProductFun{U<:UnivariateSpace,V<:UnivariateSpace,T}(f::Function,ss::TensorSpace{@compat(Tuple{U,V}),T,2};kwds...) = convolutionProductFun(f,ss[1],ss[2];kwds...)
 
 
 

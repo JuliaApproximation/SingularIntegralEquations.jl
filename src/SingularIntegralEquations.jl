@@ -4,6 +4,10 @@ module SingularIntegralEquations
 export cauchy, cauchyintegral, stieltjes, logkernel,stieltjesintegral,hilbert,pseudohilbert,pseudocauchy
 
 
+import Base: values,getindex,setindex!,*,.*,+,.+,-,.-,==,<,<=,>,
+                >=,./,/,.^,^,\,∪,transpose
+                
+
 import ApproxFun
 import ApproxFun: bandinds,SpaceOperator,
                   plan_transform,plan_itransform,transform,itransform,transform!,itransform!,
@@ -67,5 +71,3 @@ end
 
 
 end #module
-
-
