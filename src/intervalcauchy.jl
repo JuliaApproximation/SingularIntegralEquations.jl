@@ -40,7 +40,7 @@ cauchyforward(s::Bool,sp::FunctionSpace,n,z)=forwardsubstitution(jacobiop(sp)-z,
 
 
 function cauchyintervalrecurrence(f::Fun,z)
-    tol=1./ifloor(Int,sqrt(length(f)))
+    tol=1./@compat(floor(Int,sqrt(length(f))))
     if (abs(real(z))≤1.+tol) && (abs(imag(z))≤tol)
        cfs=cauchyforward(space(f),length(f),z)
        dotu(cfs,coefficients(f))
@@ -80,6 +80,3 @@ function cauchy{S,L<:Line,T}(f::Fun{MappedSpace{S,L,T}},z)
         cauchy(p,mappoint(domain(f),Line(),z))
     end
 end
-
-
-
