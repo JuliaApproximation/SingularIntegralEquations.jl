@@ -39,3 +39,11 @@ end
 
 
 
+
+x=Fun(identity,[im,0.,1.])
+w=2/(sqrt(1-x)*sqrt(1+im*x))
+
+for x in (0.9im,0.4im,0.4,0.9)
+    @test_approx_eq cauchy(true,w,x)-cauchy(false,w,x) w[x]
+end
+

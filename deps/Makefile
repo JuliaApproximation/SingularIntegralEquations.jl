@@ -13,4 +13,4 @@ OBJ = fundsol.c
 CFLAGS = -shared -fPIC -fopenmp -O3 -std=c99 -lm -lgomp
 
 all:
-	gcc-4.9 $(CFLAGS) $(OBJ) -o liblhelmfs.$(SLIB)
+	gcc-5 $(CFLAGS) $(OBJ) -o liblhelmfs.$(SLIB)

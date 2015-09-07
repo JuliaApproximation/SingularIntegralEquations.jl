@@ -100,6 +100,34 @@ function stieltjesjacobimoment(α,β,k::Integer,z)
 end
 
 
+
+function stieltjesjacobimoment(s::Bool,α,β,k::Integer,z)
+    if α == β == 0
+        return stieltjeslegendremoment(s,k,z)
+    elseif isapprox(α,0) && isapprox(β,0.5)
+        if k==1
+            return -2*sqrt(2)*(sqrtatansqrt(!s,2/(z-1))-1)
+        elseif k==2
+            return 2*sqrt(2)*(1/3*(3z-2)-z*sqrtatansqrt(!s,2/(z-1)))
+        end
+    elseif isapprox(α,0) && isapprox(β,-0.5)
+        if k==1
+            return 2im*(s?-1:1)*sqrt(1/(1-z))*atan((s?-1:1)*im*sqrt(2/(1-z)))
+        elseif k==2 && real(z)<0
+            return z/sqrt(1-z)*(logabs((1+1/sqrt(1-z))*(1-sqrt(2)/sqrt(1-z))/((1-1/sqrt(1-z))*(1+sqrt(2)/sqrt(1-z))))-π*im*(s?1:-1))-
+                            2*sqrt(2)-2z/sqrt(1-z)*asinh(sqrt(-1/z))
+        elseif k==2
+            return z/sqrt(1-z)*log((1+1/sqrt(1-z))*(1-sqrt(2)/sqrt(1-z))/((1-1/sqrt(1-z))*(1+sqrt(2)/sqrt(1-z))))-
+                             2*sqrt(2)-2z/sqrt(1-z)*asinh(im*(s?1:-1)*sqrt(1/z))
+        end
+    elseif !isapprox(α,0) && isapprox(β,0.)
+        return (-1)^k*stieltjesjacobimoment(!s,β,α,k,-z)
+    end
+    error("stieltjesmoment not implemented for JacobiWeight "*string(α)*string(β))
+end
+
+
+
 function stieltjesmoment(S::JacobiWeight{Jacobi},k::Integer,z)
     z=tocanonical(S,z)
     J=S.space
@@ -120,23 +148,6 @@ end
 stieltjesmoment(S::JacobiWeight{Chebyshev},k::Integer,z)=stieltjesjacobimoment(S.α,S.β,k,tocanonical(S,z))
 
 
-
-function stieltjesjacobimoment(s::Bool,α,β,k::Integer,z)
-    if α == β == 0
-        return stieltjeslegendremoment(s,k,z)
-    elseif isapprox(α,0) && isapprox(β,0.5)
-        if k==1
-            return -2*sqrt(2)*(sqrtatansqrt(!s,2/(z-1))-1)
-        elseif k==2
-            return 2*sqrt(2)*(1/3*(3z-2)-z*sqrtatansqrt(!s,2/(z-1)))
-        end
-    elseif !isapprox(α,0) && isapprox(β,0.)
-        return (-1)^k*stieltjesjacobimoment(s,β,α,k,-z)
-    end
-    error("stieltjesmoment not implemented for JacobiWeight "*string(α)*string(β))
-end
-
-
 function stieltjesmoment(s::Bool,S::JacobiWeight{Jacobi},k::Integer,z)
     z=tocanonical(S,z)
     J=S.space
@@ -147,7 +158,7 @@ function stieltjesmoment(s::Bool,S::JacobiWeight{Jacobi},k::Integer,z)
         if J.a==J.b
             return (1+J.a)*stieltjesjacobimoment(s,S.α,S.β,k,z)
         else
-            return (J.b-J.a)/2*stieltjesjacobimoment(s,S.α,S.β,1,z) + (2+J.a+J.b)/2*stieltjesjacobimoment(s,S.α,S.β,2,z)
+            return (J.a-J.b)/2*stieltjesjacobimoment(s,S.α,S.β,1,z) + (2+J.a+J.b)/2*stieltjesjacobimoment(s,S.α,S.β,2,z)
         end
     end
     error("stieltjesmoment not implemented for JacobiWeight "*string(S.α)*string(S.β))

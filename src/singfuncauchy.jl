@@ -132,8 +132,9 @@ function cauchy{SS<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{SS}},x::Number)
     else
         if domain(u)==Interval()
             S=JacobiWeight(sp.α,sp.β,Jacobi(sp.β,sp.α))
-            cfs=cauchyforward(s,S,length(u),x)
-            dotu(cfs,coefficients(u,S))
+            cfs=coefficients(u,S)
+            cf=cauchyforward(s,S,length(cfs),x)
+            dotu(cf,cfs)
         else
             @assert isa(domain(u),Interval)
             cauchy(s,setdomain(u,Interval()),tocanonical(u,x))

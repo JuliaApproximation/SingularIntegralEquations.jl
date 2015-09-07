@@ -12,7 +12,7 @@ order{O}(C::CauchyWeight{O}) = O
 domain(C::CauchyWeight)=domain(C.space)
 Base.getindex(C::CauchyWeight,k::Integer)=C.space[k]
 ApproxFun.columnspace(C::CauchyWeight,::)=C[1]
-Base.getindex{O,PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(C::CauchyWeight{O,(PWS1,PWS2)},i,j)=CauchyWeight(C.space[i,j],O)
+Base.getindex{O,PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(C::CauchyWeight{O,@compat(Tuple{PWS1,PWS2})},i,j)=CauchyWeight(C.space[i,j],O)
 Base.transpose{O}(C::CauchyWeight{O}) = CauchyWeight(transpose(C.space),O)
 
 cauchyweight(O,x,y) = O == 0 ? logabs(y-x)/π : (y-x).^(-O)/π
@@ -54,14 +54,14 @@ end
 
 for (Func,Op) in ((:DefiniteIntegral,:Hilbert),(:DefiniteLineIntegral,:SingularIntegral))
     @eval begin
-        function Base.getindex{S,V,O,T,V1,T1,T2}(⨍::$Func{V1,T1},f::ProductFun{S,V,CauchyWeight{O,(S,V),T2},T})
+        function Base.getindex{S,V,O,T,V1,T1,T2}(⨍::$Func{V1,T1},f::ProductFun{S,V,CauchyWeight{O,@compat(Tuple{S,V}),T2},T})
             if domain(f.space[1]) == domain(f.space[2])
                 $Op(⨍.domainspace,O)[f]
             else
                 ⨍[ProductFun(f.coefficients,f.space.space)]
             end
         end
-        function Base.getindex{S,M,O,T,V,V1,T1,T2}(⨍::$Func{V1,T1},f::LowRankFun{S,M,CauchyWeight{O,(S,M),T2},T,V})
+        function Base.getindex{S,M,O,T,V,V1,T1,T2}(⨍::$Func{V1,T1},f::LowRankFun{S,M,CauchyWeight{O,@compat(Tuple{S,M}),T2},T,V})
             if domain(f.space[1]) == domain(f.space[2])
                 $Op(⨍.domainspace,O)[f]
             else
@@ -76,8 +76,8 @@ end
 
 ## Evaluation of bivariate functions in a CauchyWeight space
 
-evaluate{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(f::ProductFun{S,V,CauchyWeight{O,(S,V),T1},T2},x::Range,y::Range) = evaluate(f,[x],[y])
-evaluate{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(f::ProductFun{S,V,CauchyWeight{O,(S,V),T1},T2},x,y) = evaluate(ProductFun(f.coefficients,space(f).space),x,y).*cauchyweight(space(f),x,y)
+evaluate{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(f::ProductFun{S,V,CauchyWeight{O,@compat(Tuple{S,V}),T1},T2},x::Range,y::Range) = evaluate(f,[x],[y])
+evaluate{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(f::ProductFun{S,V,CauchyWeight{O,@compat(Tuple{S,V}),T1},T2},x,y) = evaluate(ProductFun(f.coefficients,space(f).space),x,y).*cauchyweight(space(f),x,y)
 
 +{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(F::ProductFun{S,V,CauchyWeight{O},T1},G::ProductFun{S,V,CauchyWeight{O},T2}) = ProductFun(ProductFun(F.coefficients,F.space.space)+ProductFun(G.coefficients,G.space.space),G.space)
 -{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(F::ProductFun{S,V,CauchyWeight{O},T1},G::ProductFun{S,V,CauchyWeight{O},T2}) = ProductFun(ProductFun(F.coefficients,F.space.space)-ProductFun(G.coefficients,G.space.space),G.space)
