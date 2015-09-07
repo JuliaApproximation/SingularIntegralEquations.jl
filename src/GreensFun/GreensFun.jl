@@ -41,6 +41,7 @@ kernels(G::GreensFun) = G.kernels
 Base.rank{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(rank,+,G.kernels)
 slices{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(x->x.A,vcat,G.kernels),mapreduce(x->conj(x.B),vcat,G.kernels)
 slices{L<:LowRankFun}(G::GreensFun{L},k::Int) = slices(G)[k]
+LowRankOperator{L<:LowRankFun}(G::GreensFun{L}) = LowRankOperator(slices(G)...)
 
 Base.getindex(⨍::Operator,G::GreensFun) = mapreduce(f->getindex(⨍,f),+,G.kernels)
 
@@ -246,8 +247,6 @@ function hierarchicalGreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Fun
         return HierarchicalMatrix((hierarchicalGreensFun(f,ss[1:N2,1:N2];kwds...),hierarchicalGreensFun(f,ss[1+N2:N,1+N2:N];kwds...)),(G21,G12),round(Int,log2(N)))
     end
 end
-
-include("LowRankOperator.jl")
 
 Base.size{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = 2^H.n,2^H.n
 

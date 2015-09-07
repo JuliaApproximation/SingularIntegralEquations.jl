@@ -1,5 +1,5 @@
 #
-# test woodburysolve
+# test hierarchicalsolve
 #
 using ApproxFun, SingularIntegralEquations, Base.Test
 
@@ -19,10 +19,14 @@ full(H)\b
 H\b # includes compile time
 H = HierarchicalMatrix(D,L)
 @time xw = H\b # includes precomputation
-@time xw = H\b # H.A's precomputed :)
+@time xw = H\b # H.A's precomputed and factored :)
 
 CH = cond(full(H))
 
 @test norm(x-xw) ≤ 10CH^2*eps()
 @test norm(H*x-b) ≤ 10CH*eps()
 @test norm(H*xw-b) ≤ 10CH*eps()
+
+
+H+H
+@test norm(full(H-H)) < 10norm(full(H))*eps()

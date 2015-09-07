@@ -65,3 +65,13 @@ Base.full(L::LowRankMatrix)=L[1:L.m,1:L.n]
 
 *{S,T}(L::LowRankMatrix{S},b::AbstractVecOrMat{T}) = L.U*(L.V.'*b)#'
 \{S,T}(L::LowRankMatrix{S},b::AbstractVecOrMat{T}) = full(L)\b
+
+for op in (:+,:-)
+    @eval begin
+        function $op{S,T}(L::LowRankMatrix{S},M::LowRankMatrix{T})
+            @assert size(L) == size(M)
+            LowRankMatrix(hcat(L.U,$op(M.U)),hcat(L.V,M.V))
+        end
+        $op(L::LowRankMatrix) = LowRankMatrix($op(L.U),L.V)
+    end
+end
