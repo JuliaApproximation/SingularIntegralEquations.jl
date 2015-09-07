@@ -113,13 +113,19 @@ function Base.getindex{S<:AbstractMatrix,T<:AbstractMatrix}(H::HierarchicalMatri
             return getindex(H.diagonaldata[1],i,j)
         elseif n1 < j ≤ n1+n2
             return getindex(H.offdiagonaldata[2],i,j-n1)
+        else
+            throw(BoundsError())
         end
     elseif m1 < i ≤ m1+m2
         if 1 ≤ j ≤ n1
             return getindex(H.offdiagonaldata[1],i-m1,j)
         elseif n1 < j ≤ n1+n2
             return getindex(H.diagonaldata[2],i-m1,j-n1)
+        else
+            throw(BoundsError())
         end
+    else
+        throw(BoundsError())
     end
 end
 Base.getindex{S<:AbstractMatrix,T<:AbstractMatrix}(H::HierarchicalMatrix{S,T},i::Int,jr::Range) = eltype(H)[H[i,j] for j=jr].'#'
@@ -127,9 +133,21 @@ Base.getindex{S<:AbstractMatrix,T<:AbstractMatrix}(H::HierarchicalMatrix{S,T},ir
 Base.getindex{S<:AbstractMatrix,T<:AbstractMatrix}(H::HierarchicalMatrix{S,T},ir::Range,jr::Range) = eltype(H)[H[i,j] for i=ir,j=jr]
 Base.full{S<:AbstractMatrix,T<:AbstractMatrix}(H::HierarchicalMatrix{S,T})=H[1:size(H,1),1:size(H,2)]
 
-partitionmatrix{S,T}(H::HierarchicalMatrix{S,T}) = H.diagonaldata,H.offdiagonaldata
+partitionmatrix(H::HierarchicalMatrix) = H.diagonaldata,H.offdiagonaldata
 
 isfactored(H::HierarchicalMatrix) = H.factored
+
+for op in (:+,:-)
+    @eval begin
+        function $op(H::HierarchicalMatrix,J::HierarchicalMatrix)
+            @assert (n = H.n) == J.n
+            Hd,Ho = collectdiagonaldata(H),collectoffdiagonaldata(H)
+            Jd,Jo = collectdiagonaldata(J),collectoffdiagonaldata(J)
+            HierarchicalMatrix($op(Hd,Jd),$op(Ho,Jo),n)
+        end
+        $op(H::HierarchicalMatrix) = HierarchicalMatrix($op(collectdiagonaldata(H)),$op(collectoffdiagonaldata(H)),H.n)
+    end
+end
 
 function *{S,T,V}(H::HierarchicalMatrix{S,T},b::AbstractVecOrMat{V})
     m1,m2 = size(H.offdiagonaldata[2],1),size(H.offdiagonaldata[1],1)
