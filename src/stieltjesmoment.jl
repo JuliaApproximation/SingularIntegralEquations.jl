@@ -121,7 +121,7 @@ function stieltjesjacobimoment(s::Bool,α,β,k::Integer,z)
                              2*sqrt(2)-2z/sqrt(1-z)*asinh(im*(s?1:-1)*sqrt(1/z))
         end
     elseif !isapprox(α,0) && isapprox(β,0.)
-        return (-1)^k*stieltjesjacobimoment(s,β,α,k,-z)
+        return (-1)^k*stieltjesjacobimoment(!s,β,α,k,-z)
     end
     error("stieltjesmoment not implemented for JacobiWeight "*string(α)*string(β))
 end
