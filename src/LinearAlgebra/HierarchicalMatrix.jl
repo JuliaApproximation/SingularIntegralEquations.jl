@@ -21,11 +21,9 @@
 # top right, then followed recursively by top left and bottom right.
 ##
 
-import Base.LinAlg: Factorization
-
 export HierarchicalMatrix, partitionmatrix, isfactored
 
-type HierarchicalMatrix{S,T,P} <: AbstractMatrix{Union(S,T)}
+type HierarchicalMatrix{S,T,P} <: AbstractMatrix{P}
     diagonaldata::Union(@compat(Tuple{HierarchicalMatrix{S,T},HierarchicalMatrix{S,T}}),@compat(Tuple{S,S})) # n ≥ 2 ? Tuple of two on-diagonal HierarchicalMatrix{S,T} : Tuple of two on-diagonal S
     offdiagonaldata::@compat(Tuple{T,T}) # Tuple of two off-diagonal T
     A::Matrix{P} # Cache of matrix for pivot computation
