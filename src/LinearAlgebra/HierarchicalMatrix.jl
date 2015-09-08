@@ -51,7 +51,7 @@ function HierarchicalMatrix{S,T}(diagonaldata::Vector{S},offdiagonaldata::Vector
     P = promote_type(eltype(S),eltype(T))
     r1,r2 = rank(offdiagonaldata[1]),rank(offdiagonaldata[2])
     A = eye(P,r1+r2,r1+r2)
-    factorization = lufact(A)
+    factorization = pivotldufact(A,r1,r2)#lufact(A)
     HierarchicalMatrix{S,T,P}(diagonaldata,offdiagonaldata,A,factorization,false,n)
 end
 HierarchicalMatrix{S,T}(diagonaldata::Vector{S},offdiagonaldata::Vector{T})=HierarchicalMatrix(diagonaldata,offdiagonaldata,round(Int,log2(length(diagonaldata))))
@@ -62,14 +62,14 @@ function HierarchicalMatrix{S,T}(diagonaldata::@compat(Tuple{S,S}),offdiagonalda
     P = promote_type(eltype(diagonaldata[1]),eltype(diagonaldata[2]),eltype(offdiagonaldata[1]),eltype(offdiagonaldata[2]))
     r1,r2 = rank(offdiagonaldata[1]),rank(offdiagonaldata[2])
     A = eye(P,r1+r2,r1+r2)
-    factorization = lufact(A)
+    factorization = pivotldufact(A,r1,r2)#lufact(A)
     HierarchicalMatrix{S,T,P}(diagonaldata,offdiagonaldata,A,factorization,false,n)
 end
 function HierarchicalMatrix{S,T,U,V}(diagonaldata::@compat(Tuple{HierarchicalMatrix{S,T,U},HierarchicalMatrix{S,T,U}}),offdiagonaldata::@compat(Tuple{V,V}),n::Int)
     P = promote_type(U,eltype(offdiagonaldata[1]),eltype(offdiagonaldata[2]))
     r1,r2 = rank(offdiagonaldata[1]),rank(offdiagonaldata[2])
     A = eye(P,r1+r2,r1+r2)
-    factorization = lufact(A)
+    factorization = pivotldufact(A,r1,r2)#lufact(A)
     HierarchicalMatrix{S,promote_type(T,V),P}(diagonaldata,offdiagonaldata,A,factorization,false,n)
 end
 

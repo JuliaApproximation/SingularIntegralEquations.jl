@@ -34,7 +34,7 @@ function hierarchicalsolve{S<:AbstractMatrix,U<:LowRankMatrix,V}(H::Hierarchical
 
     # Compute pivots
 
-    v12,v21 = computepivots(V12,V21,H11f1,H22f2,H,nf)
+    v12,v21 = computepivots(V12,V21,H11f1,H22f2,H.factorization,nf)
 
     # Solve again with updated right-hand sides
 
@@ -67,37 +67,36 @@ function factorize!{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMatrix{S,
 
     # Compute factorization
 
-    H.factorization = lufact(H.A)
+    H.factorization = pivotldufact(H.A,r1,r2)#lufact(H.A)
     H.factored = true
 end
 
-function computepivots{V1,V2,A1,A2}(V12::Matrix{V1},V21::Matrix{V2},H11f1::Matrix{A1},H22f2::Matrix{A2},H::HierarchicalMatrix,nf::Int)
-    T = promote_type(V1,V2,A1,A2)
-    r1,r2 = size(V12,2),size(V21,2)
-    b = zeros(T,r1+r2,nf)
-    for i=1:nf
-        for j=1:r1
-            b[j,i] = dot(V12[:,j],H22f2[:,i])
-        end
-        for j=1:r2
-            b[j+r1,i] = dot(V21[:,j],H11f1[:,i])
-        end
-    end
-    vc = H.factorization\b
-    vc[1:r1,1:nf],vc[r1+1:r1+r2,1:nf]
-end
-
-function computepivots{S,T,P}(V12::Matrix{P},V21::Matrix{P},H11f1::Matrix{P},H22f2::Matrix{P},H::HierarchicalMatrix{S,T,P},nf::Int)
+function computepivots{V1,V2,A1,A2,T}(V12::Matrix{V1},V21::Matrix{V2},H11f1::Matrix{A1},H22f2::Matrix{A2},A::Factorization{T},nf::Int)
+    P = promote_type(V1,V2,A1,A2)
     r1,r2 = size(V12,2),size(V21,2)
     b = zeros(P,r1+r2,nf)
     for i=1:nf
         for j=1:r1
-            b[j,i] = dot(V12[:,j],H22f2[:,i])
+            b[j,i] += dot(V12[:,j],H22f2[:,i])
         end
         for j=1:r2
-            b[j+r1,i] = dot(V21[:,j],H11f1[:,i])
+            b[j+r1,i] += dot(V21[:,j],H11f1[:,i])
         end
     end
-    A_ldiv_B!(H.factorization,b)
-    b[1:r1,1:nf],b[r1+1:r1+r2,1:nf]
+    vc = A\b
+    vc[1:r1,1:nf],vc[r1+1:r1+r2,1:nf]
+end
+
+function computepivots{S,T}(V12::Matrix{T},V21::Matrix{T},H11f1::Matrix{T},H22f2::Matrix{T},A::PivotLDU{T,S},nf::Int)
+    r1,r2 = size(V12,2),size(V21,2)
+    b1,b2 = zeros(T,r1,nf),zeros(T,r2,nf)
+    for i=1:nf
+        for j=1:r1
+            b1[j,i] += dot(V12[:,j],H22f2[:,i])
+        end
+        for j=1:r2
+            b2[j,i] += dot(V21[:,j],H11f1[:,i])
+        end
+    end
+    A_ldiv_B1B2!(A,b1,b2)
 end

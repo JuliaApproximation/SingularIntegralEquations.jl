@@ -38,7 +38,7 @@ function hierarchicalsolve{U<:Operator,V<:LowRankOperator,F<:Fun}(H::Hierarchica
 
     # Compute pivots
 
-    v12,v21 = computepivots(V12,V21,H11f1,H22f2,H,nf)
+    v12,v21 = computepivots(V12,V21,H11f1,H22f2,H.factorization,nf)
 
     # Solve again with updated right-hand sides
 
@@ -78,39 +78,38 @@ function factorize!{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V})
 
     # Compute factorization
 
-    H.factorization = lufact(H.A)
+    H.factorization = pivotldufact(H.A,r1,r2)#lufact(H.A)
     H.factored = true
 end
 
-function computepivots{VS1,VT1,VS2,VT2,AS1,AT1,AS2,AT2}(V12::Vector{Fun{VS1,VT1}},V21::Vector{Fun{VS2,VT2}},H11f1::Vector{Fun{AS1,AT1}},H22f2::Vector{Fun{AS2,AT2}},H::HierarchicalMatrix,nf::Int)
-    T = promote_type(VT1,VT2,AT1,AT2)
-    r1,r2 = length(V12),length(V21)
-    b = zeros(T,r1+r2,nf)
-    for i=1:nf
-        for j=1:r1
-            b[j,i] = dot(V12[j],H22f2[i])
-        end
-        for j=1:r2
-            b[j+r1,i] = dot(V21[j],H11f1[i])
-        end
-    end
-    vc = H.factorization\b
-    vc[1:r1,1:nf],vc[r1+1:r1+r2,1:nf]
-end
-
-function computepivots{V1,V2,A1,A2,S,T,P}(V12::Vector{Fun{V1,P}},V21::Vector{Fun{V2,P}},H11f1::Vector{Fun{A1,P}},H22f2::Vector{Fun{A2,P}},H::HierarchicalMatrix{S,T,P},nf::Int)
+function computepivots{VS1,VT1,VS2,VT2,AS1,AT1,AS2,AT2,T}(V12::Vector{Fun{VS1,VT1}},V21::Vector{Fun{VS2,VT2}},H11f1::Vector{Fun{AS1,AT1}},H22f2::Vector{Fun{AS2,AT2}},A::Factorization{T},nf::Int)
+    P = promote_type(VT1,VT2,AT1,AT2,T)
     r1,r2 = length(V12),length(V21)
     b = zeros(P,r1+r2,nf)
     for i=1:nf
         for j=1:r1
-            b[j,i] = dot(V12[j],H22f2[i])
+            b[j,i] += dot(V12[j],H22f2[i])
         end
         for j=1:r2
-            b[j+r1,i] = dot(V21[j],H11f1[i])
+            b[j+r1,i] += dot(V21[j],H11f1[i])
         end
     end
-    A_ldiv_B!(H.factorization,b)
-    b[1:r1,1:nf],b[r1+1:r1+r2,1:nf]
+    vc = A\b
+    vc[1:r1,1:nf],vc[r1+1:r1+r2,1:nf]
+end
+
+function computepivots{V1,V2,A1,A2,S,T}(V12::Vector{Fun{V1,T}},V21::Vector{Fun{V2,T}},H11f1::Vector{Fun{A1,T}},H22f2::Vector{Fun{A2,T}},A::PivotLDU{T,S},nf::Int)
+    r1,r2 = length(V12),length(V21)
+    b1,b2 = zeros(T,r1,nf),zeros(T,r2,nf)
+    for i=1:nf
+        for j=1:r1
+            b1[j,i] += dot(V12[j],H22f2[i])
+        end
+        for j=1:r2
+            b2[j,i] += dot(V21[j],H11f1[i])
+        end
+    end
+    A_ldiv_B1B2!(A,b1,b2)
 end
 
 
