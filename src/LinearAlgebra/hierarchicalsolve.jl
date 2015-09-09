@@ -8,8 +8,8 @@
 
 hierarchicalsolve{S<:AbstractMatrix,V}(H::S,f::AbstractVecOrMat{V}) = H\f
 
-function hierarchicalsolve{S<:AbstractMatrix,U<:LowRankMatrix,V}(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat{V})
-    T,nf = promote_type(eltype(H),V),size(f,2)
+function hierarchicalsolve{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat)
+    T,nf = promote_type(eltype(H),eltype(f)),size(f,2)
 
     # Pre-compute Factorization
 
