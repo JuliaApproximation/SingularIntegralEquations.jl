@@ -61,12 +61,12 @@ end
 
 # Algebra with BivariateFun's
 
-+(F::GreensFun,G::GreensFun) = GreensFun([F.kernels,G.kernels])
--(F::GreensFun,G::GreensFun) = GreensFun([F.kernels,-G.kernels])
-+(G::GreensFun,B::BivariateFun) = GreensFun([G.kernels,kernels(B)])
--(G::GreensFun,B::BivariateFun) = GreensFun([G.kernels,-kernels(B)])
-+(B::BivariateFun,G::GreensFun) = GreensFun([kernels(B),G.kernels])
--(B::BivariateFun,G::GreensFun) = GreensFun([kernels(B),-G.kernels])
++(F::GreensFun,G::GreensFun) = GreensFun([F.kernels;G.kernels])
+-(F::GreensFun,G::GreensFun) = GreensFun([F.kernels;-G.kernels])
++(G::GreensFun,B::BivariateFun) = GreensFun([G.kernels;kernels(B)])
+-(G::GreensFun,B::BivariateFun) = GreensFun([G.kernels;-kernels(B)])
++(B::BivariateFun,G::GreensFun) = GreensFun([kernels(B);G.kernels])
+-(B::BivariateFun,G::GreensFun) = GreensFun([kernels(B);-G.kernels])
 
 # Custom operations on Arrays required to infer type of resulting Array{GreensFun}
 
