@@ -64,8 +64,8 @@ function convolutionProductFun{S<:CosSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},
     X = zeros(T,N,N)
     X[1,1] += c[1]
     @inbounds for i=2:2:N
-        X[i,i] += c[i/2+1]
-        X[i+1,i+1] += c[i/2+1]
+        X[i,i] += c[div(i,2)+1]
+        X[i+1,i+1] += c[div(i,2)+1]
     end
     ProductFun(X,u⊗v)
 end
@@ -77,8 +77,8 @@ function convolutionProductFun{S<:SinSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},
     N = 2length(c)+1
     X = zeros(T,N,N)
     @inbounds for i=2:2:N
-        X[i+1,i] += c[i/2]
-        X[i,i+1] -= c[i/2]
+        X[i+1,i] += c[div(i,2)]
+        X[i,i+1] -= c[div(i,2)]
     end
     ProductFun(X,u⊗v)
 end
@@ -106,7 +106,7 @@ function convolutionProductFun{S<:Taylor,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u:
     X = zeros(T,N-1,N)
     X[1,1] += c[1]
     @inbounds for i=2:2:N-1
-        X[i,i+1] += c[i/2+1]
+        X[i,i+1] += c[div(i,2)+1]
     end
     ProductFun(X,u⊗v)
 end
@@ -118,7 +118,7 @@ function convolutionProductFun{S<:Hardy{false},T,U<:Laurent,V<:Laurent}(f::Fun{S
     N = 2length(c)
     X = zeros(T,N+1,N)
     @inbounds for i=2:2:N
-        X[i+1,i] += c[i/2]
+        X[i+1,i] += c[div(i,2)]
     end
     ProductFun(X,u⊗v)
 end

@@ -1,4 +1,4 @@
-⋅(d,z) = d[1]*z[1]+d[2]*z[2]
+Base.⋅(d,z) = d[1]*z[1]+d[2]*z[2]
 
 function g3neumann(x,y)
   z = k*abs(y-x)

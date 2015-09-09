@@ -1,4 +1,4 @@
-using ApproxFun, SingularIntegralEquations, Base.Test
+using ApproxFun, SingularIntegralEquations, Base.Test, Compat
 
 println("Chebyshev addition test")
 
@@ -52,7 +52,7 @@ G = convolutionProductFun(f2,Laurent(),Laurent())
 
 println("Timing tests: ")
 
-gc_disable()
+gc_enable(false)
 
 d = Interval(-2.5,-.5)
 fK(x,y) = besselj0(100(y-x))
@@ -72,4 +72,4 @@ convolutionProductFun(f2,Laurent(),Laurent())
 @time G = convolutionProductFun(f2,Laurent(),Laurent())
 println("Laurent addition: Time should be ~0.14 seconds.")
 
-gc_enable()
+gc_enable(true)
