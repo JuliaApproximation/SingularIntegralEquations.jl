@@ -62,7 +62,7 @@ function Base.getindex{S<:AbstractVector,T}(H::HierarchicalVector{S,T},i::Int)
         throw(BoundsError())
     end
 end
-Base.getindex{S<:AbstractVector,T}(H::HierarchicalVector{S,T},ir::Range) = eltype(H)[H[i] for i=ir].'#'
+Base.getindex{S<:AbstractVector,T}(H::HierarchicalVector{S,T},ir::Range) = eltype(H)[H[i] for i=ir].'
 Base.full{S<:AbstractVector,T}(H::HierarchicalVector{S,T})=H[1:size(H,1)]
 
 partitionvector(H::HierarchicalVector) = H.data

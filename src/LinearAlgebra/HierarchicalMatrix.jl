@@ -38,7 +38,7 @@ end
 function HierarchicalMatrix(diagonaldata::Vector,offdiagonaldata::Vector,A::Matrix,factorization::Factorization,factored::Bool,n::Int)
     @assert length(diagonaldata) == 2^n
     @assert length(offdiagonaldata) == 2^(n+1)-2
-    
+
     if n == 1
         return HierarchicalMatrix(tuple(diagonaldata...),tuple(offdiagonaldata...),A,factorization,factored,n)
     elseif n ≥ 2
@@ -147,7 +147,7 @@ function Base.getindex(H::HierarchicalMatrix,i::Int,j::Int)
         throw(BoundsError())
     end
 end
-Base.getindex(H::HierarchicalMatrix,i::Int,jr::Range) = eltype(H)[H[i,j] for j=jr].'#'
+Base.getindex(H::HierarchicalMatrix,i::Int,jr::Range) = eltype(H)[H[i,j] for j=jr].'
 Base.getindex(H::HierarchicalMatrix,ir::Range,j::Int) = eltype(H)[H[i,j] for i=ir]
 Base.getindex(H::HierarchicalMatrix,ir::Range,jr::Range) = eltype(H)[H[i,j] for i=ir,j=jr]
 Base.full(H::HierarchicalMatrix)=H[1:size(H,1),1:size(H,2)]
