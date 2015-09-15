@@ -7,7 +7,7 @@ export cauchy, cauchyintegral, stieltjes, logkernel,
 
 import Base: values,getindex,setindex!,*,.*,+,.+,-,.-,==,<,<=,>,
                 >=,./,/,.^,^,\,∪,transpose
-                
+
 
 import ApproxFun
 import ApproxFun: bandinds,SpaceOperator,
@@ -43,6 +43,7 @@ cauchyintegral(u,z)=im/(2π)*stieltjesintegral(u,z)
 
 include("LinearAlgebra/LinearAlgebra.jl")
 include("Operators/Operators.jl")
+include("FundamentalSolutions/FundamentalSolutions.jl")
 
 include("stieltjesmoment.jl")
 
