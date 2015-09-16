@@ -15,7 +15,16 @@ module FundamentalSolutions
 export lhelmfs, lhelm_riemann
 
 include("constants.jl")
+include("integrand.jl")
+include("gammaforbidden.jl")
+include("contour.jl")
+include("locate_minimum.jl")
+
 include("lhelmfs.jl")
 include("lhelm_riemann.jl")
 
 end #module
+
+#using .FundamentalSolutions
+
+#export lhelmfs, lhelm_riemann
