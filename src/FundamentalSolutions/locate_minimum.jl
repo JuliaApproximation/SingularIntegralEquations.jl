@@ -4,16 +4,16 @@
 # returns t value of minimum along contour: tmin
 # also returns integrand value at minimum: fmin
 #
-function locate_minimum!(tmin::Float64, fmin::Float64, st1::Complex{Float64}, st3::Complex{Float64}, a::Float64, b::Float64, x::Float64, y::Float64, derivs::Bool)
+function locate_minimum(st1::Complex{Float64}, st3::Complex{Float64}, a::Float64, b::Float64, x::Float64, y::Float64, derivs::Bool)
     n_t = 20
-    ts = Array(Float64,n_t)
-    gam = Array(Complex{Float64},n_t)
-    integ = Array(Complex{Float64},n_t)
-    integx = Array(Complex{Float64},n_t)
-    integy = Array(Complex{Float64},n_t)
+    ts = Vector{Float64}(n_t)
+    gam = Vector{Complex{Float64}}(n_t)
+    integ = Vector{Complex{Float64}}(n_t)
+    integx = Vector{Complex{Float64}}(n_t)
+    integy = Vector{Complex{Float64}}(n_t)
 
     t1,t2 = real(st1),real(st3)
-
+    tmin,fmin = 0.0,0.0
     # number of loops
     n_its = 2
     for k=1:n_its
@@ -41,4 +41,5 @@ function locate_minimum!(tmin::Float64, fmin::Float64, st1::Complex{Float64}, st
             t1,t2 = ts[idx-1],ts[idx+1]
         end
     end
+    return tmin,fmin
 end

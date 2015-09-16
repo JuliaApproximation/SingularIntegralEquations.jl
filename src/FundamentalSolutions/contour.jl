@@ -3,13 +3,12 @@
 # and derivatives of contour (gamp), given params a,b.
 #
 function contour!(gam::Vector{Complex{Float64}}, gamp::Vector{Complex{Float64}}, a::Float64, b::Float64, ts::Vector{Float64})
-    n = length(ts)
     # Complex precalculations for stationary points
-    temp1 = sqrt(b^2 - a + ZIM)
+    temp1 = sqrt(b^2-a+ZIM)
     temp2 = sqrt(a+ZIM)
     # Relevant stationary points of the integrand
-    st1 = log(sqrt(2(b + temp1)))
-    st3 = log(sqrt(2(b - temp1)))
+    st1 = log(sqrt(2.0(b + temp1)))
+    st3 = log(sqrt(2.0(b - temp1)))
     # swap so st3 has smaller real part for contour only
     if real(st3) > real(st1)
         st1,st3 = st3,st1
@@ -24,8 +23,7 @@ function contour!(gam::Vector{Complex{Float64}}, gamp::Vector{Complex{Float64}},
         # note exp(re(s)) ~ sqrt(E). See also gammaforbidden!()
         imsh = 0.0
         if abs(real(st1)-real(st3)) < 0.1
-            rst1 = real(st1)
-            imshack!(rst1,imsh)
+            imsh = imshack(real(st1),imsh)
         end
 
         temp1c=2.0(ts - real(st3)) + W2

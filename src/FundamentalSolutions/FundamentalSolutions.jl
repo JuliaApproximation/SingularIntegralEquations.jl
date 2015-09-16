@@ -19,12 +19,17 @@ include("integrand.jl")
 include("gammaforbidden.jl")
 include("contour.jl")
 include("locate_minimum.jl")
+include("find_endpoints.jl")
+#include("quad_nodes.jl")
 
 include("lhelmfs.jl")
 include("lhelm_riemann.jl")
 
 end #module
 
-#using .FundamentalSolutions
+using .FundamentalSolutions
+
+import SingularIntegralEquations.FundamentalSolutions: integrand!,ZIM
+export integrand!,ZIM
 
 #export lhelmfs, lhelm_riemann
