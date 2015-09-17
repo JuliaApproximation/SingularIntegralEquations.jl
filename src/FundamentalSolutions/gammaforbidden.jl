@@ -25,33 +25,33 @@ function gammaforbidden(s0::Complex{Float64}, s::Float64, deriv::Bool)
     end
 end
 
-function gammaforbidden!(s0::Complex{Float64}, s::Vector{Float64}, gam::Vector{Complex{Float64}})
+function gammaforbidden!(s0::Complex{Float64}, s::Vector{Float64}, gam::Vector{Complex{Float64}}, nquad::Int)
     res,ims = reim(s0)
-    d = s - res
+    d = s[1:nquad] - res
     # region 1 (deep forbidden)
     if ims ≤ -M_PI_3
-        gam[:] = complex(s,THIRD*atan(d) - M_PI_3)
+        gam[1:nquad] = complex(s[1:nquad],THIRD*atan(d) - M_PI_3)
     else
         ims = imshack(res,ims)
         ex,g0 = exp(-d.*d),THIRD*(atan(d)-M_PI)
-        gam[:] = complex(s,ims + (g0 - ims).*(1.0-ex))
+        gam[1:nquad] = complex(s,ims + (g0 - ims).*(1.0-ex))
     end
 end
 
-function gammaforbidden!(s0::Complex{Float64}, s::Vector{Float64}, gam::Vector{Complex{Float64}}, gamp::Vector{Complex{Float64}})
+function gammaforbidden!(s0::Complex{Float64}, s::Vector{Float64}, gam::Vector{Complex{Float64}}, gamp::Vector{Complex{Float64}}, nquad::Int)
     res,ims = reim(s0)
-    d = s - res
+    d = s[1:nquad] - res
     # region 1 (deep forbidden)
     if ims ≤ -M_PI_3
-        gam[:] = complex(s,THIRD*atan(d) - M_PI_3)
-        gamp[:] = complex(1.0,THIRD./(1+d.*d))
+        gam[1:nquad] = complex(s[1:nquad],THIRD*atan(d) - M_PI_3)
+        gamp[1:nquad] = complex(1.0,THIRD./(1+d.*d))
     else
         ims = imshack(res,ims)
         d2 = d.^2
         ex = exp(-d2)
         g0 = THIRD*(atan(d)-M_PI)
-        gam[:] = complex(s,ims + (g0 - ims).*(1.0-ex))
-        gamp[:] = complex(1.0,2.0*(g0 - ims).*d.*ex + THIRD ./ (1.0 + d2) .* (1.0-ex))
+        gam[1:nquad] = complex(s[1:nquad],ims + (g0 - ims).*(1.0-ex))
+        gamp[1:nquad] = complex(1.0,2.0*(g0 - ims).*d.*ex + THIRD ./ (1.0 + d2) .* (1.0-ex))
     end
 end
 

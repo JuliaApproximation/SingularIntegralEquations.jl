@@ -28,7 +28,7 @@ function locate_minimum(st1::Complex{Float64}, st3::Complex{Float64}, a::Float64
         g = (M_1_PI + 1.0 / 6.0 ) * atan(temp2c) - (M_PI_4 / 3.0 - 0.5)
         gam[:] = complex(ts,f.*g)
 
-        integrand!(integ,integx,integy,gam,a,b,x,y,derivs)
+        integrand!(integ,integx,integy,gam,a,b,x,y,derivs,n_t)
 
         # function to be minimized: two norm of u, ux, uy
         #test_min = sqrt(abs(integ)+abs(integx)+abs(integy)) This is how it appears in the C-library

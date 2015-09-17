@@ -15,7 +15,6 @@
                          (if h<0, -h used, and also scales maxh & minsaddlen)
      meth (input) - int giving method for choosing # nodes: 0 (old, Brad); 1 (Alex)
 =#
-#≤≥
 function quad_nodes!(ts::Vector{Float64}, ws::Vector{Float64}, a::Float64, b::Float64, x::Float64, y::Float64, derivs::Bool, stdquad::Int, h::Float64, meth::Int)
     n = length(ts)
     @assert n == length(ws)
@@ -29,7 +28,7 @@ function quad_nodes!(ts::Vector{Float64}, ws::Vector{Float64}, a::Float64, b::Fl
     end
     lm1,lp1,lm2,lp2,c1,c2,tm,tp = find_endpoints(a,b,x,y,derivs)
     sigm = 1.0/sqrt(abs(a/tm + b*tm - 0.75*tm*tm*tm))
-    sigp = 1.0/sqrt(cabs(a/tp + b*tp - 0.75*tp*tp*tp))
+    sigp = 1.0/sqrt(abs(a/tp + b*tp - 0.75*tp*tp*tp))
 
     if h < 0
         h = -h

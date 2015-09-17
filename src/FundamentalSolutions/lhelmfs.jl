@@ -25,7 +25,7 @@ function lhelmfs(trg::Union(Vector{Float64},Vector{Complex{Float64}}),energies::
         uy = zeros(Complex{Float64},n)
     #end
 
-    ccall((:lhfs,lhelmfspath),Void,(Ptr{Float64},Ptr{Float64},Ptr{Float64},Int64,Int64,Ptr{Complex{Float64}},Ptr{Complex{Float64}},Ptr{Complex{Float64}},Int64,Float64,Int64,Int64,Ptr{Int64}),x1,x2,energies,derivs ? 1 : 0,n,u,ux,uy,stdquad,h,meth,gamout,nquad)
+    lhfs!(x1,x2,energies,derivs,u,ux,uy,stdquad,h,meth)
 
     if derivs
         return u/4π,ux/4π,uy/4π
