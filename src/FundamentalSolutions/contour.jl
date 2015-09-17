@@ -10,11 +10,7 @@ function contour(a::Float64, b::Float64, ts::Float64)
     st1 = 0.5log(2.0(b + temp1))
     st3 = 0.5log(2.0(b - temp1))
     # swap so st3 has smaller real part for contour only
-    if real(st3) > real(st1)
-        temp1 = st1
-        st1 = st3
-        st3 = temp1
-    end
+    if real(st3) > real(st1) st1,st3 = st3,st1 end
     # hack to deal with brach of log
     if imag(st3) ≥ M_PI_2 st3 -= im*M_PI end
     # construct gam, gamp
