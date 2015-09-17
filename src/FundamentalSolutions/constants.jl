@@ -3,6 +3,7 @@ const M_PI_3 = 1.047197551196598
 const M_PI_2 = 1.5707963267948966
 const M_PI = 3.1415926535897932384
 const M_1_PI = 0.31830988618379067
+const M_1_4PI = 7.957747154594767e-02
 const M_PI_4 = 0.785398163397448309
 const THIRD = 0.333333333333333333
 const ZIM = 0.0im
@@ -13,7 +14,17 @@ const W2 = 0.5*0.363630003348128     # precomputed constant for finding stationa
 const V4 = -0.25*0.534877842831614    # precomputed constant for finding stationary points
 const jump_ratio = 1.3          # when finding endpoints, increase distance from, 1.3
 	                            # stationary point by this ratio
+
 const MAXNQUAD = 3000           # maximum allowed number of quad points
+
+# Allocation
+const gam = Vector{Complex{Float64}}(MAXNQUAD)
+const gamp = Vector{Complex{Float64}}(MAXNQUAD)
+const integ = Vector{Complex{Float64}}(MAXNQUAD)
+const integx = Vector{Complex{Float64}}(MAXNQUAD)
+const integy = Vector{Complex{Float64}}(MAXNQUAD)
+const ts = Vector{Float64}(MAXNQUAD)
+const ws = Vector{Float64}(MAXNQUAD)
 
 # default numerical params, and how they scale with h (when h<0 triggers it):
 const MAXH_STD = 0.05           # max h spacing on real axis for quad-nodes meth=1, .03

@@ -23,42 +23,33 @@
      meth (input) - int giving method for choosing # nodes (passed to quad_nodes)
      gamout (input) - 0: no file output (default), 1: diagnostic text to file nodes.dat
 =#
-function lhfs!(x::Vector{Float64}, y::Vector{Float64}, energies::Vector{Float64}, derivs::Bool, u::Vector{Complex{Float64}}, ux::Vector{Complex{Float64}}, uy::Vector{Complex{Float64}}, stdquad::Int, h::Float64, meth::Int)
-
-    # Allocation
-    gam = Vector{Complex{Float64}}(MAXNQUAD)
-    gamp = Vector{Complex{Float64}}(MAXNQUAD)
-    integ = Vector{Complex{Float64}}(MAXNQUAD)
-    integx = Vector{Complex{Float64}}(MAXNQUAD)
-    integy = Vector{Complex{Float64}}(MAXNQUAD)
-    ts = Vector{Float64}(MAXNQUAD)
-    ws = Vector{Float64}(MAXNQUAD)
-
-    n = length(x)
-    @assert n == length(y) == length(energies)
-
-    for i=1:n
-        a = 0.25(x[i]^2+y[i]^2)
-        b = 0.5y[i]+energies[i]
-
-        if a == 0
-            u[i] = Inf
-            if derivs
-                ux[i] = Inf
-                uy[i] = Inf
-            end
+function lhfs(x::Float64, y::Float64, energies::Float64, derivs::Bool, stdquad::Int, h::Float64, meth::Int)
+    a = 0.25(x^2+y^2)
+    b = 0.5y+energies
+    if a == 0
+        if derivs
+            u = Inf+ZIM
+            ux = Inf+ZIM
+            uy = Inf+ZIM
+            return u,ux,uy
         else
-            nquad = quad_nodes!(ts, ws, a, b, x[i], y[i], derivs, stdquad, h, meth)
-
-            contour!(gam, gamp, a, b, ts, nquad)
-
-            integrand!(integ, integx, integy, gam, a, b, x[i], y[i], derivs, nquad)
-
-            u[i] = quadsum(integ,gamp,ws,nquad)
-            if derivs
-                ux[i] = quadsum(integx,gamp,ws,nquad)
-                uy[i] = quadsum(integy,gamp,ws,nquad)
-            end
+            u = Inf+ZIM
+            return u
+        end
+    else
+        nquad = quad_nodes!(ts, ws, a, b, x, y, derivs, stdquad, h, meth)
+        for k=1:nquad
+            gam[k],gamp[k] = contour(a, b, ts[k])
+            integ[k],integx[k],integy[k] = integrand(gam[k], a, b, x, y, derivs)
+        end
+        if derivs
+            u = quadsum(integ,gamp,ws,nquad)
+            ux = quadsum(integx,gamp,ws,nquad)
+            uy = quadsum(integy,gamp,ws,nquad)
+            return u,ux,uy
+        else
+            u = quadsum(integ,gamp,ws,nquad)
+            return u
         end
     end
 end

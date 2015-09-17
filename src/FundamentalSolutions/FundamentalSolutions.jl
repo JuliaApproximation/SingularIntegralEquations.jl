@@ -30,7 +30,7 @@ end #module
 
 using .FundamentalSolutions
 
-import SingularIntegralEquations.FundamentalSolutions: integrand!,ZIM
-export integrand!,ZIM
+import SingularIntegralEquations.FundamentalSolutions: ZIM
+export ZIM
 
 #export lhelmfs, lhelm_riemann

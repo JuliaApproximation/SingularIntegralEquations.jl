@@ -130,7 +130,7 @@ void lhfs( double * x, double * y, double *energies, int derivs, int n, double c
     double delta;
     omp_set_num_threads(1);
     #endif
-    
+
     *nquad = 0;           // init quad pt counter
 
   // now to loop through finding the fundamental solution for each coordinate.
@@ -156,44 +156,44 @@ void lhfs( double * x, double * y, double *energies, int derivs, int n, double c
       integy = (double complex *) malloc(MAXNQUAD * sizeof(double complex));
       ts = (double *) malloc(MAXNQUAD * sizeof(double));
       ws = (double *) malloc(MAXNQUAD * sizeof(double));
-    
+
       a = (x[i] * x[i] + y[i] * y[i]) / 4.0;
       b = y[i] / 2.0 + energies[i];
-      
+
       if( a == 0 ) {
 	u[i] = INFINITY;                 // hit the singularity!
 	if (derivs) { ux[i] = INFINITY; uy[i] = INFINITY; }
       } else {
-          
+
             #ifdef DBTIMING
             gettimeofday(&start, NULL);
             #endif
-          
+
             quad_nodes(ts, ws, &t_w_size, a, b, x[i], y[i], derivs, stdquad, h, meth);
 	    *nquad += t_w_size;    // increment total # quad pts
-          
+
             #ifdef DBTIMING
             gettimeofday(&end, NULL);
             delta = ((end.tv_sec  - start.tv_sec) * 1000000u + end.tv_usec - start.tv_usec) / 1.e6;
             quad_time += delta;
             #endif
-      
+
             #ifdef DBTIMING
             gettimeofday(&start, NULL);
             #endif
-          
+
             ctr(gam, gamp, a, b, ts, t_w_size); // builds countour
-          
+
             #ifdef DBTIMING
             gettimeofday(&end, NULL);
             delta = ((end.tv_sec  - start.tv_sec) * 1000000u + end.tv_usec - start.tv_usec) / 1.e6;
             ctr_time += delta;
             #endif
-          
+
             #ifdef DBTIMING
             gettimeofday(&start, NULL);
             #endif
-          
+
             integral(integ, integx, integy, gam, a, b, t_w_size, x[i], y[i], derivs);  // computes integrand
 
             #ifdef DBTIMING
@@ -231,7 +231,7 @@ void lhfs( double * x, double * y, double *energies, int derivs, int n, double c
       free(gamp);
       free(integ);
       free(integx);
-      free(integy);      
+      free(integy);
   }  // end i loop
 
   if (gamout) {
@@ -275,10 +275,10 @@ void lhfs( double * x, double * y, double *energies, int derivs, int n, double c
                          (if h<0, -h used, and also scales maxh & minsaddlen)
      meth (input) - int giving method for choosing # nodes: 0 (old, Brad); 1 (Alex)
 */
-static void quad_nodes(double * ts, double * ws, int * n, 
+static void quad_nodes(double * ts, double * ws, int * n,
                        const double a, const double b, const double x, const double y, const int derivs,
 		       int stdquad, double h, int meth) {
- 
+
     double lm1, lp1, lm2, lp2, c1, c2; // endpoint markers
     double tmin, fmin;
     double maxh = MAXH_STD;
@@ -305,7 +305,7 @@ static void quad_nodes(double * ts, double * ws, int * n,
     double dist1, dist2;
     if ( ( ( lm2 == c2 ) || ( lp1 == c1) ) && c1 != c2 ) {
         // two maxima, no die-off in middle
-        
+
       //printf("3, no dieoff\n");
       if (meth==0) {
         double lga = log(a) / log(10);
@@ -315,9 +315,9 @@ static void quad_nodes(double * ts, double * ws, int * n,
         } else {
             n2 = 2 * stdquad;
         }
-        
+
         dist1 = (lp2 - lm1) / ( n2 - 1);
-        
+
         linspace(ts, lm1, lp2, n2);
         array_fill(ws, dist1, n2);
 	*n = n2;
@@ -335,7 +335,7 @@ static void quad_nodes(double * ts, double * ws, int * n,
 	//printf("%.16g\n",M_PI-fmaxf(M_PI,-M_PI)); // shows only single prec
       }
 
-        
+
     } else if (c1 != c2) {
         // two maxima, die-off in middle
 
@@ -349,14 +349,14 @@ static void quad_nodes(double * ts, double * ws, int * n,
         } else {
             n2 = stdquad;
         }
-        
+
         // need to check to make sure intervals are non-trivial
         dist1 = (lp1 - lm1) / (n2 - 1);
         dist2 = (lp2 - lm2) / (stdquad - 1);
-        
+
         linspace(ts, lm1, lp1, n2);
         array_fill(ws, dist1, n2);
-        
+
         linspace(&(ts[n2]), lm2, lp2, stdquad);
         array_fill(&(ws[n2]), dist2, stdquad);
 	*n = n2 + stdquad;
@@ -401,7 +401,7 @@ static void quad_nodes(double * ts, double * ws, int * n,
       }
 
     }
-    
+
     #ifdef DBTIMING
     tot_quad_pts += *n;
     #endif
@@ -421,7 +421,7 @@ void gamforbid(int n, int deriv, double complex s0, double *s,
   int j;
   double res = creal(s0), ims = cimag(s0);
   double d, d2, ex, g0;
-  
+
   //printf("deriv=%d, n=%d, s0=%g+%gi\n",deriv,n,res,ims);
   if (ims <= -M_PI_3) {      // region 1 (deep forbidden)
     if (deriv) {
@@ -478,7 +478,7 @@ Computes the endpoints for fundamental solution integral by stepping
 along the contour until it finds a point whose value is smaller
 than machine epsilon
 */
-static void find_endpoints( double * lm1, double * lp1, double * lm2, 
+static void find_endpoints( double * lm1, double * lp1, double * lm2,
                            double * lp2, double * c1, double * c2, double * tmin, double * fmin,
 			    double complex *tm, double complex *tp,        // passes saddle pts in t plane
                            const double a, const double b,
@@ -504,13 +504,13 @@ static void find_endpoints( double * lm1, double * lp1, double * lm2,
     // Alex updated this section using region1+2 function gamforbid 9/15/14
     *c1 = creal(st1);
     stdist = abs(*c1) / 2.0;
-    if( stdist == 0) 
+    if( stdist == 0)
       stdist = 1;
-      
+
       // first find Lm1
       t = *c1 - stdist;
       gamforbid(1, 0, st3, &t, &gam, &gam); // reconstructs gam at t
-      
+
       double dlm1 = 1;
       double complex u, ux, uy;
       integrand( &u, &ux, &uy, gam, a, b, x, y, derivs);
@@ -532,8 +532,8 @@ static void find_endpoints( double * lm1, double * lp1, double * lm2,
           dlm1 *= jump_ratio;
       }
       *lm1 = *c1 - dlm1 * stdist;
-      
-      
+
+
       // now to find *lp1
       t = *c1 + stdist;
       gamforbid(1, 0, st3, &t, &gam, &gam); // reconstructs gam at t
@@ -542,8 +542,8 @@ static void find_endpoints( double * lm1, double * lp1, double * lm2,
       if( (cabs(u) < eps)  && (cabs(ux) < eps) && (cabs(uy) < eps) ) {
           while (((cabs(u) < eps)  && (cabs(ux) < eps) && (cabs(uy) < eps)) && dlm1 > eps) {
               dlm1 = dlm1 / jump_ratio;
-              t = *c1 + dlm1 * stdist;              
-	      gamforbid(1, 0, st3, &t, &gam, &gam); // rebuild: reconstructs gam at t    
+              t = *c1 + dlm1 * stdist;
+	      gamforbid(1, 0, st3, &t, &gam, &gam); // rebuild: reconstructs gam at t
 	      integrand( &u, &ux, &uy, gam, a, b, x, y, derivs);
           }
           if (dlm1 < eps) dlm1 = 0;
@@ -557,14 +557,14 @@ static void find_endpoints( double * lm1, double * lp1, double * lm2,
           }
       }
       *lp1 = *c1 + dlm1 * stdist;
-      
-      
+
+
       *c2 = *c1;
       *lp2 = 0;
       *lm2 = 0;
 
-      
-      
+
+
   } else { //region 3 (allowed):  we need to integrate over 2 intervals.............
   // (Brad's code)
       // finds start points of intervals
@@ -575,20 +575,20 @@ static void find_endpoints( double * lm1, double * lp1, double * lm2,
           *c1 = creal(st3);
           *c2 = creal(st1);
       }
-      
+
       // find minimum between stationary points
-      
+
       loc_min(tmin, fmin, st1, st3, a, b, x, y, derivs);
       //tmin = (*c2 + *c1) / 2.0;
       //fmin = 0.0;
-      
-      
+
+
       stdist = fabs(*c1 - *tmin);
-      if( stdist == 0) 
+      if( stdist == 0)
           stdist = 1;
       //double stdist = (*c2 - *c1) / 2.0;;
       t = *c1 - stdist;
-      
+
       // precalculations for f, g
       double f1 = (1.0 / M_PI + 0.5);
       double f2 = (-creal(st3) + W / 2);
@@ -596,12 +596,12 @@ static void find_endpoints( double * lm1, double * lp1, double * lm2,
       double g1 = (1.0 / M_PI + 1.0 / 6.0);
       double g2 = (-creal(st1) - V / 4);
       double g3 = (-M_PI / 12.0 + 0.5);
-      
+
       double f = f1 * atan( 2 * ( t + f2)) + f3;
       double g = g1 * atan (-4 * (t + g2)) + g3;
-      
+
       gam = t + I * f * g;
-      
+
       double dlm1 = 1;
       double complex u, ux, uy;
       integrand( &u, &ux, &uy, gam, a, b, x, y, derivs);
@@ -609,7 +609,7 @@ static void find_endpoints( double * lm1, double * lp1, double * lm2,
           while ((cabs(u) > eps)  || (cabs(ux) > eps) || (cabs(uy) > eps) ) {
               dlm1 *= jump_ratio;
               t = *c1 - dlm1 * stdist;
-              
+
               // rebuild contour
               f = f1 * atan( 2 * ( t + f2)) + f3;
               g = g1 * atan (-4 * (t + g2)) + g3;
@@ -631,22 +631,22 @@ static void find_endpoints( double * lm1, double * lp1, double * lm2,
           dlm1 *= jump_ratio;
       }
       *lm1 = *c1 - dlm1 * stdist;
-      
-      
+
+
       // now to find *lp1
       t = *c1 + stdist;
-      
+
       f = f1 * atan( 2 * ( t + f2)) + f3;
       g = g1 * atan (-4 * (t + g2)) + g3;
       gam = t + I * f * g;
-      
+
       dlm1 = 1.0;
       integrand( &u, &ux, &uy, gam, a, b, x, y, derivs);
       if( (cabs(u) < eps)  && (cabs(ux) < eps) && (cabs(uy) < eps) ) {
           while (((cabs(u) < eps)  && (cabs(ux) < eps) && (cabs(uy) < eps)) && dlm1 > eps) {
               dlm1 = dlm1 / jump_ratio;
               t = *c1 + dlm1 * stdist;
-              
+
               // rebuild contour
               f = f1 * atan( 2 * ( t + f2)) + f3;
               g = g1 * atan (-4 * (t + g2)) + g3;
@@ -659,7 +659,7 @@ static void find_endpoints( double * lm1, double * lp1, double * lm2,
           while ((cabs(u) > eps)  || (cabs(ux) > eps) || (cabs(uy) > eps)) {
               dlm1 *= jump_ratio;
               t = *c1 + dlm1 * stdist;
-              
+
               // rebuild contour
               f = f1 * atan( 2 * ( t + f2)) + f3;
               g = g1 * atan (-4 * (t + g2)) + g3;
@@ -668,19 +668,19 @@ static void find_endpoints( double * lm1, double * lp1, double * lm2,
           }
       }
       *lp1 = *c1 + dlm1 * stdist;
-      
-      
+
+
       // now to find lm2
       stdist = fabs(*c2 - *tmin);
-      if( stdist == 0) 
+      if( stdist == 0)
           stdist = 1;
-      
+
       t = *c2 - stdist;
-   
+
       f = f1 * atan( 2 * ( t + f2)) + f3;
       g = g1 * atan (-4 * (t + g2)) + g3;
       gam = t + I * f * g;
-      
+
       dlm1 = 1.0;
       integrand( &u, &ux, &uy, gam, a, b, x, y, derivs);
 
@@ -688,7 +688,7 @@ static void find_endpoints( double * lm1, double * lp1, double * lm2,
           while ((cabs(u) > eps)  || (cabs(ux) > eps) || (cabs(uy) > eps) ) {
               dlm1 *= jump_ratio;
               t = *c2 - dlm1 * stdist;
-              
+
               // rebuild contour
               f = f1 * atan( 2 * ( t + f2)) + f3;
               g = g1 * atan (-4 * (t + g2)) + g3;
@@ -699,7 +699,7 @@ static void find_endpoints( double * lm1, double * lp1, double * lm2,
           while (((cabs(u) < eps)  && (cabs(ux) < eps) && (cabs(uy) < eps)) && dlm1 > eps) {
               dlm1 = dlm1 / jump_ratio;
               t = *c2 - dlm1 * stdist;
-              
+
               // rebuild contour
               f = f1 * atan( 2 * ( t + f2)) + f3;
               g = g1 * atan (-4 * (t + g2)) + g3;
@@ -711,21 +711,21 @@ static void find_endpoints( double * lm1, double * lp1, double * lm2,
       }
       *lm2 = *c2 - dlm1 * stdist;
 
-      
+
       // now to find lp2
       t = *c2 + stdist;
-      
+
       f = f1 * atan( 2 * ( t + f2)) + f3;
       g = g1 * atan (-4 * (t + g2)) + g3;
       gam = t + I * f * g;
-      
+
       dlm1 = 1.0;
       integrand( &u, &ux, &uy, gam, a, b, x, y, derivs);
       if( (cabs(u) > eps)  || (cabs(ux) > eps) || (cabs(uy) > eps) ) {
           while ((cabs(u) > eps)  || (cabs(ux) > eps) || (cabs(uy) > eps) ) {
               dlm1 *= jump_ratio;
               t = *c2 + dlm1 * stdist;
-              
+
               // rebuild contour
               f = f1 * atan( 2 * ( t + f2)) + f3;
               g = g1 * atan (-4 * (t + g2)) + g3;
@@ -736,7 +736,7 @@ static void find_endpoints( double * lm1, double * lp1, double * lm2,
           while (((cabs(u) < eps)  && (cabs(ux) < eps) && (cabs(uy) < eps)) && dlm1 > eps) {
               dlm1 = dlm1 / jump_ratio;
               t = *c2 + dlm1 * stdist;
-              
+
               // rebuild contour
               f = f1 * atan( 2 * ( t + f2)) + f3;
               g = g1 * atan (-4 * (t + g2)) + g3;
@@ -747,7 +747,7 @@ static void find_endpoints( double * lm1, double * lp1, double * lm2,
           dlm1 *= jump_ratio;
       }
       *lp2 = *c2 + dlm1 * stdist;
-      
+
       // now for some final clean up
       if(*lm2 < *c1) {
           if(*lm1 < *lm2) {
@@ -761,8 +761,8 @@ static void find_endpoints( double * lm1, double * lp1, double * lm2,
           }
           *lp1 = *c1;
       }
-      
-      
+
+
   }
 
   return;
@@ -787,7 +787,7 @@ static void array_fill(double * array, const double fill_num, const int size) {
   for( int i = 0; i < size; i++) {
     array[i] = fill_num;
   }
- 
+
 }
 
 // Evaluates quadr nodes (gam) on contour at real parts given by array ts (of given size),
@@ -805,7 +805,7 @@ static void ctr(double complex * gam, double complex * gamp, const double a, con
     temp1 = st1; st1 = st3; st3 = temp1;
   }
   if(cimag(st3) >= M_PI_2) st3 = st3 - I * M_PI;  // hack to deal with brach of clog
-    
+
   //constructs gam, gamp
   if (b <= temp2) {        // region 1 or 2 ( forbidden): uses Alex's function
     int deriv = 1;
@@ -823,17 +823,17 @@ static void ctr(double complex * gam, double complex * gamp, const double a, con
     for(j = 0; j < size ; j++) {
       temp1c=2 * (ts[j] - creal(st3) + W / 2.0);
       temp2c=-4 * (ts[j] - creal(st1) - V / 4.0);
-      
+
       f = (M_1_PI + 0.5) * atan(temp1c) - (M_PI_4 - 0.5);
       fp = 2 * (M_1_PI + 0.5) / (1.0 + temp1c * temp1c);
-      
+
       g = (M_1_PI + 1.0 / 6.0 ) * atan(temp2c) - (M_PI_4 / 3.0 - 0.5);
       gp = -4 * (M_1_PI + 1.0 / 6.0) / (1.0 + temp2c * temp2c);
-      
+
       gam[j] = f * g + imsh;    // Alex: imag shift
       gamp[j] = fp * g + f * gp;
     }
-    for(i = 0; i < size; i++) { // region 3: convert gam from y-coord to pt in C-plane 
+    for(i = 0; i < size; i++) { // region 3: convert gam from y-coord to pt in C-plane
       gam[i] = ts[i] + I * gam[i];
       gamp[i] = 1.0 + I * gamp[i];
     }
@@ -848,8 +848,8 @@ static void integral(double complex * integ, double complex * integx, double com
 
   for( int i = 0; i < t_w_size; i++ ) {
     integrand( &( integ[i] ) , &( integx[i] ), &( integy[i] ), gam[i], a, b, x, y, derivs);
-  } 
-  
+  }
+
   return;
 
 }
@@ -861,9 +861,9 @@ static void integrand(double complex * u, double complex * ux, double complex * 
     double complex cez = cexp(z);
     double complex icez = 1.0/cez;
     double complex exponential = cexp(I * (a * icez + b * cez - cez * cez * cez / 12.0) );
-    
+
     *u = exponential; // value case
-    
+
     if (derivs) {       // just a true/false flag now - AHB
         // calculate prefactors for exponentials in order to do derivatives
         double complex prefactor;
@@ -890,53 +890,53 @@ static void integrand(double complex * u, double complex * ux, double complex * 
 // also returns integrand value at minimum: fmin
 static void loc_min(double * tmin, double * fmin,
                     double complex st1, double complex st3, const double a, const double b, const double x, const double y, const int derivs){
-    
+
     int n_t = 20; // zise of t array
     double * ts = malloc(n_t * sizeof(double));
     double complex * gam = malloc(n_t * sizeof(double complex));
     double complex * integ = malloc(n_t * sizeof(double complex));
     double complex * integx = malloc(n_t * sizeof(double complex));
     double complex * integy = malloc(n_t * sizeof(double complex));
-    
+
     double f, g;
     double temp1c, temp2c;
-    
+
     double t1 = creal(st1);
     double t2 = creal(st3);
-    
+
     int n_its = 2; // number of loops
-    for( int k = 0; k < n_its; k++){ 
-        
+    for( int k = 0; k < n_its; k++){
+
         linspace( ts, t1, t2, n_t);
-        
+
         for(int j = 0; j < n_t ; j++) {
-            // Precalculations                                                                
+            // Precalculations
             temp1c=2 * (ts[j] - creal(st3) + W / 2.0);
             temp2c=-4 * (ts[j] - creal(st1) - V / 4.0);
-            
+
             f = (M_1_PI + 0.5) * atan(temp1c) - (M_PI_4 - 0.5);
-            
+
             g = (M_1_PI + 1.0 / 6.0 ) * atan(temp2c) - (M_PI_4 / 3.0 - 0.5);
-            
+
             gam[j] = ts[j] + I * f * g;
-            
+
             integx[j] = 0;
             integy[j] = 0;
-            
+
             integrand(&(integ[j]), &(integx[j]), &(integy[j]), gam[j], a, b, x, y, derivs);
-            
+
         }
-        
+
         double current_min = cabs(integ[0]);
         int current_i = 0;
         for(int j = 1; j < n_t; j++) {
-            double test_min = sqrt(cabs(integ[j]) + cabs(integx[j]) + cabs(integy[j])); // function to be minimized: two norm of u, ux, uy
+            double test_min = sqrt(cabs(integ[j])*cabs(integ[j]) + cabs(integx[j])*cabs(integx[j]) + cabs(integy[j])*cabs(integy[j])); // function to be minimized: two norm of u, ux, uy
             if( test_min < current_min ) {
                 current_min = test_min;
                 current_i = j;
             }
         }
-        
+
         if( current_i == 0 || current_i == 20-1 || k == n_its-1) {
             *fmin = current_min;
             *tmin = ts[current_i];
@@ -945,16 +945,16 @@ static void loc_min(double * tmin, double * fmin,
             t1 = ts[current_i - 1];
             t2 = ts[current_i + 1];
         }
-        
+
     }
-    
+
     free(ts);
     free(gam);
     free(integ);
     free(integx);
     free(integy);
-    
-    
+
+
 }
 
 //////////////////////////////////////////////////// various MAINs FOR TIMING, etc /////
@@ -981,7 +981,7 @@ int main()
     double complex * u;
     double complex * ux;
     double complex * uy;
-    
+
     xs = (double *) malloc(num_pts * sizeof(double));
     ys = (double *) malloc(num_pts * sizeof(double));
     Es = (double *) malloc(num_pts * sizeof(double));
@@ -992,15 +992,15 @@ int main()
     // grid around center at (0,0)
 
     //initstate(1);
-    
+
     for (int i = 0; i < num_pts; i++) {
         theta = (( ((int) rand()) % 100) / 100.0 ) * (2 * M_PI);
-        r = (( ((int) rand()) % 100) /100.0 ) * r_max + r_min;        
+        r = (( ((int) rand()) % 100) /100.0 ) * r_max + r_min;
         xs[i] = r * cos(theta);
         ys[i] = r * sin(theta);
         Es[i] = 10.0;            // choose energy
     }
-   
+
     // omp_set_num_threads(1);
 
   // store start time
@@ -1015,14 +1015,14 @@ int main()
     int gamout=0;
     int nquad;
     lhfs( xs, ys, Es, derivs, num_pts, u, ux, uy,stdquad,h,meth,gamout,&nquad);
-    
+
   // get end time
     gettimeofday(&end, NULL);
   // diff = clock() - start_c;
   //  int msec = diff * 1000 / CLOCKS_PER_SEC;
   //  double seconds = (diff * 1000000 / CLOCKS_PER_SEC) / 1000000.0;
 
-    double delta = ((end.tv_sec  - start.tv_sec) * 1000000u + 
+    double delta = ((end.tv_sec  - start.tv_sec) * 1000000u +
 		    end.tv_usec - start.tv_usec) / 1.e6;
 
     //printf("%.6f seconds elapsed, %d milliseconds.\n",seconds, msec);
@@ -1030,7 +1030,7 @@ int main()
 
     printf("%.6f seconds elapsed.\n",delta);
     printf("that is %.2f pts evaluated per second.\n",num_pts/delta);
-    
+
     int num_procs = omp_get_num_procs();
     printf("%d processes used.\n",num_procs);
     printf("%.2f pts/sec/proc.\n",num_pts/delta/num_procs);
@@ -1056,7 +1056,7 @@ int main()
     free(u);
     free(ux);
     free(uy);
-    
+
   return 1;
 }
 
@@ -1071,8 +1071,8 @@ int main()
     ctr_time = 0;
     integ_time = 0;
     tot_quad_pts = 0;
-    
-    
+
+
     // initialize test variables
     int num_pts = 100000;
     double r;
@@ -1086,14 +1086,14 @@ int main()
     double complex * u;
     double complex * ux;
     double complex * uy;
-    
+
     xs = (double *) malloc(num_pts * sizeof(double));
     ys = (double *) malloc(num_pts * sizeof(double));
     Es = (double *) malloc(num_pts * sizeof(double));
     u = (double complex *) malloc(num_pts * sizeof(double complex));
     ux = (double complex *) malloc(num_pts * sizeof(double complex));
     uy = (double complex *) malloc(num_pts * sizeof(double complex));
-    
+
     // set up coordinates
     for (int i = 0; i < num_pts; i++) {
         theta = (( ((int) rand()) % 100) / 100.0 ) * (2 * M_PI);
@@ -1102,7 +1102,7 @@ int main()
         xs[i] = r * cos(theta);
         ys[i] = r * sin(theta);
     }
-    
+
     // do timing stuff here
     derivs = 0;
     int stdquad=200; // method params
@@ -1111,8 +1111,8 @@ int main()
     int gamout=0;
     int nquad;
     lhfs( xs, ys, Es, derivs, num_pts, u, ux, uy,stdquad,h,meth,gamout,&nquad);
-    
-    
+
+
     // display time data
     double total = quad_time + ctr_time + integ_time;
     printf("%.2f quad pts per eval avg. \n", tot_quad_pts/num_pts);
@@ -1121,9 +1121,9 @@ int main()
     printf("%.2f time spent in evaluating integral.  %.2f of total time.\n", integ_time, integ_time/total);
     printf("%.2f seconds total. %d eval points total.\n", total, num_pts);
     printf("%.2f points/sec average.\n", num_pts/total);
-    
+
     return 1;
-    
+
 }
 
 #endif
@@ -1132,45 +1132,45 @@ int main()
 
 int main()
 {
-    
-    
+
+
     double complex st1, st3;
     double a,b;
     double tmin, fmin;
-    
+
     st1 = 1.0843;
     st3 = 0.54834;
     a = 6.5464;
     b = 2.9349;
-    
-    
+
+
     loc_min(&tmin, &fmin, st1, st3, a, b, 1, 1, 0, 0);
-    
+
     printf("st1 = %f, st3 = %f, a = %f, b = %f\n", creal(st1), creal(st3), a, b);
     printf("tmin = %.16f\n fmin = %.16f\n", tmin, fmin);
-    
+
     st1 = 1.2918;
     st3 = 1.1205;
     a = 31.1373;
     b = 5.6621;
-    
-    
+
+
     loc_min(&tmin, &fmin, st1, st3, a, b, 1, 1, 0, 0);
-    
+
     printf("st1 = %f, st3 = %f, a = %f, b = %f\n", creal(st1), creal(st3), a, b);
     printf("tmin = %.16f\n fmin = %.16f\n", tmin, fmin);
-    
+
     st1 = 1.2171;
     st3 = 0.34348;
     a = 5.6686;
     b = 3.3488;
-    
-    
+
+
     loc_min(&tmin, &fmin, st1, st3, a, b, 1, 1, 0, 0);
-    
+
     printf("st1 = %f, st3 = %f, a = %f, b = %f\n", creal(st1), creal(st3), a, b);
     printf("tmin = %.16f\n fmin = %.16f\n", tmin, fmin);
-    
+
     return 0;
 }
 
@@ -1181,26 +1181,26 @@ int main()
 int main()
 {
 
-    
+
     double x = -4.429;
     double y = 6.192;
     double energy = 1;
     int derivs = 1;
     int n = 1;
     double complex u, ux, uy;
-    
+
     int stdquad=200; // method params
     double h=0.3;
     int meth=0;
     int gamout=0;
     int nquad;
     lhfs( &x, &y, &energy, derivs, n, &u, &ux, &uy,stdquad,h,meth,gamout,&nquad);
-    
+
     printf("x = %.16f; y= %.16f; E= %.16f\nu = %.16f + %.16fi\n", x, y, energy, creal(u), cimag(u));
     printf("ux = %.16f + %.16fi\n", creal(ux), cimag(ux));
     printf("uy = %.16f + %.16fi\n", creal(uy), cimag(uy));
     printf("nquad = %d\n",nquad);
- 
+
 
 
 
@@ -1214,30 +1214,30 @@ int main()
 
 int main()
 {
-    
-    
+
+
     double complex gam, gamp;
     double a = 11.8;
     double b = 3.57;
     double t = 1;
     int size = 1;
-    
-    
-    printf("ctr:\n");    
+
+
+    printf("ctr:\n");
     ctr(&gam, &gamp, a, b, &t, size);
-    
+
     printf("a = %.16f, b = %.16f, t = %.16f\ngam = %.16f + %.16fi\ngamp = %.16f + %.16fi\n\n", a, b, t, creal(gam), cimag(gam), creal(gamp), cimag(gamp) );
-    
+
     printf("find_endpoints:\n");
     double lm1, lp1, lm2, lp2, c1, c2;
-    
-    find_endpoints(&lm1, &lp1, &lm2, 
+
+    find_endpoints(&lm1, &lp1, &lm2,
                    &lp2, &c1, &c2,
                    a, b);
-    
+
     printf("lm1 = %.16f\nlp1 = %.16f\nlm2 = %.16f\nlp2 = %.16f\nc1 = %.16f\nc2 = %.16f\n\n", lm1, lp1, lm2, lp2, c1, c2);
-    
-    
+
+
     return 0;
 }
 
