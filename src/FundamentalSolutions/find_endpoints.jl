@@ -3,6 +3,7 @@
 # along the contour until it finds a point whose value is almost smaller
 # than machine epsilon
 #
+
 function find_endpoints(a::Float64, b::Float64, x::Float64, y::Float64, derivs::Bool)
     ϵ = 1e-14
     temp1 = sqrt(b^2-a+ZIM)
@@ -19,22 +20,22 @@ function find_endpoints(a::Float64, b::Float64, x::Float64, y::Float64, derivs::
 
         # We start with finding lm1
         t = c1 - stdist
-        gam = gammaforbidden(st3, t, false)
+        gammaforbidden!(fe_gam, st3, t)
         dlm1 = 1.0
-        u,ux,uy = integrand(gam, a, b, x, y, derivs)
-        if abs(u) > ϵ || abs(ux) > ϵ || abs(uy) > ϵ
-            while abs(u) > ϵ || abs(ux) > ϵ || abs(uy) > ϵ
+        integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
+        if abs(fe_u[1]) > ϵ || abs(fe_ux[1]) > ϵ || abs(fe_uy[1]) > ϵ
+            while abs(fe_u[1]) > ϵ || abs(fe_ux[1]) > ϵ || abs(fe_uy[1]) > ϵ
                 dlm1 *= jump_ratio
                 t = c1 - dlm1*stdist
-                gam = gammaforbidden(st3, t, false)
-                u,ux,uy = integrand(gam, a, b, x, y, derivs)
+                gammaforbidden!(fe_gam, st3, t)
+                integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
             end
         else
-            while abs(u) < ϵ && abs(ux) < ϵ && abs(uy) < ϵ && dlm1 > ϵ
+            while abs(fe_u[1]) < ϵ && abs(fe_ux[1]) < ϵ && abs(fe_uy[1]) < ϵ && dlm1 > ϵ
                 dlm1 /= jump_ratio
                 t = c1 - dlm1*stdist
-                gam = gammaforbidden(st3, t, false)
-                u,ux,uy = integrand(gam, a, b, x, y, derivs)
+                gammaforbidden!(fe_gam, st3, t)
+                integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
             end
             if dlm1 < ϵ dlm1 = 0.0 end
             dlm1 *= jump_ratio
@@ -43,24 +44,24 @@ function find_endpoints(a::Float64, b::Float64, x::Float64, y::Float64, derivs::
 
         # lp1 comes next
         t = c1 + stdist
-        gam = gammaforbidden(st3, t, false)
+        gammaforbidden!(fe_gam, st3, t)
         dlm1 = 1.0
-        u,ux,uy = integrand(gam, a, b, x, y, derivs)
-        if abs(u) < ϵ && abs(ux) < ϵ && abs(uy) < ϵ
-            while abs(u) < ϵ && abs(ux) < ϵ && abs(uy) < ϵ && dlm1 > ϵ
+        integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
+        if abs(fe_u[1]) < ϵ && abs(fe_ux[1]) < ϵ && abs(fe_uy[1]) < ϵ
+            while abs(fe_u[1]) < ϵ && abs(fe_ux[1]) < ϵ && abs(fe_uy[1]) < ϵ && dlm1 > ϵ
                 dlm1 /= jump_ratio
                 t = c1 + dlm1*stdist
-                gam = gammaforbidden(st3, t, false)
-                u,ux,uy = integrand(gam, a, b, x, y, derivs)
+                gammaforbidden!(fe_gam, st3, t)
+                integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
             end
             if dlm1 < ϵ dlm1 = 0.0 end
             dlm1 *= jump_ratio
         else
-            while abs(u) > ϵ || abs(ux) > ϵ || abs(uy) > ϵ
+            while abs(fe_u[1]) > ϵ || abs(fe_ux[1]) > ϵ || abs(fe_uy[1]) > ϵ
                 dlm1 *= jump_ratio
                 t = c1 + dlm1*stdist
-                gam = gammaforbidden(st3, t, false)
-                u,ux,uy = integrand(gam, a, b, x, y, derivs)
+                gammaforbidden!(fe_gam, st3, t)
+                integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
             end
         end
         lp1 = c1 + dlm1*stdist
@@ -75,12 +76,8 @@ function find_endpoints(a::Float64, b::Float64, x::Float64, y::Float64, derivs::
         end
         tmin,fmin = locate_minimum(st1, st3, a, b, x, y, derivs)
 
-        f1 = 1.0 / M_PI + 0.5
         f2 = -real(st3) + W2
-        f3 = -M_PI_4 + 0.5
-        g1 = 1.0 / M_PI + 1.0 / 6.0
         g2 = -real(st1) - V4
-        g3 = -M_PI / 12.0 + 0.5
 
         stdist = abs(c1-tmin)
         if stdist == 0 stdist = 1.0 end
@@ -88,29 +85,29 @@ function find_endpoints(a::Float64, b::Float64, x::Float64, y::Float64, derivs::
         # We start with finding lm1
         t = c1 - stdist
 
-        f = f1 * atan( 2 * ( t + f2)) + f3
-        g = g1 * atan( -4 * (t + g2)) + g3
-        gam = complex(t,f*g)
+        f = M_F_1 * atan( 2 * ( t + f2)) - M_F_2
+        g = M_G_1 * atan( -4 * (t + g2)) - M_G_2
+        fe_gam[1] = complex(t,f*g)
 
         dlm1 = 1.0
-        u,ux,uy = integrand(gam, a, b, x, y, derivs)
-        if abs(u) > ϵ || abs(ux) > ϵ || abs(uy) > ϵ
-            while abs(u) > ϵ || abs(ux) > ϵ || abs(uy) > ϵ
+        integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
+        if abs(fe_u[1]) > ϵ || abs(fe_ux[1]) > ϵ || abs(fe_uy[1]) > ϵ
+            while abs(fe_u[1]) > ϵ || abs(fe_ux[1]) > ϵ || abs(fe_uy[1]) > ϵ
                 dlm1 *= jump_ratio
                 t = c1 - dlm1*stdist
-                f = f1 * atan( 2 * ( t + f2)) + f3
-                g = g1 * atan( -4 * (t + g2)) + g3
-                gam = complex(t,f*g)
-                u,ux,uy = integrand(gam, a, b, x, y, derivs)
+                f = M_F_1 * atan( 2 * ( t + f2)) - M_F_2
+                g = M_G_1 * atan( -4 * (t + g2)) - M_G_2
+                fe_gam[1] = complex(t,f*g)
+                integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
             end
         else
-            while abs(u) < ϵ && abs(ux) < ϵ && abs(uy) < ϵ && dlm1 > ϵ
+            while abs(fe_u[1]) < ϵ && abs(fe_ux[1]) < ϵ && abs(fe_uy[1]) < ϵ && dlm1 > ϵ
                 dlm1 /= jump_ratio
                 t = c1 - dlm1*stdist
-                f = f1 * atan( 2 * ( t + f2)) + f3
-                g = g1 * atan( -4 * (t + g2)) + g3
-                gam = complex(t,f*g)
-                u,ux,uy = integrand(gam, a, b, x, y, derivs)
+                f = M_F_1 * atan( 2 * ( t + f2)) - M_F_2
+                g = M_G_1 * atan( -4 * (t + g2)) - M_G_2
+                fe_gam[1] = complex(t,f*g)
+                integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
             end
             if dlm1 < ϵ dlm1 = 0.0 end
             dlm1 *= jump_ratio
@@ -120,31 +117,31 @@ function find_endpoints(a::Float64, b::Float64, x::Float64, y::Float64, derivs::
         # lp1 comes next
         t = c1 + stdist
 
-        f = f1 * atan( 2 * ( t + f2)) + f3
-        g = g1 * atan( -4 * (t + g2)) + g3
-        gam = complex(t,f*g)
+        f = M_F_1 * atan( 2 * ( t + f2)) - M_F_2
+        g = M_G_1 * atan( -4 * (t + g2)) - M_G_2
+        fe_gam[1] = complex(t,f*g)
 
         dlm1 = 1.0
-        u,ux,uy = integrand(gam, a, b, x, y, derivs)
-        if abs(u) < ϵ && abs(ux) < ϵ && abs(uy) < ϵ
-            while abs(u) < ϵ && abs(ux) < ϵ && abs(uy) < ϵ && dlm1 > ϵ
+        integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
+        if abs(fe_u[1]) < ϵ && abs(fe_ux[1]) < ϵ && abs(fe_uy[1]) < ϵ
+            while abs(fe_u[1]) < ϵ && abs(fe_ux[1]) < ϵ && abs(fe_uy[1]) < ϵ && dlm1 > ϵ
                 dlm1 /= jump_ratio
                 t = c1 + dlm1*stdist
-                f = f1 * atan( 2 * ( t + f2)) + f3
-                g = g1 * atan( -4 * (t + g2)) + g3
-                gam = complex(t,f*g)
-                u,ux,uy = integrand(gam, a, b, x, y, derivs)
+                f = M_F_1 * atan( 2 * ( t + f2)) - M_F_2
+                g = M_G_1 * atan( -4 * (t + g2)) - M_G_2
+                fe_gam[1] = complex(t,f*g)
+                integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
             end
             if dlm1 < ϵ dlm1 = 0.0 end
             dlm1 *= jump_ratio
         else
-            while abs(u) > ϵ || abs(ux) > ϵ || abs(uy) > ϵ
+            while abs(fe_u[1]) > ϵ || abs(fe_ux[1]) > ϵ || abs(fe_uy[1]) > ϵ
                 dlm1 *= jump_ratio
                 t = c1 + dlm1*stdist
-                f = f1 * atan( 2 * ( t + f2)) + f3
-                g = g1 * atan( -4 * (t + g2)) + g3
-                gam = complex(t,f*g)
-                u,ux,uy = integrand(gam, a, b, x, y, derivs)
+                f = M_F_1 * atan( 2 * ( t + f2)) - M_F_2
+                g = M_G_1 * atan( -4 * (t + g2)) - M_G_2
+                fe_gam[1] = complex(t,f*g)
+                integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
             end
         end
         lp1 = c1 + dlm1*stdist
@@ -157,29 +154,29 @@ function find_endpoints(a::Float64, b::Float64, x::Float64, y::Float64, derivs::
 
         t = c2 - stdist
 
-        f = f1 * atan( 2 * ( t + f2)) + f3
-        g = g1 * atan( -4 * (t + g2)) + g3
-        gam = complex(t,f*g)
+        f = M_F_1 * atan( 2 * ( t + f2)) - M_F_2
+        g = M_G_1 * atan( -4 * (t + g2)) - M_G_2
+        fe_gam[1] = complex(t,f*g)
 
         dlm1 = 1.0
-        u,ux,uy = integrand(gam, a, b, x, y, derivs)
-        if abs(u) > ϵ || abs(ux) > ϵ || abs(uy) > ϵ
-            while abs(u) > ϵ || abs(ux) > ϵ || abs(uy) > ϵ
+        integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
+        if abs(fe_u[1]) > ϵ || abs(fe_ux[1]) > ϵ || abs(fe_uy[1]) > ϵ
+            while abs(fe_u[1]) > ϵ || abs(fe_ux[1]) > ϵ || abs(fe_uy[1]) > ϵ
                 dlm1 *= jump_ratio
                 t = c2 - dlm1*stdist
-                f = f1 * atan( 2 * ( t + f2)) + f3
-                g = g1 * atan( -4 * (t + g2)) + g3
-                gam = complex(t,f*g)
-                u,ux,uy = integrand(gam, a, b, x, y, derivs)
+                f = M_F_1 * atan( 2 * ( t + f2)) - M_F_2
+                g = M_G_1 * atan( -4 * (t + g2)) - M_G_2
+                fe_gam[1] = complex(t,f*g)
+                integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
             end
         else
-            while abs(u) < ϵ && abs(ux) < ϵ && abs(uy) < ϵ && dlm1 > ϵ
+            while abs(fe_u[1]) < ϵ && abs(fe_ux[1]) < ϵ && abs(fe_uy[1]) < ϵ && dlm1 > ϵ
                 dlm1 /= jump_ratio
                 t = c2 - dlm1*stdist
-                f = f1 * atan( 2 * ( t + f2)) + f3
-                g = g1 * atan( -4 * (t + g2)) + g3
-                gam = complex(t,f*g)
-                u,ux,uy = integrand(gam, a, b, x, y, derivs)
+                f = M_F_1 * atan( 2 * ( t + f2)) - M_F_2
+                g = M_G_1 * atan( -4 * (t + g2)) - M_G_2
+                fe_gam[1] = complex(t,f*g)
+                integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
             end
             if dlm1 < ϵ dlm1 = 0.0 end
             dlm1 *= jump_ratio
@@ -189,31 +186,31 @@ function find_endpoints(a::Float64, b::Float64, x::Float64, y::Float64, derivs::
         # Last but not least: lp2
         t = c2 + stdist
 
-        f = f1 * atan( 2 * ( t + f2)) + f3
-        g = g1 * atan( -4 * (t + g2)) + g3
-        gam = complex(t,f*g)
+        f = M_F_1 * atan( 2 * ( t + f2)) - M_F_2
+        g = M_G_1 * atan( -4 * (t + g2)) - M_G_2
+        fe_gam[1] = complex(t,f*g)
 
         dlm1 = 1.0
-        u,ux,uy = integrand(gam, a, b, x, y, derivs)
-        if abs(u) < ϵ && abs(ux) < ϵ && abs(uy) < ϵ
-            while abs(u) < ϵ && abs(ux) < ϵ && abs(uy) < ϵ && dlm1 > ϵ
+        integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
+        if abs(fe_u[1]) < ϵ && abs(fe_ux[1]) < ϵ && abs(fe_uy[1]) < ϵ
+            while abs(fe_u[1]) < ϵ && abs(fe_ux[1]) < ϵ && abs(fe_uy[1]) < ϵ && dlm1 > ϵ
                 dlm1 /= jump_ratio
                 t = c2 + dlm1*stdist
-                f = f1 * atan( 2 * ( t + f2)) + f3
-                g = g1 * atan( -4 * (t + g2)) + g3
-                gam = complex(t,f*g)
-                u,ux,uy = integrand(gam, a, b, x, y, derivs)
+                f = M_F_1 * atan( 2 * ( t + f2)) - M_F_2
+                g = M_G_1 * atan( -4 * (t + g2)) - M_G_2
+                fe_gam[1] = complex(t,f*g)
+                integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
             end
             if dlm1 < ϵ dlm1 = 0.0 end
             dlm1 *= jump_ratio
         else
-            while abs(u) > ϵ || abs(ux) > ϵ || abs(uy) > ϵ
+            while abs(fe_u[1]) > ϵ || abs(fe_ux[1]) > ϵ || abs(fe_uy[1]) > ϵ
                 dlm1 *= jump_ratio
                 t = c2 + dlm1*stdist
-                f = f1 * atan( 2 * ( t + f2)) + f3
-                g = g1 * atan( -4 * (t + g2)) + g3
-                gam = complex(t,f*g)
-                u,ux,uy = integrand(gam, a, b, x, y, derivs)
+                f = M_F_1 * atan( 2 * ( t + f2)) - M_F_2
+                g = M_G_1 * atan( -4 * (t + g2)) - M_G_2
+                fe_gam[1] = complex(t,f*g)
+                integrand!(fe_u, fe_ux, fe_uy, fe_gam, a, b, x, y, derivs)
             end
         end
         lp2 = c2 + dlm1*stdist

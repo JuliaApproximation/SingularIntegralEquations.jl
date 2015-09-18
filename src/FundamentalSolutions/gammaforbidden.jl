@@ -3,25 +3,40 @@
 # for the forbidden region (regions 1 and 2). s0 is the lower saddle point.
 # Used by find_endpoints() and contour(). No other definitions of this contour in the code.
 #
-function gammaforbidden(s0::Complex{Float64}, s::Float64, deriv::Bool)
+
+function gammaforbidden!(gam::Vector{Complex{Float64}}, gamp::Vector{Complex{Float64}}, s0::Complex{Float64}, s::Vector{Float64}, n::Int)
+    res,ims = reim(s0)
+    @simd for i=1:n
+        d = s[i] - res
+        # region 1 (deep forbidden)
+        if ims ≤ -M_PI_3
+            @inbounds gam[i] = complex(s[i],THIRD*atan(d) - M_PI_3)
+            @inbounds gamp[i] = complex(1.0,THIRD/(1+d*d))
+        else
+            ims = imshack(res,ims)
+            d2 = d^2
+            ex = exp(-d2)
+            g0 = THIRD*(atan(d)-M_PI)
+            @inbounds gam[i] = complex(s[i],ims + (g0 - ims)*(1.0-ex))
+            @inbounds gamp[i] = complex(1.0,2.0*(g0 - ims)*d*ex + THIRD / (1.0 + d2) * (1.0-ex))
+        end
+    end
+end
+
+# assume if length n not given that vectors are of length 1 (with a slightly different signature)
+
+function gammaforbidden!(gam::Vector{Complex{Float64}}, s0::Complex{Float64}, s::Float64)
     res,ims = reim(s0)
     d = s - res
     # region 1 (deep forbidden)
     if ims ≤ -M_PI_3
-        gam = complex(s,THIRD*atan(d) - M_PI_3)
-        if deriv gamp = complex(1.0,THIRD/(1+d*d)) end
+        gam[1] = complex(s,THIRD*atan(d) - M_PI_3)
     else
         ims = imshack(res,ims)
         d2 = d^2
         ex = exp(-d2)
         g0 = THIRD*(atan(d)-M_PI)
-        gam = complex(s,ims + (g0 - ims)*(1.0-ex))
-        if deriv gamp = complex(1.0,2.0*(g0 - ims)*d*ex + THIRD / (1.0 + d2) * (1.0-ex)) end
-    end
-    if deriv
-        return gam,gamp
-    else
-        return gam
+        gam[1] = complex(s,ims + (g0 - ims)*(1.0-ex))
     end
 end
 

@@ -2,7 +2,8 @@
 # Evaluates quadrature nodes (gam) on contour at real parts given by array ts (of given size),
 # and derivatives of contour (gamp), given params a,b.
 #
-function contour(a::Float64, b::Float64, ts::Float64)
+
+function contour!(gam::Vector{Complex{Float64}}, gamp::Vector{Complex{Float64}}, a::Float64, b::Float64, ts::Vector{Float64}, n::Int)
     # Complex precalculations for stationary points
     temp1 = sqrt(b^2-a+ZIM)
     temp2 = sqrt(a)
@@ -15,7 +16,7 @@ function contour(a::Float64, b::Float64, ts::Float64)
     if imag(st3) ≥ M_PI_2 st3 -= im*M_PI end
     # construct gam, gamp
     if b ≤ temp2
-        gam,gamp = gammaforbidden(st3,ts,true)
+        gammaforbidden!(gam,gamp,st3,ts,n)
     else
         # hack to move ctr just below coalescing saddle at high E:
         # note exp(re(s)) ~ sqrt(E). See also gammaforbidden!()
@@ -23,17 +24,18 @@ function contour(a::Float64, b::Float64, ts::Float64)
         if abs(real(st1)-real(st3)) < 0.1
             imsh = imshack(real(st1),imsh)
         end
-        temp1c=2.0(ts - real(st3)) + W
-        temp2c=-4.0(ts - real(st1)) + V
+        @simd for i=1:n
+            @inbounds temp1c=2.0(ts[i] - real(st3)) + W
+            @inbounds temp2c=-4.0(ts[i] - real(st1)) + V
 
-        f = (M_1_PI + 0.5) * atan(temp1c) - (M_PI_4 - 0.5)
-        fp = 2.0(M_1_PI + 0.5) / (1.0 + temp1c.^2)
+            f = M_F_1 * atan(temp1c) - M_F_2
+            fp = 2.0M_F_1 / (1.0 + temp1c^2)
 
-        g = (M_1_PI + 1.0 / 6.0 ) * atan(temp2c) - (M_PI_4 / 3.0 - 0.5)
-        gp = -4 * (M_1_PI + 1.0 / 6.0) / (1.0 + temp2c^2)
+            g = M_G_1 * atan(temp2c) - M_G_2
+            gp = -4 * M_G_1 / (1.0 + temp2c^2)
 
-        gam = complex(ts,f*g+imsh)
-        gamp = complex(1.0,fp*g+f*gp)
+            @inbounds gam[i] = complex(ts[i],f*g+imsh)
+            @inbounds gamp[i] = complex(1.0,fp*g+f*gp)
+        end
     end
-    return gam,gamp
 end

@@ -38,14 +38,12 @@ function lhfs(x::Float64, y::Float64, energies::Float64, derivs::Bool, stdquad::
         end
     else
         nquad = quad_nodes!(ts, ws, a, b, x, y, derivs, stdquad, h, meth)
-        for k=1:nquad
-            gam[k],gamp[k] = contour(a, b, ts[k])
-            integ[k],integx[k],integy[k] = integrand(gam[k], a, b, x, y, derivs)
-        end
+
+        contour!(gam, gamp, a, b, ts, nquad)
+
+        integrand!(integ, integx, integy, gam, a, b, x, y, derivs, nquad)
         if derivs
-            u = quadsum(integ,gamp,ws,nquad)
-            ux = quadsum(integx,gamp,ws,nquad)
-            uy = quadsum(integy,gamp,ws,nquad)
+            u,ux,uy = quadsum3(integ,integx,integy,gamp,ws,nquad)
             return u,ux,uy
         else
             u = quadsum(integ,gamp,ws,nquad)
@@ -54,10 +52,24 @@ function lhfs(x::Float64, y::Float64, energies::Float64, derivs::Bool, stdquad::
     end
 end
 
-function quadsum{S,T,V}(integ::Vector{S}, gamp::Vector{T}, ws::Vector{V}, n::Int)
-    ret = integ[1]*gamp[1]*ws[1]
-    for k=2:n
-        ret += integ[k]*gamp[k]*ws[k]
+function quadsum(integ::Vector, gamp::Vector, ws::Vector, n::Int)
+    @inbounds ret = integ[1]*gamp[1]*ws[1]
+    @simd for k=2:n
+        @inbounds ret += integ[k]*gamp[k]*ws[k]
     end
     ret
+end
+
+function quadsum3(integ::Vector, integx::Vector, integy::Vector, gamp::Vector, ws::Vector, n::Int)
+    @inbounds temp = gamp[1]*ws[1]
+    @inbounds ret1 = integ[1]*temp
+    @inbounds ret2 = integx[1]*temp
+    @inbounds ret3 = integy[1]*temp
+    @simd for k=2:n
+        @inbounds temp = gamp[k]*ws[k]
+        @inbounds ret1 += integ[k]*temp
+        @inbounds ret2 += integx[k]*temp
+        @inbounds ret3 += integy[k]*temp
+    end
+    ret1,ret2,ret3
 end
