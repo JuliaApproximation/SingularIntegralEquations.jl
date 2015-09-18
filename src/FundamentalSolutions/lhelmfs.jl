@@ -18,18 +18,18 @@ end
 function lhelmfs(trg::Union{Vector{Float64},Vector{Complex{Float64}}},energies::Vector{Float64};derivs::Bool=false)
     n = length(trg)
     @assert n == length(energies)
+    stdquad = 400
+    h = 0.25
+    meth = 1
+    x1,x2 = reim(trg)
     u = Vector{Complex{Float64}}(n)
     if derivs
         ux = Vector{Complex{Float64}}(n)
         uy = Vector{Complex{Float64}}(n)
-        for i=1:n
-            u[i],ux[i],uy[i] = lhelmfs(trg[i],energies[i];derivs=derivs)
-        end
+        lhfs!(u,ux,uy,x1,x2,energies,derivs,stdquad,h,meth,n)
         return u,ux,uy
     else
-        for i=1:n
-            u[i] = lhelmfs(trg[i],energies[i];derivs=derivs)
-        end
+        lhfs!(u,x1,x2,energies,derivs,stdquad,h,meth,n)
         return u
     end
 end

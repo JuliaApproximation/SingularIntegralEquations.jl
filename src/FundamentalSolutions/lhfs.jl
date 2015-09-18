@@ -38,9 +38,7 @@ function lhfs(x::Float64, y::Float64, energies::Float64, derivs::Bool, stdquad::
         end
     else
         nquad = quad_nodes!(ts, ws, a, b, x, y, derivs, stdquad, h, meth)
-
         contour!(gam, gamp, a, b, ts, nquad)
-
         integrand!(integ, integx, integy, gam, a, b, x, y, derivs, nquad)
         if derivs
             u,ux,uy = quadsum3(integ,integx,integy,gamp,ws,nquad)
@@ -49,6 +47,58 @@ function lhfs(x::Float64, y::Float64, energies::Float64, derivs::Bool, stdquad::
             u = quadsum(integ,gamp,ws,nquad)
             return u
         end
+    end
+end
+
+function lhfs!(u::Vector{Complex{Float64}}, x::Vector{Float64}, y::Vector{Float64}, energies::Vector{Float64}, derivs::Bool, stdquad::Int, h::Float64, meth::Int, n::Int)
+    for i=1:n
+        a = 0.25(x[i]^2+y[i]^2)
+        b = 0.5y[i]+energies[i]
+        if a == 0
+            u[i] = Inf+ZIM
+        else
+            nquad = quad_nodes!(ts, ws, a, b, x[i], y[i], derivs, stdquad, h, meth)
+            contour!(gam, gamp, a, b, ts, nquad)
+            integrand!(integ, integx, integy, gam, a, b, x[i], y[i], derivs, nquad)
+            quadsum!(u,i,integ,gamp,ws,nquad)
+        end
+    end
+end
+
+function lhfs!(u::Vector{Complex{Float64}}, ux::Vector{Complex{Float64}}, uy::Vector{Complex{Float64}}, x::Vector{Float64}, y::Vector{Float64}, energies::Vector{Float64}, derivs::Bool, stdquad::Int, h::Float64, meth::Int, n::Int)
+    for i=1:n
+        a = 0.25(x[i]^2+y[i]^2)
+        b = 0.5y[i]+energies[i]
+        if a == 0
+            u[i] = Inf+ZIM
+            ux[i] = Inf+ZIM
+            uy[i] = Inf+ZIM
+        else
+            nquad = quad_nodes!(ts, ws, a, b, x[i], y[i], derivs, stdquad, h, meth)
+            contour!(gam, gamp, a, b, ts, nquad)
+            integrand!(integ, integx, integy, gam, a, b, x[i], y[i], derivs, nquad)
+            quadsum3!(u,ux,uy,i,integ,integx,integy,gamp,ws,nquad)
+        end
+    end
+end
+
+function quadsum!(u::Vector, i::Int, integ::Vector, gamp::Vector, ws::Vector, n::Int)
+    @inbounds u[i] = integ[1]*gamp[1]*ws[1]
+    @simd for k=2:n
+        @inbounds u[i] += integ[k]*gamp[k]*ws[k]
+    end
+end
+
+function quadsum3!(u::Vector, ux::Vector, uy::Vector, i::Int, integ::Vector, integx::Vector, integy::Vector, gamp::Vector, ws::Vector, n::Int)
+    @inbounds temp = gamp[1]*ws[1]
+    @inbounds u[i] = integ[1]*temp
+    @inbounds ux[i] = integx[1]*temp
+    @inbounds uy[i] = integy[1]*temp
+    @simd for k=2:n
+        @inbounds temp = gamp[k]*ws[k]
+        @inbounds u[i] += integ[k]*temp
+        @inbounds ux[i] += integx[k]*temp
+        @inbounds uy[i] += integy[k]*temp
     end
 end
 
