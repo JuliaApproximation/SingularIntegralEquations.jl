@@ -164,10 +164,8 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
     end
 end
 
-function OffHilbert(DS::Laurent,RS::Laurent,order::Int)
+function OffHilbert{D1<:Circle,D2<:Circle}(DS::Laurent{D1},RS::Laurent{D2},order::Int)
     ds=domain(DS);rs=domain(RS)
-    @assert isa(ds,Circle)
-    @assert isa(rs,Circle)
     @assert order==1
 
     c2=rs.center;c1=ds.center
@@ -232,7 +230,7 @@ function exterior_cauchy(b::Circle,a::Circle)
     r=b.radius
 
     S=Fun([0.0,0,1],a)  # Shift to use bandedness
-    ret=Array(Fun{Laurent,Complex{Float64}},300)
+    ret=Array(Fun{Laurent{typeof(a)},Complex{Float64}},300)
     ret[1]=Fun(z->(r/(z-c)),a)
     n=1
     m=length(ret[1])-2
@@ -262,7 +260,7 @@ function interior_cauchy(a::Circle,b::Circle)
 
     z=Fun(z->(z-c)/r,b)
 
-    ret=Array(Fun{Laurent,Complex{Float64}},300)
+    ret=Array(Fun{Laurent{typeof(b)},Complex{Float64}},300)
     ret[1]=ones(b)
     n=1
     m=0
@@ -300,7 +298,7 @@ function disjoint_cauchy(a::Circle,b::Circle)
 
     f=Fun(z->r/(z-c),b)
 
-        ret=Array(Fun{Laurent,Complex{Float64}},300)
+        ret=Array(Fun{Laurent{typeof(b)},Complex{Float64}},300)
     ret[1]=f
     n=1
 
