@@ -12,6 +12,10 @@ D = Array(Diagonal{Float64},8)
 [D[i] = Diagonal(1./collect(1:M)) for i=1:8]
 
 H = HierarchicalMatrix(D,L)
+
+@test rank(H) == fill(2,8,8)+diagm(fill(48,8))
+@test isfactored(H) == false
+
 b = rand(size(H,1))
 
 full(H)\b
@@ -20,6 +24,8 @@ H\b # includes compile time
 H = HierarchicalMatrix(D,L)
 @time xw = H\b # includes precomputation
 @time xw = H\b # H.A's precomputed and factored :)
+
+@test isfactored(H) == true
 
 CH = cond(full(H))
 

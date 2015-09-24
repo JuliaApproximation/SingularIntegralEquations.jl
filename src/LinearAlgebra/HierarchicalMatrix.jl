@@ -152,6 +152,22 @@ Base.getindex(H::HierarchicalMatrix,ir::Range,j::Int) = eltype(H)[H[i,j] for i=i
 Base.getindex(H::HierarchicalMatrix,ir::Range,jr::Range) = eltype(H)[H[i,j] for i=ir,j=jr]
 Base.full(H::HierarchicalMatrix)=H[1:size(H,1),1:size(H,2)]
 
+function Base.rank(H::HierarchicalMatrix)
+    n = H.n
+    A = Array{Int}(2^n,2^n)
+    r1,r2 = map(rank,H.offdiagonaldata)
+    for j=1:2^(n-1),i=1:2^(n-1)
+        A[i+2^(n-1),j] = r1
+        A[i,j+2^(n-1)] = r2
+    end
+    A11,A22 = map(rank,H.diagonaldata)
+    for j=1:2^(n-1),i=1:2^(n-1)
+        A[i,j] = A11[i,j]
+        A[i+2^(n-1),j+2^(n-1)] = A22[i,j]
+    end
+    A
+end
+
 partitionmatrix(H::HierarchicalMatrix) = H.diagonaldata,H.offdiagonaldata
 
 isfactored(H::HierarchicalMatrix) = H.factored
