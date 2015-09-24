@@ -7,7 +7,7 @@ export cauchy, cauchyintegral, stieltjes, logkernel,
 
 import Base: values,getindex,setindex!,*,.*,+,.+,-,.-,==,<,<=,>,
                 >=,./,/,.^,^,\,∪,transpose
-                
+
 
 import ApproxFun
 import ApproxFun: bandinds,SpaceOperator,
@@ -32,7 +32,7 @@ function cauchy(s,f,z)
 end
 
 hilbert(f)=Hilbert()*f
-hilbert(f,z)=hilbert(f)[z]
+hilbert(f,z)=hilbert(f)(z)
 
 #TODO: cauchy ->stieljtjes
 #TODO: stieltjes -> offhilbert

@@ -34,7 +34,7 @@ function cauchy{DD<:Circle}(s::Bool,f::Fun{Laurent{DD}},z)
 end
 function cauchy{DD<:Circle}(f::Fun{Laurent{DD}},z::Number)
     z=mappoint(domain(f),Circle(),z)
-    cauchycircleS(abs(z) < 1,cfs,z)
+    cauchycircleS(abs(z) < 1,coefficients(f),z)
 end
 
 cauchy{DD<:Circle}(f::Fun{Laurent{DD}},z::Vector)=[cauchy(f,zk) for zk in z]

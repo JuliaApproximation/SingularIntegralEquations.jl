@@ -28,27 +28,31 @@ function cauchy{CC<:Chebyshev,DD}(G::Function,u::Fun{JacobiWeight{CC,DD}},z)
     return map(z->cauchy(Fun(chebyshevtransform(G(z,t).*vals,p),sp),z),z)
 end
 
-function Base.sum{S<:Union{Fourier,Laurent}}(G::Function,u::Fun{S},z)
-    d,n=domain(u),2length(u)
-    vals,t = values(pad(u,n)),points(d,n)
-    if isa(d,Circle)
-      return map(z->mean(G(z,t).*vals.*t),z)*2π*im
-    else
-      return map(z->mean(G(z,t).*vals),z)*length(d)
+for TYP in (:Fourier,:Laurent)
+    @eval begin
+        function Base.sum{DD}(G::Function,u::Fun{$TYP{DD}},z)
+            d,n=domain(u),2length(u)
+            vals,t = values(pad(u,n)),points(d,n)
+            if isa(d,Circle)
+              return map(z->mean(G(z,t).*vals.*t),z)*2π*im
+            else
+              return map(z->mean(G(z,t).*vals),z)*length(d)
+            end
+        end
+
+        function linesum{DD}(G::Function,u::Fun{$TYP{DD}},z)
+            d,n=domain(u),2length(u)
+            vals,t = values(pad(u,n)),points(d,n)
+            map(z->mean(G(z,t).*vals),z)*length(d)
+        end
+
+        function logkernel{DD}(G::Function,u::Fun{$TYP{DD}},z)
+            sp,n=space(u),2length(u)
+            vals,t = values(pad(u,n)),points(sp,n)
+            p = plan_transform(sp,vals)
+            return map(z->logkernel(Fun(transform(sp,G(z,t).*vals,p),sp),z),z)
+        end
     end
-end
-
-function linesum{S<:Union{Fourier,Laurent}}(G::Function,u::Fun{S},z)
-    d,n=domain(u),2length(u)
-    vals,t = values(pad(u,n)),points(d,n)
-    map(z->mean(G(z,t).*vals),z)*length(d)
-end
-
-function logkernel{S<:Union{Fourier,Laurent}}(G::Function,u::Fun{S},z)
-    sp,n=space(u),2length(u)
-    vals,t = values(pad(u,n)),points(sp,n)
-    p = plan_transform(sp,vals)
-    return map(z->logkernel(Fun(transform(sp,G(z,t).*vals,p),sp),z),z)
 end
 
 for Func in (:(Base.sum),:linesum,:logkernel,:cauchy)

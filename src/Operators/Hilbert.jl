@@ -46,13 +46,13 @@ for (Op,OpWrap,OffOp) in ((:PseudoHilbert,:PseudoHilbertWrapper,:OffPseudoHilber
             $OpWrap(interlace(D),n)
         end
 
-        bandinds{s}(::$Op{Hardy{s}})=0,0
-        domainspace{s}(H::$Op{Hardy{s}})=H.space
-        rangespace{s}(H::$Op{Hardy{s}})=H.space
+        bandinds{s,DD}(::$Op{Hardy{s,DD}})=0,0
+        domainspace{s,DD}(H::$Op{Hardy{s,DD}})=H.space
+        rangespace{s,DD}(H::$Op{Hardy{s,DD}})=H.space
 
-        bandinds{F<:Fourier}(H::$Op{F})=-H.order,H.order
-        domainspace{F<:Fourier}(H::$Op{F})=H.space
-        rangespace{F<:Fourier}(H::$Op{F})=H.space
+        bandinds{DD}(H::$Op{Fourier{DD}})=-H.order,H.order
+        domainspace{DD}(H::$Op{Fourier{DD}})=H.space
+        rangespace{DD}(H::$Op{Fourier{DD}})=H.space
 
         function rangespace{DD}(H::$Op{JacobiWeight{Chebyshev{DD},DD}})
             @assert domainspace(H).α==domainspace(H).β==-0.5
@@ -108,8 +108,8 @@ SingularIntegral(sp::Space,n)=SingularIntegral{typeof(sp),typeof(n),typeof(lengt
 
 # Override sumspace
 
-Hilbert(F::Fourier,n)=Hilbert{typeof(F),typeof(n),Complex{Float64}}(F,n)
-SingularIntegral(F::Fourier,n)=SingularIntegral{typeof(F),typeof(n),Float64}(F,n)
+Hilbert{DD}(F::Fourier{DD},n)=Hilbert{typeof(F),typeof(n),Complex{Float64}}(F,n)
+SingularIntegral{DD}(F::Fourier{DD},n)=SingularIntegral{typeof(F),typeof(n),Float64}(F,n)
 
 ### Operator Entries
 
