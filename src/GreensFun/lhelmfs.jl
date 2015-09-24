@@ -22,7 +22,7 @@ const lhelmfspath = joinpath(Pkg.dir("SingularIntegralEquations"), "deps", "libl
 
 export lhelmfs
 
-function lhelmfs(trg::Union(Vector{Float64},Vector{Complex{Float64}}),energies::Vector{Float64};derivs::Bool=false)
+function lhelmfs(trg::Union{Vector{Float64},Vector{Complex{Float64}}},energies::Vector{Float64};derivs::Bool=false)
     trgn,energiesn = length(trg),length(energies)
     @assert trgn == energiesn
     n = trgn
@@ -49,7 +49,7 @@ function lhelmfs(trg::Union(Vector{Float64},Vector{Complex{Float64}}),energies::
     end
 end
 
-function lhelmfs(trg::Union(Matrix{Float64},Matrix{Complex{Float64}}),E::Matrix{Float64};derivs::Bool=false)
+function lhelmfs(trg::Union{Matrix{Float64},Matrix{Complex{Float64}}},E::Matrix{Float64};derivs::Bool=false)
     sizetrg,sizeE = size(trg),size(E)
     @assert sizetrg == sizeE
 
@@ -62,9 +62,9 @@ function lhelmfs(trg::Union(Matrix{Float64},Matrix{Complex{Float64}}),E::Matrix{
     end
 end
 
-lhelmfs(trg::Union(VecOrMat{Float64},VecOrMat{Complex{Float64}}),E::Float64;derivs::Bool=false) = lhelmfs(trg,fill(E,size(trg));derivs=derivs)
+lhelmfs(trg::Union{VecOrMat{Float64},VecOrMat{Complex{Float64}}},E::Float64;derivs::Bool=false) = lhelmfs(trg,fill(E,size(trg));derivs=derivs)
 
-function lhelmfs(trg::Union(Float64,Complex{Float64}),E::Float64;derivs::Bool=false)
+function lhelmfs(trg::Union{Float64,Complex{Float64}},E::Float64;derivs::Bool=false)
     if derivs
         u,ux,uy = lhelmfs([trg],[E];derivs=derivs)
         return u[1],ux[1],uy[1]
@@ -74,7 +74,7 @@ function lhelmfs(trg::Union(Float64,Complex{Float64}),E::Float64;derivs::Bool=fa
     end
 end
 
-lhelmfs{T1<:Union(Float64,Complex{Float64}),T2<:Union(Float64,Complex{Float64})}(trg::Union(T1,VecOrMat{T1}),src::Union(T2,VecOrMat{T2}),E::Float64;derivs::Bool=false) = lhelmfs(trg-src,E+imag(src);derivs=derivs)
+lhelmfs{T1<:Union{Float64,Complex{Float64}},T2<:Union{Float64,Complex{Float64}}}(trg::Union{T1,VecOrMat{T1}},src::Union{T2,VecOrMat{T2}},E::Float64;derivs::Bool=false) = lhelmfs(trg-src,E+imag(src);derivs=derivs)
 
 
 function lhelm_riemanncomplex{T<:Number}(z::T,z0::T,ζ::T,ζ0::T,E::Real)

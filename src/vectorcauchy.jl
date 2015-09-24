@@ -36,7 +36,7 @@ for op in (:(stieltjes),:(cauchy),:(logkernel),:(stieltjesintegral),:(cauchyinte
     end
 end
 
-hilbert{F<:Union(Fun,Any)}(v::Vector{F},x)=mapreduce(f->(x in domain(f))?hilbert(f,x):-stieltjes(f,x)/π,+,v)
+hilbert{F<:Union{Fun,Any}}(v::Vector{F},x)=mapreduce(f->(x in domain(f))?hilbert(f,x):-stieltjes(f,x)/π,+,v)
 hilbert{P<:PiecewiseSpace,T}(v::Fun{P,T},z)=hilbert(pieces(v),z)
 
 

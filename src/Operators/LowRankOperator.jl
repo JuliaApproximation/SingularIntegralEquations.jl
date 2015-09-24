@@ -1,6 +1,6 @@
 export LowRankOperator
 
-immutable LowRankOperator{S<:FunctionSpace,T} <: InfiniteOperator{T}
+immutable LowRankOperator{S<:Space,T} <: InfiniteOperator{T}
     U::Vector{Fun{S,T}}
     V::Vector{Functional{T}}
 

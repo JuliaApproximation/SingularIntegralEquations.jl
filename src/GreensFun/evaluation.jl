@@ -1,7 +1,7 @@
 
 for (Func,Len) in ((:(Base.sum),:complexlength),(:linesum,:length))
     @eval begin
-        function $Func(G::Function,u::Fun{JacobiWeight{Chebyshev}},z)
+        function $Func{CC<:Chebyshev,DD}(G::Function,u::Fun{JacobiWeight{CC,DD}},z)
             d,α,β,n=domain(u),u.space.α,u.space.β,2length(u)
             vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(d,n)
             if α == β == -0.5
@@ -14,21 +14,21 @@ for (Func,Len) in ((:(Base.sum),:complexlength),(:linesum,:length))
     end
 end
 
-function logkernel(G::Function,u::Fun{JacobiWeight{Chebyshev}},z)
+function logkernel{CC<:Chebyshev,DD}(G::Function,u::Fun{JacobiWeight{CC,DD}},z)
     sp,n=space(u),2length(u)
     vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(sp,n)
     p = plan_chebyshevtransform(complex(vals))
     return map(z->logkernel(Fun(chebyshevtransform(G(z,t).*vals,p),sp),z),z)
 end
 
-function cauchy(G::Function,u::Fun{JacobiWeight{Chebyshev}},z)
+function cauchy{CC<:Chebyshev,DD}(G::Function,u::Fun{JacobiWeight{CC,DD}},z)
     sp,n=space(u),2length(u)
     vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(sp,n)
     p = plan_chebyshevtransform(vals)#complex(vals))
     return map(z->cauchy(Fun(chebyshevtransform(G(z,t).*vals,p),sp),z),z)
 end
 
-function Base.sum{S<:Union(Fourier,Laurent)}(G::Function,u::Fun{S},z)
+function Base.sum{S<:Union{Fourier,Laurent}}(G::Function,u::Fun{S},z)
     d,n=domain(u),2length(u)
     vals,t = values(pad(u,n)),points(d,n)
     if isa(d,Circle)
@@ -38,13 +38,13 @@ function Base.sum{S<:Union(Fourier,Laurent)}(G::Function,u::Fun{S},z)
     end
 end
 
-function linesum{S<:Union(Fourier,Laurent)}(G::Function,u::Fun{S},z)
+function linesum{S<:Union{Fourier,Laurent}}(G::Function,u::Fun{S},z)
     d,n=domain(u),2length(u)
     vals,t = values(pad(u,n)),points(d,n)
     map(z->mean(G(z,t).*vals),z)*length(d)
 end
 
-function logkernel{S<:Union(Fourier,Laurent)}(G::Function,u::Fun{S},z)
+function logkernel{S<:Union{Fourier,Laurent}}(G::Function,u::Fun{S},z)
     sp,n=space(u),2length(u)
     vals,t = values(pad(u,n)),points(sp,n)
     p = plan_transform(sp,vals)
@@ -55,6 +55,6 @@ for Func in (:(Base.sum),:linesum,:logkernel,:cauchy)
     @eval begin
         $Func{F<:Fun}(G::Function,u::Vector{F},z)=mapreduce(u->$Func(G,u,z),+,u)
         $Func{P<:PiecewiseSpace,T}(G::Function,u::Fun{P,T},z)=$Func(G,vec(u),z)
-        $Func{PS<:PolynomialSpace}(G::Function,f::Fun{JacobiWeight{PS}},z)=$Func(G,Fun(f,JacobiWeight(f.space.α,f.space.β,Chebyshev(domain(f)))),z)
+        $Func{PS<:PolynomialSpace,DD}(G::Function,f::Fun{JacobiWeight{PS,DD}},z)=$Func(G,Fun(f,JacobiWeight(f.space.α,f.space.β,Chebyshev(domain(f)))),z)
     end
 end

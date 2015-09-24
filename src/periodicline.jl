@@ -57,7 +57,7 @@ bandinds{S,T}(H::Hilbert{PeriodicLineDirichlet{S,T}})=0,0
 rangespace{S,T}(H::Hilbert{PeriodicLineDirichlet{S,T}})=domainspace(H)
 
 
-function addentries!{T}(H::Hilbert{PeriodicLineDirichlet{false,T}},A,kr::Range)
+function addentries!{T}(H::Hilbert{PeriodicLineDirichlet{false,T}},A,kr::Range,::Colon)
     for k=kr
         if iseven(k)  # negative terms
             A[k,k] += -im

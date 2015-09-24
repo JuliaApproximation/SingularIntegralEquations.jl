@@ -82,10 +82,10 @@ evaluate{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(f::ProductFun{S,V,Cauchy
 +{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(F::ProductFun{S,V,CauchyWeight{O},T1},G::ProductFun{S,V,CauchyWeight{O},T2}) = ProductFun(ProductFun(F.coefficients,F.space.space)+ProductFun(G.coefficients,G.space.space),G.space)
 -{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(F::ProductFun{S,V,CauchyWeight{O},T1},G::ProductFun{S,V,CauchyWeight{O},T2}) = ProductFun(ProductFun(F.coefficients,F.space.space)-ProductFun(G.coefficients,G.space.space),G.space)
 
-evaluate{S<:FunctionSpace,M<:FunctionSpace,O,T<:Number}(f::LowRankFun{S,M,CauchyWeight{O},T},::Colon,::Colon) = error("Not callable.")
-evaluate{S<:FunctionSpace,M<:FunctionSpace,O,T<:Number}(f::LowRankFun{S,M,CauchyWeight{O},T},x,::Colon) = error("Not callable.")
-evaluate{S<:FunctionSpace,M<:FunctionSpace,O,T<:Number}(f::LowRankFun{S,M,CauchyWeight{O},T},::Colon,y) = error("Not callable.")
-evaluate{S<:FunctionSpace,M<:FunctionSpace,O,T<:Number}(f::LowRankFun{S,M,CauchyWeight{O},T},x,y) = evaluate(f.A,f.B,x,y).*cauchyweight(space(f),x,y)
+evaluate{S<:Space,M<:Space,O,T<:Number}(f::LowRankFun{S,M,CauchyWeight{O},T},::Colon,::Colon) = error("Not callable.")
+evaluate{S<:Space,M<:Space,O,T<:Number}(f::LowRankFun{S,M,CauchyWeight{O},T},x,::Colon) = error("Not callable.")
+evaluate{S<:Space,M<:Space,O,T<:Number}(f::LowRankFun{S,M,CauchyWeight{O},T},::Colon,y) = error("Not callable.")
+evaluate{S<:Space,M<:Space,O,T<:Number}(f::LowRankFun{S,M,CauchyWeight{O},T},x,y) = evaluate(f.A,f.B,x,y).*cauchyweight(space(f),x,y)
 
-+{S<:FunctionSpace,M<:FunctionSpace,O,T1<:Number,T2<:Number}(F::LowRankFun{S,M,CauchyWeight{O},T1},G::LowRankFun{S,M,CauchyWeight{O},T2}) = LowRankFun([F.A,G.A],[F.B,G.B],F.space)
--{S<:FunctionSpace,M<:FunctionSpace,O,T1<:Number,T2<:Number}(F::LowRankFun{S,M,CauchyWeight{O},T1},G::LowRankFun{S,M,CauchyWeight{O},T2}) = LowRankFun([F.A,-G.A],[F.B,G.B],F.space)
++{S<:Space,M<:Space,O,T1<:Number,T2<:Number}(F::LowRankFun{S,M,CauchyWeight{O},T1},G::LowRankFun{S,M,CauchyWeight{O},T2}) = LowRankFun([F.A,G.A],[F.B,G.B],F.space)
+-{S<:Space,M<:Space,O,T1<:Number,T2<:Number}(F::LowRankFun{S,M,CauchyWeight{O},T1},G::LowRankFun{S,M,CauchyWeight{O},T2}) = LowRankFun([F.A,-G.A],[F.B,G.B],F.space)

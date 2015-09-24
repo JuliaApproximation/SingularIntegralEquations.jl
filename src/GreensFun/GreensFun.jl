@@ -29,7 +29,7 @@ GreensFun{K<:BivariateFun}(F::K) = GreensFun(K[F])
 
 Base.length(G::GreensFun) = length(G.kernels)
 Base.transpose(G::GreensFun) = GreensFun(mapreduce(transpose,+,G.kernels))
-Base.convert(::Type{GreensFun},F::Union(ProductFun,LowRankFun)) = GreensFun(F)
+Base.convert(::Type{GreensFun},F::Union{ProductFun,LowRankFun}) = GreensFun(F)
 Base.rank(G::GreensFun) = error("Not all kernels are low rank approximations.")
 
 domain(G::GreensFun) = domain(first(G.kernels))

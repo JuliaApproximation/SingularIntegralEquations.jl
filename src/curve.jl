@@ -19,7 +19,7 @@ cauchy{C<:Curve,S,T,BT}(f::Fun{MappedSpace{S,C,BT},T},z::Matrix)=Complex128[cauc
 
 ## hilbert on JacobiWeight space mapped by open curves
 
-function hilbert{C<:Curve,M,T,BT}(f::Fun{MappedSpace{JacobiWeight{M},C,BT},T},x::Number)
+function hilbert{C<:Curve,JW<:JacobiWeight,T,BT}(f::Fun{MappedSpace{JW,C,BT},T},x::Number)
     #project
     fm=Fun(f.coefficients,space(f).space)
     rts=complexroots(domain(f).curve-x)
@@ -109,7 +109,7 @@ end
 
 ## CurveSpace
 
-function Hilbert{C<:Curve,SS,T}(S::MappedSpace{JacobiWeight{SS},C,T},k::Int)
+function Hilbert{C<:Curve,JW<:JacobiWeight,T}(S::MappedSpace{JW,C,T},k::Int)
     @assert k==1
     tol=1E-15
     # the mapped logkernel
