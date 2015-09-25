@@ -1,3 +1,5 @@
+
+__precompile__()
 module SingularIntegralEquations
     using Base, ApproxFun, Compat
 
@@ -19,7 +21,7 @@ import ApproxFun: bandinds,SpaceOperator,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,BivariateFun,linesum,complexlength,
                   ProductFun, LowRankFun, mappoint, PeriodicLineSpace, PeriodicLineDirichlet,Recurrence, CompactFunctional,
                   real, UnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, PrependColumnsOperator,
-                  ConstantSpace,ReOperator,DirectSumSpace,TupleSpace
+                  ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, AlmostBandedOperator, ZeroSpace
 
 function cauchy(s,f,z)
     if isa(s,Bool)
