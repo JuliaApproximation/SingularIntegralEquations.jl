@@ -60,7 +60,7 @@ Here is an example with 10 sources at the roots of unity scaled by 2 and scatter
 ui(x,y) = logabs(complex(x,y)-2)     # Single source at (2,0) of strength 2π
 
 N,r = 10,1e-1
-cr = exp(im*2π*[0:N-1]/N)
+cr = exp(im*2π*(0:N-1)/N)
 crl,crr = (1-2im*r)cr,(1+2im*r)cr
 dom = ∪(Interval,crl,crr)            # Set the shielding domain
 
@@ -73,7 +73,7 @@ G = GreensFun((x,y)->1/2,CauchyWeight(sp⊗sp,0))
 
 # The first column augments the system for global unknown constant charge φ0
 # The first row ensure constant charge φ0 on all plates
-φ0,∂u∂n=vec([0 ⨍;1 ⨍[G]]\Any[0.,uiΓ])
+φ0,∂u∂n=[0 ⨍;1 ⨍[G]]\Any[0.,uiΓ]
 
 # Represent the scattered field
 us(x,y) = -logkernel(∂u∂n,complex(x,y))/2
