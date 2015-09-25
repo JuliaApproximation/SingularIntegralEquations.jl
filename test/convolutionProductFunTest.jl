@@ -13,42 +13,42 @@ G2 = convolutionProductFun(fK,Ultraspherical{1}(d),ChebyshevDirichlet{1,1}(d))
 
 @test norm(pad(coefficients(FLR),size(coefficients(G),1),size(coefficients(G),2))-coefficients(G))<100000eps()
 @test norm(pad(coefficients(FPF),size(coefficients(G),1),size(coefficients(G),2))-coefficients(G))<100000eps()
-@test norm(fK(.123,.456)-G[.123,.456])≤10000eps()
-@test norm(G[.123,.456]-G1[.123,.456])≤10000eps()
-@test norm(G[.123,.456]-G2[.123,.456])≤10000eps()
+@test norm(fK(.123,.456)-G(.123,.456))≤10000eps()
+@test norm(G(.123,.456)-G1(.123,.456))≤10000eps()
+@test norm(G(.123,.456)-G2(.123,.456))≤10000eps()
 
 println("Fourier on PeriodicInterval tests")
 
 f2 = Fun(θ->exp(sin(θ))+sin(cos(θ)),Fourier())
-FLR = LowRankFun((θ,ϕ)->f2[ϕ-θ],Fourier(),Fourier())
-FPF = ProductFun((θ,ϕ)->f2[ϕ-θ],Fourier(),Fourier())
+FLR = LowRankFun((θ,ϕ)->f2(ϕ-θ),Fourier(),Fourier())
+FPF = ProductFun((θ,ϕ)->f2(ϕ-θ),Fourier(),Fourier())
 G = convolutionProductFun(f2,Fourier(),Fourier())
 
 @test norm(pad(coefficients(FLR),size(coefficients(G),1),size(coefficients(G),2))-coefficients(G))<400eps()
 @test norm(pad(coefficients(FPF),size(coefficients(G),1),size(coefficients(G),2))-coefficients(G))<400eps()
-@test norm(f2[.456-.123]-G[.123,.456])≤400eps()
+@test norm(f2(.456-.123)-G(.123,.456))≤400eps()
 
 f2 = Fun(θ->1+sin(cos(θ)),CosSpace())
 G = convolutionProductFun(f2,Fourier(),Fourier())
-@test norm(f2[.456-.123]-G[.123,.456])≤400eps()
+@test norm(f2(.456-.123)-G(.123,.456))≤400eps()
 
 f2 = Fun(θ->sin(sin(θ)),SinSpace())
 G = convolutionProductFun(f2,Fourier(),Fourier())
-@test norm(f2[.456-.123]-G[.123,.456])≤400eps()
+@test norm(f2(.456-.123)-G(.123,.456))≤400eps()
 
 println("Laurent on PeriodicInterval tests")
 
 f2 = Fun(θ->exp(sin(θ))+sin(cos(θ)),Laurent())
 G = convolutionProductFun(f2,Laurent(),Laurent())
-@test norm(f2[.456-.123]-G[.123,.456])≤400eps()
+@test norm(f2(.456-.123)-G(.123,.456))≤400eps()
 
 f2 = Fun(θ->π+e*exp(im*θ)+sqrt(2)*exp(im*2θ)+catalan*exp(im*3θ)+γ*exp(im*4θ),Taylor(PeriodicInterval()))
 G = convolutionProductFun(f2,Laurent(),Laurent())
-@test norm(f2[.456-.123]-G[.123,.456])≤2eps()
+@test norm(f2(.456-.123)-G(.123,.456))≤2eps()
 
 f2 = Fun(θ->e*exp(-im*θ)+sqrt(2)*exp(-im*2θ)+catalan*exp(-im*3θ)+γ*exp(-im*4θ),Hardy{false}(PeriodicInterval()))
 G = convolutionProductFun(f2,Laurent(),Laurent())
-@test norm(f2[.456-.123]-G[.123,.456])≤10eps()
+@test norm(f2(.456-.123)-G(.123,.456))≤10eps()
 
 println("Timing tests: ")
 

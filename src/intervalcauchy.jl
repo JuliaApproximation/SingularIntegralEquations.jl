@@ -6,7 +6,7 @@ import ApproxFun: dotu,SliceOperator
 jacobiop(S::PolynomialSpace)=transpose(Recurrence(S))
 jacobiop(S::JacobiWeight)=jacobiop(S.space)
 
-function cauchybackward(S::FunctionSpace,z::Number)
+function cauchybackward(S::Space,z::Number)
     J=SliceOperator(jacobiop(S)-z,1,0,1)  # drop first row
     [BasisFunctional(1),
         J]\[cauchymoment(S,1,z)]
@@ -32,10 +32,10 @@ function forwardsubstitution(R,n,μ1,μ2)
     end
 end
 
-cauchyforward(sp::FunctionSpace,n,z)=forwardsubstitution(jacobiop(sp)-z,n,
+cauchyforward(sp::Space,n,z)=forwardsubstitution(jacobiop(sp)-z,n,
                         cauchymoment(sp,1,z),cauchymoment(sp,2,z))
 
-cauchyforward(s::Bool,sp::FunctionSpace,n,z)=forwardsubstitution(jacobiop(sp)-z,n,
+cauchyforward(s::Bool,sp::Space,n,z)=forwardsubstitution(jacobiop(sp)-z,n,
                         cauchymoment(s,sp,1,z),cauchymoment(s,sp,2,z))
 
 

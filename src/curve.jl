@@ -19,7 +19,7 @@ cauchy{C<:Curve,S,T,BT}(f::Fun{MappedSpace{S,C,BT},T},z::Matrix)=Complex128[cauc
 
 ## hilbert on JacobiWeight space mapped by open curves
 
-function hilbert{C<:Curve,M,T,BT}(f::Fun{MappedSpace{JacobiWeight{M},C,BT},T},x::Number)
+function hilbert{C<:Curve,JW<:JacobiWeight,T,BT}(f::Fun{MappedSpace{JW,C,BT},T},x::Number)
     #project
     fm=Fun(f.coefficients,space(f).space)
     rts=complexroots(domain(f).curve-x)
@@ -34,7 +34,7 @@ end
 
 #TODO: the branch cuts of this are screwy, and the large z asymptotics may
 # be off by an integer constant
-function cauchyintegral{S,T,TT}(w::Fun{MappedSpace{S,Curve{Chebyshev,T},TT}},z)
+function cauchyintegral{CC<:Chebyshev,S,T,TT}(w::Fun{MappedSpace{S,Curve{CC,T},TT}},z)
     d=domain(w)
     # leading order coefficient
     b=d.curve.coefficients[end]*2^(max(length(d.curve)-2,0))
@@ -44,7 +44,7 @@ function cauchyintegral{S,T,TT}(w::Fun{MappedSpace{S,Curve{Chebyshev,T},TT}},z)
 end
 
 
-function logkernel{S,T,TT}(w::Fun{MappedSpace{S,Curve{Chebyshev,T},TT}},z)
+function logkernel{CC<:Chebyshev,S,T,TT}(w::Fun{MappedSpace{S,Curve{CC,T},TT}},z)
     d=domain(w)
     # leading order coefficient
     b=d.curve.coefficients[end]*2^(max(length(d.curve)-2,0))
@@ -57,7 +57,7 @@ end
 ## Circle map
 
 # pseudo cauchy is not normalized at infinity
-function pseudocauchy{C<:Curve}(f::Fun{MappedSpace{Laurent,C,Complex{Float64}}},z::Number)
+function pseudocauchy{DD<:Circle,C<:Curve}(f::Fun{MappedSpace{Laurent{DD},C,Complex{Float64}}},z::Number)
     fcirc=Fun(f.coefficients,f.space.space)  # project to circle
     c=domain(f)  # the curve that f lives on
     @assert domain(fcirc)==Circle()
@@ -65,7 +65,7 @@ function pseudocauchy{C<:Curve}(f::Fun{MappedSpace{Laurent,C,Complex{Float64}}},
     sum(cauchy(fcirc,complexroots(c.curve-z)))
 end
 
-function cauchy{C<:Curve}(f::Fun{MappedSpace{Laurent,C,Complex{Float64}}},z::Number)
+function cauchy{DD<:Circle,C<:Curve}(f::Fun{MappedSpace{Laurent{DD},C,Complex{Float64}}},z::Number)
     fcirc=Fun(f.coefficients,f.space.space)  # project to circle
     c=domain(f)  # the curve that f lives on
     @assert domain(fcirc)==Circle()
@@ -74,7 +74,7 @@ function cauchy{C<:Curve}(f::Fun{MappedSpace{Laurent,C,Complex{Float64}}},z::Num
     sum(cauchy(fcirc,complexroots(c.curve-z)))-div(length(domain(f).curve),2)*cauchy(fcirc,0.)
 end
 
-function cauchy{C<:Curve}(s::Bool,f::Fun{MappedSpace{Laurent,C,Complex{Float64}}},z::Number)
+function cauchy{DD<:Circle,C<:Curve}(s::Bool,f::Fun{MappedSpace{Laurent{DD},C,Complex{Float64}}},z::Number)
     fcirc=Fun(f.coefficients,f.space.space)  # project to circle
     c=domain(f)  # the curve that f lives on
     @assert domain(fcirc)==Circle()
@@ -90,7 +90,7 @@ function cauchy{C<:Curve}(s::Bool,f::Fun{MappedSpace{Laurent,C,Complex{Float64}}
 end
 
 
-function hilbert{C<:Curve}(f::Fun{MappedSpace{Laurent,C,Complex{Float64}}},z::Number)
+function hilbert{DD<:Circle,C<:Curve}(f::Fun{MappedSpace{Laurent{DD},C,Complex{Float64}}},z::Number)
     fcirc=Fun(f.coefficients,f.space.space)  # project to circle
     c=domain(f)  # the curve that f lives on
     @assert domain(fcirc)==Circle()
@@ -109,7 +109,7 @@ end
 
 ## CurveSpace
 
-function Hilbert{C<:Curve,SS,T}(S::MappedSpace{JacobiWeight{SS},C,T},k::Int)
+function Hilbert{C<:Curve,JW<:JacobiWeight,T}(S::MappedSpace{JW,C,T},k::Int)
     @assert k==1
     tol=1E-15
     # the mapped logkernel
@@ -132,7 +132,7 @@ function Hilbert{C<:Curve,SS,T}(S::MappedSpace{JacobiWeight{SS},C,T},k::Int)
     end
 
     K=hcat(cols...)
-    A=Σ+SpaceOperator(CompactOperator(K),S.space,rs)
+    A=Σ+SpaceOperator(FiniteOperator(K),S.space,rs)
 
     # Multiply by |r'(t)| to get arclength
 
@@ -140,7 +140,7 @@ function Hilbert{C<:Curve,SS,T}(S::MappedSpace{JacobiWeight{SS},C,T},k::Int)
 end
 
 
-function SingularIntegral{JW,TT}(S::MappedSpace{JW,Curve{Chebyshev,TT}},k::Integer)
+function SingularIntegral{CC<:Chebyshev,JW,TT}(S::MappedSpace{JW,Curve{CC,TT}},k::Integer)
     @assert k==0
     tol=1E-15
     # the mapped logkernel
@@ -167,7 +167,7 @@ function SingularIntegral{JW,TT}(S::MappedSpace{JW,Curve{Chebyshev,TT}},k::Integ
     end
 
     K=hcat(cols...)
-    A=Σ+SpaceOperator(CompactOperator(K),S.space,rs)+(log(abs(b))/π)*DefiniteLineIntegral(S.space)
+    A=Σ+SpaceOperator(FiniteOperator(K),S.space,rs)+(log(abs(b))/π)*DefiniteLineIntegral(S.space)
 
     # Multiply by |r'(t)| to get arclength
     M=Multiplication(abs(fromcanonicalD(d,Fun(identity,S.space))),S.space)

@@ -22,7 +22,7 @@ println("The length of uSIE is: ",length(uSIE))
 println("The extrema of uSIE are: ",extrema(uSIE))
 
 test0 = uSIE/(1-x^2)^2
-test = Fun(x->test0[x],Ultraspherical{1}(d))
+test = Fun(x->test0(x),Ultraspherical{1}(d))
 temp = 0.0
 [temp+= i*test.coefficients[i] for i=1:length(test)];
 println("The normalized generalized Stress Intensity Factors are: ",3ϵ*temp)

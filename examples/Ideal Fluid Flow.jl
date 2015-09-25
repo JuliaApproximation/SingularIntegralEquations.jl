@@ -169,7 +169,7 @@ FourierDirichlet()=FourierDirichlet(PeriodicInterval())
     canonicalspace(S::FourierDirichlet)=Fourier(domain(S))
 
     bandinds(::Conversion{FourierDirichlet,Fourier})=-1,1
-    function addentries!(C::Conversion{FourierDirichlet,Fourier},A,kr::Range)
+    function addentries!(C::Conversion{FourierDirichlet,Fourier},A,kr::Range,::Colon)
         toeplitz_addentries!([1.],[0.,1.],A,kr)
     end
 
@@ -183,11 +183,11 @@ FourierDirichlet()=FourierDirichlet(PeriodicInterval())
 bandinds{L<:PeriodicLine,T}(H::Hilbert{MappedSpace{FourierDirichlet,L,T}})=-2,2
     rangespace{L<:PeriodicLine,T}(H::Hilbert{MappedSpace{FourierDirichlet,L,T}})=MappedSpace(domain(H),Fourier())
 
-    function addentries!{L<:PeriodicLine,T}(H::Hilbert{MappedSpace{FourierDirichlet,L,T}},A,kr::Range)
+    function addentries!{L<:PeriodicLine,T}(H::Hilbert{MappedSpace{FourierDirichlet,L,T}},A,kr::Range,::Colon)
         if 1 in kr
             A[1,1]+=1
         end
-        addentries!(real(Hilbert(FourierDirichlet(Circle()))),A,kr)
+        addentries!(real(Hilbert(FourierDirichlet(Circle()))),A,kr,:)
         A
     end
 

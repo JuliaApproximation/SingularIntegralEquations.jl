@@ -10,7 +10,7 @@ function convolutionProductFun{U<:UnivariateSpace,V<:UnivariateSpace}(f::Functio
     ext = extrema(du,dv)
     if ext[1] == 0
         ff = Fun(z->f(0,z),Chebyshev(Interval(-ext[2]/2,ext[2]/2)))
-        fd,T = ff[0],eltype(ff)
+        fd,T = ff(0),eltype(ff)
         c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(T))
         N = length(c)
         N1 = isa(du,PeriodicDomain) ? 2N : N
@@ -26,7 +26,9 @@ function convolutionProductFun{U<:UnivariateSpace,V<:UnivariateSpace}(f::Functio
     end
 end
 
-convolutionProductFun{U<:UnivariateSpace,V<:UnivariateSpace,T}(f::Function,ss::TensorSpace{@compat(Tuple{U,V}),T,2};kwds...) = convolutionProductFun(f,ss[1],ss[2];kwds...)
+convolutionProductFun{U<:UnivariateSpace,
+                      V<:UnivariateSpace,T}(f::Function,
+                                            ss::TensorSpace{Tuple{U,V},T,2};kwds...) = convolutionProductFun(f,ss[1],ss[2];kwds...)
 
 
 
@@ -39,7 +41,7 @@ convolutionProductFun{U<:UnivariateSpace,V<:UnivariateSpace,T}(f::Function,ss::T
 # whether it's viewed as bivariate or univariate.
 #
 
-function convolutionProductFun{S<:Fourier,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V;tol=eps())
+function convolutionProductFun{DD,T,DU,DV}(f::Fun{Fourier{DD},T},u::Fourier{DU},v::Fourier{DV};tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
@@ -56,7 +58,7 @@ function convolutionProductFun{S<:Fourier,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u
     ProductFun(X,u⊗v)
 end
 
-function convolutionProductFun{S<:CosSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V;tol=eps())
+function convolutionProductFun{S<:CosSpace,T,DU,DV}(f::Fun{S,T},u::Fourier{DU},v::Fourier{DV};tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
@@ -70,7 +72,7 @@ function convolutionProductFun{S<:CosSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},
     ProductFun(X,u⊗v)
 end
 
-function convolutionProductFun{S<:SinSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},u::U,v::V;tol=eps())
+function convolutionProductFun{S<:SinSpace,T,DU,DV}(f::Fun{S,T},u::Fourier{DU},v::Fourier{DV};tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
@@ -83,7 +85,7 @@ function convolutionProductFun{S<:SinSpace,T,U<:Fourier,V<:Fourier}(f::Fun{S,T},
     ProductFun(X,u⊗v)
 end
 
-function convolutionProductFun{S<:Laurent,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V;tol=eps())
+function convolutionProductFun{DS,T,DU,DV}(f::Fun{Laurent{DS},T},u::Laurent{DU},v::Laurent{DV};tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
@@ -98,7 +100,7 @@ function convolutionProductFun{S<:Laurent,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u
     ProductFun(X,u⊗v)
 end
 
-function convolutionProductFun{S<:Taylor,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V;tol=eps())
+function convolutionProductFun{DS,T,DU,DV}(f::Fun{Taylor{DS},T},u::Laurent{DU},v::Laurent{DV};tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)
@@ -111,7 +113,7 @@ function convolutionProductFun{S<:Taylor,T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u:
     ProductFun(X,u⊗v)
 end
 
-function convolutionProductFun{S<:Hardy{false},T,U<:Laurent,V<:Laurent}(f::Fun{S,T},u::U,v::V;tol=eps())
+function convolutionProductFun{DS,T,DU,DV}(f::Fun{Hardy{false,DS},T},u::Laurent{DU},v::Laurent{DV};tol=eps())
     df,du,dv = domain(f),domain(u),domain(v)
     @assert df == du == dv && isa(df,PeriodicInterval)
     c = coefficients(f)

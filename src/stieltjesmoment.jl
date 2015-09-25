@@ -128,7 +128,7 @@ end
 
 
 
-function stieltjesmoment(S::JacobiWeight{Jacobi},k::Integer,z)
+function stieltjesmoment{DD}(S::JacobiWeight{Jacobi{DD},DD},k::Integer,z)
     z=tocanonical(S,z)
     J=S.space
 
@@ -145,10 +145,10 @@ function stieltjesmoment(S::JacobiWeight{Jacobi},k::Integer,z)
 end
 
 
-stieltjesmoment(S::JacobiWeight{Chebyshev},k::Integer,z)=stieltjesjacobimoment(S.α,S.β,k,tocanonical(S,z))
+stieltjesmoment{DD}(S::JacobiWeight{Chebyshev{DD},DD},k::Integer,z)=stieltjesjacobimoment(S.α,S.β,k,tocanonical(S,z))
 
 
-function stieltjesmoment(s::Bool,S::JacobiWeight{Jacobi},k::Integer,z)
+function stieltjesmoment{DD}(s::Bool,S::JacobiWeight{Jacobi{DD},DD},k::Integer,z)
     z=tocanonical(S,z)
     J=S.space
 
@@ -165,7 +165,7 @@ function stieltjesmoment(s::Bool,S::JacobiWeight{Jacobi},k::Integer,z)
 end
 
 
-stieltjesmoment(s::Bool,S::JacobiWeight{Chebyshev},k::Integer,z)=stieltjesjacobimoment(s,S.α,S.β,k,tocanonical(S,z))
+stieltjesmoment{DD}(s::Bool,S::JacobiWeight{Chebyshev{DD},DD},k::Integer,z)=stieltjesjacobimoment(s,S.α,S.β,k,tocanonical(S,z))
 
 
 
@@ -189,5 +189,3 @@ function hilbertmoment(S::JacobiWeight,k::Integer,x)
     end
     (stieltjesmoment(true,S,k,x)+stieltjesmoment(false,S,k,x))/(2π)::Float64
 end
-
-

@@ -67,9 +67,9 @@ end
 
 
 #cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},zv::Array)=Complex128[cauchy(u,zv[k,j]) for k=1:size(zv,1), j=1:size(zv,2)]
-cauchy{S<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{S}},zv::Array)=Complex128[cauchy(s,u,zv[k,j]) for k=1:size(zv,1), j=1:size(zv,2)]
+cauchy{S<:PolynomialSpace,DD}(s::Bool,u::Fun{JacobiWeight{S,DD}},zv::Array)=Complex128[cauchy(s,u,zv[k,j]) for k=1:size(zv,1), j=1:size(zv,2)]
 
-function cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
+function cauchy{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},z)
     d,sp=domain(u),space(u)
 
     if sp.α == sp.β == .5
@@ -108,7 +108,7 @@ function cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
 end
 
 
-function cauchy{SS<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{SS}},x::Number)
+function cauchy{SS<:PolynomialSpace,DD}(s::Bool,u::Fun{JacobiWeight{SS,DD}},x::Number)
     d,sp=domain(u),space(u)
 
     if sp.α == sp.β == .5
@@ -150,7 +150,7 @@ end
 #  hilbert(f,z)=im*(cauchy(true,f,z)+cauchy(false,f,z))
 ##
 
-function hilbert(u::Fun{JacobiWeight{Chebyshev}})
+function hilbert{DD}(u::Fun{JacobiWeight{Chebyshev{DD},DD}})
     d=domain(u);sp=space(u)
 
     if sp.α == sp.β == .5
@@ -185,7 +185,7 @@ realintegratejin(c,cfs,y)=.5*(-cfs[1]*(logabs(y)+logabs(c))+realdivkhornersum(cf
 # logkernel is the real part of stieljes normalized by π.
 #####
 
-function logkernel{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
+function logkernel{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},z)
     d,sp=domain(u),space(u)
     a,b=d.a,d.b     # TODO: type not inferred right now
 
@@ -219,7 +219,7 @@ function logkernel{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
     end
 end
 
-function stieltjesintegral{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
+function stieltjesintegral{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},z)
     d,sp=domain(u),space(u)
     a,b=d.a,d.b     # TODO: type not inferred right now
 
@@ -252,7 +252,7 @@ function stieltjesintegral{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},z)
     end
 end
 
-function stieltjesintegral{S<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{S}},z)
+function stieltjesintegral{S<:PolynomialSpace,DD}(s::Bool,u::Fun{JacobiWeight{S,DD}},z)
     d,sp=domain(u),space(u)
     a,b=d.a,d.b     # TODO: type not inferred right now
 
@@ -284,7 +284,3 @@ function stieltjesintegral{S<:PolynomialSpace}(s::Bool,u::Fun{JacobiWeight{S}},z
         error("stieltjes integral not implemented for parameters "*string(sp.α)*","*string(sp.β))
     end
 end
-
-
-
-
