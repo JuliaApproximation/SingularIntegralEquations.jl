@@ -15,12 +15,12 @@ import ApproxFun
 import ApproxFun: bandinds,SpaceOperator,
                   plan_transform,plan_itransform,transform,itransform,transform!,itransform!,
                   rangespace, domainspace, addentries!, BandedOperator, AnySpace,
-                  canonicalspace, domain, promotedomainspace, AnyDomain, CalculusOperator,
+                  canonicalspace, domain, promotedomainspace, promoterangespace, AnyDomain, CalculusOperator,
                   SumSpace,PiecewiseSpace, interlace,Multiplication,ArraySpace,DiagonalArrayOperator,
                   BandedMatrix,bazeros,ChebyshevDirichlet,PolynomialSpace,AbstractProductSpace,evaluate,order,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,BivariateFun,linesum,complexlength,
                   ProductFun, LowRankFun, mappoint, PeriodicLineSpace, PeriodicLineDirichlet,Recurrence, CompactFunctional,
-                  real, UnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, PrependColumnsOperator,
+                  real, UnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, BlockOperator,
                   ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, AlmostBandedOperator, ZeroSpace
 
 function cauchy(s,f,z)
