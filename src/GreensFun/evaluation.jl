@@ -46,13 +46,25 @@ for TYP in (:Fourier,:Laurent)
             map(z->mean(G(z,t).*vals),z)*length(d)
         end
 
-        function logkernel{DD}(G::Function,u::Fun{$TYP{DD}},z)
-            sp,n=space(u),2length(u)
-            vals,t = values(pad(u,n)),points(sp,n)
-            p = plan_transform(sp,vals)
-            return map(z->logkernel(Fun(transform(sp,G(z,t).*vals,p),sp),z),z)
-        end
+#        function logkernel{DD}(G::Function,u::Fun{$TYP{DD}},z)
+#            sp,n=space(u),2length(u)
+#            vals,t = values(pad(u,n)),points(sp,n)
+#            p = plan_transform(sp,vals)
+#            return map(z->logkernel(Fun(transform(sp,G(z,t).*vals,p),sp),z),z)
+#        end
     end
+end
+
+function logkernel{DD}(G::Function,u::Fun{Fourier{DD}},z)
+    sp,n=space(u),2length(u)
+    vals,t = values(pad(u,n)),points(sp,n)
+    p = plan_transform(sp,vals)
+    return map(z->logkernel(Fun(transform(sp,G(z,t).*vals,p),sp),z),z)
+end
+
+function logkernel{DD}(G::Function,u::Fun{Laurent{DD}},z)
+    u = Fun(u,Fourier)
+    return logkernel(G,u,z)
 end
 
 for Func in (:(Base.sum),:linesum,:logkernel,:cauchy)
