@@ -61,11 +61,7 @@ function logkernel{DD}(G::Function,u::Fun{Fourier{DD}},z)
     p = plan_transform(sp,vals)
     return map(z->logkernel(Fun(transform(sp,G(z,t).*vals,p),sp),z),z)
 end
-
-function logkernel{DD}(G::Function,u::Fun{Laurent{DD}},z)
-    u = Fun(u,Fourier)
-    return logkernel(G,u,z)
-end
+logkernel{DD}(G::Function,u::Fun{Laurent{DD}},z) = logkernel(G,Fun(u,Fourier),z)
 
 for Func in (:(Base.sum),:linesum,:logkernel,:cauchy)
     @eval begin
