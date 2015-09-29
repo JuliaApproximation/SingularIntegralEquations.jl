@@ -29,41 +29,32 @@ updownjoukowskyinverse{T<:Number}(s::Bool,x::T) = in(x,Interval(-one(T),one(T)))
 updownjoukowskyinverse{T<:Number}(s::Bool,x::Vector{T}) = Complex{real(T)}[updownjoukowskyinverse(s,xk) for xk in x]
 updownjoukowskyinverse{T<:Number}(s::Bool,x::Array{T,2}) = Complex{real(T)}[updownjoukowskyinverse(s,x[k,j]) for k=1:size(x,1),j=1:size(x,2)]
 
-function hornersum(cfs,y0)
-    ret=zero(y0)
-    y=zero(y0)+1
-
-    for k=1:length(cfs)
-        y.*=y0
-        ret+=cfs[k]*y
+function hornersum{S<:Number,V<:Number}(cfs::AbstractVector{S},y::V)
+    N,P = length(cfs),promote_type(S,V)
+    ret = convert(P,cfs[N])
+    for k=N-1:-1:1
+        ret = muladd(y,ret,cfs[k])
     end
-
-    ret
+    y*ret
 end
 
-function divkhornersum(cfs,y0,ys,s)
-    ret=zero(y0)
-    y=ys
+hornersum{S<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractVector{V}) = promote_type(S,V)[hornersum(cfs,y[k]) for k=1:length(y)]
+hornersum{S<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractArray{V,2}) = promote_type(S,V)[hornersum(cfs,y[k,j]) for k=1:size(y,1),j=1:size(y,2)]
 
-    for k=1:length(cfs)
-        y.*=y0
-        ret+=cfs[k]*y./(k+s)
+function divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y::T,ys::U,s::V)
+    N,P = length(cfs),promote_type(S,T,U,V)
+    ret=convert(P,cfs[N]/(N+s))
+    for k=N-1:-1:1
+        ret=muladd(y,ret,cfs[k]/(k+s))
     end
-
-    ret
+    y*ys*ret
 end
 
-function realdivkhornersum(cfs,y0,ys,s)
-    ret=zero(real(y0))
-    y=ys
+divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractVector{T},ys::AbstractVector{U},s::V) = promote_type(S,T,U,V)[divkhornersum(cfs,y[k],ys[k],s) for k=1:length(y)]
+divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractArray{T,2},ys::AbstractArray{U,2},s::V) = promote_type(S,T,U,V)[divkhornersum(cfs,y[k,j],ys[k,j],s) for k=1:size(y,1),j=1:size(y,2)]
 
-    for k=1:length(cfs)
-        y.*=y0
-        ret+=cfs[k]*real(y)./(k+s)
-    end
-
-    ret
-end
+realdivkhornersum{S<:Real}(cfs::AbstractVector{S},y,ys,s) = real(divkhornersum(cfs,y,ys,s))
+realdivkhornersum{S<:Complex}(cfs::AbstractVector{S},y,ys,s) = complex(real(divkhornersum(real(cfs),y,ys,s)),real(divkhornersum(imag(cfs),y,ys,s)))
 
 
 #cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},zv::Array)=Complex128[cauchy(u,zv[k,j]) for k=1:size(zv,1), j=1:size(zv,2)]

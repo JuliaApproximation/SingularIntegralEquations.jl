@@ -62,3 +62,17 @@ for Func in (:(Base.sum),:linesum,:logkernel,:cauchy)
         $Func{PS<:PolynomialSpace,DD}(G::Function,f::Fun{JacobiWeight{PS,DD}},z)=$Func(G,Fun(f,JacobiWeight(f.space.α,f.space.β,Chebyshev(domain(f)))),z)
     end
 end
+
+function logkernel{LS,RR<:Arc,TT}(G::Function,u::Fun{MappedSpace{LS,RR,TT}},z)
+    sp,n=space(u),2length(u)
+    vals,t = itransform(sp,pad(u.coefficients,n)),points(sp,n)
+    p = plan_transform(sp,complex(vals))
+    return map(z->logkernel(Fun(transform(sp,G(z,t).*vals,p),sp),z),z)
+end
+
+function linesum{LS,RR<:Arc,TT}(G::Function,u::Fun{MappedSpace{LS,RR,TT}},z)
+    sp,n=space(u),2length(u)
+    vals,t = itransform(sp,pad(u.coefficients,n)),points(sp,n)
+    p = plan_transform(sp,complex(vals))
+    return map(z->linesum(Fun(transform(sp,G(z,t).*vals,p),sp)),z)
+end
