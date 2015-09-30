@@ -31,7 +31,7 @@ updownjoukowskyinverse{T<:Number}(s::Bool,x::Array{T,2}) = Complex{real(T)}[updo
 
 function hornersum{S<:Number,V<:Number}(cfs::AbstractVector{S},y::V)
     N,P = length(cfs),promote_type(S,V)
-    ret = convert(P,cfs[N])
+    ret = N > 0 ? convert(P,cfs[N]) : zero(P)
     for k=N-1:-1:1
         ret = muladd(y,ret,cfs[k])
     end
@@ -43,7 +43,7 @@ hornersum{S<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractArray{V,2}) = p
 
 function divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y::T,ys::U,s::V)
     N,P = length(cfs),promote_type(S,T,U,V)
-    ret=convert(P,cfs[N]/(N+s))
+    ret = N > 0 ? convert(P,cfs[N]/(N+s)) : zero(P)
     for k=N-1:-1:1
         ret=muladd(y,ret,cfs[k]/(k+s))
     end
