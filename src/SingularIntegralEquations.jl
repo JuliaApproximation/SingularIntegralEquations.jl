@@ -22,7 +22,7 @@ import ApproxFun: bandinds,SpaceOperator,
                   ProductFun, LowRankFun, mappoint, PeriodicLineSpace, PeriodicLineDirichlet,Recurrence, FiniteFunctional,
                   real, UnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, BlockOperator,
                   ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, AlmostBandedOperator, ZeroSpace,
-                  DiagonalInterlaceOperator
+                  DiagonalInterlaceOperator, LowRankPertOperator
 
 function cauchy(s,f,z)
     if isa(s,Bool)
