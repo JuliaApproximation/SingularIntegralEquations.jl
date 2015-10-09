@@ -14,15 +14,13 @@ end
 
 
 # This solves via forward substitution
-function forwardsubstitution(R,n,μ1,μ2)
-    T=promote_type(eltype(R),typeof(μ1),typeof(μ2))
+function forwardsubstitution!(ret,R,n,μ1,μ2)
     if n==1
-        T[μ1]
+        ret[1]=μ1
     elseif n==2
-        T[μ1,μ2]
+        ret[1:2]=μ1,μ2
     else
         B=BandedMatrix(R,n-1)
-        ret=Array(T,n)
         ret[1]=μ1
         ret[2]=μ2
         for k=2:n-1
@@ -32,6 +30,8 @@ function forwardsubstitution(R,n,μ1,μ2)
     end
 end
 
+forwardsubstitution(R,n,μ1,μ2)=forwardsubstitution(Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n),R,n,μ1,μ2)
+
 cauchyforward(sp::Space,n,z)=forwardsubstitution(jacobiop(sp)-z,n,
                         cauchymoment(sp,1,z),cauchymoment(sp,2,z))
 
@@ -40,7 +40,7 @@ cauchyforward(s::Bool,sp::Space,n,z)=forwardsubstitution(jacobiop(sp)-z,n,
 
 
 function cauchyintervalrecurrence(f::Fun,z)
-    tol=1./@compat(floor(Int,sqrt(length(f))))
+    tol=1./floor(Int,sqrt(length(f)))
     if (abs(real(z))≤1.+tol) && (abs(imag(z))≤tol)
        cfs=cauchyforward(space(f),length(f),z)
        dotu(cfs,coefficients(f))

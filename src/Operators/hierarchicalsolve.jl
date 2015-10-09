@@ -4,15 +4,15 @@
 
 # Continuous analogues for low-rank operators case
 
-\{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,f)
-\{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F}) = hierarchicalsolve(H,f)
+\{U<:Union{Operator,HierarchicalMatrix},V<:LowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,f)
+\{U<:Union{Operator,HierarchicalMatrix},V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F}) = hierarchicalsolve(H,f)
 
 hierarchicalsolve{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,[f])[1]
 
 hierarchicalsolve{V<:Operator}(H::V,f::Fun) = H\f
 hierarchicalsolve{V<:Operator,F<:Fun}(H::V,f::Vector{F}) = vec(H\transpose(f))
 
-function hierarchicalsolve{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F})
+function hierarchicalsolve{U<:Union{Operator,HierarchicalMatrix},V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F})
     N,nf = length(space(first(f))),length(f)
 
     # Pre-compute Factorization
@@ -45,42 +45,42 @@ function hierarchicalsolve{U<:Operator,V<:LowRankOperator,F<:Fun}(H::Hierarchica
     RHS1 = f1 - At_mul_B(v12,U12)
     RHS2 = f2 - At_mul_B(v21,U21)
 
-    sol = [hierarchicalsolve(H11,RHS1),hierarchicalsolve(H22,RHS2)]
+    sol = [hierarchicalsolve(H11,RHS1);hierarchicalsolve(H22,RHS2)]
     if N == 2
-        return [mapreduce(i->depiece(sol[i:nf:end]),vcat,1:nf)]
+        return [mapreduce(i->depiece(sol[i:nf:end]),vcat,1:nf)...]
     else
         ls = length(sol)
-        return [mapreduce(i->depiece(mapreduce(k->pieces(sol[k]),vcat,i:nf:ls)),vcat,1:nf)]
+        return [mapreduce(i->depiece(mapreduce(k->pieces(sol[k]),vcat,i:nf:ls)),vcat,1:nf)...]
     end
 end
-
-function factorize!{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V})
-    # Partition HierarchicalMatrix
-
-    (H11,H22),(H21,H12) = partitionmatrix(H)
-
-    # Off-diagonal low-rank matrix assembly
-
-    U12,V12 = strippiecewisespace(H12.U),strippiecewisespace(H12.V)
-    U21,V21 = strippiecewisespace(H21.U),strippiecewisespace(H21.V)
-
-    # Solve recursively
-
-    H22U21,H11U12 = hierarchicalsolve(H22,U21),hierarchicalsolve(H11,U12)
-
-    # Compute A
-
-    r1,r2 = length(V12),length(V21)
-    for i=1:r1,j=1:r2
-        H.A[i,j+r1] += dot(V12[i],H22U21[j])
-        H.A[j+r2,i] += dot(V21[j],H11U12[i])
-    end
-
-    # Compute factorization
-
-    H.factorization = pivotldufact(H.A,r1,r2)#lufact(H.A)
-    H.factored = true
-end
+#
+# function factorize!{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V})
+#     # Partition HierarchicalMatrix
+#
+#     (H11,H22),(H21,H12) = partitionmatrix(H)
+#
+#     # Off-diagonal low-rank matrix assembly
+#
+#     U12,V12 = strippiecewisespace(H12.U),strippiecewisespace(H12.V)
+#     U21,V21 = strippiecewisespace(H21.U),strippiecewisespace(H21.V)
+#
+#     # Solve recursively
+#
+#     H22U21,H11U12 = hierarchicalsolve(H22,U21),hierarchicalsolve(H11,U12)
+#
+#     # Compute A
+#
+#     r1,r2 = length(V12),length(V21)
+#     for i=1:r1,j=1:r2
+#         H.A[i,j+r1] += dot(V12[i],H22U21[j])
+#         H.A[j+r2,i] += dot(V21[j],H11U12[i])
+#     end
+#
+#     # Compute factorization
+#
+#     H.factorization = pivotldufact(H.A,r1,r2)#lufact(H.A)
+#     H.factored = true
+# end
 
 function computepivots{VS1,VT1,VS2,VT2,AS1,AT1,AS2,AT2,T}(V12::Vector{Fun{VS1,VT1}},V21::Vector{Fun{VS2,VT2}},H11f1::Vector{Fun{AS1,AT1}},H22f2::Vector{Fun{AS2,AT2}},A::Factorization{T},nf::Int)
     P = promote_type(VT1,VT2,AT1,AT2,T)
@@ -154,7 +154,7 @@ end
 ####
 # New LowRankOperator
 
-function factorize!{U<:LowRankPertOperator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V})
+function factorize!{U<:Union{Operator,HierarchicalMatrix},V<:LowRankOperator}(H::HierarchicalMatrix{U,V})
     (H11,H22),(H21,H12) = partitionmatrix(H)
     U12,V12 = (H12.U),(H12.V)
     U21,V21 = (H21.U),(H21.V)
