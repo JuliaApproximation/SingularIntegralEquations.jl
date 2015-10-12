@@ -30,7 +30,7 @@ function forwardsubstitution!(ret,R,n,μ1,μ2)
     end
 end
 
-forwardsubstitution(R,n,μ1,μ2)=forwardsubstitution(Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n),R,n,μ1,μ2)
+forwardsubstitution(R,n,μ1,μ2)=forwardsubstitution!(Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n),R,n,μ1,μ2)
 
 cauchyforward(sp::Space,n,z)=forwardsubstitution(jacobiop(sp)-z,n,
                         cauchymoment(sp,1,z),cauchymoment(sp,2,z))
