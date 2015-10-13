@@ -19,7 +19,8 @@ type HierarchicalVector{S,T} <: AbstractVector{T}
             return new((HierarchicalVector(data[1:2^(n-1)],n-1),HierarchicalVector(data[1+2^(n-1):end],n-1)),n)
         end
     end
-    HierarchicalVector(data::Union{Tuple{HierarchicalVector{S,T},HierarchicalVector{S,T}},Tuple{S,S}},n::Int) = new(data,n)
+    HierarchicalVector(data::Tuple{S,S}) = new(data::Tuple{S,S},1)
+    HierarchicalVector(data::Tuple{HierarchicalVector{S,T},HierarchicalVector{S,T}},n::Int) = new(data::Tuple{HierarchicalVector{S,T},HierarchicalVector{S,T}},n)
 end
 
 
@@ -29,11 +30,11 @@ function HierarchicalVector{S}(data::Vector{S},n::Int)
 end
 HierarchicalVector{S}(data::Vector{S})=HierarchicalVector(data,round(Int,log2(length(data))))
 
-HierarchicalVector{S,T}(data::Union{Tuple{HierarchicalVector{S,T},HierarchicalVector{S,T}},Tuple{S,S}},n::Int) = HierarchicalVector{S,T}(data,n)
-function HierarchicalVector{S}(data::@compat(Tuple{S,S}),n::Int)
+function HierarchicalVector{S}(data::Tuple{S,S})
     T = promote_type(eltype(data[1]),eltype(data[2]))
-    HierarchicalVector{S,T}(data,n)
+    HierarchicalVector{S,T}(data)
 end
+HierarchicalVector{S,T}(data::Tuple{HierarchicalVector{S,T},HierarchicalVector{S,T}},n::Int) = HierarchicalVector{S,T}(data,n)
 
 
 function collectdata{S,T}(H::HierarchicalVector{S,T})

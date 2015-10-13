@@ -60,6 +60,7 @@ include("curve.jl")
 include("asymptotics.jl")
 
 include("fractals.jl")
+include("clustertree.jl")
 
 if isdir(Pkg.dir("TikzGraphs"))
     include("introspect.jl")
