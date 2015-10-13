@@ -1,7 +1,6 @@
 export clustertree
 
 function clustertree(x::AbstractVector)
-    n = length(x)
     A = adjacency(x)
     clustertree(A)
 end
