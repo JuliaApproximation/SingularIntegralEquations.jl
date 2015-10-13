@@ -21,8 +21,8 @@ K2 = GreensFun((x,y)->exp(β/2*(y-x))/sqrt(1-y^2),CauchyWeight(sp⊗wsp,2))
 B = dirichlet(d)
 L,p = ⨍[K2+K0+K],-Fun(one,sp)
 
-uSIE = [B,L]\[zeros(2),p/G]
-@time uSIE = [B,L]\[zeros(2),p/G]
+uSIE = [B;L]\[zeros(2);p/G]
+@time uSIE = [B;L]\[zeros(2);p/G]
 println("The length of uSIE is: ",length(uSIE))
 println("The extrema of uSIE are: ",extrema(uSIE))
-println("The normalized Stress Intensity Factors are: ",(uSIE/(1-x^2)/G[1])[-1],"  ",(uSIE/(1-x^2)/G[-1])[1])
+println("The normalized Stress Intensity Factors are: ",(uSIE/(1-x^2)/G(1))(-1),"  ",(uSIE/(1-x^2)/G(-1))(1))

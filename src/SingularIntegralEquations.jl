@@ -7,7 +7,7 @@ export cauchy, cauchyintegral, stieltjes, logkernel,
 
 import Base: values,getindex,setindex!,*,.*,+,.+,-,.-,==,<,<=,>,
                 >=,./,/,.^,^,\,∪,transpose
-                
+
 
 import ApproxFun
 import ApproxFun: bandinds,SpaceOperator,
@@ -18,7 +18,7 @@ import ApproxFun: bandinds,SpaceOperator,
                   BandedMatrix,bazeros,ChebyshevDirichlet,PolynomialSpace,AbstractProductSpace,evaluate,order,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,BivariateFun,linesum,complexlength,
                   ProductFun, LowRankFun, mappoint, PeriodicLineSpace, PeriodicLineDirichlet,Recurrence, CompactFunctional,
-                  real, UnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, PrependColumnsOperator,
+                  real, UnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, BlockOperator,
                   ConstantSpace,ReOperator,DirectSumSpace,TupleSpace
 
 function cauchy(s,f,z)
@@ -32,7 +32,7 @@ function cauchy(s,f,z)
 end
 
 hilbert(f)=Hilbert()*f
-hilbert(f,z)=hilbert(f)[z]
+hilbert(f,z)=hilbert(f)(z)
 
 #TODO: cauchy ->stieljtjes
 #TODO: stieltjes -> offhilbert

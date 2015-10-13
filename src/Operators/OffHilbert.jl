@@ -14,21 +14,21 @@ export OffHilbert,OffSingularIntegral,Stieltjes,Cauchy
 
 for Op in (:OffHilbert,:OffSingularIntegral)
     @eval begin
-        immutable $Op{D<:FunctionSpace,R<:FunctionSpace,T} <: BandedOperator{T}
+        immutable $Op{D<:Space,R<:Space,T} <: BandedOperator{T}
             data::BandedMatrix{T}
             domainspace::D
             rangespace::R
             order::Int
         end
 
-        addentries!(C::$Op,A,kr)=addentries!(C.data,A,kr)
+        addentries!(C::$Op,A,kr,::Colon)=addentries!(C.data,A,kr,:)
 
         Base.convert{BT<:Operator}(::Type{BT},OH::$Op)=$Op{typeof(OH.domainspace),
                                                            typeof(OH.rangespace),
                                                            eltype(BT)}(OH.data,OH.domainspace,OH.rangespace,OH.order)
 
-        $Op(ds::FunctionSpace,rs::FunctionSpace) = $Op(ds,rs,1)
-        $Op(data::BandedMatrix,ds::FunctionSpace,rs::FunctionSpace) = $Op(data,ds,rs,1)
+        $Op(ds::Space,rs::Space) = $Op(ds,rs,1)
+        $Op(data::BandedMatrix,ds::Space,rs::Space) = $Op(data,ds,rs,1)
 
         $Op(ds::PeriodicDomain,rs::PeriodicDomain,order)=$Op(Laurent(ds),Laurent(rs),order)
         $Op(ds::PeriodicDomain,rs::PeriodicDomain)=$Op(Laurent(ds),Laurent(rs))
@@ -39,7 +39,7 @@ for Op in (:OffHilbert,:OffSingularIntegral)
     end
 end
 
-function OffHilbert(ds::FunctionSpace,rs::FunctionSpace,order::Int)
+function OffHilbert(ds::Space,rs::Space,order::Int)
     @assert order==1
     tol=1E-13
 
@@ -69,7 +69,7 @@ end
 
 for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
     @eval begin
-        function $Op(ds::JacobiWeight{Ultraspherical{1}},rs::FunctionSpace,order::Int)
+        function $Op{DD}(ds::JacobiWeight{Ultraspherical{1,DD},DD},rs::Space,order::Int)
             @assert ds.α==ds.β==0.5
             d = domain(ds)
             C = (.5*$Len(d))^(1-order) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
@@ -112,7 +112,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
             $Op(M,ds,rs,order)
         end
 
-        function $Op(ds::JacobiWeight{ChebyshevDirichlet{1,1}},rs::PolynomialSpace,order::Int)
+        function $Op{DD}(ds::JacobiWeight{ChebyshevDirichlet{1,1,DD},DD},rs::PolynomialSpace,order::Int)
             @assert ds.α==ds.β==-0.5
             d = domain(ds)
             C = (.5*$Len(d))^(1-order) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
@@ -164,10 +164,8 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
     end
 end
 
-function OffHilbert(DS::Laurent,RS::Laurent,order::Int)
+function OffHilbert{D1<:Circle,D2<:Circle}(DS::Laurent{D1},RS::Laurent{D2},order::Int)
     ds=domain(DS);rs=domain(RS)
-    @assert isa(ds,Circle)
-    @assert isa(rs,Circle)
     @assert order==1
 
     c2=rs.center;c1=ds.center
@@ -205,7 +203,7 @@ function HornerFunctional(y0,sp)
     CompactFunctional(r[1:k],sp)
 end
 
-function OffHilbert(sp::JacobiWeight{Ultraspherical{1}},z::Number)
+function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
     if sp.α == sp.β == 0.5
         π*HornerFunctional(intervaloffcircle(true,tocanonical(sp,z)),sp)
     else
@@ -213,7 +211,7 @@ function OffHilbert(sp::JacobiWeight{Ultraspherical{1}},z::Number)
     end
 end
 
-function OffHilbert(sp::JacobiWeight{Chebyshev},z::Number)
+function OffHilbert{DD}(sp::JacobiWeight{Chebyshev{DD},DD},z::Number)
     if sp.α == sp.β == 0.5
         us=JacobiWeight(0.5,0.5,Ultraspherical{1}(domain(sp)))
         OffHilbert(us,z)*Conversion(sp,us)
@@ -232,7 +230,7 @@ function exterior_cauchy(b::Circle,a::Circle)
     r=b.radius
 
     S=Fun([0.0,0,1],a)  # Shift to use bandedness
-    ret=Array(Fun{Laurent,Complex{Float64}},300)
+    ret=Array(Fun{Laurent{typeof(a)},Complex{Float64}},300)
     ret[1]=Fun(z->(r/(z-c)),a)
     n=1
     m=length(ret[1])-2
@@ -262,7 +260,7 @@ function interior_cauchy(a::Circle,b::Circle)
 
     z=Fun(z->(z-c)/r,b)
 
-    ret=Array(Fun{Laurent,Complex{Float64}},300)
+    ret=Array(Fun{Laurent{typeof(b)},Complex{Float64}},300)
     ret[1]=ones(b)
     n=1
     m=0
@@ -300,7 +298,7 @@ function disjoint_cauchy(a::Circle,b::Circle)
 
     f=Fun(z->r/(z-c),b)
 
-        ret=Array(Fun{Laurent,Complex{Float64}},300)
+        ret=Array(Fun{Laurent{typeof(b)},Complex{Float64}},300)
     ret[1]=f
     n=1
 
@@ -369,7 +367,7 @@ Stieltjes(d,r) = (-π)*OffHilbert(d,r)
 
 Cauchy(s::Bool,d)=(s?0.5:-0.5)*I +(-0.5im)*Hilbert(d)
 Cauchy(s::Int,d)=Cauchy(s==1,d)
-Cauchy(s::Union(Int,Bool))=Cauchy(s,UnsetSpace())
+Cauchy(s::Union{Int,Bool})=Cauchy(s,UnsetSpace())
 Cauchy(ds,rs,order)=(1/(2*im))*OffHilbert(ds,rs,order)
 Cauchy(ds,rs)=Cauchy(ds,rs,1)
 
@@ -399,7 +397,7 @@ end
 
 HornerFunctional(y0,sp)=CompactFunctional(hornervector(y0),sp)
 
-function OffHilbert(sp::JacobiWeight{Ultraspherical{1}},z::Number)
+function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
     if sp.α == sp.β == 0.5
         # this translates the following cauchy to a functional
         #    0.5im*hornersum(cfs,intervaloffcircle(true,tocanonical(u,z)))
@@ -418,14 +416,14 @@ function OffHilbert(sp::JacobiWeight{Ultraspherical{1}},z::Number)
     end
 end
 
-function OffHilbert(sp::JacobiWeight{Chebyshev},z::Number)
+function OffHilbert{DD}(sp::JacobiWeight{Chebyshev{DD},DD},z::Number)
     #try converting to Ultraspherical{1}
     us=JacobiWeight(sp.α,sp.β,Ultraspherical{1}(domain(sp)))
     OffHilbert(us,z)*Conversion(sp,us)
 end
 
 
-function OffHilbert(sp::JacobiWeight{ChebyshevDirichlet{1,1}},z::Number)
+function OffHilbert{DD}(sp::JacobiWeight{ChebyshevDirichlet{1,1,DD},DD},z::Number)
     if sp.α == sp.β == -0.5
         z=tocanonical(sp,z)
 

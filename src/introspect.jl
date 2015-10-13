@@ -1,6 +1,6 @@
 
 
-ApproxFun.treecount(::Union(Hilbert,OffHilbert))=1
+ApproxFun.treecount(::Union{Hilbert,OffHilbert})=1
 ApproxFun.treecount(M::HilbertWrapper)=1+ApproxFun.opcount(M.op)
 
 

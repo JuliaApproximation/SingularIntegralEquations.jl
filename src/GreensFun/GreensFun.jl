@@ -29,7 +29,7 @@ GreensFun{K<:BivariateFun}(F::K) = GreensFun(K[F])
 
 Base.length(G::GreensFun) = length(G.kernels)
 Base.transpose(G::GreensFun) = GreensFun(mapreduce(transpose,+,G.kernels))
-Base.convert(::Type{GreensFun},F::Union(ProductFun,LowRankFun)) = GreensFun(F)
+Base.convert(::Type{GreensFun},F::Union{ProductFun,LowRankFun}) = GreensFun(F)
 Base.rank(G::GreensFun) = error("Not all kernels are low rank approximations.")
 
 domain(G::GreensFun) = domain(first(G.kernels))
@@ -61,12 +61,12 @@ end
 
 # Algebra with BivariateFun's
 
-+(F::GreensFun,G::GreensFun) = GreensFun([F.kernels,G.kernels])
--(F::GreensFun,G::GreensFun) = GreensFun([F.kernels,-G.kernels])
-+(G::GreensFun,B::BivariateFun) = GreensFun([G.kernels,kernels(B)])
--(G::GreensFun,B::BivariateFun) = GreensFun([G.kernels,-kernels(B)])
-+(B::BivariateFun,G::GreensFun) = GreensFun([kernels(B),G.kernels])
--(B::BivariateFun,G::GreensFun) = GreensFun([kernels(B),-G.kernels])
++(F::GreensFun,G::GreensFun) = GreensFun([F.kernels;G.kernels])
+-(F::GreensFun,G::GreensFun) = GreensFun([F.kernels;-G.kernels])
++(G::GreensFun,B::BivariateFun) = GreensFun([G.kernels;kernels(B)])
+-(G::GreensFun,B::BivariateFun) = GreensFun([G.kernels;-kernels(B)])
++(B::BivariateFun,G::GreensFun) = GreensFun([kernels(B);G.kernels])
+-(B::BivariateFun,G::GreensFun) = GreensFun([kernels(B);-G.kernels])
 
 # Custom operations on Arrays required to infer type of resulting Array{GreensFun}
 
@@ -160,7 +160,7 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::Ab
         for i=1:N,j=i:N
             G[i,j] = GreensFun(f,ss[i,j];method=method,kwds...)
         end
-        for i=1:N,j=1:i-1
+        for i=2:N,j=1:i-1
             G[i,j] = transpose(G[j,i])
         end
     elseif method == :unsplit
@@ -169,12 +169,10 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::Ab
           G[i,i] = GreensFun(f,ss[i,i];method=method,kwds...)
           maxF[i] = one(real(mapreduce(eltype,promote_type,G[i,i].kernels)))/2π
         end
-        for i=1:N
-          for j=i+1:N
+        for i=1:N,j=i+1:N
             G[i,j] = GreensFun(f,ss[i,j].space;method=:lowrank,tolerance=(tolerance,max(maxF[i],maxF[j])),kwds...)
-          end
         end
-        for i=1:N,j=1:i-1
+        for i=2:N,j=1:i-1
             G[i,j] = transpose(G[j,i])
         end
     elseif method == :lowrank
@@ -195,13 +193,11 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::Ab
                 F,maxF[i] = LowRankFun(f,ss[i,i];method=method,retmax=true,kwds...)
                 G[i,i] = GreensFun(F)
             end
-            for i=1:N
-                for j=i+1:N
-                    G[i,j] = GreensFun(f,ss[i,j];method=:lowrank,tolerance=(tolerance,max(maxF[i],maxF[j])),kwds...)
-                end
+            for i=1:N,j=i+1:N
+                G[i,j] = GreensFun(f,ss[i,j];method=:lowrank,tolerance=(tolerance,max(maxF[i],maxF[j])),kwds...)
             end
         end
-        for i=1:N,j=1:i-1
+        for i=2:N,j=1:i-1
             G[i,j] = transpose(G[j,i])
         end
     end

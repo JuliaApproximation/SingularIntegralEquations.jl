@@ -15,7 +15,7 @@ LogKernelAsymptotics(S::Laurent,k)=LogKernelAsymptotics(Fourier(domain(S)),k)*Co
 
 
 
-function LogKernelAsymptotics(S::JacobiWeight{ChebyshevDirichlet{1,1}},k)
+function LogKernelAsymptotics{CD<:ChebyshevDirichlet{1,1}}(S::JacobiWeight{CD},k)
     @assert S.α==S.β==-0.5
     d=domain(S)
     if k==-1  # coefficient in front of logabs term
@@ -26,7 +26,7 @@ function LogKernelAsymptotics(S::JacobiWeight{ChebyshevDirichlet{1,1}},k)
 end
 
 
-function LogKernelAsymptotics(S::JacobiWeight{Chebyshev},k)
+function LogKernelAsymptotics{C<:Chebyshev}(S::JacobiWeight{C},k)
     @assert S.α==S.β==-0.5
     d=domain(S)
     if k==-1  # coefficient in front of logabs term

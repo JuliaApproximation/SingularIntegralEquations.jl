@@ -58,12 +58,12 @@ Base.ctranspose{T<:Real}(L::LowRankMatrix{T}) = LowRankMatrix(L.V,L.U)
 Base.ctranspose(L::LowRankMatrix) = LowRankMatrix(conj(L.V),conj(L.U))
 
 Base.getindex(L::LowRankMatrix,i::Int,j::Int) = mapreduce(k->L.U[i,k]*L.V[j,k],+,1:L.r)
-Base.getindex{T}(L::LowRankMatrix{T},i::Int,jr::Range) = T[L[i,j] for j=jr].'#'
+Base.getindex{T}(L::LowRankMatrix{T},i::Int,jr::Range) = T[L[i,j] for j=jr].'
 Base.getindex{T}(L::LowRankMatrix{T},ir::Range,j::Int) = T[L[i,j] for i=ir]
 Base.getindex{T}(L::LowRankMatrix{T},ir::Range,jr::Range) = T[L[i,j] for i=ir,j=jr]
 Base.full(L::LowRankMatrix)=L[1:L.m,1:L.n]
 
-*{S,T}(L::LowRankMatrix{S},b::AbstractVecOrMat{T}) = L.U*(L.V.'*b)#'
+*{S,T}(L::LowRankMatrix{S},b::AbstractVecOrMat{T}) = L.U*(L.V.'*b)
 \{S,T}(L::LowRankMatrix{S},b::AbstractVecOrMat{T}) = full(L)\b
 
 for op in (:+,:-)

@@ -17,9 +17,9 @@ K = LowRankFun((x,y)->-1./(x+y+2ϵ).^2+12(x+ϵ)./(x+y+2ϵ).^3-12(x+ϵ).^2./(x+y+
 L = H2[w] + Σ[K*(w/π)]
 f = -Fun(one)
 
-uSIE = [B,L]\[zeros(2),f]
-@time uSIE = [B,L]\[zeros(2),f]
+uSIE = [B;L]\[zeros(2);f]
+@time uSIE = [B;L]\[zeros(2);f]
 println("The rank of K is: ",rank(K))
 println("The length of uSIE is: ",length(uSIE))
 println("The extrema of uSIE are: ",extrema(uSIE))
-println("The normalized Stress Intensify Factors are: ",(uSIE/(1-x^2))[-1],"  ",(uSIE/(1-x^2))[1])
+println("The normalized Stress Intensify Factors are: ",(uSIE/(1-x^2))(-1),"  ",(uSIE/(1-x^2))(1))

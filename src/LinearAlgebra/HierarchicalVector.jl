@@ -8,7 +8,7 @@
 export HierarchicalVector, partitionvector
 
 type HierarchicalVector{S,T} <: AbstractVector{T}
-    data::Union(@compat(Tuple{HierarchicalVector{S,T},HierarchicalVector{S,T}}),@compat(Tuple{S,S})) # n ≥ 2 ? Tuple of two HierarchicalVector{S,T} : Tuple of two S
+    data::Union{Tuple{HierarchicalVector{S,T},HierarchicalVector{S,T}},Tuple{S,S}} # n ≥ 2 ? Tuple of two HierarchicalVector{S,T} : Tuple of two S
     n::Int # Power of hierarchy (i.e. 2^n)
 
     function HierarchicalVector(data::Vector{S},n::Int)
@@ -19,7 +19,7 @@ type HierarchicalVector{S,T} <: AbstractVector{T}
             return new((HierarchicalVector(data[1:2^(n-1)],n-1),HierarchicalVector(data[1+2^(n-1):end],n-1)),n)
         end
     end
-    HierarchicalVector(data::Union(@compat(Tuple{HierarchicalVector{S,T},HierarchicalVector{S,T}}),@compat(Tuple{S,S})),n::Int) = new(data,n)
+    HierarchicalVector(data::Union{Tuple{HierarchicalVector{S,T},HierarchicalVector{S,T}},Tuple{S,S}},n::Int) = new(data,n)
 end
 
 
@@ -29,7 +29,7 @@ function HierarchicalVector{S}(data::Vector{S},n::Int)
 end
 HierarchicalVector{S}(data::Vector{S})=HierarchicalVector(data,round(Int,log2(length(data))))
 
-HierarchicalVector{S,T}(data::Union(@compat(Tuple{HierarchicalVector{S,T},HierarchicalVector{S,T}}),@compat(Tuple{S,S})),n::Int) = HierarchicalVector{S,T}(data,n)
+HierarchicalVector{S,T}(data::Union{Tuple{HierarchicalVector{S,T},HierarchicalVector{S,T}},Tuple{S,S}},n::Int) = HierarchicalVector{S,T}(data,n)
 function HierarchicalVector{S}(data::@compat(Tuple{S,S}),n::Int)
     T = promote_type(eltype(data[1]),eltype(data[2]))
     HierarchicalVector{S,T}(data,n)
@@ -62,7 +62,7 @@ function Base.getindex{S<:AbstractVector,T}(H::HierarchicalVector{S,T},i::Int)
         throw(BoundsError())
     end
 end
-Base.getindex{S<:AbstractVector,T}(H::HierarchicalVector{S,T},ir::Range) = eltype(H)[H[i] for i=ir].'#'
+Base.getindex{S<:AbstractVector,T}(H::HierarchicalVector{S,T},ir::Range) = eltype(H)[H[i] for i=ir].'
 Base.full{S<:AbstractVector,T}(H::HierarchicalVector{S,T})=H[1:size(H,1)]
 
 partitionvector(H::HierarchicalVector) = H.data
