@@ -86,7 +86,7 @@ end
 
 isfactored(H::HierarchicalMatrix) = H.factored
 ishierarchical(H::HierarchicalMatrix) = H.hierarchical
-degree(H::HierarchicalMatrix) = ishierarchical(H) ? 1+degree(H.hierarchicaldata[1]) : 1
+degree(H::HierarchicalMatrix) = ishierarchical(H) ? 1+degree(first(H.hierarchicaldata)) : 1
 partitionmatrix(H::HierarchicalMatrix) = ishierarchical(H) ? (H.hierarchicaldata,H.offdiagonaldata) : (H.diagonaldata,H.offdiagonaldata)
 
 function collectoffdiagonaldata(H::HierarchicalMatrix)

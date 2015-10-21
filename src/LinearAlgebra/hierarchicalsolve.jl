@@ -4,9 +4,9 @@
 
 # Classical matrix case
 
-\{S<:AbstractMatrix,U<:LowRankMatrix,V}(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat{V}) = hierarchicalsolve(H,f)
+\{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat) = hierarchicalsolve(H,f)
 
-hierarchicalsolve{S<:AbstractMatrix,V}(H::S,f::AbstractVecOrMat{V}) = H\f
+hierarchicalsolve{S<:AbstractMatrix}(H::S,f::AbstractVecOrMat) = H\f
 
 function hierarchicalsolve{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat)
     T,nf = promote_type(eltype(H),eltype(f)),size(f,2)
