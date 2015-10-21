@@ -13,7 +13,7 @@ function hierarchicalsolve{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMa
 
     # Pre-compute Factorization
 
-    if !isfactored(H) factorize!(H) end
+    !isfactored(H) && factorize!(H)
 
     # Partition HierarchicalMatrix
 

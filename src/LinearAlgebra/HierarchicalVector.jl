@@ -1,13 +1,16 @@
 
 
 ##
-# Represent a power-of-two hierarchical vector
-# in a binary tree.
+# Represent a binary hierarchical vector
 ##
+
+abstract AbstractHierarchicalArray{S,V,T,N} <: AbstractArray{T,N}
+
+typealias AbstractHierarchicalVector{S,T} AbstractHierarchicalArray{S,S,T,1}
 
 export HierarchicalVector, partitionvector
 
-type HierarchicalVector{S,T} <: AbstractVector{T}
+type HierarchicalVector{S,T} <: AbstractHierarchicalVector{S,T}
     data::Union{Tuple{HierarchicalVector{S,T},HierarchicalVector{S,T}},Tuple{S,S}} # n ≥ 2 ? Tuple of two HierarchicalVector{S,T} : Tuple of two S
     n::Int # Power of hierarchy (i.e. 2^n)
 
