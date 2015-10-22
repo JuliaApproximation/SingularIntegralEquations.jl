@@ -1,5 +1,9 @@
 export clustertree
 
+clustertree(D::UnionDomain) = clustertree(D.domains)
+
+clustertree(x::Tuple) = clustertree([x...])
+
 function clustertree(x::AbstractVector)
     A = adjacency(x)
     clustertree(A)
@@ -33,15 +37,15 @@ function clustertree(A::AbstractMatrix,p::AbstractVector)
     if length(p₁) == 1 || length(p₂) == 1
         return HierarchicalVector((p₁,p₂))
     else
-        return HierarchicalVector((clustertree(A,p₁),clustertree(A,p₂)),round(Int,log2(length(p))))
+        return HierarchicalVector((clustertree(A,p₁),clustertree(A,p₂)))
     end
 end
 
 dist(x,y) = norm(x-y)
 
-function adjacency{T}(x::AbstractVector{T})
+function adjacency(x::AbstractVector)
     n = length(x)
-    A = zeros(real(T),n,n)
+    A = zeros(real(mapreduce(eltype,promote_type,x)),n,n)
     for j=1:n,i=1:j
         @inbounds A[i,j] = dist(x[i],x[j])
     end

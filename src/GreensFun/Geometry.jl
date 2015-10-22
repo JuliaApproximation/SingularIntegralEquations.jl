@@ -1,6 +1,12 @@
 
 # Nearest distance from a point to a domain
+
 dist(c::Number,d::Domain) = sqrt(dist2(c,d))
+
+# Nearest distance between domains
+
+dist(d1::Domain,d2::Domain) = minimum(extrema(d1,d2))
+
 # Extremal distances between domains
 function Base.extrema(d1::Domain,d2::Domain)
     ext2 = extrema2(d1,d2)
