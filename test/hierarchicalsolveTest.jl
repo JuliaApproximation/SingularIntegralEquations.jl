@@ -16,7 +16,9 @@ H = HierarchicalMatrix(D,L)
 @test rank(H) == fill(2,8,8)+diagm(fill(48,8))
 @test isfactored(H) == false
 
-b = rand(size(H,1))
+B = Array(Vector{Float64},8)
+[B[i] = rand(M) for i=1:8]
+b = rand(size(H,1))#HierarchicalVector(B)
 
 full(H)\b
 @time x = full(H)\b
