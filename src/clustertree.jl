@@ -2,7 +2,7 @@ export clustertree
 
 clustertree(D::UnionDomain) = clustertree(D.domains)
 
-clustertree(x::Tuple) = clustertree([x...])
+clustertree(x::Tuple) = clustertree(collect(x))
 
 function clustertree(x::AbstractVector)
     A = adjacency(x)

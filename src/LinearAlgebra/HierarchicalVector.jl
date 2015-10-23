@@ -4,35 +4,29 @@ export HierarchicalVector, partitionvector, ishierarchical, degree
 # Represent a binary hierarchical vector
 ##
 
-abstract AbstractHierarchicalArray{SV,T,B,N} <: AbstractArray{T,N}
+abstract AbstractHierarchicalArray{SV,T,HS,N} <: AbstractArray{T,N}
 
-ishierarchical(A::AbstractArray) = false
-ishierarchical{SV,T,B}(H::AbstractHierarchicalArray{SV,T,B}) = B
-degree{SV,T}(H::AbstractHierarchicalArray{SV,T,false}) = 1
+degree{S,T,N}(::AbstractHierarchicalArray{S,T,S,N}) = 1
+degree{S,V,T,N}(::AbstractHierarchicalArray{Tuple{S,V},T,S,N}) = 1
 
-typealias AbstractHierarchicalVector{S,T,B} AbstractHierarchicalArray{S,T,B,1}
+degree{S,T,HS,N}(::AbstractHierarchicalArray{S,T,HS,N}) = 1+degree(super(HS))
+degree{S,V,T,HS,N}(::AbstractHierarchicalArray{Tuple{S,V},T,HS,N}) = 1+degree(super(HS))
 
-type HierarchicalVector{S,T,B} <: AbstractHierarchicalVector{S,T,B}
-    data::NTuple{2,S} # Tuple of two S
-    hierarchicaldata::NTuple{2,HierarchicalVector{S,T}} # Tuple of two HierarchicalVector{S,T}
+degree{S,T,N}(::Type{AbstractHierarchicalArray{S,T,S,N}}) = 1
+degree{S,V,T,N}(::Type{AbstractHierarchicalArray{Tuple{S,V},T,S,N}}) = 1
 
-    function HierarchicalVector(data::NTuple{2,S})
-        H = new()
-        H.data = data
+degree{S,T,HS,N}(::Type{AbstractHierarchicalArray{S,T,HS,N}}) = 1+degree(super(HS))
+degree{S,V,T,HS,N}(::Type{AbstractHierarchicalArray{Tuple{S,V},T,HS,N}}) = 1+degree(super(HS))
 
-        H
-    end
+typealias AbstractHierarchicalVector{S,T,HS} AbstractHierarchicalArray{S,T,HS,1}
 
-    function HierarchicalVector(hierarchicaldata::NTuple{2,HierarchicalVector{S,T}})
-        H = new()
-        H.hierarchicaldata = hierarchicaldata
-
-        H
-    end
+type HierarchicalVector{S,T,HS} <: AbstractHierarchicalVector{S,T,HS}
+    data::NTuple{2,HS} # Tuple of two HS
+    HierarchicalVector(data::NTuple{2,HS}) = new(data)
 end
 
-HierarchicalVector{S}(data::NTuple{2,S}) = HierarchicalVector{S,eltype(S),false}(data)
-HierarchicalVector{S,T}(hierarchicaldata::NTuple{2,HierarchicalVector{S,T}}) = HierarchicalVector{S,T,true}(hierarchicaldata)
+HierarchicalVector{HS}(data::NTuple{2,HS}) = HierarchicalVector{HS,eltype(HS),HS}(data)
+HierarchicalVector{S,T,HS}(data::NTuple{2,HierarchicalVector{S,T,HS}}) = HierarchicalVector{S,T,HierarchicalVector{S,T,HS}}(data)
 
 HierarchicalVector(data::Vector) = HierarchicalVector(data,round(Int,log2(length(data))))
 
@@ -46,14 +40,11 @@ function HierarchicalVector(data::Vector,n::Int)
 end
 
 
-data{S,T}(H::HierarchicalVector{S,T,false}) = H.data
-data{S,T}(H::HierarchicalVector{S,T,true}) = H.hierarchicaldata
-
-degree{S,T}(H::HierarchicalVector{S,T,true}) = 1+degree(first(data(H)))
+data(H::HierarchicalVector) = H.data
 
 partitionvector(H::HierarchicalVector) = data(H)
 
-function partitionvector{S,T,B}(H::Vector{HierarchicalVector{S,T,B}})
+function partitionvector(H::Vector{HierarchicalVector})
     n = length(H)
     H11,H12 = partitionvector(H[1])
     H1,H2 = fill(H11,n),fill(H12,n)
@@ -63,17 +54,16 @@ function partitionvector{S,T,B}(H::Vector{HierarchicalVector{S,T,B}})
     H1,H2
 end
 
-collectdata{S,T}(H::HierarchicalVector{S,T,false}) = collect(data(H))
-function collectdata{S,T}(H::HierarchicalVector{S,T,true})
+collectdata{S,T}(H::HierarchicalVector{S,T,S}) = collect(data(H))
+function collectdata{S}(H::HierarchicalVector{S})
     ret = S[]
     append!(ret,mapreduce(collectdata,vcat,data(H)))
     ret
 end
 
 
-Base.convert{S,T,B}(::Type{HierarchicalVector{S,T,B}},M::HierarchicalVector) = HierarchicalVector(convert(Vector{S},collectdata(M)))
-Base.promote_rule{S,T,SS,TT}(::Type{HierarchicalVector{S,T,true}},::Type{HierarchicalVector{SS,TT,true}})=HierarchicalVector{promote_type(S,SS),promote_type(T,TT),true}
-Base.promote_rule{S,T,SS,TT}(::Type{HierarchicalVector{S,T,false}},::Type{HierarchicalVector{SS,TT,false}})=HierarchicalVector{promote_type(S,SS),promote_type(T,TT),false}
+Base.convert{S,T,HS}(::Type{HierarchicalVector{S,T,HS}},M::HierarchicalVector) = HierarchicalVector(convert(Vector{S},collectdata(M)))
+Base.promote_rule{S,T,HS,SS,TT,HSS}(::Type{HierarchicalVector{S,T,HS}},::Type{HierarchicalVector{SS,TT,HSS}})=HierarchicalVector{promote_type(S,SS),promote_type(T,TT),promote_type(HS,HSS)}
 
 function Base.size{S<:AbstractVector}(H::HierarchicalVector{S})
     H1,H2 = data(H)
@@ -109,21 +99,21 @@ for op in (:+,:-)
         end
         $op(J::Vector,H::HierarchicalVector) = $op(H,J)
 
-        function $op{S,T,B,SS,TT,BB}(H::Array{HierarchicalVector{S,T,B}}, J::Array{HierarchicalVector{SS,TT,BB}})
+        function $op{S,T,HS,SS,TT,HSS}(H::Array{HierarchicalVector{S,T,HS}}, J::Array{HierarchicalVector{SS,TT,HSS}})
             ret = similar(H)
             for i in eachindex(H,J)
                 @inbounds ret[i] = $op(H[i], J[i])
             end
             ret
         end
-        function $op{S,T,B,V}(H::Array{HierarchicalVector{S,T,B}}, J::Array{V})
+        function $op{S,T,HS,V}(H::Array{HierarchicalVector{S,T,HS}}, J::Array{V})
             ret = similar(H)
             for i in eachindex(H,J)
                 @inbounds ret[i] = $op(H[i], J[i])
             end
             ret
         end
-        $op{S,T,B,V}(J::Array{V}, H::Array{HierarchicalVector{S,T,B}}) = $op(H,J)
+        $op{S,T,HS,V}(J::Array{V}, H::Array{HierarchicalVector{S,T,HS}}) = $op(H,J)
 
         function $op(H::HierarchicalVector,J::HierarchicalVector)
             Hd,Jd = collectdata(H),collectdata(J)

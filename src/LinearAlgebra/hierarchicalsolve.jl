@@ -6,7 +6,7 @@
 
 \{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat) = hierarchicalsolve(H,f)
 
-hierarchicalsolve{S<:AbstractMatrix}(H::S,f::AbstractVecOrMat) = H\f
+hierarchicalsolve(H::AbstractMatrix,f::AbstractVecOrMat) = H\f
 
 function hierarchicalsolve{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat)
     T,nf = promote_type(eltype(H),eltype(f)),size(f,2)
