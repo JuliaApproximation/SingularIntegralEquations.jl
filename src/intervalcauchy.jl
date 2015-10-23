@@ -15,19 +15,19 @@ end
 
 # This solves via forward substitution
 function forwardsubstitution!(ret,R,n,μ1,μ2)
-    if n==1
+    if n≥1
         ret[1]=μ1
-    elseif n==2
-        ret[1:2]=μ1,μ2
-    else
-        B=BandedMatrix(R,n-1)
-        ret[1]=μ1
+    end
+    if n≥2
         ret[2]=μ2
+    end
+    if n≥3
+        B=BandedMatrix(R,n-1)
         for k=2:n-1
             ret[k+1]=-(B[k,k-1]*ret[k-1]+B[k,k]*ret[k])/B[k,k+1]
         end
-        ret
     end
+    ret
 end
 
 forwardsubstitution(R,n,μ1,μ2)=forwardsubstitution!(Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n),R,n,μ1,μ2)
