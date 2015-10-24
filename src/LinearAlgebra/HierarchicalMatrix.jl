@@ -81,7 +81,7 @@ function HierarchicalMatrix{S,T,U,V}(diagonaldata::@compat(Tuple{HierarchicalMat
     r1,r2 = rank(offdiagonaldata[1]),rank(offdiagonaldata[2])
     A = eye(P,r1+r2,r1+r2)
     factorization = pivotldufact(A,r1,r2)#lufact(A)
-    HierarchicalMatrix{typeof(first(diagonaldata)),promote_type(T,V),P}(diagonaldata,offdiagonaldata,A,factorization,false,n)
+    HierarchicalMatrix{typeof(first(diagonaldata)),V,P}(diagonaldata,offdiagonaldata,A,factorization,false,n)
 end
 
 function collectoffdiagonaldata(H::HierarchicalMatrix)

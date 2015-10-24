@@ -30,11 +30,6 @@ for (Op,OpWrap,OffOp) in ((:PseudoHilbert,:PseudoHilbertWrapper,:OffPseudoHilber
 
         ## Modifiers for SumSpace, ArraySpace, ReImSpace, and PiecewiseSpace
 
-        #TODO: do in @calculus_operator?
-        function $Op(S::DirectSumSpace,n)
-            @assert length(S.spaces)==2
-            $OpWrap(sumblkdiagm([$Op(S.spaces[1],n),$Op(S.spaces[2],n)]),n)
-        end
         $Op(AS::ArraySpace,n::Int)=$OpWrap(DiagonalArrayOperator($Op(AS.space,n),size(AS)),n)
         $Op(AS::ReImSpace,n::Int)=$OpWrap(ReImOperator($Op(AS.space,n)),n)
         function $Op(S::PiecewiseSpace,n::Int)
@@ -96,6 +91,12 @@ for (Op,OpWrap,OffOp) in ((:PseudoHilbert,:PseudoHilbertWrapper,:OffPseudoHilber
             TupleSpace(ConstantSpace(),MappedSpace(domain(sp),r.spaces[2]))
         end
     end
+end
+
+for TYP in (:SumSpace,:PiecewiseSpace,:TupleSpace),(Op,OpWrap) in ((:PseudoHilbert,:PseudoHilbertWrapper),
+                          (:Hilbert,:HilbertWrapper),
+                          (:SingularIntegral,:SingularIntegralWrapper))
+    @eval $Op(S::$TYP,k)=$OpWrap(DiagonalInterlaceOperator(map(s->$Op(s,k),S.spaces),$TYP),k)
 end
 
 # Length catch
