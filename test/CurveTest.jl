@@ -9,7 +9,7 @@ d=Curve(Fun(x->1+a*x+b*x^2))
 x=Fun(d)
 w=sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x))
 
-
+@test_approx_eq cauchy(w,2.) (-4.722196879007759+2.347910413861846im)
 @test_approx_eq cauchy(w,2.) sum(w/(x-2.))/(2π*im)
 @test_approx_eq logkernel(w,2.) linesum(w*log(abs(x-2.)))/π
 
