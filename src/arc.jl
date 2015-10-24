@@ -96,7 +96,7 @@ function SingularIntegral{JW,RR<:Arc}(S::MappedSpace{JW,RR},k::Integer)
             break
         end
     end
-    L∞=CompactFunctional(cnst,S.space)
+    L∞=FiniteFunctional(cnst,S.space)
 
     x=Fun(identity,S)
     SpaceOperator((Σ-L∞)*M,S,MappedSpace(d,rangespace(Σ)))+(log(abs(x-fromcanonical(d,Inf)))/π)*DefiniteLineIntegral(S)

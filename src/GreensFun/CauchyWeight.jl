@@ -52,18 +52,18 @@ end
 ## TODO: for different domains, should be OffOp instead of ⨍
 ## This will change for v0.0.2 with the switch to ChebyshevDirichlet{1,1} bases
 
-for (Func,Op) in ((:DefiniteIntegral,:Hilbert),(:DefiniteLineIntegral,:SingularIntegral))
+for (Func,Op) in ((:(ApproxFun.AbstractDefiniteIntegral),:Hilbert),(:(ApproxFun.AbstractDefiniteLineIntegral),:SingularIntegral))
     @eval begin
         function Base.getindex{S,V,O,T,V1,T1,T2}(⨍::$Func{V1,T1},f::ProductFun{S,V,CauchyWeight{O,@compat(Tuple{S,V}),T2},T})
             if domain(f.space[1]) == domain(f.space[2])
-                $Op(⨍.domainspace,O)[f]
+                $Op(domainspace(⨍),O)[f]
             else
                 ⨍[ProductFun(f.coefficients,f.space.space)]
             end
         end
         function Base.getindex{S,M,O,T,V1,T1,T2}(⨍::$Func{V1,T1},f::LowRankFun{S,M,CauchyWeight{O,@compat(Tuple{S,M}),T2},T})
             if domain(f.space[1]) == domain(f.space[2])
-                $Op(⨍.domainspace,O)[f]
+                $Op(domainspace(⨍),O)[f]
             else
                 ⨍[LowRankFun(f.A,f.B,f.space.space)]
             end
@@ -82,10 +82,10 @@ evaluate{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(f::ProductFun{S,V,Cauchy
 +{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(F::ProductFun{S,V,CauchyWeight{O},T1},G::ProductFun{S,V,CauchyWeight{O},T2}) = ProductFun(ProductFun(F.coefficients,F.space.space)+ProductFun(G.coefficients,G.space.space),G.space)
 -{S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2}(F::ProductFun{S,V,CauchyWeight{O},T1},G::ProductFun{S,V,CauchyWeight{O},T2}) = ProductFun(ProductFun(F.coefficients,F.space.space)-ProductFun(G.coefficients,G.space.space),G.space)
 
-evaluate{S<:Space,M<:Space,O,T<:Number}(f::LowRankFun{S,M,CauchyWeight{O},T},::Colon,::Colon) = error("Not callable.")
-evaluate{S<:Space,M<:Space,O,T<:Number}(f::LowRankFun{S,M,CauchyWeight{O},T},x,::Colon) = error("Not callable.")
-evaluate{S<:Space,M<:Space,O,T<:Number}(f::LowRankFun{S,M,CauchyWeight{O},T},::Colon,y) = error("Not callable.")
-evaluate{S<:Space,M<:Space,O,T<:Number}(f::LowRankFun{S,M,CauchyWeight{O},T},x,y) = evaluate(f.A,f.B,x,y).*cauchyweight(space(f),x,y)
+evaluate{S<:Space,M<:Space,O,SV,TT,T<:Number}(f::LowRankFun{S,M,CauchyWeight{O,SV,TT},T},::Colon,::Colon) = error("Not callable.")
+evaluate{S<:Space,M<:Space,O,SV,TT,T<:Number}(f::LowRankFun{S,M,CauchyWeight{O,SV,TT},T},x,::Colon) = error("Not callable.")
+evaluate{S<:Space,M<:Space,O,SV,TT,T<:Number}(f::LowRankFun{S,M,CauchyWeight{O,SV,TT},T},::Colon,y) = error("Not callable.")
+evaluate{S<:Space,M<:Space,O,SV,TT,T<:Number}(f::LowRankFun{S,M,CauchyWeight{O,SV,TT},T},x,y) = evaluate(f.A,f.B,x,y).*cauchyweight(space(f),x,y)
 
 +{S<:Space,M<:Space,O,T1<:Number,T2<:Number}(F::LowRankFun{S,M,CauchyWeight{O},T1},G::LowRankFun{S,M,CauchyWeight{O},T2}) = LowRankFun([F.A,G.A],[F.B,G.B],F.space)
 -{S<:Space,M<:Space,O,T1<:Number,T2<:Number}(F::LowRankFun{S,M,CauchyWeight{O},T1},G::LowRankFun{S,M,CauchyWeight{O},T2}) = LowRankFun([F.A,-G.A],[F.B,G.B],F.space)

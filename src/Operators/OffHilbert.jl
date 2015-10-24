@@ -200,7 +200,7 @@ function HornerFunctional(y0,sp)
         r[k]=r[k-1]*y0
     end
 
-    CompactFunctional(r[1:k],sp)
+    FiniteFunctional(r[1:k],sp)
 end
 
 function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
@@ -395,7 +395,7 @@ function hornervector(y0)
     r[1:k]
 end
 
-HornerFunctional(y0,sp)=CompactFunctional(hornervector(y0),sp)
+HornerFunctional(y0,sp)=FiniteFunctional(hornervector(y0),sp)
 
 function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
     if sp.α == sp.β == 0.5
@@ -412,7 +412,7 @@ function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
                 break
             end
         end
-        CompactFunctional(r,sp)
+        FiniteFunctional(r,sp)
     end
 end
 
@@ -430,7 +430,7 @@ function OffHilbert{DD}(sp::JacobiWeight{ChebyshevDirichlet{1,1,DD},DD},z::Numbe
         sx2z=sqrtx2(z)
         sx2zi=1./sx2z
 
-        CompactFunctional([-sx2zi;1-sx2zi;2*hornervector(z-sx2z)],sp)
+        FiniteFunctional([-sx2zi;1-sx2zi;2*hornervector(z-sx2z)],sp)
     else
         # try converting to Canonical
         us=JacobiWeight(sp.α,sp.β,Chebyshev(domain(sp)))
