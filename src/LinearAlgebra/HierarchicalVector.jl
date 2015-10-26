@@ -21,12 +21,17 @@ degree{S,V,T,HS,N}(::Type{AbstractHierarchicalArray{Tuple{S,V},T,HS,N}}) = 1+deg
 typealias AbstractHierarchicalVector{S,T,HS} AbstractHierarchicalArray{S,T,HS,1}
 
 type HierarchicalVector{S,T,HS} <: AbstractHierarchicalVector{S,T,HS}
-    data::NTuple{2,HS} # Tuple of two HS
-    HierarchicalVector(data::NTuple{2,HS}) = new(data)
+    data::HS
+    HierarchicalVector(data::HS) = new(data)
 end
 
-HierarchicalVector{HS}(data::NTuple{2,HS}) = HierarchicalVector{HS,eltype(HS),HS}(data)
-HierarchicalVector{S,T,HS}(data::NTuple{2,HierarchicalVector{S,T,HS}}) = HierarchicalVector{S,T,HierarchicalVector{S,T,HS}}(data)
+HierarchicalVector{S}(data::NTuple{2,S}) = HierarchicalVector{S,eltype(S),NTuple{2,S}}(data)
+
+HierarchicalVector{S,T,HS}(data::Tuple{S,HierarchicalVector{S,T,HS}}) = HierarchicalVector{S,T,Tuple{S,HierarchicalVector{S,T,HS}}}(data)
+HierarchicalVector{S,T,HS}(data::Tuple{HierarchicalVector{S,T,HS},S}) = HierarchicalVector{S,T,Tuple{HierarchicalVector{S,T,HS},S}}(data)
+
+HierarchicalVector{S,T,HS}(data::NTuple{2,HierarchicalVector{S,T,HS}}) = HierarchicalVector{S,T,NTuple{2,HierarchicalVector{S,T,HS}}}(data)
+HierarchicalVector{S,T,HS1,HS2}(data::Tuple{HierarchicalVector{S,T,HS1},HierarchicalVector{S,T,HS2}}) = HierarchicalVector{S,T,Tuple{HierarchicalVector{S,T,HS1},HierarchicalVector{S,T,HS2}}}(data)
 
 HierarchicalVector(data::Vector) = HierarchicalVector(data,round(Int,log2(length(data))))
 
