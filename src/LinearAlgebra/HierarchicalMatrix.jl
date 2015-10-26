@@ -24,19 +24,19 @@ export HierarchicalMatrix, partitionmatrix, isfactored
 typealias AbstractHierarchicalMatrix{S,V,T,HS} AbstractHierarchicalArray{Tuple{S,V},T,HS,2}
 
 type HierarchicalMatrix{S,V,T,HS} <: AbstractHierarchicalMatrix{S,V,T,HS}
-    diagonaldata::NTuple{2,HS}    # Tuple of two on-diagonal HS
+    diagonaldata::HS
     offdiagonaldata::NTuple{2,V} # Tuple of two off-diagonal V
 
     A::Matrix{T} # Cache of matrix for pivot computation
-    factorization::Factorization{T} # Cache of factorization of A for pivot computation
+    factorization::PivotLDU{T} # Cache of factorization of A for pivot computation
     factored::Bool
 
-    function HierarchicalMatrix(diagonaldata::NTuple{2,HS},offdiagonaldata::NTuple{2,V})
+    function HierarchicalMatrix(diagonaldata::HS,offdiagonaldata::NTuple{2,V})
         H = new()
         H.diagonaldata = diagonaldata
         H.offdiagonaldata = offdiagonaldata
 
-        r1,r2 = rank(offdiagonaldata[1]),rank(offdiagonaldata[2])
+        r1,r2 = map(rank,offdiagonaldata)
         H.A = eye(T,r1+r2,r1+r2)
         H.factorization = pivotldufact(H.A,r1,r2)
         H.factored = false
@@ -45,8 +45,13 @@ type HierarchicalMatrix{S,V,T,HS} <: AbstractHierarchicalMatrix{S,V,T,HS}
     end
 end
 
-HierarchicalMatrix{S,V}(diagonaldata::NTuple{2,S},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,promote_type(eltype(S),eltype(V)),S}(diagonaldata,offdiagonaldata)
-HierarchicalMatrix{S,V,T,HS}(diagonaldata::NTuple{2,HierarchicalMatrix{S,V,T,HS}},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,T,HierarchicalMatrix{S,V,T,HS}}(diagonaldata,offdiagonaldata)
+HierarchicalMatrix{S,V}(diagonaldata::NTuple{2,S},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,promote_type(eltype(S),eltype(V)),NTuple{2,S}}(diagonaldata,offdiagonaldata)
+
+HierarchicalMatrix{S,V,T,HS}(diagonaldata::Tuple{S,HierarchicalMatrix{S,V,T,HS}},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,T,Tuple{S,HierarchicalMatrix{S,V,T,HS}}}(diagonaldata,offdiagonaldata)
+HierarchicalMatrix{S,V,T,HS}(diagonaldata::Tuple{HierarchicalMatrix{S,V,T,HS},S},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,T,Tuple{HierarchicalMatrix{S,V,T,HS},S}}(diagonaldata,offdiagonaldata)
+
+HierarchicalMatrix{S,V,T,HS}(diagonaldata::NTuple{2,HierarchicalMatrix{S,V,T,HS}},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,T,NTuple{2,HierarchicalMatrix{S,V,T,HS}}}(diagonaldata,offdiagonaldata)
+HierarchicalMatrix{S,V,T,HS1,HS2}(diagonaldata::Tuple{HierarchicalMatrix{S,V,T,HS1},HierarchicalMatrix{S,V,T,HS2}},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,T,Tuple{HierarchicalMatrix{S,V,T,HS1},HierarchicalMatrix{S,V,T,HS2}}}(diagonaldata,offdiagonaldata)
 
 HierarchicalMatrix(diagonaldata::Vector,offdiagonaldata::Vector)=HierarchicalMatrix(diagonaldata,offdiagonaldata,round(Int,log2(length(diagonaldata))))
 
@@ -70,16 +75,15 @@ offdiagonaldata(H::HierarchicalMatrix) = H.offdiagonaldata
 
 partitionmatrix(H::HierarchicalMatrix) = diagonaldata(H),offdiagonaldata(H)
 
-collectoffdiagonaldata{S,V,T}(H::HierarchicalMatrix{S,V,T,S}) = collect(offdiagonaldata(H))
-
+collectoffdiagonaldata{S,V,T}(H::HierarchicalMatrix{S,V,T,NTuple{2,S}}) = collect(offdiagonaldata(H))
 function collectoffdiagonaldata{S,V,T,HS}(H::HierarchicalMatrix{S,V,T,HS})
     data = collect(offdiagonaldata(H))
     append!(data,mapreduce(collectoffdiagonaldata,vcat,diagonaldata(H)))
     data
 end
 
-collectdiagonaldata{S,V,T}(H::HierarchicalMatrix{S,V,T,S}) = collect(diagonaldata(H))
-function collectdiagonaldata{S}(H::HierarchicalMatrix{S})
+collectdiagonaldata{S,V,T}(H::HierarchicalMatrix{S,V,T,NTuple{2,S}}) = collect(diagonaldata(H))
+function collectdiagonaldata{S,V,T,HS}(H::HierarchicalMatrix{S,V,T,HS})
     data = S[]
     append!(data,mapreduce(collectdiagonaldata,vcat,diagonaldata(H)))
     data

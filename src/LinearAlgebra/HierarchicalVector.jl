@@ -59,7 +59,9 @@ function partitionvector(H::Vector{HierarchicalVector})
     H1,H2
 end
 
-collectdata{S,T}(H::HierarchicalVector{S,T,S}) = collect(data(H))
+collectdata{S,T}(H::HierarchicalVector{S,T,NTuple{2,S}}) = collect(data(H))
+collectdata{S,T,HS}(H::HierarchicalVector{S,T,Tuple{S,HierarchicalVector{S,T,HS}}}) = vcat(H.data[1],collectdata(H.data[2]))
+collectdata{S,T,HS}(H::HierarchicalVector{S,T,Tuple{HierarchicalVector{S,T,HS},S}}) = vcat(collectdata(H.data[1]),H.data[2])
 function collectdata{S}(H::HierarchicalVector{S})
     ret = S[]
     append!(ret,mapreduce(collectdata,vcat,data(H)))
