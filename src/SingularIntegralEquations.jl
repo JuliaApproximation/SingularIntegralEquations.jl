@@ -46,6 +46,7 @@ cauchyintegral(u,z)=im/(2π)*stieltjesintegral(u,z)
 
 include("LinearAlgebra/LinearAlgebra.jl")
 include("Operators/Operators.jl")
+include("FundamentalSolutions/FundamentalSolutions.jl")
 
 include("stieltjesmoment.jl")
 
