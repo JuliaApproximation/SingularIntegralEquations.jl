@@ -38,9 +38,8 @@ kernels(B::BivariateFun) = B
 kernels(G::GreensFun) = G.kernels
 
 Base.rank{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(rank,+,G.kernels)
-slices{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(x->x.A,vcat,G.kernels),mapreduce(x->conj(x.B),vcat,G.kernels)
+slices{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(x->x.A,vcat,G.kernels),mapreduce(x->x.B,vcat,G.kernels)
 slices{L<:LowRankFun}(G::GreensFun{L},k::Int) = slices(G)[k]
-LowRankOperator{L<:LowRankFun}(G::GreensFun{L}) = LowRankOperator(slices(G)...)
 
 Base.getindex(⨍::Operator,G::GreensFun) = mapreduce(f->getindex(⨍,f),+,G.kernels)
 
