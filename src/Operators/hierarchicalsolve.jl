@@ -4,20 +4,20 @@
 
 # Continuous analogues for low-rank operators case
 
-\{U<:Union{Operator,HierarchicalMatrix},V<:LowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,f)
-\{U<:Union{Operator,HierarchicalMatrix},V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F}) = hierarchicalsolve(H,f)
+\{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,f)
+\{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F}) = hierarchicalsolve(H,f)
 
 hierarchicalsolve{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,[f])[1]
 
-hierarchicalsolve{V<:Operator}(H::V,f::Fun) = H\f
-hierarchicalsolve{V<:Operator,F<:Fun}(H::V,f::Vector{F}) = vec(H\transpose(f))
+hierarchicalsolve(H::Operator,f::Fun) = H\f
+hierarchicalsolve{F<:Fun}(H::Operator,f::Vector{F}) = vec(H\transpose(f))
 
-function hierarchicalsolve{U<:Union{Operator,HierarchicalMatrix},V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F})
+function hierarchicalsolve{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F})
     N,nf = length(space(first(f))),length(f)
 
     # Pre-compute Factorization
 
-    if !isfactored(H) factorize!(H) end
+    !isfactored(H) && factorize!(H)
 
     # Partition HierarchicalMatrix
 
@@ -47,66 +47,50 @@ function hierarchicalsolve{U<:Union{Operator,HierarchicalMatrix},V<:LowRankOpera
 
     sol = [hierarchicalsolve(H11,RHS1);hierarchicalsolve(H22,RHS2)]
     if N == 2
-        return [mapreduce(i->depiece(sol[i:nf:end]),vcat,1:nf)...]
+        return collect(mapreduce(i->depiece(sol[i:nf:end]),vcat,1:nf))
     else
         ls = length(sol)
-        return [mapreduce(i->depiece(mapreduce(k->pieces(sol[k]),vcat,i:nf:ls)),vcat,1:nf)...]
+        return collect(mapreduce(i->depiece(mapreduce(k->pieces(sol[k]),vcat,i:nf:ls)),vcat,1:nf))
     end
 end
-#
-# function factorize!{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V})
-#     # Partition HierarchicalMatrix
-#
-#     (H11,H22),(H21,H12) = partitionmatrix(H)
-#
-#     # Off-diagonal low-rank matrix assembly
-#
-#     U12,V12 = strippiecewisespace(H12.U),strippiecewisespace(H12.V)
-#     U21,V21 = strippiecewisespace(H21.U),strippiecewisespace(H21.V)
-#
-#     # Solve recursively
-#
-#     H22U21,H11U12 = hierarchicalsolve(H22,U21),hierarchicalsolve(H11,U12)
-#
-#     # Compute A
-#
-#     r1,r2 = length(V12),length(V21)
-#     for i=1:r1,j=1:r2
-#         H.A[i,j+r1] += dot(V12[i],H22U21[j])
-#         H.A[j+r2,i] += dot(V21[j],H11U12[i])
-#     end
-#
-#     # Compute factorization
-#
-#     H.factorization = pivotldufact(H.A,r1,r2)#lufact(H.A)
-#     H.factored = true
-# end
 
-function computepivots{VS1,VT1,VS2,VT2,AS1,AT1,AS2,AT2,T}(V12::Vector{Fun{VS1,VT1}},V21::Vector{Fun{VS2,VT2}},H11f1::Vector{Fun{AS1,AT1}},H22f2::Vector{Fun{AS2,AT2}},A::Factorization{T},nf::Int)
-    P = promote_type(VT1,VT2,AT1,AT2,T)
+function factorize!{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V})
+    # Partition HierarchicalMatrix
+
+    (H11,H22),(H21,H12) = partitionmatrix(H)
+
+    # Off-diagonal low-rank matrix assembly
+
+    U12,V12 = strippiecewisespace(H12.U),strippiecewisespace(H12.V)
+    U21,V21 = strippiecewisespace(H21.U),strippiecewisespace(H21.V)
+
+    # Solve recursively
+
+    H22U21,H11U12 = hierarchicalsolve(H22,U21),hierarchicalsolve(H11,U12)
+
+    # Compute A
+
     r1,r2 = length(V12),length(V21)
-    b = zeros(P,r1+r2,nf)
-    for i=1:nf
-        for j=1:r1
-            b[j,i] += dot(V12[j],H22f2[i])
-        end
-        for j=1:r2
-            b[j+r1,i] += dot(V21[j],H11f1[i])
-        end
+    for i=1:r1,j=1:r2
+        H.A[i,j+r1] += V12[i]*H22U21[j]
+        H.A[j+r2,i] += V21[j]*H11U12[i]
     end
-    vc = A\b
-    vc[1:r1,1:nf],vc[r1+1:r1+r2,1:nf]
+
+    # Compute factorization
+
+    H.factorization = pivotldufact(H.A,r1,r2)#lufact(H.A)
+    H.factored = true
 end
 
-function computepivots{V1,V2,A1,A2,S,T}(V12::Vector{Fun{V1,T}},V21::Vector{Fun{V2,T}},H11f1::Vector{Fun{A1,T}},H22f2::Vector{Fun{A2,T}},A::PivotLDU{T,S},nf::Int)
+function computepivots{A1,A2,T}(V12::Vector{Functional{T}},V21::Vector{Functional{T}},H11f1::Vector{Fun{A1,T}},H22f2::Vector{Fun{A2,T}},A::PivotLDU{T},nf::Int)
     r1,r2 = length(V12),length(V21)
     b1,b2 = zeros(T,r1,nf),zeros(T,r2,nf)
     for i=1:nf
         for j=1:r1
-            b1[j,i] += dot(V12[j],H22f2[i])
+            b1[j,i] += V12[j]*H22f2[i]
         end
         for j=1:r2
-            b2[j,i] += dot(V21[j],H11f1[i])
+            b2[j,i] += V21[j]*H11f1[i]
         end
     end
     A_ldiv_B1B2!(A,b1,b2)
@@ -144,61 +128,4 @@ function partitionfun{PWS<:PiecewiseSpace,T}(f::Vector{Fun{PWS,T}})
     else
         return (map(x->depiece(pieces(x)[1:N2]),f),map(x->depiece(pieces(x)[1+N2:N]),f))
     end
-end
-
-
-
-
-
-
-####
-# New LowRankOperator
-
-function factorize!{U<:Union{Operator,HierarchicalMatrix},V<:LowRankOperator}(H::HierarchicalMatrix{U,V})
-    (H11,H22),(H21,H12) = partitionmatrix(H)
-    U12,V12 = (H12.U),(H12.V)
-    U21,V21 = (H21.U),(H21.V)
-
-    H22U21,H11U12 = hierarchicalsolve(H22,U21),hierarchicalsolve(H11,U12)
-
-    r1,r2 = length(V12),length(V21)
-    for i=1:r1,j=1:r2
-        H.A[i,j+r1] += V12[i]*H22U21[j]
-        H.A[j+r2,i] += V21[j]*H11U12[i]
-    end
-
-    H.factorization = pivotldufact(H.A,r1,r2)#lufact(H.A)
-    H.factored = true
-
-    H
-end
-
-function computepivots{VS1,VT1,VS2,VT2,AS1,AT1,AS2,AT2,T}(V12::Vector{Fun{VS1,VT1}},V21::Vector{Fun{VS2,VT2}},H11f1::Vector{Fun{AS1,AT1}},H22f2::Vector{Fun{AS2,AT2}},A::Factorization{T},nf::Int)
-    P = promote_type(VT1,VT2,AT1,AT2,T)
-    r1,r2 = length(V12),length(V21)
-    b = zeros(P,r1+r2,nf)
-    for i=1:nf
-        for j=1:r1
-            b[j,i] += V12[j]*H22f2[i]
-        end
-        for j=1:r2
-            b[j+r1,i] += V21[j]*H11f1[i]
-        end
-    end
-    vc = A\b
-    vc[1:r1,1:nf],vc[r1+1:r1+r2,1:nf]
-end
-
-function computepivots{A1,A2,S,T}(V12::Vector{Functional{T}},V21::Vector{Functional{T}},H11f1::Vector{Fun{A1,T}},H22f2::Vector{Fun{A2,T}},A::PivotLDU{T,S},nf::Int)
-    r1,r2 = length(V12),length(V21)
-    b1,b2 = zeros(T,r1,nf),zeros(T,r2,nf)
-    for i=1:nf
-        for j=1:r1
-            b1[j,i] += V12[j]*H22f2[i]
-        end
-        for j=1:r2
-            b2[j,i] += V21[j]*H11f1[i]
-        end
-    end
-    A_ldiv_B1B2!(A,b1,b2)
 end
