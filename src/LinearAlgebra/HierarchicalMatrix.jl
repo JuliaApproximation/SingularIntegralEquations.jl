@@ -75,10 +75,26 @@ offdiagonaldata(H::HierarchicalMatrix) = H.offdiagonaldata
 
 partitionmatrix(H::HierarchicalMatrix) = diagonaldata(H),offdiagonaldata(H)
 
+<<<<<<< HEAD
 collectoffdiagonaldata{S,V,T}(H::HierarchicalMatrix{S,V,T,NTuple{2,S}}) = collect(offdiagonaldata(H))
 function collectoffdiagonaldata{S,V,T,HS}(H::HierarchicalMatrix{S,V,T,HS})
     data = collect(offdiagonaldata(H))
     append!(data,mapreduce(collectoffdiagonaldata,vcat,diagonaldata(H)))
+=======
+function HierarchicalMatrix{S,T,U,V}(diagonaldata::@compat(Tuple{HierarchicalMatrix{S,T,U},HierarchicalMatrix{S,T,U}}),offdiagonaldata::@compat(Tuple{V,V}),n::Int)
+    P = promote_type(U,eltype(offdiagonaldata[1]),eltype(offdiagonaldata[2]))
+    r1,r2 = rank(offdiagonaldata[1]),rank(offdiagonaldata[2])
+    A = eye(P,r1+r2,r1+r2)
+    factorization = pivotldufact(A,r1,r2)#lufact(A)
+    HierarchicalMatrix{typeof(first(diagonaldata)),V,P}(diagonaldata,offdiagonaldata,A,factorization,false,n)
+end
+
+function collectoffdiagonaldata(H::HierarchicalMatrix)
+    data = collect(H.offdiagonaldata)
+    if H.n ≥ 2
+        append!(data,mapreduce(collectoffdiagonaldata,vcat,H.diagonaldata))
+    end
+>>>>>>> development
     data
 end
 
