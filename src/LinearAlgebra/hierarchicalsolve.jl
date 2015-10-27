@@ -87,7 +87,7 @@ function computepivots{V1,V2,A1,A2,T}(V12::Matrix{V1},V21::Matrix{V2},H11f1::Mat
     vc[1:r1,1:nf],vc[r1+1:r1+r2,1:nf]
 end
 
-function computepivots{S,T}(V12::Matrix{T},V21::Matrix{T},H11f1::Vector{T},H22f2::Vector{T},A::PivotLDU{T,S},nf::Int)
+function computepivots{T}(V12::Matrix{T},V21::Matrix{T},H11f1::Vector{T},H22f2::Vector{T},A::PivotLDU{T},nf::Int)
     r1,r2 = size(V12,2),size(V21,2)
     b1,b2 = zeros(T,r1),zeros(T,r2)
     for j=1:r1
@@ -99,7 +99,7 @@ function computepivots{S,T}(V12::Matrix{T},V21::Matrix{T},H11f1::Vector{T},H22f2
     A_ldiv_B1B2!(A,b1,b2)
 end
 
-function computepivots{S,T}(V12::Matrix{T},V21::Matrix{T},H11f1::Matrix{T},H22f2::Matrix{T},A::PivotLDU{T,S},nf::Int)
+function computepivots{T}(V12::Matrix{T},V21::Matrix{T},H11f1::Matrix{T},H22f2::Matrix{T},A::PivotLDU{T},nf::Int)
     r1,r2 = size(V12,2),size(V21,2)
     b1,b2 = zeros(T,r1,nf),zeros(T,r2,nf)
     for i=1:nf

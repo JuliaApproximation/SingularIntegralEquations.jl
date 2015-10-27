@@ -1,13 +1,13 @@
 export HierarchicalMatrix, partitionmatrix, isfactored
 
 ##
-# Represent a power-of-two hierarchical matrix
+# Represent a binary hierarchical matrix
 # [ x x \ /
 #   x x / \
 #   \ / x x
 #   / \ x x ]
 # where the diagonal blocks are of one type, and
-# the off-diagonal blocks are of another type.
+# the off-diagonal blocks are of a type with low-rank structure.
 #
 # To have simple recursive construction, we use the ordering:
 # [ D₁   L₄
@@ -28,7 +28,7 @@ type HierarchicalMatrix{S,V,T,HS} <: AbstractHierarchicalMatrix{S,V,T,HS}
     offdiagonaldata::NTuple{2,V} # Tuple of two off-diagonal V
 
     A::Matrix{T} # Cache of matrix for pivot computation
-    factorization::PivotLDU{T} # Cache of factorization of A for pivot computation
+    factorization::PivotLDU{T,Matrix{T}} # Cache of factorization of A for pivot computation
     factored::Bool
 
     function HierarchicalMatrix(diagonaldata::HS,offdiagonaldata::NTuple{2,V})
