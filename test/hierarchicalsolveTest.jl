@@ -36,5 +36,5 @@ CH = cond(full(H))
 @test norm(H*xw-b) ≤ 10CH*eps()
 
 
-H+H
+H+H-(H-H)
 @test norm(full(H-H)) < 10norm(full(H))*eps()
