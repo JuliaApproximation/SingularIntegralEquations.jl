@@ -2,7 +2,6 @@ include("CauchyWeight.jl")
 include("Geometry.jl")
 include("evaluation.jl")
 include("skewProductFun.jl")
-include("lhelmfs.jl")
 include("convolutionProductFun.jl")
 
 # GreensFun
