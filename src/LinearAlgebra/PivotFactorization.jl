@@ -18,12 +18,6 @@ immutable PivotLDU{T,S<:AbstractMatrix} <: Factorization{T}
     r2::Int
 end
 
-function pivotldufact(A::AbstractMatrix,r1)
-    r1r2,r1r2p = size(A)
-    @assert r1r2 == r1r2p
-    pivotldufact(A,r1,r1r2-r1)
-end
-
 function pivotldufact(A::AbstractMatrix,r1,r2)
     @assert size(A) == (r1+r2,r1+r2)
     B = A[1:r1,r1+1:end]
@@ -31,14 +25,7 @@ function pivotldufact(A::AbstractMatrix,r1,r2)
     PivotLDU(B,C,lufact(I-C*B),r1,r2)
 end
 
-function A_ldiv_B1B2!{T<:Number,S}(P::PivotLDU{T,S},b1::AbstractVector{T},b2::AbstractVector{T})
-    b2[:] -= P.C*b1
-    A_ldiv_B!(P.factor,b2)
-    b1[:] -= P.B*b2
-    b1,b2
-end
-
-function A_ldiv_B1B2!{T<:Number,S}(P::PivotLDU{T,S},b1::AbstractMatrix{T},b2::AbstractMatrix{T})
+function A_ldiv_B1B2!{T<:Number,S}(P::PivotLDU{T,S},b1::AbstractArray{T},b2::AbstractArray{T})
     b2[:] = b2 - P.C*b1
     A_ldiv_B!(P.factor,b2)
     b1[:] = b1 - P.B*b2

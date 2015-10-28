@@ -2,7 +2,6 @@ include("CauchyWeight.jl")
 include("Geometry.jl")
 include("evaluation.jl")
 include("skewProductFun.jl")
-include("lhelmfs.jl")
 include("convolutionProductFun.jl")
 
 # GreensFun
@@ -38,9 +37,8 @@ kernels(B::BivariateFun) = B
 kernels(G::GreensFun) = G.kernels
 
 Base.rank{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(rank,+,G.kernels)
-slices{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(x->x.A,vcat,G.kernels),mapreduce(x->conj(x.B),vcat,G.kernels)
+slices{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(x->x.A,vcat,G.kernels),mapreduce(x->x.B,vcat,G.kernels)
 slices{L<:LowRankFun}(G::GreensFun{L},k::Int) = slices(G)[k]
-LowRankOperator{L<:LowRankFun}(G::GreensFun{L}) = LowRankOperator(slices(G)...)
 
 Base.getindex(⨍::Operator,G::GreensFun) = mapreduce(f->getindex(⨍,f),+,G.kernels)
 
@@ -237,11 +235,11 @@ function hierarchicalGreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Fun
         G22 = GreensFun(LowRankFun(f,ss[2,2];method=meth1,kwds...))
         G21 = GreensFun(LowRankFun(f,ss[2:2,1:1];method=meth2,kwds...))
         G12 = method == :Cholesky ? transpose(G21) : GreensFun(LowRankFun(f,ss[1:1,2:2];method=meth2,kwds...))
-        return HierarchicalMatrix((G11,G22),(G21,G12),round(Int,log2(N)))
+        return HierarchicalMatrix((G11,G22),(G21,G12))
     elseif N2 ≥ 2
         G21 = GreensFun(LowRankFun(f,ss[1+N2:N,1:N2];method=meth2,kwds...))
         G12 = method == :Cholesky ? transpose(G21) : GreensFun(LowRankFun(f,ss[1:N2,1+N2:N];method=meth2,kwds...))
-        return HierarchicalMatrix((hierarchicalGreensFun(f,ss[1:N2,1:N2];method=method,tolerance=tolerance,kwds...),hierarchicalGreensFun(f,ss[1+N2:N,1+N2:N];method=method,tolerance=tolerance,kwds...)),(G21,G12),round(Int,log2(N)))
+        return HierarchicalMatrix((hierarchicalGreensFun(f,ss[1:N2,1:N2];method=method,tolerance=tolerance,kwds...),hierarchicalGreensFun(f,ss[1+N2:N,1+N2:N];method=method,tolerance=tolerance,kwds...)),(G21,G12))
     end
 end
 

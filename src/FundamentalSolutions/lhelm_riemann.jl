@@ -1,12 +1,18 @@
 const NMAX = 100
-const A = Array{Complex{Float64}}(NMAX,NMAX)# = Array{Complex{Float64}}(NMAX*(NMAX+1)-div((NMAX-1)^2,4))
-const eighthim = inv(8.0im)
-const sixteenthim = inv(16.0im)
 
-function lhelm_riemanncomplex{T<:Complex{Float64}}(z::T,z0::T,ζ::T,ζ0::T,E::Float64)
+for TYP in subtypes(AbstractFloat)
+    A = parse("A"*string(TYP))
+    @eval begin
+        const $A = Array{Complex{$TYP}}(NMAX,NMAX)
+        riemann_array(::Type{$TYP}) = $A
+    end
+end
 
-    cst = -(E/4+(z0-ζ0)*eighthim)
-    executerecurrence(cst)
+lhelm_riemanncomplex{T<:AbstractFloat}(z::Complex{T},z0::Complex{T},ζ::Complex{T},ζ0::Complex{T},E::T) = lhelm_riemanncomplex(z,z0,ζ,ζ0,E,riemann_array(T))
+
+function lhelm_riemanncomplex{T<:AbstractFloat}(z::Complex{T},z0::Complex{T},ζ::Complex{T},ζ0::Complex{T},E::T,A::Array{Complex{T}})
+    cst = -(E/4+(z0-ζ0)/(8im))
+    executerecurrence!(A,cst)
 
     zz0,ζζ0 = z-z0,ζ-ζ0
     ret = A[min(NMAX,2NMAX),NMAX]
@@ -23,13 +29,20 @@ function lhelm_riemanncomplex{T<:Complex{Float64}}(z::T,z0::T,ζ::T,ζ0::T,E::Fl
         temp = temp*zz0^div(j+3,2)
         ret = muladd(ret,ζζ0,temp)
     end
-    one(T)+ret
+    1+ret
 end
 
-lhelm_riemann{T<:Number}(x::T,x0::T,y::T,y0::T,E::T) = lhelm_riemanncomplex(complex(x,y),complex(x0,y0),complex(x,-y),complex(x0,-y0),E)
-lhelm_riemann(x::Number,y::Number,E::Real) = lhelm_riemann(real(x),real(y),imag(x),imag(y),E)
+lhelm_riemann(x::AbstractFloat,x0::AbstractFloat,y::AbstractFloat,y0::AbstractFloat,E::AbstractFloat) = lhelm_riemanncomplex(complex(x,y),complex(x0,y0),complex(x,-y),complex(x0,-y0),E)
+lhelm_riemann{T1<:AbstractFloat,T2<:AbstractFloat}(x::Union{T1,Complex{T1}},y::Union{T2,Complex{T2}},E::AbstractFloat) = lhelm_riemann(real(x),real(y),imag(x),imag(y),E)
 
-function executerecurrence(cst::Complex{Float64})
+lhelm_riemann(x::Vector,y::Vector,E::AbstractFloat) = promote_type(eltype(x),eltype(y),typeof(E))[lhelm_riemann(x[k],y[k],E) for k in 1:length(x)]
+lhelm_riemann(x::Matrix,y::Matrix,E::AbstractFloat) = reshape(lhelm_riemann(vec(x),vec(y),E),size(x))
+
+
+function executerecurrence!{T<:AbstractFloat}(A::Array{Complex{T}},cst::Complex{T})
+    eighthim = one(T)/(8im)
+    sixteenthim = eighthim/2
+
     A[1,1] = cst
     A[2,1] = -sixteenthim
 

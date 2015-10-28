@@ -1,5 +1,7 @@
 # SingularIntegralEquations.jl
 
+[![Build Status](https://travis-ci.org/ApproxFun/SingularIntegralEquations.jl.svg?branch=master)](https://travis-ci.org/ApproxFun/SingularIntegralEquations.jl)
+
 An experimental Julia package for solving singular integral equations.
 
 # Installation
