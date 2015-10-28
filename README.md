@@ -6,13 +6,12 @@ An experimental Julia package for solving singular integral equations.
 
 # Installation
 
-Requires ApproxFun master:
+Requires ApproxFun development:
 
 ```julia
-Pkg.add("ApproxFun")
+Pkg.add("SingularIntegralEquations")
+Pkg.checkout("SingularIntegralEquations")
 Pkg.checkout("ApproxFun","development")
-Pkg.clone("https://github.com/ApproxFun/SingularIntegralEquations.jl.git")
-Pkg.build("SingularIntegralEquations")  # Only required for gravity Helmholtz equation
 using ApproxFun, SingularIntegralEquations
 ```
 
