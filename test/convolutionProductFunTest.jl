@@ -52,7 +52,7 @@ G = convolutionProductFun(f2,Laurent(),Laurent())
 
 println("Timing tests: ")
 
-gc_enable(false)
+@osx_only gc_enable(false)
 
 d = Interval(-2.5,-.5)
 fK(x,y) = besselj0(100(y-x))
@@ -72,4 +72,4 @@ convolutionProductFun(f2,Laurent(),Laurent())
 @time G = convolutionProductFun(f2,Laurent(),Laurent())
 println("Laurent addition: Time should be ~0.14 seconds.")
 
-gc_enable(true)
+@osx_only gc_enable(true)
