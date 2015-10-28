@@ -2,7 +2,7 @@
 language: julia
 sudo: false
 os:
-#  - linux
+  - linux
   - osx
 julia:
   - 0.4

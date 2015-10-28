@@ -16,7 +16,7 @@ E = collect(-10:10.0:10)
 for i in eachindex(E)
     ϕ = lhelmfs(complex(x,y),0.0,E[i];derivs=true)
     for j in 1:3
-        @test norm(ϕ[j]-Φ[i][j]) < 100eps()
+        @test norm(ϕ[j]-Φ[i][j],Inf) < 100eps()
     end
 end
 
