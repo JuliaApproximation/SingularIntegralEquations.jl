@@ -6,17 +6,17 @@ export HierarchicalVector, partitionvector, ishierarchical, degree
 
 abstract AbstractHierarchicalArray{SV,T,HS,N} <: AbstractArray{T,N}
 
-degree{S,T,N}(::AbstractHierarchicalArray{S,T,S,N}) = 1
-degree{S,V,T,N}(::AbstractHierarchicalArray{Tuple{S,V},T,S,N}) = 1
+degree{S,T,N}(::AbstractHierarchicalArray{S,T,NTuple{2,S},N}) = 1
+degree{S,V,T,N}(::AbstractHierarchicalArray{Tuple{S,V},T,NTuple{2,S},N}) = 1
 
-degree{S,T,HS,N}(::AbstractHierarchicalArray{S,T,HS,N}) = 1+degree(super(HS))
-degree{S,V,T,HS,N}(::AbstractHierarchicalArray{Tuple{S,V},T,HS,N}) = 1+degree(super(HS))
+degree{S,T,HS,N}(::AbstractHierarchicalArray{S,T,NTuple{2,HS},N}) = 1+degree(super(HS))
+degree{S,V,T,HS,N}(::AbstractHierarchicalArray{Tuple{S,V},T,NTuple{2,HS},N}) = 1+degree(super(HS))
 
-degree{S,T,N}(::Type{AbstractHierarchicalArray{S,T,S,N}}) = 1
-degree{S,V,T,N}(::Type{AbstractHierarchicalArray{Tuple{S,V},T,S,N}}) = 1
+degree{S,T,N}(::Type{AbstractHierarchicalArray{S,T,NTuple{2,S},N}}) = 1
+degree{S,V,T,N}(::Type{AbstractHierarchicalArray{Tuple{S,V},T,NTuple{2,S},N}}) = 1
 
-degree{S,T,HS,N}(::Type{AbstractHierarchicalArray{S,T,HS,N}}) = 1+degree(super(HS))
-degree{S,V,T,HS,N}(::Type{AbstractHierarchicalArray{Tuple{S,V},T,HS,N}}) = 1+degree(super(HS))
+degree{S,T,HS,N}(::Type{AbstractHierarchicalArray{S,T,NTuple{2,HS},N}}) = 1+degree(super(HS))
+degree{S,V,T,HS,N}(::Type{AbstractHierarchicalArray{Tuple{S,V},T,NTuple{2,HS},N}}) = 1+degree(super(HS))
 
 typealias AbstractHierarchicalVector{S,T,HS} AbstractHierarchicalArray{S,T,HS,1}
 
