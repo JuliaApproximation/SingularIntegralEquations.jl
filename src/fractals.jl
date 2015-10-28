@@ -29,6 +29,6 @@ function cantor{T,V}(d::Circle{T,V},n::Int,α::Number)
         return d
     else
         C = cantor(Interval{T}(),n,α)
-        return ∪(map(d->Arc(c,r,(d.a+1/2α)π,(d.b+1/2α)π),C[1:div(length(C),2)])) ∪ ∪(map(d->Arc(c,r,(d.a-1/2α)π,(d.b-1/2α)π),C[div(length(C),2)+1:length(C)]))
+        return UnionDomain(map(d->Arc(c,r,(d.a+1/2α)π,(d.b+1/2α)π),C[1:div(length(C),2)])) ∪ UnionDomain(map(d->Arc(c,r,(d.a-1/2α)π,(d.b-1/2α)π),C[div(length(C),2)+1:length(C)]))
     end
 end

@@ -46,6 +46,7 @@ cauchyintegral(u,z)=im/(2π)*stieltjesintegral(u,z)
 
 include("LinearAlgebra/LinearAlgebra.jl")
 include("Operators/Operators.jl")
+include("FundamentalSolutions/FundamentalSolutions.jl")
 
 include("stieltjesmoment.jl")
 
@@ -63,6 +64,7 @@ include("curve.jl")
 include("asymptotics.jl")
 
 include("fractals.jl")
+include("clustertree.jl")
 
 if isdir(Pkg.dir("TikzGraphs"))
     include("introspect.jl")
