@@ -9,9 +9,9 @@ An experimental Julia package for solving singular integral equations.
 Requires ApproxFun development:
 
 ```julia
-Pkg.add("ApproxFun")
+Pkg.add("SingularIntegralEquations")
+Pkg.checkout("SingularIntegralEquations")
 Pkg.checkout("ApproxFun","development")
-Pkg.clone("https://github.com/ApproxFun/SingularIntegralEquations.jl.git")
 using ApproxFun, SingularIntegralEquations
 ```
 
