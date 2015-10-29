@@ -91,21 +91,44 @@ end
 Base.getindex{S<:AbstractVector}(H::HierarchicalVector{S},ir::Range) = eltype(H)[H[i] for i=ir]
 Base.full{S<:AbstractVector}(H::HierarchicalVector{S})=H[1:size(H,1)]
 
+# algebra
 
-for op in (:+,:-)
+for op in (:+,:-,:.+,:.-,:.*)
     @eval begin
-        function $op(H::HierarchicalVector,J::Vector)
-            Hd = collectdata(H)
-            nd = cumsum(map(length,Hd))
-            ret = similar(Hd)
-            ret[1] = $op(Hd[1],J[1:nd[1]])
-            for i=2:length(Hd)
-                @inbounds ret[i] = $op(Hd[i],J[1+nd[i-1]:nd[i]])
-            end
-            HierarchicalVector(ret)
-        end
-        $op(J::Vector,H::HierarchicalVector) = $op(H,J)
+        $op{S}(a::Bool,H::HierarchicalVector{S,Bool}) = error("Not callable")
+        $op{S}(H::HierarchicalVector{S,Bool},a::Bool) = error("Not callable")
 
+        $op(H::HierarchicalVector) = HierarchicalVector(map($op,data(H)))
+        $op(H::HierarchicalVector,a::Number) = HierarchicalVector(($op(H.data[1],a),$op(H.data[2],a)))
+        $op(a::Number,H::HierarchicalVector) = $op(H,a)
+
+        $op(H::HierarchicalVector,J::HierarchicalVector) = HierarchicalVector(map($op,data(H),data(J)))
+        $op(H::HierarchicalVector,J::Vector) = $op(full(H),J)
+        $op(J::Vector,H::HierarchicalVector) = $op(H,J)
+    end
+end
+
+*(H::HierarchicalVector,a::Number) = HierarchicalVector((H.data[1]*a,H.data[2]*a))
+*(a::Number,H::HierarchicalVector) = H*a
+
+for op in (:(Base.dot),:dotu)
+    @eval begin
+        $op(H::HierarchicalVector,J::HierarchicalVector) = $op(H.data[1],J.data[1])+$op(H.data[2],J.data[2])
+        $op(H::HierarchicalVector,J::Vector) = $op(full(H),J)
+        $op(J::Vector,H::HierarchicalVector) = $op(J,full(H))
+    end
+end
+
+Base.cumsum(H::HierarchicalVector) = HierarchicalVector((cumsum(H.data[1]),sum(H.data[1])+cumsum(H.data[2])))
+Base.conj!(H::HierarchicalVector) = (map(conj!,data(H));H)
+
+for op in (:(Base.zero),:(Base.ones),:(Base.abs),:(Base.abs2),:(Base.conj),:(Base.copy),:.^)
+    @eval begin
+        $op(H::HierarchicalVector) = HierarchicalVector(map($op,data(H)))
+    end
+end
+
+#=
         function $op{S,T,HS,SS,TT,HSS}(H::Array{HierarchicalVector{S,T,HS}}, J::Array{HierarchicalVector{SS,TT,HSS}})
             ret = similar(H)
             for i in eachindex(H,J)
@@ -121,11 +144,4 @@ for op in (:+,:-)
             ret
         end
         $op{S,T,HS,V}(J::Array{V}, H::Array{HierarchicalVector{S,T,HS}}) = $op(H,J)
-
-        function $op(H::HierarchicalVector,J::HierarchicalVector)
-            Hd,Jd = collectdata(H),collectdata(J)
-            HierarchicalVector($op(Hd,Jd))
-        end
-        $op(H::HierarchicalVector) = HierarchicalVector($op(collectdata(H)))
-    end
-end
+=#

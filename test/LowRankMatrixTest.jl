@@ -4,7 +4,7 @@
 using ApproxFun, SingularIntegralEquations, Base.Test
 
 L = lrzeros(Complex{Float64},10,20)
-@test size(L) == (20,10)
+@test size(L) == (10,20)
 
 @test full(L) == zeros(Complex{Float64},10,20)
 

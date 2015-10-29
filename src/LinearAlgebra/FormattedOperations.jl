@@ -17,8 +17,16 @@ end
 for (op,opformatted) in ((:+,:⊕),(:-,:⊖))
     @eval begin
 
-        $opformatted(a::Number,L::LowRankMatrix) = $opformatted(LowRankMatrix(a,size(L)...),L)
+        function $opformatted(H::HierarchicalVector,J::Vector)
+            @assert length(H) == length(J)
+            H1,H2 = data(H)
+            n1,n2 = length(H1),length(H2)
+            HierarchicalVector(($opformatted(H1,J[1:n1]),$opformatted(H2,J[1+n1:n1+n2])))
+        end
+        $opformatted(J::Vector,H::HierarchicalVector) = $opformatted(H,J)
+
         $opformatted(L::LowRankMatrix,a::Number) = $opformatted(L,LowRankMatrix(a,size(L)...))
+        $opformatted(a::Number,L::LowRankMatrix) = $opformatted(L,a)
 
         function $opformatted(L::LowRankMatrix,M::LowRankMatrix)
             N = $op(L,M)

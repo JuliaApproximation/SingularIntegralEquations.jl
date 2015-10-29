@@ -143,7 +143,7 @@ end
 
 # Array of GreensFun on TensorSpace of PiecewiseSpaces
 
-function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{@compat(Tuple{PWS1,PWS2})};method::Symbol=:lowrank,hierarchical::Bool=false,tolerance::Symbol=:absolute,kwds...)
+function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:lowrank,hierarchical::Bool=false,tolerance::Symbol=:absolute,kwds...)
     M,N = length(ss[1]),length(ss[2])
     if hierarchical
         return hierarchicalGreensFun(f,ss;method=method,tolerance=tolerance,kwds...)
@@ -202,7 +202,7 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::Ab
     mapreduce(typeof,promote_type,G)[G[i,j] for i=1:N,j=1:N]
 end
 
-function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,g::Function,ss::AbstractProductSpace{@compat(Tuple{PWS1,PWS2})};method::Symbol=:unsplit,tolerance::Symbol=:absolute,kwds...)
+function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,g::Function,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:unsplit,tolerance::Symbol=:absolute,kwds...)
     M,N = length(ss[1]),length(ss[2])
     @assert M == N
     G = Array(GreensFun,N,N)
@@ -224,7 +224,7 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,g::Fun
     mapreduce(typeof,promote_type,G)[G[i,j] for i=1:N,j=1:N]
 end
 
-function hierarchicalGreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{@compat(Tuple{PWS1,PWS2})};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...)
+function hierarchicalGreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...)
     N = length(ss[2])
     @assert length(ss[1]) == N && ispow2(N)
     N2 = div(N,2)

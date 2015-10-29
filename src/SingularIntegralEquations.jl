@@ -1,7 +1,7 @@
 
 __precompile__()
 module SingularIntegralEquations
-    using Base, ApproxFun, Compat
+    using Base, ApproxFun
 
 export cauchy, cauchyintegral, stieltjes, logkernel,
        stieltjesintegral, hilbert, pseudohilbert, pseudocauchy
@@ -12,7 +12,7 @@ import Base: values,getindex,setindex!,*,.*,+,.+,-,.-,==,<,<=,>,
 
 
 import ApproxFun
-import ApproxFun: bandinds,SpaceOperator,
+import ApproxFun: bandinds,SpaceOperator,dotu,
                   plan_transform,plan_itransform,transform,itransform,transform!,itransform!,
                   rangespace, domainspace, addentries!, BandedOperator, AnySpace,
                   canonicalspace, domain, promotedomainspace, promoterangespace, AnyDomain, CalculusOperator,
