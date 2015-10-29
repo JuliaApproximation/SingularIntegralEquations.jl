@@ -163,13 +163,36 @@ for op in (:+,:-)
     end
 end
 
-function *(H::HierarchicalMatrix,b::AbstractVector)
-    @assert size(H,2) == length(b)
-    H11,H22 = diagonaldata(H)
-    H21,H12 = offdiagonaldata(H)
+function *(H::HierarchicalMatrix, x::HierarchicalVector)
+    T = promote_type(eltype(H),eltype(x))
+    A_mul_B!(zero(x),H,x)
+end
+
+function Base.A_mul_B!(b::AbstractVector,D::Base.LinAlg.Diagonal,x::AbstractVector)
+    d = D.diag
+    for i=1:min(length(b),length(x))
+        @inbounds b[i] += d[i]*x[i]
+    end
+    b
+end
+
+function Base.A_mul_B!(b::HierarchicalVector,H::HierarchicalMatrix,h::HierarchicalVector)
+    (H11,H22),(H21,H12) = partitionmatrix(H)
+    h1,h2 = partitionvector(h)
+    b1,b2 = partitionvector(b)
+    A_mul_B!(b1,H12,h2)
+    A_mul_B!(b1,H11,h1)
+    A_mul_B!(b2,H21,h1)
+    A_mul_B!(b2,H22,h2)
+    b
+end
+
+function *(H::HierarchicalMatrix,b::Vector)
+    (H11,H22),(H21,H12) = partitionmatrix(H)
     m1,m2 = size(H12,1),size(H21,1)
     (b1,b2) = (b[1:m1],b[1+m1:m1+m2])
-    vcat(H11*b1+H12*b2,H21*b1+H22*b2)
+    HierarchicalVector((H11*b1⊕H12*b2,H21*b1⊕H22*b2))
 end
+
 
 \(H::HierarchicalMatrix,b::AbstractVecOrMat) = full(H)\b

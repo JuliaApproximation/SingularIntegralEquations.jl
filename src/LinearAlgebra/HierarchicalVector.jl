@@ -128,6 +128,10 @@ for op in (:(Base.zero),:(Base.ones),:(Base.abs),:(Base.abs2),:(Base.conj),:(Bas
     end
 end
 
+Base.A_mul_B!(b::Vector,A::Matrix,H::HierarchicalVector) = A_mul_B!(b,A,full(H))
+Base.A_mul_B!(b::Vector,A::LowRankMatrix,H::HierarchicalVector) = A_mul_B!(b,A,full(H))
+
+
 #=
         function $op{S,T,HS,SS,TT,HSS}(H::Array{HierarchicalVector{S,T,HS}}, J::Array{HierarchicalVector{SS,TT,HSS}})
             ret = similar(H)
