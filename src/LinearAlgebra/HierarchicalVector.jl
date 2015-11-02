@@ -6,19 +6,21 @@ export HierarchicalVector, partitionvector, ishierarchical, degree
 
 abstract AbstractHierarchicalArray{SV,T,HS,N} <: AbstractArray{T,N}
 
-degree{S,T,N}(::AbstractHierarchicalArray{S,T,NTuple{2,S},N}) = 1
-degree{S,V,T,N}(::AbstractHierarchicalArray{Tuple{S,V},T,NTuple{2,S},N}) = 1
-
-degree{S,T,HS,N}(::AbstractHierarchicalArray{S,T,NTuple{2,HS},N}) = 1+degree(super(HS))
-degree{S,V,T,HS,N}(::AbstractHierarchicalArray{Tuple{S,V},T,NTuple{2,HS},N}) = 1+degree(super(HS))
-
-degree{S,T,N}(::Type{AbstractHierarchicalArray{S,T,NTuple{2,S},N}}) = 1
-degree{S,V,T,N}(::Type{AbstractHierarchicalArray{Tuple{S,V},T,NTuple{2,S},N}}) = 1
-
-degree{S,T,HS,N}(::Type{AbstractHierarchicalArray{S,T,NTuple{2,HS},N}}) = 1+degree(super(HS))
-degree{S,V,T,HS,N}(::Type{AbstractHierarchicalArray{Tuple{S,V},T,NTuple{2,HS},N}}) = 1+degree(super(HS))
-
 typealias AbstractHierarchicalVector{S,T,HS} AbstractHierarchicalArray{S,T,HS,1}
+
+
+degree{S,T}(::AbstractHierarchicalVector{S,T,NTuple{2,S}}) = 1
+degree{S,T,HS}(::AbstractHierarchicalVector{S,T,NTuple{2,HS}}) = 1+degree(super(HS))
+degree{S,T,HS}(::AbstractHierarchicalVector{S,T,Tuple{S,HS}}) = 1+degree(super(HS))
+degree{S,T,HS}(::AbstractHierarchicalVector{S,T,Tuple{HS,S}}) = 1+degree(super(HS))
+degree{S,T,HS1,HS2}(::AbstractHierarchicalVector{S,T,Tuple{HS1,HS2}}) = 1+max(degree(super(HS1)),degree(super(HS2)))
+
+degree{S,T}(::Type{AbstractHierarchicalVector{S,T,NTuple{2,S}}}) = 1
+degree{S,T,HS}(::Type{AbstractHierarchicalVector{S,T,NTuple{2,HS}}}) = 1+degree(super(HS))
+degree{S,T,HS}(::Type{AbstractHierarchicalVector{S,T,Tuple{S,HS}}}) = 1+degree(super(HS))
+degree{S,T,HS}(::Type{AbstractHierarchicalVector{S,T,Tuple{HS,S}}}) = 1+degree(super(HS))
+degree{S,T,HS1,HS2}(::Type{AbstractHierarchicalVector{S,T,Tuple{HS1,HS2}}}) = 1+max(degree(super(HS1)),degree(super(HS2)))
+
 
 type HierarchicalVector{S,T,HS} <: AbstractHierarchicalVector{S,T,HS}
     data::HS
@@ -44,6 +46,8 @@ function HierarchicalVector(data::Vector,n::Int)
     end
 end
 
+Base.similar(H::HierarchicalVector) = HierarchicalVector(map(similar,data(H)))
+Base.similar{SS,V,T}(H::HierarchicalVector{SS,V,T}, S) = HierarchicalVector(map(A->similar(A,S),data(H)))
 
 data(H::HierarchicalVector) = H.data
 
@@ -121,6 +125,7 @@ end
 
 Base.cumsum(H::HierarchicalVector) = HierarchicalVector((cumsum(H.data[1]),sum(H.data[1])+cumsum(H.data[2])))
 Base.conj!(H::HierarchicalVector) = (map(conj!,data(H));H)
+Base.copy!(H::HierarchicalVector,J::HierarchicalVector) = (map(copy!,data(H),data(J));H)
 
 for op in (:(Base.zero),:(Base.ones),:(Base.abs),:(Base.abs2),:(Base.conj),:(Base.copy),:.^)
     @eval begin

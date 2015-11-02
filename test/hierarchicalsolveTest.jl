@@ -13,7 +13,8 @@ D = Array(Diagonal{Float64},8)
 
 H = HierarchicalMatrix(D,L)
 
-@test rank(H) == fill(2,8,8)+diagm(fill(48,8))
+@test rank(H) == 400
+@test blockrank(H) == fill(2,8,8)+diagm(fill(48,8))
 @test isfactored(H) == false
 
 B = Array(Vector{Float64},8)

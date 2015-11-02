@@ -12,19 +12,28 @@ type LowRankMatrix{T} <: AbstractMatrix{T}
     V::Matrix{T} # n x r Matrix
 
     function LowRankMatrix(U::Matrix{T},V::Matrix{T})
-        mu,ru = size(U)
-        nv,rv = size(V)
-        @assert ru == rv
+        m,r = size(U)
+        n,rv = size(V)
+        @assert r == rv
+        U,V = copy(U),copy(V)
+        balance!(U,V,m,n,r)
         new(U,V)
     end
 end
 
-LowRankMatrix{S,T}(U::Matrix{S},V::Matrix{T})=LowRankMatrix{promote_type(S,T)}(promote(U,V)...)
+LowRankMatrix{T}(U::Matrix{T},V::Matrix{T})=LowRankMatrix{T}(U,V)
 
+LowRankMatrix(U::Matrix,V::Matrix)=LowRankMatrix(promote(U,V)...)
 LowRankMatrix(U::Vector,V::Matrix)=LowRankMatrix(reshape(U,length(U),1),V)
 LowRankMatrix(U::Matrix,V::Vector)=LowRankMatrix(U,reshape(V,length(V),1))
 LowRankMatrix(U::Vector,V::Vector)=LowRankMatrix(reshape(U,length(U),1),reshape(V,length(V),1))
-LowRankMatrix(a::Number,m::Int,n::Int)=fill!(LowRankMatrix(zeros(eltype(a),m),zeros(eltype(a),n)),a)
+LowRankMatrix(a::Number,m::Int,n::Int)=LowRankMatrix(a*ones(eltype(a),m),ones(eltype(a),n))
+
+Base.similar(L::LowRankMatrix, T, dims::Dims) = (@assert length(dims) == 2;r = rank(L); LowRankMatrix(Array(T,dims[1],r),Array(T,dims[2],r)))
+Base.similar{T}(L::LowRankMatrix{T}) = ((m,n) = size(L); r = rank(L); LowRankMatrix(Array(T,m,r),Array(T,n,r)))
+Base.similar{T}(L::LowRankMatrix{T}, dims::Dims) = (@assert length(dims) == 2;r = rank(L); LowRankMatrix(Array(T,dims[1],r),Array(T,dims[2],r)))
+Base.similar{T}(L::LowRankMatrix{T}, m::Int) = Array(T, m)
+Base.similar{T}(L::LowRankMatrix{T}, S) = ((m,n) = size(L); r = rank(L); LowRankMatrix(Array(S,m,r),Array(S,n,r)))
 
 function LowRankMatrix(A::Matrix)
     U,Σ,V = svd(A)
@@ -32,28 +41,30 @@ function LowRankMatrix(A::Matrix)
     LowRankMatrix(U[:,1:r],V[:,1:r])
 end
 
-function balance!(L::LowRankMatrix)
-    m,n = size(L)
-    for k=1:rank(L)
-        uk = zero(eltype(L))
+balance!{T<:Union{Integer,Rational}}(U::Matrix{T},V::Matrix{T},m::Int,n::Int,r::Int) = U,V
+function balance!{T}(U::Matrix{T},V::Matrix{T},m::Int,n::Int,r::Int)
+    for k=1:r
+        uk = zero(T)
         for i=1:m
-            @inbounds uk += abs2(L.U[i,k])
+            @inbounds uk += abs2(U[i,k])
         end
-        vk = zero(eltype(L))
+        vk = zero(T)
         for j=1:n
-            @inbounds vk += abs2(L.V[j,k])
+            @inbounds vk += abs2(V[j,k])
         end
         uk,vk = sqrt(uk),sqrt(vk)
         σk = sqrt(uk*vk)
-        uk,vk = σk/uk,σk/vk
-        for i=1:m
-            @inbounds L.U[i,k] *= uk
-        end
-        for j=1:n
-            @inbounds L.V[j,k] *= vk
+        if abs2(uk) ≥ eps2(T)^2 && abs2(vk) ≥ eps2(T)^2
+            uk,vk = σk/uk,σk/vk
+            for i=1:m
+                @inbounds U[i,k] *= uk
+            end
+            for j=1:n
+                @inbounds V[j,k] *= vk
+            end
         end
     end
-    L
+    U,V
 end
 
 function refactorsvd!{S,T}(U::Matrix{S},Σ::Vector{T},V::Matrix{S})
@@ -73,10 +84,10 @@ function refactorsvd!{S,T}(U::Matrix{S},Σ::Vector{T},V::Matrix{S})
     r
 end
 
-Base.eltype{T}(::LowRankMatrix{T})=T
 Base.convert{T}(::Type{LowRankMatrix{T}},L::LowRankMatrix) = LowRankMatrix{T}(convert(Matrix{T},L.U),convert(Matrix{T},L.V))
 Base.convert{T}(::Type{Matrix{T}},L::LowRankMatrix) = convert(Matrix{T},full(L))
 Base.promote_rule{T,V}(::Type{LowRankMatrix{T}},::Type{LowRankMatrix{V}})=LowRankMatrix{promote_type(T,V)}
+Base.promote_rule{T,V}(::Type{LowRankMatrix{T}},::Type{Matrix{V}})=Matrix{promote_type(T,V)}
 
 Base.size(L::LowRankMatrix) = size(L.U,1),size(L.V,1)
 Base.rank(L::LowRankMatrix) = size(L.U,2)
@@ -90,7 +101,7 @@ function Base.getindex(L::LowRankMatrix,i::Int,j::Int)
     if 1 ≤ i ≤ m && 1 ≤ j ≤ n
         ret = zero(eltype(L))
         for k=1:rank(L)
-            ret = muladd(L.U[i,k],L.V[j,k],ret)
+            @inbounds ret = muladd(L.U[i,k],L.V[j,k],ret)
         end
         return ret
     else
@@ -120,6 +131,9 @@ lrrandn(::Type{Float64},n::Int) = lrrandn(n,n)
 lrrandn(m::Int,n::Int) = lrrandn(m,n)
 lrrandn(n::Int) = lrrandn(n,n)
 
+Base.copy(L::LowRankMatrix) = LowRankMatrix(copy(L.U),copy(L.V))
+Base.copy!(L::LowRankMatrix,N::LowRankMatrix) = (copy!(L.U,N.U);copy!(L.V,N.V);L)
+
 # algebra
 
 for op in (:+,:-,:.+,:.-)
@@ -135,8 +149,8 @@ for op in (:+,:-,:.+,:.-)
             @assert size(L) == size(M)
             LowRankMatrix(hcat(L.U,$op(M.U)),hcat(L.V,M.V))
         end
-        $op(L::LowRankMatrix,A::AbstractMatrix) = $op(full(L),A)
-        $op(A::AbstractMatrix,L::LowRankMatrix) = $op(L,A)
+        $op(L::LowRankMatrix,A::AbstractMatrix) = $op(promote(L,A)...)
+        $op(A::AbstractMatrix,L::LowRankMatrix) = $op(promote(A,L)...)
     end
 end
 
@@ -146,41 +160,31 @@ end
 .*(L::LowRankMatrix,a::Number) = L*a
 
 function Base.A_mul_B!(b::AbstractVector,L::LowRankMatrix,x::AbstractVector)
-    m,n = size(L)
-    r = rank(L)
-    temp = zeros(promote_type(eltype(L),eltype(x)),r)
+    temp = zeros(promote_type(eltype(L),eltype(x)),rank(L))
     At_mul_B!(temp,L.V,x)
     A_mul_B!(b,L.U,temp)
     b
 end
 
 function *(L::LowRankMatrix,M::LowRankMatrix)
-    m1,n1 = size(L)
-    r1 = rank(L)
-    m2,n2 = size(M)
-    r2 = rank(M)
     T = promote_type(eltype(L),eltype(M))
-    temp = zeros(T,r1,r2)
+    temp = zeros(T,rank(L),rank(M))
     At_mul_B!(temp,L.V,M.U)
-    V = zeros(T,n2,r1)
+    V = zeros(T,size(M,2),rank(L))
     A_mul_Bt!(V,M.V,temp)
-    balance!(LowRankMatrix(copy(L.U),V))
+    LowRankMatrix(copy(L.U),V)
 end
 
 function *(L::LowRankMatrix,A::AbstractMatrix)
-    m,n = size(L)
-    r = rank(L)
-    V = zeros(promote_type(eltype(L),eltype(A)),size(A,2),r)
+    V = zeros(promote_type(eltype(L),eltype(A)),size(A,2),rank(L))
     At_mul_B!(V,A,L.V)
-    balance!(LowRankMatrix(copy(L.U),V))
+    LowRankMatrix(copy(L.U),V)
 end
 
 function *(A::AbstractMatrix,L::LowRankMatrix)
-    m,n = size(L)
-    r = rank(L)
-    U = zeros(promote_type(eltype(A),eltype(L)),size(A,1),r)
+    U = zeros(promote_type(eltype(A),eltype(L)),size(A,1),rank(L))
     At_mul_B!(U,A,L.U)
-    balance!(LowRankMatrix(U,copy(L.V)))
+    LowRankMatrix(U,copy(L.V))
 end
 
 \(L::LowRankMatrix,b::AbstractVecOrMat) = full(L)\b

@@ -1,4 +1,4 @@
-export HierarchicalMatrix, partitionmatrix, isfactored
+export HierarchicalMatrix, partitionmatrix, isfactored, blockrank
 
 ##
 # Represent a binary hierarchical matrix
@@ -22,6 +22,20 @@ export HierarchicalMatrix, partitionmatrix, isfactored
 ##
 
 typealias AbstractHierarchicalMatrix{S,V,T,HS} AbstractHierarchicalArray{Tuple{S,V},T,HS,2}
+
+
+degree{S,V,T}(::AbstractHierarchicalMatrix{S,V,T,NTuple{2,S}}) = 1
+degree{S,V,T,HS}(::AbstractHierarchicalMatrix{S,V,T,NTuple{2,HS}}) = 1+degree(super(HS))
+degree{S,V,T,HS}(::AbstractHierarchicalMatrix{S,V,T,Tuple{S,HS}}) = 1+degree(super(HS))
+degree{S,V,T,HS}(::AbstractHierarchicalMatrix{S,V,T,Tuple{HS,S}}) = 1+degree(super(HS))
+degree{S,V,T,HS1,HS2}(::AbstractHierarchicalMatrix{S,V,T,Tuple{HS1,HS2}}) = 1+max(degree(super(HS1)),degree(super(HS2)))
+
+degree{S,V,T}(::Type{AbstractHierarchicalMatrix{S,V,T,NTuple{2,S}}}) = 1
+degree{S,V,T,HS}(::Type{AbstractHierarchicalMatrix{S,V,T,NTuple{2,HS}}}) = 1+degree(super(HS))
+degree{S,V,T,HS}(::Type{AbstractHierarchicalMatrix{S,V,T,Tuple{S,HS}}}) = 1+degree(super(HS))
+degree{S,V,T,HS}(::Type{AbstractHierarchicalMatrix{S,V,T,Tuple{HS,S}}}) = 1+degree(super(HS))
+degree{S,V,T,HS1,HS2}(::Type{AbstractHierarchicalMatrix{S,V,T,Tuple{HS1,HS2}}}) = 1+max(degree(super(HS1)),degree(super(HS2)))
+
 
 type HierarchicalMatrix{S,V,T,HS} <: AbstractHierarchicalMatrix{S,V,T,HS}
     diagonaldata::HS
@@ -65,10 +79,12 @@ function HierarchicalMatrix(diagonaldata::Vector,offdiagonaldata::Vector,n::Int)
         dldp2 = div(length(offdiagonaldata)+2,2)
         return HierarchicalMatrix((HierarchicalMatrix(diagonaldata[1:2^(n-1)],offdiagonaldata[3:dldp2],n-1),
                                    HierarchicalMatrix(diagonaldata[1+2^(n-1):end],offdiagonaldata[dldp2+1:end],n-1)),
-                                 (offdiagonaldata[1],offdiagonaldata[2]))
+                                   (offdiagonaldata[1],offdiagonaldata[2]))
     end
 end
 
+Base.similar(H::HierarchicalMatrix) = HierarchicalMatrix(map(similar,diagonaldata(H)),map(similar,offdiagonaldata(H)))
+Base.similar{SS,V,T}(H::HierarchicalMatrix{SS,V,T}, S) = HierarchicalMatrix(map(A->similar(A,S),diagonaldata(H)),map(A->similar(A,S),offdiagonaldata(H)))
 
 diagonaldata(H::HierarchicalMatrix) = H.diagonaldata
 offdiagonaldata(H::HierarchicalMatrix) = H.offdiagonaldata
@@ -93,23 +109,29 @@ isfactored(H::HierarchicalMatrix) = H.factored
 
 
 Base.convert{S,V,T,HS}(::Type{HierarchicalMatrix{S,V,T,HS}},M::HierarchicalMatrix) = HierarchicalMatrix(convert(Vector{S},collectdiagonaldata(M)),convert(Vector{V},collectoffdiagonaldata(M)))
+Base.convert{T}(::Type{Matrix{T}},M::HierarchicalMatrix) = full(M)
 Base.promote_rule{S,V,T,HS,SS,VV,TT,HSS}(::Type{HierarchicalMatrix{S,V,T,HS}},::Type{HierarchicalMatrix{SS,VV,TT,HSS}})=HierarchicalMatrix{promote_type(S,SS),promote_type(V,VV),promote_type(T,TT),promote_type(HS,HSS)}
+Base.promote_rule{T,SS,VV,TT,HSS}(::Type{Matrix{T}},::Type{HierarchicalMatrix{SS,VV,TT,HSS}})=Matrix{promote_type(T,TT)}
+Base.promote_rule{T,SS,VV,TT,HSS}(::Type{LowRankMatrix{T}},::Type{HierarchicalMatrix{SS,VV,TT,HSS}})=Matrix{promote_type(T,TT)}
 
 Base.transpose(H::HierarchicalMatrix) = HierarchicalMatrix(map(transpose,diagonaldata(H)),map(transpose,reverse(offdiagonaldata(H))))
 Base.ctranspose(H::HierarchicalMatrix) = HierarchicalMatrix(map(ctranspose,diagonaldata(H)),map(ctranspose,reverse(offdiagonaldata(H))))
 
 function Base.size{S<:AbstractMatrix,V<:AbstractMatrix}(H::HierarchicalMatrix{S,V})
+    H11,H22 = diagonaldata(H)
     H21,H12 = offdiagonaldata(H)
-    m1,n1 = size(H12)
-    m2,n2 = size(H21)
+    m1,n2 = size(H12)
+    m2,n1 = size(H21)
+    @assert (m1,n1) == size(H11)
+    @assert (m2,n2) == size(H22)
     m1+m2,n1+n2
 end
 
 function Base.getindex{S<:AbstractMatrix,V<:AbstractMatrix}(H::HierarchicalMatrix{S,V},i::Int,j::Int)
     H11,H22 = diagonaldata(H)
     H21,H12 = offdiagonaldata(H)
-    m1,n1 = size(H12)
-    m2,n2 = size(H21)
+    m1,n2 = size(H12)
+    m2,n1 = size(H21)
     if 1 ≤ i ≤ m1
         if 1 ≤ j ≤ n1
             return getindex(H11,i,j)
@@ -135,8 +157,13 @@ Base.getindex{S<:AbstractMatrix,V<:AbstractMatrix}(H::HierarchicalMatrix{S,V},ir
 Base.getindex{S<:AbstractMatrix,V<:AbstractMatrix}(H::HierarchicalMatrix{S,V},ir::Range,jr::Range) = eltype(H)[H[i,j] for i=ir,j=jr]
 Base.full{S<:AbstractMatrix,V<:AbstractMatrix}(H::HierarchicalMatrix{S,V})=H[1:size(H,1),1:size(H,2)]
 
+Base.copy(H::HierarchicalMatrix) = HierarchicalMatrix(map(copy,diagonaldata(H)),map(copy,offdiagonaldata(H)))
+Base.copy!(H::HierarchicalMatrix,J::HierarchicalMatrix) = (map(copy!,diagonaldata(H),diagonaldata(J));map(copy!,offdiagonaldata(H),offdiagonaldata(J));H)
 
-function Base.rank(H::HierarchicalMatrix)
+Base.rank(H::HierarchicalMatrix) = rank(full(H))
+
+blockrank(A)=rank(A)
+function blockrank(H::HierarchicalMatrix)
     n = degree(H)
     A = Array{Int}(2^n,2^n)
     r1,r2 = map(rank,offdiagonaldata(H))
@@ -144,7 +171,7 @@ function Base.rank(H::HierarchicalMatrix)
         A[i+2^(n-1),j] = r1
         A[i,j+2^(n-1)] = r2
     end
-    A11,A22 = map(rank,diagonaldata(H))
+    A11,A22 = map(blockrank,diagonaldata(H))
     for j=1:2^(n-1),i=1:2^(n-1)
         A[i,j] = A11[i,j]
         A[i+2^(n-1),j+2^(n-1)] = A22[i,j]
@@ -152,20 +179,20 @@ function Base.rank(H::HierarchicalMatrix)
     A
 end
 
-for op in (:+,:-)
+for op in (:+,:-,:.+,:.-)
     @eval begin
-        function $op(H::HierarchicalMatrix,J::HierarchicalMatrix)
-            Hd,Ho = collectdiagonaldata(H),collectoffdiagonaldata(H)
-            Jd,Jo = collectdiagonaldata(J),collectoffdiagonaldata(J)
-            HierarchicalMatrix($op(Hd,Jd),$op(Ho,Jo))
-        end
-        $op(H::HierarchicalMatrix) = HierarchicalMatrix($op(collectdiagonaldata(H)),$op(collectoffdiagonaldata(H)))
+        $op(H::HierarchicalMatrix) = HierarchicalMatrix(map($op,diagonaldata(H)),map($op,offdiagonaldata(H)))
+        $op(H::HierarchicalMatrix,J::HierarchicalMatrix) = HierarchicalMatrix(map($op,diagonaldata(H),diagonaldata(J)),map($op,offdiagonaldata(H),offdiagonaldata(J)))
+        $op(H::HierarchicalMatrix,L::LowRankMatrix) = $op(promote(H,L)...)
+        $op(L::LowRankMatrix,H::HierarchicalMatrix) = $op(promote(L,H)...)
+        $op(H::HierarchicalMatrix,A::AbstractMatrix) = $op(promote(H,A)...)
+        $op(A::AbstractMatrix,H::HierarchicalMatrix) = $op(promote(A,H)...)
     end
 end
 
 function *(H::HierarchicalMatrix, x::HierarchicalVector)
     T = promote_type(eltype(H),eltype(x))
-    A_mul_B!(zero(x),H,x)
+    A_mul_B!(similar(x,T),H,x)
 end
 
 function Base.A_mul_B!(b::AbstractVector,D::Base.LinAlg.Diagonal,x::AbstractVector)
