@@ -4,15 +4,15 @@
 
 # Continuous analogues for low-rank operators case
 
-\{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,f)
-\{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F}) = hierarchicalsolve(H,f)
+\{U<:Union{Operator,HierarchicalMatrix},V<:AbstractLowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,f)
+\{U<:Union{Operator,HierarchicalMatrix},V<:AbstractLowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F}) = hierarchicalsolve(H,f)
 
-hierarchicalsolve{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,[f])[1]
+hierarchicalsolve{U<:Union{Operator,HierarchicalMatrix},V<:AbstractLowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,[f])[1]
 
 hierarchicalsolve(H::Operator,f::Fun) = H\f
 hierarchicalsolve{F<:Fun}(H::Operator,f::Vector{F}) = vec(H\transpose(f))
 
-function hierarchicalsolve{U<:Operator,V<:LowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F})
+function hierarchicalsolve{U<:Union{Operator,HierarchicalMatrix},V<:AbstractLowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F})
     N,nf = length(space(first(f))),length(f)
 
     # Pre-compute Factorization
@@ -25,8 +25,8 @@ function hierarchicalsolve{U<:Operator,V<:LowRankOperator,F<:Fun}(H::Hierarchica
 
     # Off-diagonal low-rank matrix assembly
 
-    U12,V12 = strippiecewisespace(H12.U),strippiecewisespace(H12.V)
-    U21,V21 = strippiecewisespace(H21.U),strippiecewisespace(H21.V)
+    U12,V12 = H12.U,H12.V
+    U21,V21 = H21.U,H21.V
 
     # Partition the right-hand side
 
@@ -47,22 +47,22 @@ function hierarchicalsolve{U<:Operator,V<:LowRankOperator,F<:Fun}(H::Hierarchica
 
     sol = [hierarchicalsolve(H11,RHS1);hierarchicalsolve(H22,RHS2)]
     if N == 2
-        return collect(mapreduce(i->depiece(sol[i:nf:end]),vcat,1:nf))
+        return [mapreduce(i->depiece(sol[i:nf:end]),vcat,1:nf)]
     else
         ls = length(sol)
-        return collect(mapreduce(i->depiece(mapreduce(k->pieces(sol[k]),vcat,i:nf:ls)),vcat,1:nf))
+        return [mapreduce(i->depiece(mapreduce(k->pieces(sol[k]),vcat,i:nf:ls)),vcat,1:nf)]
     end
 end
 
-function factorize!{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V})
+function factorize!{U<:Union{Operator,HierarchicalMatrix},V<:AbstractLowRankOperator}(H::HierarchicalMatrix{U,V})
     # Partition HierarchicalMatrix
 
     (H11,H22),(H21,H12) = partitionmatrix(H)
 
     # Off-diagonal low-rank matrix assembly
 
-    U12,V12 = strippiecewisespace(H12.U),strippiecewisespace(H12.V)
-    U21,V21 = strippiecewisespace(H21.U),strippiecewisespace(H21.V)
+    U12,V12 = H12.U,H12.V
+    U21,V21 = H21.U,H21.V
 
     # Solve recursively
 
@@ -70,16 +70,29 @@ function factorize!{U<:Operator,V<:LowRankOperator}(H::HierarchicalMatrix{U,V})
 
     # Compute A
 
-    r1,r2 = length(V12),length(V21)
-    for i=1:r1,j=1:r2
-        H.A[i,j+r1] += V12[i]*H22U21[j]
-        H.A[j+r2,i] += V21[j]*H11U12[i]
-    end
+    fillpivotmatrix!(H.A,V12,V21,H22U21,H11U12)
 
     # Compute factorization
 
+    r1,r2 = length(V12),length(V21)
     H.factorization = pivotldufact(H.A,r1,r2)#lufact(H.A)
     H.factored = true
+end
+
+function fillpivotmatrix!{A1,A2,T}(A::Matrix{T},V12::Vector{Functional{T}},V21::Vector{Functional{T}},H22U21::Vector{Fun{A1,T}},H11U12::Vector{Fun{A2,T}})
+    r1,r2 = length(V12),length(V21)
+    for i=1:r1,j=1:r2
+        A[i,j+r1] += V12[i]*H22U21[j]
+        A[j+r2,i] += V21[j]*H11U12[i]
+    end
+end
+
+function fillpivotmatrix!{V1,V2,A1,A2,T}(A::Matrix{T},V12::Vector{Fun{V1,T}},V21::Vector{Fun{V2,T}},H22U21::Vector{Fun{A1,T}},H11U12::Vector{Fun{A2,T}})
+    r1,r2 = length(V12),length(V21)
+    for i=1:r1,j=1:r2
+        A[i,j+r1] += dotu(V12[i],H22U21[j])
+        A[j+r2,i] += dotu(V21[j],H11U12[i])
+    end
 end
 
 function computepivots{A1,A2,T}(V12::Vector{Functional{T}},V21::Vector{Functional{T}},H11f1::Vector{Fun{A1,T}},H22f2::Vector{Fun{A2,T}},A::PivotLDU{T},nf::Int)
@@ -96,19 +109,24 @@ function computepivots{A1,A2,T}(V12::Vector{Functional{T}},V21::Vector{Functiona
     A_ldiv_B1B2!(A,b1,b2)
 end
 
-
+function computepivots{V1,V2,A1,A2,T}(V12::Vector{Fun{V1,T}},V21::Vector{Fun{V2,T}},H11f1::Vector{Fun{A1,T}},H22f2::Vector{Fun{A2,T}},A::PivotLDU{T},nf::Int)
+    r1,r2 = length(V12),length(V21)
+    b1,b2 = zeros(T,r1,nf),zeros(T,r2,nf)
+    for i=1:nf
+        for j=1:r1
+            b1[j,i] += dotu(V12[j],H22f2[i])
+        end
+        for j=1:r2
+            b2[j,i] += dotu(V21[j],H11f1[i])
+        end
+    end
+    A_ldiv_B1B2!(A,b1,b2)
+end
 
 
 
 
 # Utilities
-
-# strippiecewisespace is used for the 2 x 2 case, since the off-diagonal blocks had
-# to be in a PiecewiseSpace to conform with higher levels in the hierarchy, yet they only have one space.
-
-strippiecewisespace(v)=v
-strippiecewisespace{PWS<:PiecewiseSpace,T}(U::Fun{PWS,T}) = length(space(U)) == 1 ? pieces(U) : U
-strippiecewisespace{PWS<:PiecewiseSpace,T}(U::Vector{Fun{PWS,T}}) = length(space(first(U))) == 1 ? mapreduce(pieces,vcat,U) : U
 
 function partitionfun{PWS<:PiecewiseSpace,T}(f::Fun{PWS,T})
     N = length(space(f))

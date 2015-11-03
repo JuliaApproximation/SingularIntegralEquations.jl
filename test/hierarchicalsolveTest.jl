@@ -39,3 +39,32 @@ CH = cond(full(H))
 
 H+H-(H-H)
 @test norm(full(H-H)) < 10norm(full(H))*eps()
+
+
+
+# Hierarchical operators case
+
+i = 2
+
+dom = cantor(Interval(),i)
+⨍ = DefiniteLineIntegral(dom)
+f = Fun(x->logabs(x-5im),dom)
+sp = Space(dom)
+
+G = GreensFun((x,y)->1/2,CauchyWeight(sp⊗sp,0);method=:Cholesky)
+
+@time u1 = ⨍[G]\transpose(f)
+
+println("Adaptive QR  forward error norm is: ",norm(⨍[G]*u1-f))
+
+@test norm(⨍[G]*u1-f) < 10eps()
+
+G1 = GreensFun((x,y)->1/2,CauchyWeight(Space(dom)⊗Space(dom),0);method=:Cholesky,hierarchical=true)
+H = ⨍[G1]
+
+@time u2 = H\f
+@time u2 = H\f
+
+println("The hierarchical forward error norm is: ",norm(⨍[G]*u2-f))
+
+@test norm(⨍[G]*u2-f) < 10eps()

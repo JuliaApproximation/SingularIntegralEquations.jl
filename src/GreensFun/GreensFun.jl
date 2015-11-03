@@ -39,6 +39,7 @@ kernels(G::GreensFun) = G.kernels
 Base.rank{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(rank,+,G.kernels)
 slices{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(x->x.A,vcat,G.kernels),mapreduce(x->x.B,vcat,G.kernels)
 slices{L<:LowRankFun}(G::GreensFun{L},k::Int) = slices(G)[k]
+LowRankIntegralOperator{L<:LowRankFun}(G::GreensFun{L}) = LowRankIntegralOperator(slices(G)...)
 
 Base.getindex(⨍::Operator,G::GreensFun) = mapreduce(f->getindex(⨍,f),+,G.kernels)
 
@@ -233,8 +234,8 @@ function hierarchicalGreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Fun
     if N2 == 1
         G11 = GreensFun(LowRankFun(f,ss[1,1];method=meth1,kwds...))
         G22 = GreensFun(LowRankFun(f,ss[2,2];method=meth1,kwds...))
-        G21 = GreensFun(LowRankFun(f,ss[2:2,1:1];method=meth2,kwds...))
-        G12 = method == :Cholesky ? transpose(G21) : GreensFun(LowRankFun(f,ss[1:1,2:2];method=meth2,kwds...))
+        G21 = GreensFun(LowRankFun(f,ss[2,1];method=meth2,kwds...))
+        G12 = method == :Cholesky ? transpose(G21) : GreensFun(LowRankFun(f,ss[1,2];method=meth2,kwds...))
         return HierarchicalMatrix((G11,G22),(G21,G12))
     elseif N2 ≥ 2
         G21 = GreensFun(LowRankFun(f,ss[1+N2:N,1:N2];method=meth2,kwds...))
@@ -243,16 +244,16 @@ function hierarchicalGreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Fun
     end
 end
 
-Base.size{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = 2^H.n,2^H.n
+Base.size{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = 2^degree(H),2^degree(H)
+
+function Base.getindex{G<:HierarchicalMatrix,L<:LowRankFun,T}(⨍::DefiniteLineIntegral,H::HierarchicalMatrix{G,GreensFun{L,T}})
+    val1 = diagonaldata(H)
+    val2 = offdiagonaldata(H)
+    HierarchicalMatrix(map(A->DefiniteLineIntegral()[A],val1),map(LowRankIntegralOperator,val2))
+end
 
 function Base.getindex{G<:GreensFun,L<:LowRankFun,T}(⨍::DefiniteLineIntegral,H::HierarchicalMatrix{G,GreensFun{L,T}})
-    #m,n = size(H)
-    #wsp = domainspace(⨍)
-    #@assert m == length(wsp.spaces)
-    #⨍ = DefiniteLineIntegral()
-    val1 = collectdiagonaldata(H)
-    val2 = collectoffdiagonaldata(H)
-    diagonaldata = map(A->DefiniteLineIntegral(domain(A)[1])[A],val1)
-    offdiagonaldata = map(LowRankOperator,val2)
-    HO = HierarchicalMatrix(diagonaldata,offdiagonaldata)
+    val1 = diagonaldata(H)
+    val2 = offdiagonaldata(H)
+    HierarchicalMatrix(map(A->DefiniteLineIntegral(domain(A)[1])[A],val1),map(LowRankIntegralOperator,val2))
 end
