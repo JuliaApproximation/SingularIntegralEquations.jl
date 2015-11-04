@@ -46,16 +46,8 @@ function hierarchicalsolve{U<:Operator,V<:AbstractLowRankOperator,F<:Fun}(H::Hie
     RHS2 = f2 - At_mul_B(v21,U21)
 
     sol = [hierarchicalsolve(H11,RHS1);hierarchicalsolve(H22,RHS2)]
-    if N == 2
-        if nf == 1
-            return [mapreduce(i->depiece(sol[i:nf:end]),vcat,1:nf)]
-        else
-            return collect(mapreduce(i->depiece(sol[i:nf:end]),vcat,1:nf))
-        end
-    else
-        ls = length(sol)
-        return [mapreduce(i->depiece(mapreduce(k->pieces(sol[k]),vcat,i:nf:ls)),vcat,1:nf)]
-    end
+
+    return assemblesolution(sol,N,nf)
 end
 
 function factorize!{U<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalMatrix{U,V})
@@ -150,5 +142,22 @@ function partitionfun{PWS<:PiecewiseSpace,T}(f::Vector{Fun{PWS,T}})
         return (map(x->pieces(x)[1],f),map(x->pieces(x)[2],f))
     else
         return (map(x->depiece(pieces(x)[1:N2]),f),map(x->depiece(pieces(x)[1+N2:N]),f))
+    end
+end
+
+function assemblesolution(sol,N::Int,nf::Int)
+    if N == 2
+        if nf == 1
+            return [mapreduce(i->depiece(sol[i:nf:end]),vcat,1:nf)]
+        else
+            return collect(mapreduce(i->depiece(sol[i:nf:end]),vcat,1:nf))
+        end
+    else
+        ls = length(sol)
+        if nf == 1
+            return [mapreduce(i->depiece(mapreduce(k->pieces(sol[k]),vcat,i:nf:ls)),vcat,1:nf)]
+        else
+            return collect(mapreduce(i->depiece(mapreduce(k->pieces(sol[k]),vcat,i:nf:ls)),vcat,1:nf))
+        end
     end
 end
