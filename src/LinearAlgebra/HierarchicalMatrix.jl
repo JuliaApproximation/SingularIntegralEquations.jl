@@ -170,7 +170,7 @@ Base.cond(H::HierarchicalMatrix) = cond(full(H))
 blockrank(A)=rank(A)
 function blockrank(H::HierarchicalMatrix)
     n = degree(H)
-    A = Array{Int}(2^n,2^n)
+    A = Array{Float64}(2^n,2^n)
     r1,r2 = map(rank,offdiagonaldata(H))
     for j=1:2^(n-1),i=1:2^(n-1)
         A[i+2^(n-1),j] = r1

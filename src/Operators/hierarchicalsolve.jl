@@ -4,15 +4,15 @@
 
 # Continuous analogues for low-rank operators case
 
-\{U<:Union{Operator,HierarchicalMatrix},V<:AbstractLowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,f)
-\{U<:Union{Operator,HierarchicalMatrix},V<:AbstractLowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F}) = hierarchicalsolve(H,f)
+\{U<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,f)
+\{U<:Operator,V<:AbstractLowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F}) = hierarchicalsolve(H,f)
 
-hierarchicalsolve{U<:Union{Operator,HierarchicalMatrix},V<:AbstractLowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,[f])[1]
+hierarchicalsolve{U<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,[f])[1]
 
 hierarchicalsolve(H::Operator,f::Fun) = H\f
 hierarchicalsolve{F<:Fun}(H::Operator,f::Vector{F}) = vec(H\transpose(f))
 
-function hierarchicalsolve{U<:Union{Operator,HierarchicalMatrix},V<:AbstractLowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F})
+function hierarchicalsolve{U<:Operator,V<:AbstractLowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F})
     N,nf = length(space(first(f))),length(f)
 
     # Pre-compute Factorization
@@ -47,14 +47,18 @@ function hierarchicalsolve{U<:Union{Operator,HierarchicalMatrix},V<:AbstractLowR
 
     sol = [hierarchicalsolve(H11,RHS1);hierarchicalsolve(H22,RHS2)]
     if N == 2
-        return [mapreduce(i->depiece(sol[i:nf:end]),vcat,1:nf)]
+        if nf == 1
+            return [mapreduce(i->depiece(sol[i:nf:end]),vcat,1:nf)]
+        else
+            return collect(mapreduce(i->depiece(sol[i:nf:end]),vcat,1:nf))
+        end
     else
         ls = length(sol)
         return [mapreduce(i->depiece(mapreduce(k->pieces(sol[k]),vcat,i:nf:ls)),vcat,1:nf)]
     end
 end
 
-function factorize!{U<:Union{Operator,HierarchicalMatrix},V<:AbstractLowRankOperator}(H::HierarchicalMatrix{U,V})
+function factorize!{U<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalMatrix{U,V})
     # Partition HierarchicalMatrix
 
     (H11,H22),(H21,H12) = partitionmatrix(H)
@@ -74,8 +78,7 @@ function factorize!{U<:Union{Operator,HierarchicalMatrix},V<:AbstractLowRankOper
 
     # Compute factorization
 
-    r1,r2 = length(V12),length(V21)
-    H.factorization = pivotldufact(H.A,r1,r2)#lufact(H.A)
+    H.factorization = pivotldufact(H.A,length(V12),length(V21))#lufact(H.A)
     H.factored = true
 end
 
@@ -127,6 +130,8 @@ end
 
 
 # Utilities
+
+blockrank(H::Operator)=Inf
 
 function partitionfun{PWS<:PiecewiseSpace,T}(f::Fun{PWS,T})
     N = length(space(f))

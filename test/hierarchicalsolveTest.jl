@@ -65,6 +65,10 @@ H = ⨍[G1]
 @time u2 = H\f
 @time u2 = H\f
 
+@test condest(H) ≤ 20.0
+
+@test blockrank(H) == [Inf 8.0 9.0 9.0; 8.0 Inf 9.0 9.0; 9.0 9.0 Inf 8.0; 9.0 9.0 8.0 Inf]
+
 println("The hierarchical forward error norm is: ",norm(⨍[G]*u2-f))
 
 @test norm(⨍[G]*u2-f) < 10eps()
