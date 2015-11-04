@@ -70,5 +70,6 @@ if isdir(Pkg.dir("TikzGraphs"))
     include("introspect.jl")
 end
 
+include("Extras/Extras.jl")
 
 end #module

@@ -246,14 +246,14 @@ end
 
 Base.size{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = 2^degree(H),2^degree(H)
 
-function Base.getindex{G<:HierarchicalMatrix,L<:LowRankFun,T}(⨍::DefiniteLineIntegral,H::HierarchicalMatrix{G,GreensFun{L,T}})
+function Base.getindex{G<:GreensFun,L<:LowRankFun,T}(⨍::DefiniteLineIntegral,H::HierarchicalMatrix{G,GreensFun{L,T},T,NTuple{2,G}})
     val1 = diagonaldata(H)
     val2 = offdiagonaldata(H)
-    HierarchicalMatrix(map(A->DefiniteLineIntegral()[A],val1),map(LowRankIntegralOperator,val2))
+    HierarchicalMatrix(map(A->DefiniteLineIntegral(domain(A)[1])[A],val1),map(LowRankIntegralOperator,val2))
 end
 
 function Base.getindex{G<:GreensFun,L<:LowRankFun,T}(⨍::DefiniteLineIntegral,H::HierarchicalMatrix{G,GreensFun{L,T}})
     val1 = diagonaldata(H)
     val2 = offdiagonaldata(H)
-    HierarchicalMatrix(map(A->DefiniteLineIntegral(domain(A)[1])[A],val1),map(LowRankIntegralOperator,val2))
+    HierarchicalMatrix(map(A->DefiniteLineIntegral()[A],val1),map(LowRankIntegralOperator,val2))
 end

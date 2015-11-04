@@ -1,4 +1,4 @@
-export HierarchicalMatrix, partitionmatrix, isfactored, blockrank
+export HierarchicalMatrix, partitionmatrix, isfactored, condest, blockrank
 
 ##
 # Represent a binary hierarchical matrix
@@ -61,11 +61,11 @@ end
 
 HierarchicalMatrix{S,V}(diagonaldata::NTuple{2,S},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,promote_type(eltype(S),eltype(V)),NTuple{2,S}}(diagonaldata,offdiagonaldata)
 
-HierarchicalMatrix{S,V,T,HS}(diagonaldata::Tuple{S,HierarchicalMatrix{S,V,T,HS}},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,T,Tuple{S,HierarchicalMatrix{S,V,T,HS}}}(diagonaldata,offdiagonaldata)
-HierarchicalMatrix{S,V,T,HS}(diagonaldata::Tuple{HierarchicalMatrix{S,V,T,HS},S},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,T,Tuple{HierarchicalMatrix{S,V,T,HS},S}}(diagonaldata,offdiagonaldata)
+HierarchicalMatrix{S,V,V1,T,HS}(diagonaldata::Tuple{S,HierarchicalMatrix{S,V1,T,HS}},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,promote_type(eltype(S),eltype(V),T),Tuple{S,HierarchicalMatrix{S,V1,T,HS}}}(diagonaldata,offdiagonaldata)
+HierarchicalMatrix{S,V,V1,T,HS}(diagonaldata::Tuple{HierarchicalMatrix{S,V1,T,HS},S},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,promote_type(eltype(S),eltype(V),T),Tuple{HierarchicalMatrix{S,V1,T,HS},S}}(diagonaldata,offdiagonaldata)
 
-HierarchicalMatrix{S,V,T,HS}(diagonaldata::NTuple{2,HierarchicalMatrix{S,V,T,HS}},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,T,NTuple{2,HierarchicalMatrix{S,V,T,HS}}}(diagonaldata,offdiagonaldata)
-HierarchicalMatrix{S,V,T,HS1,HS2}(diagonaldata::Tuple{HierarchicalMatrix{S,V,T,HS1},HierarchicalMatrix{S,V,T,HS2}},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,T,Tuple{HierarchicalMatrix{S,V,T,HS1},HierarchicalMatrix{S,V,T,HS2}}}(diagonaldata,offdiagonaldata)
+HierarchicalMatrix{S,V,V1,T,HS}(diagonaldata::NTuple{2,HierarchicalMatrix{S,V1,T,HS}},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,promote_type(eltype(S),eltype(V),T),NTuple{2,HierarchicalMatrix{S,V1,T,HS}}}(diagonaldata,offdiagonaldata)
+HierarchicalMatrix{S,V,V1,V2,T,HS1,HS2}(diagonaldata::Tuple{HierarchicalMatrix{S,V1,T,HS1},HierarchicalMatrix{S,V2,T,HS2}},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,promote_type(eltype(S),eltype(V),T),Tuple{HierarchicalMatrix{S,V1,T,HS1},HierarchicalMatrix{S,V2,T,HS2}}}(diagonaldata,offdiagonaldata)
 
 HierarchicalMatrix(diagonaldata::Vector,offdiagonaldata::Vector)=HierarchicalMatrix(diagonaldata,offdiagonaldata,round(Int,log2(length(diagonaldata))))
 
@@ -106,7 +106,11 @@ function collectdiagonaldata{S,V,T,HS}(H::HierarchicalMatrix{S,V,T,HS})
 end
 
 isfactored(H::HierarchicalMatrix) = H.factored
-
+condest(x)=1
+function condest(H::HierarchicalMatrix)
+    !isfactored(H) && factorize!(H)
+    return cond(H.A)*mapreduce(condest,+,diagonaldata(H))
+end
 
 Base.convert{S,V,T,HS}(::Type{HierarchicalMatrix{S,V,T,HS}},M::HierarchicalMatrix) = HierarchicalMatrix(convert(Vector{S},collectdiagonaldata(M)),convert(Vector{V},collectoffdiagonaldata(M)))
 Base.convert{T}(::Type{Matrix{T}},M::HierarchicalMatrix) = full(M)
@@ -161,6 +165,7 @@ Base.copy(H::HierarchicalMatrix) = HierarchicalMatrix(map(copy,diagonaldata(H)),
 Base.copy!(H::HierarchicalMatrix,J::HierarchicalMatrix) = (map(copy!,diagonaldata(H),diagonaldata(J));map(copy!,offdiagonaldata(H),offdiagonaldata(J));H)
 
 Base.rank(H::HierarchicalMatrix) = rank(full(H))
+Base.cond(H::HierarchicalMatrix) = cond(full(H))
 
 blockrank(A)=rank(A)
 function blockrank(H::HierarchicalMatrix)

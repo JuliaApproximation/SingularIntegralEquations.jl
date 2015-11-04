@@ -30,7 +30,7 @@ H = HierarchicalMatrix(D,L)
 
 @test isfactored(H) == true
 
-CH = cond(full(H))
+CH = cond(H)
 
 @test norm(x-xw) ≤ 10CH^2*eps()
 @test norm(H*x-b) ≤ 10CH*eps()
