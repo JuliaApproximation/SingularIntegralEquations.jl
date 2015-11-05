@@ -1,4 +1,6 @@
-export HierarchicalVector, partitionvector, ishierarchical, degree
+export HierarchicalVector, partition, degree
+
+degree(A)=0
 
 ##
 # Represent a binary hierarchical vector
@@ -7,20 +9,6 @@ export HierarchicalVector, partitionvector, ishierarchical, degree
 abstract AbstractHierarchicalArray{SV,T,HS,N} <: AbstractArray{T,N}
 
 typealias AbstractHierarchicalVector{S,T,HS} AbstractHierarchicalArray{S,T,HS,1}
-
-
-degree{S,T}(::AbstractHierarchicalVector{S,T,NTuple{2,S}}) = 1
-degree{S,T,HS}(::AbstractHierarchicalVector{S,T,NTuple{2,HS}}) = 1+degree(super(HS))
-degree{S,T,HS}(::AbstractHierarchicalVector{S,T,Tuple{S,HS}}) = 1+degree(super(HS))
-degree{S,T,HS}(::AbstractHierarchicalVector{S,T,Tuple{HS,S}}) = 1+degree(super(HS))
-degree{S,T,HS1,HS2}(::AbstractHierarchicalVector{S,T,Tuple{HS1,HS2}}) = 1+max(degree(super(HS1)),degree(super(HS2)))
-
-degree{S,T}(::Type{AbstractHierarchicalVector{S,T,NTuple{2,S}}}) = 1
-degree{S,T,HS}(::Type{AbstractHierarchicalVector{S,T,NTuple{2,HS}}}) = 1+degree(super(HS))
-degree{S,T,HS}(::Type{AbstractHierarchicalVector{S,T,Tuple{S,HS}}}) = 1+degree(super(HS))
-degree{S,T,HS}(::Type{AbstractHierarchicalVector{S,T,Tuple{HS,S}}}) = 1+degree(super(HS))
-degree{S,T,HS1,HS2}(::Type{AbstractHierarchicalVector{S,T,Tuple{HS1,HS2}}}) = 1+max(degree(super(HS1)),degree(super(HS2)))
-
 
 type HierarchicalVector{S,T,HS} <: AbstractHierarchicalVector{S,T,HS}
     data::HS
@@ -51,14 +39,16 @@ Base.similar{SS,V,T}(H::HierarchicalVector{SS,V,T}, S) = HierarchicalVector(map(
 
 data(H::HierarchicalVector) = H.data
 
-partitionvector(H::HierarchicalVector) = data(H)
+degree(H::HierarchicalVector) = 1+mapreduce(degree,max,data(H))
 
-function partitionvector(H::Vector{HierarchicalVector})
+partition(H::HierarchicalVector) = data(H)
+
+function partition(H::Vector{HierarchicalVector})
     n = length(H)
-    H11,H12 = partitionvector(H[1])
+    H11,H12 = partition(H[1])
     H1,H2 = fill(H11,n),fill(H12,n)
     for i=1:n
-        H1[i],H2[i] = partitionvector(H[i])
+        H1[i],H2[i] = partition(H[i])
     end
     H1,H2
 end

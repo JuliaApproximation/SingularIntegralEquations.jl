@@ -258,5 +258,5 @@ end
 
 function Base.getindex{G<:GreensFun,L<:LowRankFun,T}(⨍::DefiniteLineIntegral,H::HierarchicalMatrix{G,GreensFun{L,T}})
     H11,H22 = diagonaldata(H)
-    HierarchicalMatrix((DefiniteLineIntegral(domain(H11)[2])[H11],DefiniteLineIntegral(domain(H22)[2])[H22]),map(LowRankIntegralOperator,offdiagonaldata(H)))
+    HierarchicalOperator((DefiniteLineIntegral(domain(H11)[2])[H11],DefiniteLineIntegral(domain(H22)[2])[H22]),map(LowRankIntegralOperator,offdiagonaldata(H)))
 end

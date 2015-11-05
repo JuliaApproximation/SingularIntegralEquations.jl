@@ -4,24 +4,24 @@
 
 # Continuous analogues for low-rank operators case
 
-\{U<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,f)
-\{U<:Operator,V<:AbstractLowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F}) = hierarchicalsolve(H,f)
+\{U<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalOperator{U,V},f::Fun) = hierarchicalsolve(H,f)
+\{U<:Operator,V<:AbstractLowRankOperator,F<:Fun}(H::HierarchicalOperator{U,V},f::Vector{F}) = hierarchicalsolve(H,f)
 
-hierarchicalsolve{U<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalMatrix{U,V},f::Fun) = hierarchicalsolve(H,[f])[1]
+hierarchicalsolve{U<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalOperator{U,V},f::Fun) = hierarchicalsolve(H,[f])[1]
 
 hierarchicalsolve(H::Operator,f::Fun) = H\f
 hierarchicalsolve{F<:Fun}(H::Operator,f::Vector{F}) = vec(H\transpose(f))
 
-function hierarchicalsolve{U<:Operator,V<:AbstractLowRankOperator,F<:Fun}(H::HierarchicalMatrix{U,V},f::Vector{F})
+function hierarchicalsolve{U<:Operator,V<:AbstractLowRankOperator,F<:Fun}(H::HierarchicalOperator{U,V},f::Vector{F})
     N,nf = length(space(first(f))),length(f)
 
     # Pre-compute Factorization
 
     !isfactored(H) && factorize!(H)
 
-    # Partition HierarchicalMatrix
+    # Partition HierarchicalOperator
 
-    (H11,H22),(H21,H12) = partitionmatrix(H)
+    (H11,H22),(H21,H12) = partition(H)
 
     # Off-diagonal low-rank matrix assembly
 
@@ -30,7 +30,7 @@ function hierarchicalsolve{U<:Operator,V<:AbstractLowRankOperator,F<:Fun}(H::Hie
 
     # Partition the right-hand side
 
-    (f1,f2) = partitionfun(f)
+    (f1,f2) = partition(f)
 
     # Solve recursively
 
@@ -42,18 +42,18 @@ function hierarchicalsolve{U<:Operator,V<:AbstractLowRankOperator,F<:Fun}(H::Hie
 
     # Solve again with updated right-hand sides
 
-    RHS1 = f1 - At_mul_B(v12,U12)
-    RHS2 = f2 - At_mul_B(v21,U21)
+    RHS1 = f1 - v12.'*U12
+    RHS2 = f2 - v21.'*U21
 
     sol = [hierarchicalsolve(H11,RHS1);hierarchicalsolve(H22,RHS2)]
 
     return assemblesolution(sol,N,nf)
 end
 
-function factorize!{U<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalMatrix{U,V})
-    # Partition HierarchicalMatrix
+function factorize!{U<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalOperator{U,V})
+    # Partition HierarchicalOperator
 
-    (H11,H22),(H21,H12) = partitionmatrix(H)
+    (H11,H22),(H21,H12) = partition(H)
 
     # Off-diagonal low-rank matrix assembly
 
@@ -123,9 +123,7 @@ end
 
 # Utilities
 
-blockrank(H::Operator)=Inf
-
-function partitionfun{PWS<:PiecewiseSpace,T}(f::Fun{PWS,T})
+function partition{PWS<:PiecewiseSpace,T}(f::Fun{PWS,T})
     N = length(space(f))
     N2 = div(N,2)
     if N2 == 1
@@ -135,7 +133,7 @@ function partitionfun{PWS<:PiecewiseSpace,T}(f::Fun{PWS,T})
     end
 end
 
-function partitionfun{PWS<:PiecewiseSpace,T}(f::Vector{Fun{PWS,T}})
+function partition{PWS<:PiecewiseSpace,T}(f::Vector{Fun{PWS,T}})
     N = length(space(first(f)))
     N2 = div(N,2)
     if N2 == 1

@@ -23,7 +23,7 @@ a = rand(5);b = rand(5);v = HierarchicalVector((a,b)); V = HierarchicalVector((v
 
 @test abs(cumsum(v)[end]-sum(v)) < 10eps()
 
-@test partitionvector(V) == (v,v)
+@test partition(V) == (v,v)
 
 w = v+im*v
 u = copy(w)

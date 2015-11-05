@@ -35,7 +35,9 @@ function Base.writemime{F<:GreensFun,L<:LowRankFun,T}(io::IO, ::MIME"text/plain"
     show(io,blockrank(H))
 end
 
-function Base.writemime{U<:Operator,V<:AbstractLowRankOperator}(io::IO, ::MIME"text/plain", H::HierarchicalMatrix{U,V})
-    print(io,"Degree-$(degree(H)) HierarchicalMatrix of Operators with blockwise ranks:\n")
+## HierarchicalOperator{U<:Operator,V<:AbstractLowRankOperator}
+
+function Base.writemime{U<:Operator,V<:AbstractLowRankOperator}(io::IO, ::MIME"text/plain", H::HierarchicalOperator{U,V})
+    print(io,"Degree-$(degree(H)) HierarchicalOperator with blockwise ranks:\n")
     show(io,blockrank(H))
 end

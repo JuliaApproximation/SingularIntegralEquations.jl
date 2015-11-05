@@ -17,7 +17,7 @@ function hierarchicalsolve{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMa
 
     # Partition HierarchicalMatrix
 
-    (H11,H22),(H21,H12) = partitionmatrix(H)
+    (H11,H22),(H21,H12) = partition(H)
 
     # Off-diagonal low-rank matrix assembly
 
@@ -46,7 +46,7 @@ end
 function factorize!{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMatrix{S,U})
     # Partition HierarchicalMatrix
 
-    (H11,H22),(H21,H12) = partitionmatrix(H)
+    (H11,H22),(H21,H12) = partition(H)
 
     # Off-diagonal low-rank matrix assembly
 

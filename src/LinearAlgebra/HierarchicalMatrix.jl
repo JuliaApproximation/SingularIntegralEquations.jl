@@ -1,4 +1,7 @@
-export HierarchicalMatrix, partitionmatrix, isfactored, condest, blockrank
+export HierarchicalMatrix, isfactored, condest, blockrank
+
+condest(A)=1
+blockrank(A)=rank(A)
 
 ##
 # Represent a binary hierarchical matrix
@@ -22,20 +25,6 @@ export HierarchicalMatrix, partitionmatrix, isfactored, condest, blockrank
 ##
 
 typealias AbstractHierarchicalMatrix{S,V,T,HS} AbstractHierarchicalArray{Tuple{S,V},T,HS,2}
-
-
-degree{S,V,T}(::AbstractHierarchicalMatrix{S,V,T,NTuple{2,S}}) = 1
-degree{S,V,T,HS}(::AbstractHierarchicalMatrix{S,V,T,NTuple{2,HS}}) = 1+degree(super(HS))
-degree{S,V,T,HS}(::AbstractHierarchicalMatrix{S,V,T,Tuple{S,HS}}) = 1+degree(super(HS))
-degree{S,V,T,HS}(::AbstractHierarchicalMatrix{S,V,T,Tuple{HS,S}}) = 1+degree(super(HS))
-degree{S,V,T,HS1,HS2}(::AbstractHierarchicalMatrix{S,V,T,Tuple{HS1,HS2}}) = 1+max(degree(super(HS1)),degree(super(HS2)))
-
-degree{S,V,T}(::Type{AbstractHierarchicalMatrix{S,V,T,NTuple{2,S}}}) = 1
-degree{S,V,T,HS}(::Type{AbstractHierarchicalMatrix{S,V,T,NTuple{2,HS}}}) = 1+degree(super(HS))
-degree{S,V,T,HS}(::Type{AbstractHierarchicalMatrix{S,V,T,Tuple{S,HS}}}) = 1+degree(super(HS))
-degree{S,V,T,HS}(::Type{AbstractHierarchicalMatrix{S,V,T,Tuple{HS,S}}}) = 1+degree(super(HS))
-degree{S,V,T,HS1,HS2}(::Type{AbstractHierarchicalMatrix{S,V,T,Tuple{HS1,HS2}}}) = 1+max(degree(super(HS1)),degree(super(HS2)))
-
 
 type HierarchicalMatrix{S,V,T,HS} <: AbstractHierarchicalMatrix{S,V,T,HS}
     diagonaldata::HS
@@ -89,7 +78,9 @@ Base.similar{SS,V,T}(H::HierarchicalMatrix{SS,V,T}, S) = HierarchicalMatrix(map(
 diagonaldata(H::HierarchicalMatrix) = H.diagonaldata
 offdiagonaldata(H::HierarchicalMatrix) = H.offdiagonaldata
 
-partitionmatrix(H::HierarchicalMatrix) = diagonaldata(H),offdiagonaldata(H)
+degree(H::HierarchicalMatrix) = 1+mapreduce(degree,max,diagonaldata(H))
+
+partition(H::HierarchicalMatrix) = diagonaldata(H),offdiagonaldata(H)
 
 collectoffdiagonaldata{S,V,T}(H::HierarchicalMatrix{S,V,T,NTuple{2,S}}) = collect(offdiagonaldata(H))
 function collectoffdiagonaldata{S,V,T,HS}(H::HierarchicalMatrix{S,V,T,HS})
@@ -106,7 +97,7 @@ function collectdiagonaldata{S,V,T,HS}(H::HierarchicalMatrix{S,V,T,HS})
 end
 
 isfactored(H::HierarchicalMatrix) = H.factored
-condest(x)=1
+
 function condest(H::HierarchicalMatrix)
     !isfactored(H) && factorize!(H)
     return cond(H.A)*mapreduce(condest,+,diagonaldata(H))
@@ -167,10 +158,9 @@ Base.copy!(H::HierarchicalMatrix,J::HierarchicalMatrix) = (map(copy!,diagonaldat
 Base.rank(H::HierarchicalMatrix) = rank(full(H))
 Base.cond(H::HierarchicalMatrix) = cond(full(H))
 
-blockrank(A)=rank(A)
 function blockrank(H::HierarchicalMatrix)
     n = degree(H)
-    A = Array{Float64}(2^n,2^n)
+    A = Array{Int64}(2^n,2^n)
     r1,r2 = map(rank,offdiagonaldata(H))
     for j=1:2^(n-1),i=1:2^(n-1)
         A[i+2^(n-1),j] = r1
@@ -209,9 +199,9 @@ function Base.A_mul_B!(b::AbstractVector,D::Base.LinAlg.Diagonal,x::AbstractVect
 end
 
 function Base.A_mul_B!(b::HierarchicalVector,H::HierarchicalMatrix,h::HierarchicalVector)
-    (H11,H22),(H21,H12) = partitionmatrix(H)
-    h1,h2 = partitionvector(h)
-    b1,b2 = partitionvector(b)
+    (H11,H22),(H21,H12) = partition(H)
+    h1,h2 = partition(h)
+    b1,b2 = partition(b)
     A_mul_B!(b1,H12,h2)
     A_mul_B!(b1,H11,h1)
     A_mul_B!(b2,H21,h1)
@@ -220,7 +210,7 @@ function Base.A_mul_B!(b::HierarchicalVector,H::HierarchicalMatrix,h::Hierarchic
 end
 
 function *(H::HierarchicalMatrix,b::Vector)
-    (H11,H22),(H21,H12) = partitionmatrix(H)
+    (H11,H22),(H21,H12) = partition(H)
     m1,m2 = size(H12,1),size(H21,1)
     (b1,b2) = (b[1:m1],b[1+m1:m1+m2])
     HierarchicalVector((H11*b1⊕H12*b2,H21*b1⊕H22*b2))
