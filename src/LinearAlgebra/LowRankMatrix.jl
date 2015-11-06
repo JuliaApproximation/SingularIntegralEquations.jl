@@ -149,8 +149,8 @@ for op in (:+,:-,:.+,:.-)
             @assert size(L) == size(M)
             LowRankMatrix(hcat(L.U,$op(M.U)),hcat(L.V,M.V))
         end
-        $op(L::LowRankMatrix,A::AbstractMatrix) = $op(promote(L,A)...)
-        $op(A::AbstractMatrix,L::LowRankMatrix) = $op(promote(A,L)...)
+        $op(L::LowRankMatrix,A::Matrix) = $op(promote(L,A)...)
+        $op(A::Matrix,L::LowRankMatrix) = $op(promote(A,L)...)
     end
 end
 

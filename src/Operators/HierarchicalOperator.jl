@@ -111,7 +111,7 @@ Base.rank(A::Operator)=Inf
 
 function blockrank(H::HierarchicalOperator)
     n = degree(H)
-    A = Array{Float64}(2^n,2^n)
+    A = Array{Union{Float64,Int64}}(2^n,2^n)
     r1,r2 = map(rank,offdiagonaldata(H))
     for j=1:2^(n-1),i=1:2^(n-1)
         A[i+2^(n-1),j] = r1

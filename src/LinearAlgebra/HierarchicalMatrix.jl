@@ -180,8 +180,8 @@ for op in (:+,:-,:.+,:.-)
         $op(H::HierarchicalMatrix,J::HierarchicalMatrix) = HierarchicalMatrix(map($op,diagonaldata(H),diagonaldata(J)),map($op,offdiagonaldata(H),offdiagonaldata(J)))
         $op(H::HierarchicalMatrix,L::LowRankMatrix) = $op(promote(H,L)...)
         $op(L::LowRankMatrix,H::HierarchicalMatrix) = $op(promote(L,H)...)
-        $op(H::HierarchicalMatrix,A::AbstractMatrix) = $op(promote(H,A)...)
-        $op(A::AbstractMatrix,H::HierarchicalMatrix) = $op(promote(A,H)...)
+        $op(H::HierarchicalMatrix,A::Matrix) = $op(promote(H,A)...)
+        $op(A::Matrix,H::HierarchicalMatrix) = $op(promote(A,H)...)
     end
 end
 
