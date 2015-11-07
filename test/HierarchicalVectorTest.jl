@@ -19,7 +19,7 @@ a = rand(5);b = rand(5);v = HierarchicalVector((a,b)); V = HierarchicalVector((v
 
 @test 2(v⋅v) == V⋅V
 
-@test 1+degree(v) == degree(V)
+@test 1+nlevels(v) == nlevels(V)
 
 @test abs(cumsum(v)[end]-sum(v)) < 10eps()
 

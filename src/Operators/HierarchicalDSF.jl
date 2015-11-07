@@ -37,7 +37,7 @@ for HDSF in (:HierarchicalDomain,:HierarchicalSpace,:HierarchicalFun)
 
         data(H::$HDSF) = H.data
 
-        degree(H::$HDSF) = 1+mapreduce(degree,max,data(H))
+        nlevels(H::$HDSF) = 1+mapreduce(nlevels,max,data(H))
 
         partition(H::$HDSF) = data(H)
 

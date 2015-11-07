@@ -1,6 +1,6 @@
-export HierarchicalVector, partition, degree
+export HierarchicalVector, partition, nlevels
 
-degree(A)=0
+nlevels(A)=0
 
 ##
 # Represent a binary hierarchical vector
@@ -39,7 +39,7 @@ Base.similar{SS,V,T}(H::HierarchicalVector{SS,V,T}, S) = HierarchicalVector(map(
 
 data(H::HierarchicalVector) = H.data
 
-degree(H::HierarchicalVector) = 1+mapreduce(degree,max,data(H))
+nlevels(H::HierarchicalVector) = 1+mapreduce(nlevels,max,data(H))
 
 partition(H::HierarchicalVector) = data(H)
 

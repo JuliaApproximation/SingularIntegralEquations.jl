@@ -244,7 +244,7 @@ function hierarchicalGreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Fun
     end
 end
 
-Base.size{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = 2^degree(H),2^degree(H)
+Base.size{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = 2^nlevels(H),2^nlevels(H)
 
 function domain{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G})
     H11,H22 = diagonaldata(H)

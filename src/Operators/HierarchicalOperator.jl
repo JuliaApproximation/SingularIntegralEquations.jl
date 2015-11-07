@@ -73,7 +73,7 @@ Base.similar{SS,V,T}(H::HierarchicalOperator{SS,V,T}, S) = HierarchicalOperator(
 diagonaldata(H::HierarchicalOperator) = H.diagonaldata
 offdiagonaldata(H::HierarchicalOperator) = H.offdiagonaldata
 
-degree(H::HierarchicalOperator) = 1+mapreduce(degree,max,diagonaldata(H))
+nlevels(H::HierarchicalOperator) = 1+mapreduce(nlevels,max,diagonaldata(H))
 
 partition(H::HierarchicalOperator) = diagonaldata(H),offdiagonaldata(H)
 
@@ -110,7 +110,7 @@ Base.copy!(H::HierarchicalOperator,J::HierarchicalOperator) = (map(copy!,diagona
 Base.rank(A::Operator)=Inf
 
 function blockrank(H::HierarchicalOperator)
-    n = degree(H)
+    n = nlevels(H)
     A = Array{Union{Float64,Int64}}(2^n,2^n)
     r1,r2 = map(rank,offdiagonaldata(H))
     for j=1:2^(n-1),i=1:2^(n-1)

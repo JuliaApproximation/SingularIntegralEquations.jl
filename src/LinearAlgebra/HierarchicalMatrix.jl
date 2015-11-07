@@ -78,7 +78,7 @@ Base.similar{SS,V,T}(H::HierarchicalMatrix{SS,V,T}, S) = HierarchicalMatrix(map(
 diagonaldata(H::HierarchicalMatrix) = H.diagonaldata
 offdiagonaldata(H::HierarchicalMatrix) = H.offdiagonaldata
 
-degree(H::HierarchicalMatrix) = 1+mapreduce(degree,max,diagonaldata(H))
+nlevels(H::HierarchicalMatrix) = 1+mapreduce(nlevels,max,diagonaldata(H))
 
 partition(H::HierarchicalMatrix) = diagonaldata(H),offdiagonaldata(H)
 
@@ -159,7 +159,7 @@ Base.rank(H::HierarchicalMatrix) = rank(full(H))
 Base.cond(H::HierarchicalMatrix) = cond(full(H))
 
 function blockrank(H::HierarchicalMatrix)
-    n = degree(H)
+    n = nlevels(H)
     A = Array{Int64}(2^n,2^n)
     r1,r2 = map(rank,offdiagonaldata(H))
     for j=1:2^(n-1),i=1:2^(n-1)

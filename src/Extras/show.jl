@@ -31,13 +31,13 @@ end
 # Base.writemime because HierarchicalMatrix <: AbstractArray
 
 function Base.writemime{F<:GreensFun,L<:LowRankFun,T}(io::IO, ::MIME"text/plain", H::HierarchicalMatrix{F,GreensFun{L,T}})
-    print(io,"Degree-$(degree(H)) HierarchicalMatrix of GreensFun's with blockwise ranks:\n")
+    print(io,"$(nlevels(H))-level HierarchicalMatrix of GreensFun's with blockwise ranks:\n")
     show(io,blockrank(H))
 end
 
 ## HierarchicalOperator{U<:Operator,V<:AbstractLowRankOperator}
 
 function Base.writemime{U<:Operator,V<:AbstractLowRankOperator}(io::IO, ::MIME"text/plain", H::HierarchicalOperator{U,V})
-    print(io,"Degree-$(degree(H)) HierarchicalOperator with blockwise ranks:\n")
+    print(io,"$(nlevels(H))-level HierarchicalOperator with blockwise ranks:\n")
     show(io,blockrank(H))
 end
