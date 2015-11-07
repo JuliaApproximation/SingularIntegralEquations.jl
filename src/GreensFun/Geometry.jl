@@ -1,13 +1,20 @@
+center(x) = x
+dist(x,y) = sqrt(dist2(x,y))
 
-# Nearest distance from a point to a domain
+center(d::Circle) = d.center
+center(d::Interval) = mean((first(d),last(d)))
 
-dist(c::Number,d::Domain) = sqrt(dist2(c,d))
+# distance-squared between two numbers
+
+dist2(x::Number,y::Number) = abs2(x-y)
 
 # Nearest distance between domains
 
 dist(d1::Domain,d2::Domain) = minimum(extrema(d1,d2))
+dist2(d1::Domain,d2::Domain) = minimum(extrema2(d1,d2))
 
 # Extremal distances between domains
+
 function Base.extrema(d1::Domain,d2::Domain)
     ext2 = extrema2(d1,d2)
     sqrt(ext2[1]),sqrt(ext2[2])
