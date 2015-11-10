@@ -41,6 +41,8 @@ slices{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(x->x.A,vcat,G.kernels),mapred
 slices{L<:LowRankFun}(G::GreensFun{L},k::Int) = slices(G)[k]
 LowRankIntegralOperator{L<:LowRankFun}(G::GreensFun{L}) = LowRankIntegralOperator(slices(G)...)
 
+Base.promote_rule{K,T,K1,T1}(::Type{GreensFun{K,T}},::Type{GreensFun{K1,T1}}) = GreensFun{promote_type(K,K1),promote_type(T,T1)}
+
 Base.getindex(⨍::Operator,G::GreensFun) = mapreduce(f->getindex(⨍,f),+,G.kernels)
 
 function Base.getindex{F<:BivariateFun}(⨍::DefiniteLineIntegral,B::Matrix{F})
@@ -144,11 +146,8 @@ end
 
 # Array of GreensFun on TensorSpace of PiecewiseSpaces
 
-function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:lowrank,hierarchical::Bool=false,tolerance::Symbol=:absolute,kwds...)
+function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...)
     M,N = length(ss[1]),length(ss[2])
-    if hierarchical
-        return hierarchicalGreensFun(f,ss;method=method,tolerance=tolerance,kwds...)
-    end
     @assert M == N
     G = Array(GreensFun,N,N)
     if method == :standard
@@ -225,26 +224,34 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,g::Fun
     mapreduce(typeof,promote_type,G)[G[i,j] for i=1:N,j=1:N]
 end
 
-function hierarchicalGreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...)
-    N = length(ss[2])
-    @assert length(ss[1]) == N && ispow2(N)
-    N2 = div(N,2)
-    meth1 = method == :lowrank ? :standard : method
-    meth2 = method == :Cholesky || method == :lowrank ? :standard : method
-    if N2 == 1
-        G11 = GreensFun(LowRankFun(f,ss[1,1];method=meth1,kwds...))
-        G22 = GreensFun(LowRankFun(f,ss[2,2];method=meth1,kwds...))
-        G21 = GreensFun(LowRankFun(f,ss[2,1];method=meth2,kwds...))
-        G12 = method == :Cholesky ? transpose(G21) : GreensFun(LowRankFun(f,ss[1,2];method=meth2,kwds...))
-        return HierarchicalMatrix((G11,G22),(G21,G12))
-    elseif N2 ≥ 2
-        G21 = GreensFun(LowRankFun(f,ss[1+N2:N,1:N2];method=meth2,kwds...))
-        G12 = method == :Cholesky ? transpose(G21) : GreensFun(LowRankFun(f,ss[1:N2,1+N2:N];method=meth2,kwds...))
-        return HierarchicalMatrix((hierarchicalGreensFun(f,ss[1:N2,1:N2];method=method,tolerance=tolerance,kwds...),hierarchicalGreensFun(f,ss[1+N2:N,1+N2:N];method=method,tolerance=tolerance,kwds...)),(G21,G12))
-    end
+# HierarchicalMatrix of GreensFuns on TensorSpace of HierarchicalSpaces
+
+converttoPiecewiseSpace(H::Space) = H
+converttoPiecewiseSpace(H::HierarchicalSpace) = PiecewiseSpace(H)
+
+function partition{HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}(ss::ApproxFun.TensorSpace{Tuple{HS1,HS2}})
+    ss11,ss12 = partition(ss[1])
+    ss21,ss22 = partition(ss[2])
+    (ss11⊗ss21,ss12⊗ss22),(converttoPiecewiseSpace(ss12)⊗converttoPiecewiseSpace(ss21),converttoPiecewiseSpace(ss11)⊗converttoPiecewiseSpace(ss22))
 end
 
-Base.size{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = 2^nlevels(H),2^nlevels(H)
+function partition{O,HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}(ss::CauchyWeight{O,Tuple{HS1,HS2}})
+    ss11,ss12 = partition(ss[1])
+    ss21,ss22 = partition(ss[2])
+    (CauchyWeight(ss11⊗ss21,O),CauchyWeight(ss12⊗ss22,O)),(CauchyWeight(converttoPiecewiseSpace(ss12)⊗converttoPiecewiseSpace(ss21),O),CauchyWeight(converttoPiecewiseSpace(ss11)⊗converttoPiecewiseSpace(ss22),O))
+end
+
+function GreensFun{HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}(f::Function,ss::AbstractProductSpace{Tuple{HS1,HS2}};method::Symbol=:lowrank,kwds...)
+    (ss11,ss22),(ss21,ss12) = partition(ss)
+    meth1 = method == :Cholesky || method == :lowrank ? :standard : method
+    G11 = GreensFun(f,ss11;method=method,kwds...)
+    G22 = GreensFun(f,ss22;method=method,kwds...)
+    G21 = GreensFun(LowRankFun(f,ss21;method=meth1,kwds...))
+    G12 = method == :Cholesky ? transpose(G21) : GreensFun(LowRankFun(f,ss12;method=meth1,kwds...))
+    return HierarchicalMatrix((G11,G22),(G21,G12))
+end
+
+blocksize{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = map(length,domain(H).domains)
 
 function domain{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G})
     H11,H22 = diagonaldata(H)

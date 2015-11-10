@@ -1,5 +1,6 @@
 export HierarchicalVector, partition, nlevels
 
+partition(x)=x
 nlevels(A)=0
 
 ##
@@ -71,7 +72,20 @@ function Base.size{S<:AbstractVector}(H::HierarchicalVector{S})
     (size(H1)[1]+size(H2)[1],)
 end
 
-function Base.getindex{S<:AbstractVector}(H::HierarchicalVector{S},i::Int)
+function Base.size{S<:Number}(H::HierarchicalVector{S})
+    H1,H2 = data(H)
+    if typeof(H1) <: S && typeof(H2) <: S
+        return (2,)
+    elseif typeof(H1) <: S
+        return (1+size(H2)[1],)
+    elseif typeof(H2) <: S
+        return (size(H1)[1]+1,)
+    else
+        return (size(H1)[1]+size(H2)[1],)
+    end
+end
+
+function Base.getindex{S<:Union{Number,AbstractVector}}(H::HierarchicalVector{S},i::Int)
     H1,H2 = data(H)
     m1,m2 = length(H1),length(H2)
     if 1 ≤ i ≤ m1
@@ -82,8 +96,8 @@ function Base.getindex{S<:AbstractVector}(H::HierarchicalVector{S},i::Int)
         throw(BoundsError())
     end
 end
-Base.getindex{S<:AbstractVector}(H::HierarchicalVector{S},ir::Range) = eltype(H)[H[i] for i=ir]
-Base.full{S<:AbstractVector}(H::HierarchicalVector{S})=H[1:size(H,1)]
+Base.getindex{S<:Union{Number,AbstractVector}}(H::HierarchicalVector{S},ir::Range) = eltype(H)[H[i] for i=ir]
+Base.full{S<:Union{Number,AbstractVector}}(H::HierarchicalVector{S})=H[1:size(H,1)]
 
 # algebra
 
@@ -94,11 +108,11 @@ for op in (:+,:-,:.+,:.-,:.*)
 
         $op(H::HierarchicalVector) = HierarchicalVector(map($op,data(H)))
         $op(H::HierarchicalVector,a::Number) = HierarchicalVector(($op(H.data[1],a),$op(H.data[2],a)))
-        $op(a::Number,H::HierarchicalVector) = $op(H,a)
+        $op(a::Number,H::HierarchicalVector) = HierarchicalVector(($op(a,H.data[1]),$op(a,H.data[2])))
 
         $op(H::HierarchicalVector,J::HierarchicalVector) = HierarchicalVector(map($op,data(H),data(J)))
         $op(H::HierarchicalVector,J::Vector) = $op(full(H),J)
-        $op(J::Vector,H::HierarchicalVector) = $op(H,J)
+        $op(J::Vector,H::HierarchicalVector) = $op(J,full(H))
     end
 end
 

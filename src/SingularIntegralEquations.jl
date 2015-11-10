@@ -12,7 +12,7 @@ import Base: values,getindex,setindex!,*,.*,+,.+,-,.-,==,<,<=,>,
 
 
 import ApproxFun
-import ApproxFun: bandinds,SpaceOperator,dotu,eps2,
+import ApproxFun: bandinds,SpaceOperator,dotu,linedotu,eps2,
                   plan_transform,plan_itransform,transform,itransform,transform!,itransform!,
                   rangespace, domainspace, addentries!, BandedOperator, AnySpace,
                   canonicalspace, domain, space, Space, promotedomainspace, promoterangespace, AnyDomain, CalculusOperator,

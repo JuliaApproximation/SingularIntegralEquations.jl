@@ -14,7 +14,7 @@ D = Array(Diagonal{Float64},8)
 H = HierarchicalMatrix(D,L)
 
 @test rank(H) == 400
-@test blockrank(H) == fill(2,8,8)+diagm(fill(48,8))
+#@test blockrank(H) == fill(2,8,8)+diagm(fill(48,8))
 @test isfactored(H) == false
 
 B = Array(Vector{Float64},8)
@@ -59,7 +59,9 @@ println("Adaptive QR  forward error norm is: ",norm(⨍[G]*u1-f))
 
 @test norm(⨍[G]*u1-f) < 10eps()
 
-G1 = GreensFun((x,y)->1/2,CauchyWeight(Space(dom)⊗Space(dom),0);method=:Cholesky,hierarchical=true)
+hdom = clustertree(dom)
+
+G1 = GreensFun((x,y)->1/2,CauchyWeight(Space(hdom)⊗Space(hdom),0);method=:Cholesky)
 H = ⨍[G1]
 
 @time u2 = H\f

@@ -27,6 +27,20 @@ function Base.show(io::IO,G::GreensFun)
     print(io,"\n}")
 end
 
+## HierarchicalDomain
+
+function Base.show{S,T}(io::IO, H::HierarchicalDomain{S,T})
+    print(io,"$(nlevels(H))-level HierarchicalDomain{$S,$T}:\n")
+    show(io,UnionDomain(collectdata(H)))
+end
+
+## HierarchicalSpace
+
+function Base.show{S,T}(io::IO, H::HierarchicalSpace{S,T})
+    print(io,"$(nlevels(H))-level HierarchicalSpace{$S,$T}:\n")
+    show(io,PiecewiseSpace(collectdata(H)))
+end
+
 ## HierarchicalMatrix{F<:GreensFun,G<:GreensFun}
 # Base.writemime because HierarchicalMatrix <: AbstractArray
 

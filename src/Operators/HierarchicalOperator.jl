@@ -21,15 +21,15 @@ export HierarchicalOperator
 # top right, then followed recursively by top left and bottom right.
 ##
 
-type HierarchicalOperator{S,V,T,HS} <: BandedOperator{T}
+type HierarchicalOperator{S,V,T,HS,HV} <: BandedOperator{T}
     diagonaldata::HS
-    offdiagonaldata::NTuple{2,V} # Tuple of two off-diagonal V
+    offdiagonaldata::HV
 
     A::Matrix{T} # Cache of matrix for pivot computation
     factorization::PivotLDU{T,Matrix{T}} # Cache of factorization of A for pivot computation
     factored::Bool
 
-    function HierarchicalOperator(diagonaldata::HS,offdiagonaldata::NTuple{2,V})
+    function HierarchicalOperator(diagonaldata::HS,offdiagonaldata::HV)
         H = new()
         H.diagonaldata = diagonaldata
         H.offdiagonaldata = offdiagonaldata
@@ -43,13 +43,12 @@ type HierarchicalOperator{S,V,T,HS} <: BandedOperator{T}
     end
 end
 
-HierarchicalOperator{S,V}(diagonaldata::NTuple{2,S},offdiagonaldata::NTuple{2,V}) = HierarchicalOperator{S,V,promote_type(eltype(S),eltype(V)),NTuple{2,S}}(diagonaldata,offdiagonaldata)
 
-HierarchicalOperator{S,V,V1,T,HS}(diagonaldata::Tuple{S,HierarchicalOperator{S,V1,T,HS}},offdiagonaldata::NTuple{2,V}) = HierarchicalOperator{S,V,promote_type(eltype(S),eltype(V),T),Tuple{S,HierarchicalOperator{S,V1,T,HS}}}(diagonaldata,offdiagonaldata)
-HierarchicalOperator{S,V,V1,T,HS}(diagonaldata::Tuple{HierarchicalOperator{S,V1,T,HS},S},offdiagonaldata::NTuple{2,V}) = HierarchicalOperator{S,V,promote_type(eltype(S),eltype(V),T),Tuple{HierarchicalOperator{S,V1,T,HS},S}}(diagonaldata,offdiagonaldata)
+HierarchicalOperator{S1,S2,V1,V2}(diagonaldata::Tuple{S1,S2},offdiagonaldata::Tuple{V1,V2}) = HierarchicalOperator{promote_type(S1,S2),promote_type(V1,V2),promote_type(eltype(S1),eltype(S2),eltype(V1),eltype(V2)),Tuple{S1,S2},Tuple{V1,V2}}(diagonaldata,offdiagonaldata)
+HierarchicalOperator{S1,S2,V1,V2,V3,V4,T1,T2,HS1,HS2,HV1,HV2}(diagonaldata::Tuple{HierarchicalOperator{S1,V1,T1,HS1,HV1},HierarchicalOperator{S2,V2,T2,HS2,HV2}},offdiagonaldata::Tuple{V3,V4}) = HierarchicalOperator{promote_type(S1,S2),promote_type(V1,V2,V3,V4),promote_type(eltype(S1),eltype(S2),eltype(V1),eltype(V2),eltype(V3),eltype(V4),T1,T2),Tuple{HierarchicalOperator{S1,V1,T1,HS1,HV1},HierarchicalOperator{S2,V2,T2,HS2,HV2}},Tuple{V3,V4}}(diagonaldata,offdiagonaldata)
+HierarchicalOperator{S,S1,V,V1,V2,T,HS,HV}(diagonaldata::Tuple{S1,HierarchicalOperator{S,V,T,HS,HV}},offdiagonaldata::Tuple{V1,V2}) = HierarchicalOperator{promote_type(S,S1),promote_type(V,V1,V2),promote_type(eltype(S),eltype(S1),eltype(V),eltype(V1),eltype(V2),T),Tuple{S1,HierarchicalOperator{S,V,T,HS,HV}},Tuple{V1,V2}}(diagonaldata,offdiagonaldata)
+HierarchicalOperator{S,S1,V,V1,V2,T,HS,HV}(diagonaldata::Tuple{HierarchicalOperator{S,V,T,HS,HV},S1},offdiagonaldata::Tuple{V1,V2}) = HierarchicalOperator{promote_type(S,S1),promote_type(V,V1,V2),promote_type(eltype(S),eltype(S1),eltype(V),eltype(V1),eltype(V2),T),Tuple{HierarchicalOperator{S,V,T,HS,HV},S1},Tuple{V1,V2}}(diagonaldata,offdiagonaldata)
 
-HierarchicalOperator{S,V,V1,T,HS}(diagonaldata::NTuple{2,HierarchicalOperator{S,V1,T,HS}},offdiagonaldata::NTuple{2,V}) = HierarchicalOperator{S,V,promote_type(eltype(S),eltype(V),T),NTuple{2,HierarchicalOperator{S,V1,T,HS}}}(diagonaldata,offdiagonaldata)
-HierarchicalOperator{S,V,V1,V2,T,HS1,HS2}(diagonaldata::Tuple{HierarchicalOperator{S,V1,T,HS1},HierarchicalOperator{S,V2,T,HS2}},offdiagonaldata::NTuple{2,V}) = HierarchicalOperator{S,V,promote_type(eltype(S),eltype(V),T),Tuple{HierarchicalOperator{S,V1,T,HS1},HierarchicalOperator{S,V2,T,HS2}}}(diagonaldata,offdiagonaldata)
 
 HierarchicalOperator(diagonaldata::Vector,offdiagonaldata::Vector)=HierarchicalOperator(diagonaldata,offdiagonaldata,round(Int,log2(length(diagonaldata))))
 
@@ -98,8 +97,8 @@ function condest(H::HierarchicalOperator)
     return cond(H.A)*mapreduce(condest,+,diagonaldata(H))
 end
 
-Base.convert{S,V,T,HS}(::Type{HierarchicalOperator{S,V,T,HS}},M::HierarchicalOperator) = HierarchicalOperator(convert(Vector{S},collectdiagonaldata(M)),convert(Vector{V},collectoffdiagonaldata(M)))
-Base.promote_rule{S,V,T,HS,SS,VV,TT,HSS}(::Type{HierarchicalOperator{S,V,T,HS}},::Type{HierarchicalOperator{SS,VV,TT,HSS}})=HierarchicalOperator{promote_type(S,SS),promote_type(V,VV),promote_type(T,TT),promote_type(HS,HSS)}
+Base.convert{S,V,T,HS,HV}(::Type{HierarchicalOperator{S,V,T,HS,HV}},M::HierarchicalOperator) = HierarchicalOperator(convert(Vector{S},collectdiagonaldata(M)),convert(Vector{V},collectoffdiagonaldata(M)))
+Base.promote_rule{S,V,T,HS,HV,SS,VV,TT,HSS,HVV}(::Type{HierarchicalOperator{S,V,T,HS,HV}},::Type{HierarchicalOperator{SS,VV,TT,HSS,HVV}})=HierarchicalOperator{promote_type(S,SS),promote_type(V,VV),promote_type(T,TT),promote_type(HS,HSS),promote_type(HV,HVV)}
 
 Base.transpose(H::HierarchicalOperator) = HierarchicalOperator(map(transpose,diagonaldata(H)),map(transpose,reverse(offdiagonaldata(H))))
 Base.ctranspose(H::HierarchicalOperator) = HierarchicalOperator(map(ctranspose,diagonaldata(H)),map(ctranspose,reverse(offdiagonaldata(H))))
@@ -110,20 +109,31 @@ Base.copy!(H::HierarchicalOperator,J::HierarchicalOperator) = (map(copy!,diagona
 Base.rank(A::Operator)=Inf
 
 function blockrank(H::HierarchicalOperator)
-    n = nlevels(H)
-    A = Array{Union{Float64,Int64}}(2^n,2^n)
+    m,n = blocksize(H)
+    A = Array{Number}(m,n)
+    (m1,n1),(m2,n2) = map(blocksize,diagonaldata(H))
     r1,r2 = map(rank,offdiagonaldata(H))
-    for j=1:2^(n-1),i=1:2^(n-1)
-        A[i+2^(n-1),j] = r1
-        A[i,j+2^(n-1)] = r2
+    for j=1:n1,i=1:m2
+        A[i+m1,j] = r1
+    end
+    for j=1:n2,i=1:m1
+        A[i,j+n1] = r2
     end
     A11,A22 = map(blockrank,diagonaldata(H))
-    for j=1:2^(n-1),i=1:2^(n-1)
+    for j=1:n1,i=1:m1
         A[i,j] = A11[i,j]
-        A[i+2^(n-1),j+2^(n-1)] = A22[i,j]
+    end
+    for j=1:n2,i=1:m2
+        A[i+m1,j+n1] = A22[i,j]
     end
     A
 end
+
+for OP in (:domainspace,:rangespace)
+    @eval $OP{S<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalOperator{S,V})=PiecewiseSpace(map($OP,diagonaldata(H))...)
+end
+
+blocksize{U<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalOperator{U,V}) = length(domainspace(H)),length(rangespace(H)) # TODO: check it's not rangespace...domainspace
 
 for op in (:+,:-,:.+,:.-)
     @eval begin

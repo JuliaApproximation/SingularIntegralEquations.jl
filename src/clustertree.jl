@@ -1,10 +1,8 @@
 export clustertree
 
 #
-# clustertree partitions a list of objects x by minimizing distances
-# along coordinate axes in 2D.
-# It uses complex numbers to represent points in the plane R², returning
-# a HierarchicalVector of integers.
+# clustertree partitions a list of objects x by minimizing distances along
+# coordinate axes in 2D. It uses complex numbers to represent points in the plane R².
 #
 
 clustertree(d::UnionDomain) = clustertree(d.domains)
@@ -14,69 +12,51 @@ clustertree(x::Tuple) = clustertree(collect(x))
 function clustertree(x::AbstractVector)
     A = adjacency(x)
     c = map(center,x)
-    clustertree(A,c)
+    clustertree(A,c,x)
 end
 
-clustertree(A::AbstractMatrix,c::AbstractVector) = clustertree(A,c,1:size(A,1))
+clustertree(A::AbstractMatrix,c::AbstractVector,x::AbstractVector) = clustertree(A,c,x,1:size(A,1))
 
-function clustertree(A::AbstractMatrix,c::AbstractVector,p::AbstractVector)
-    i,j = myindmax(A,p)
+for (TYP,HTYP) in ((:Number,:HierarchicalVector),(:Domain,:HierarchicalDomain))
+    @eval begin
+        function clustertree{T<:$TYP}(A::AbstractMatrix,c::AbstractVector,x::AbstractVector{T},p::AbstractVector)
+            i,j = myindmax(A,p)
 
-    cmax = c[i]-c[j]
-    rbar,ibar = abs2(real(cmax)),abs2(imag(cmax))
-    rmid,imid = reim(.5(c[i]+c[j]))
+            cmax = c[i]-c[j]
+            rbar,ibar = abs2(real(cmax)),abs2(imag(cmax))
+            rmid,imid = reim((c[i]+c[j])/2)
 
-    if rbar > ibar
-        np₁,np₂ = 0,0
-        for k in p
-            if real(c[k]) < rmid
-                np₁+=1
-            else
-                np₂+=1
+            (f,mid) = rbar > ibar ? (real,rmid) : (imag,imid)
+
+            np₁,np₂ = 0,0
+            for k in p
+                if f(c[k]) < mid
+                    np₁+=1
+                else
+                    np₂+=1
+                end
             end
-        end
-        p₁,p₂ = zeros(Int,np₁),zeros(Int,np₂)
-        kp₁,kp₂ = 1,1
-        for k in p
-            if real(c[k]) < rmid
-                p₁[kp₁] = k
-                kp₁+=1
-            else
-                p₂[kp₂] = k
-                kp₂+=1
+            p₁,p₂ = zeros(Int,np₁),zeros(Int,np₂)
+            kp₁,kp₂ = 1,1
+            for k in p
+                if f(c[k]) < mid
+                    p₁[kp₁] = k
+                    kp₁+=1
+                else
+                    p₂[kp₂] = k
+                    kp₂+=1
+                end
             end
-        end
 
-        if length(p₁) == 1 || length(p₂) == 1
-            return HierarchicalVector((p₁,p₂))
-        else
-            return HierarchicalVector((clustertree(A,c,p₁),clustertree(A,c,p₂)))
-        end
-    else
-        np₁,np₂ = 0,0
-        for k in p
-            if imag(c[k]) < imid
-                np₁+=1
+            if length(p₁) == 1 && length(p₂) == 1
+                return $HTYP((x[p₁[1]],x[p₂[1]]))
+            elseif length(p₁) == 1
+                return $HTYP((x[p₁[1]],clustertree(A,c,x,p₂)))
+            elseif length(p₂) == 1
+                return $HTYP((clustertree(A,c,x,p₁),x[p₂[1]]))
             else
-                np₂+=1
+                return $HTYP((clustertree(A,c,x,p₁),clustertree(A,c,x,p₂)))
             end
-        end
-        p₁,p₂ = zeros(Int,np₁),zeros(Int,np₂)
-        kp₁,kp₂ = 1,1
-        for k in p
-            if imag(c[k]) < imid
-                p₁[kp₁] = k
-                kp₁+=1
-            else
-                p₂[kp₂] = k
-                kp₂+=1
-            end
-        end
-
-        if length(p₁) == 1 || length(p₂) == 1
-            return HierarchicalVector((p₁,p₂))
-        else
-            return HierarchicalVector((clustertree(A,c,p₁),clustertree(A,c,p₂)))
         end
     end
 end

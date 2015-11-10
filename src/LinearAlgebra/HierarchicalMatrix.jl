@@ -1,6 +1,7 @@
 export HierarchicalMatrix, isfactored, condest, blockrank
 
 condest(A)=1
+blocksize(A) = (1,1)
 blockrank(A)=rank(A)
 
 ##
@@ -24,17 +25,17 @@ blockrank(A)=rank(A)
 # top right, then followed recursively by top left and bottom right.
 ##
 
-typealias AbstractHierarchicalMatrix{S,V,T,HS} AbstractHierarchicalArray{Tuple{S,V},T,HS,2}
+typealias AbstractHierarchicalMatrix{S,V,T,HS,HV} AbstractHierarchicalArray{Tuple{S,V},T,Tuple{HS,HV},2}
 
-type HierarchicalMatrix{S,V,T,HS} <: AbstractHierarchicalMatrix{S,V,T,HS}
+type HierarchicalMatrix{S,V,T,HS,HV} <: AbstractHierarchicalMatrix{S,V,T,HS,HV}
     diagonaldata::HS
-    offdiagonaldata::NTuple{2,V} # Tuple of two off-diagonal V
+    offdiagonaldata::HV
 
     A::Matrix{T} # Cache of matrix for pivot computation
     factorization::PivotLDU{T,Matrix{T}} # Cache of factorization of A for pivot computation
     factored::Bool
 
-    function HierarchicalMatrix(diagonaldata::HS,offdiagonaldata::NTuple{2,V})
+    function HierarchicalMatrix(diagonaldata::HS,offdiagonaldata::HV)
         H = new()
         H.diagonaldata = diagonaldata
         H.offdiagonaldata = offdiagonaldata
@@ -48,13 +49,12 @@ type HierarchicalMatrix{S,V,T,HS} <: AbstractHierarchicalMatrix{S,V,T,HS}
     end
 end
 
-HierarchicalMatrix{S,V}(diagonaldata::NTuple{2,S},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,promote_type(eltype(S),eltype(V)),NTuple{2,S}}(diagonaldata,offdiagonaldata)
 
-HierarchicalMatrix{S,V,V1,T,HS}(diagonaldata::Tuple{S,HierarchicalMatrix{S,V1,T,HS}},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,promote_type(eltype(S),eltype(V),T),Tuple{S,HierarchicalMatrix{S,V1,T,HS}}}(diagonaldata,offdiagonaldata)
-HierarchicalMatrix{S,V,V1,T,HS}(diagonaldata::Tuple{HierarchicalMatrix{S,V1,T,HS},S},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,promote_type(eltype(S),eltype(V),T),Tuple{HierarchicalMatrix{S,V1,T,HS},S}}(diagonaldata,offdiagonaldata)
+HierarchicalMatrix{S1,S2,V1,V2}(diagonaldata::Tuple{S1,S2},offdiagonaldata::Tuple{V1,V2}) = HierarchicalMatrix{promote_type(S1,S2),promote_type(V1,V2),promote_type(eltype(S1),eltype(S2),eltype(V1),eltype(V2)),Tuple{S1,S2},Tuple{V1,V2}}(diagonaldata,offdiagonaldata)
+HierarchicalMatrix{S1,S2,V1,V2,V3,V4,T1,T2,HS1,HS2,HV1,HV2}(diagonaldata::Tuple{HierarchicalMatrix{S1,V1,T1,HS1,HV1},HierarchicalMatrix{S2,V2,T2,HS2,HV2}},offdiagonaldata::Tuple{V3,V4}) = HierarchicalMatrix{promote_type(S1,S2),promote_type(V1,V2,V3,V4),promote_type(eltype(S1),eltype(S2),eltype(V1),eltype(V2),eltype(V3),eltype(V4),T1,T2),Tuple{HierarchicalMatrix{S1,V1,T1,HS1,HV1},HierarchicalMatrix{S2,V2,T2,HS2,HV2}},Tuple{V3,V4}}(diagonaldata,offdiagonaldata)
+HierarchicalMatrix{S,S1,V,V1,V2,T,HS,HV}(diagonaldata::Tuple{S1,HierarchicalMatrix{S,V,T,HS,HV}},offdiagonaldata::Tuple{V1,V2}) = HierarchicalMatrix{promote_type(S,S1),promote_type(V,V1,V2),promote_type(eltype(S),eltype(S1),eltype(V),eltype(V1),eltype(V2),T),Tuple{S1,HierarchicalMatrix{S,V,T,HS,HV}},Tuple{V1,V2}}(diagonaldata,offdiagonaldata)
+HierarchicalMatrix{S,S1,V,V1,V2,T,HS,HV}(diagonaldata::Tuple{HierarchicalMatrix{S,V,T,HS,HV},S1},offdiagonaldata::Tuple{V1,V2}) = HierarchicalMatrix{promote_type(S,S1),promote_type(V,V1,V2),promote_type(eltype(S),eltype(S1),eltype(V),eltype(V1),eltype(V2),T),Tuple{HierarchicalMatrix{S,V,T,HS,HV},S1},Tuple{V1,V2}}(diagonaldata,offdiagonaldata)
 
-HierarchicalMatrix{S,V,V1,T,HS}(diagonaldata::NTuple{2,HierarchicalMatrix{S,V1,T,HS}},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,promote_type(eltype(S),eltype(V),T),NTuple{2,HierarchicalMatrix{S,V1,T,HS}}}(diagonaldata,offdiagonaldata)
-HierarchicalMatrix{S,V,V1,V2,T,HS1,HS2}(diagonaldata::Tuple{HierarchicalMatrix{S,V1,T,HS1},HierarchicalMatrix{S,V2,T,HS2}},offdiagonaldata::NTuple{2,V}) = HierarchicalMatrix{S,V,promote_type(eltype(S),eltype(V),T),Tuple{HierarchicalMatrix{S,V1,T,HS1},HierarchicalMatrix{S,V2,T,HS2}}}(diagonaldata,offdiagonaldata)
 
 HierarchicalMatrix(diagonaldata::Vector,offdiagonaldata::Vector)=HierarchicalMatrix(diagonaldata,offdiagonaldata,round(Int,log2(length(diagonaldata))))
 
@@ -103,11 +103,11 @@ function condest(H::HierarchicalMatrix)
     return cond(H.A)*mapreduce(condest,+,diagonaldata(H))
 end
 
-Base.convert{S,V,T,HS}(::Type{HierarchicalMatrix{S,V,T,HS}},M::HierarchicalMatrix) = HierarchicalMatrix(convert(Vector{S},collectdiagonaldata(M)),convert(Vector{V},collectoffdiagonaldata(M)))
+Base.convert{S,V,T,HS,HV}(::Type{HierarchicalMatrix{S,V,T,HS,HV}},M::HierarchicalMatrix) = HierarchicalMatrix(convert(Vector{S},collectdiagonaldata(M)),convert(Vector{V},collectoffdiagonaldata(M)))
 Base.convert{T}(::Type{Matrix{T}},M::HierarchicalMatrix) = full(M)
-Base.promote_rule{S,V,T,HS,SS,VV,TT,HSS}(::Type{HierarchicalMatrix{S,V,T,HS}},::Type{HierarchicalMatrix{SS,VV,TT,HSS}})=HierarchicalMatrix{promote_type(S,SS),promote_type(V,VV),promote_type(T,TT),promote_type(HS,HSS)}
-Base.promote_rule{T,SS,VV,TT,HSS}(::Type{Matrix{T}},::Type{HierarchicalMatrix{SS,VV,TT,HSS}})=Matrix{promote_type(T,TT)}
-Base.promote_rule{T,SS,VV,TT,HSS}(::Type{LowRankMatrix{T}},::Type{HierarchicalMatrix{SS,VV,TT,HSS}})=Matrix{promote_type(T,TT)}
+Base.promote_rule{S,V,T,HS,HV,SS,VV,TT,HSS,HVV}(::Type{HierarchicalMatrix{S,V,T,HS,HV}},::Type{HierarchicalMatrix{SS,VV,TT,HSS,HVV}})=HierarchicalMatrix{promote_type(S,SS),promote_type(V,VV),promote_type(T,TT),promote_type(HS,HSS),promote_type(HV,HVV)}
+Base.promote_rule{T,SS,VV,TT,HSS,HVV}(::Type{Matrix{T}},::Type{HierarchicalMatrix{SS,VV,TT,HSS,HVV}})=Matrix{promote_type(T,TT)}
+Base.promote_rule{T,SS,VV,TT,HSS,HVV}(::Type{LowRankMatrix{T}},::Type{HierarchicalMatrix{SS,VV,TT,HSS,HVV}})=Matrix{promote_type(T,TT)}
 
 Base.transpose(H::HierarchicalMatrix) = HierarchicalMatrix(map(transpose,diagonaldata(H)),map(transpose,reverse(offdiagonaldata(H))))
 Base.ctranspose(H::HierarchicalMatrix) = HierarchicalMatrix(map(ctranspose,diagonaldata(H)),map(ctranspose,reverse(offdiagonaldata(H))))
@@ -159,17 +159,22 @@ Base.rank(H::HierarchicalMatrix) = rank(full(H))
 Base.cond(H::HierarchicalMatrix) = cond(full(H))
 
 function blockrank(H::HierarchicalMatrix)
-    n = nlevels(H)
-    A = Array{Int64}(2^n,2^n)
+    m,n = blocksize(H)
+    A = Array{Int64}(m,n)
+    (m1,n1),(m2,n2) = map(blocksize,diagonaldata(H))
     r1,r2 = map(rank,offdiagonaldata(H))
-    for j=1:2^(n-1),i=1:2^(n-1)
-        A[i+2^(n-1),j] = r1
-        A[i,j+2^(n-1)] = r2
+    for j=1:n1,i=1:m2
+        A[i+m1,j] = r1
+    end
+    for j=1:n2,i=1:m1
+        A[i,j+n1] = r2
     end
     A11,A22 = map(blockrank,diagonaldata(H))
-    for j=1:2^(n-1),i=1:2^(n-1)
+    for j=1:n1,i=1:m1
         A[i,j] = A11[i,j]
-        A[i+2^(n-1),j+2^(n-1)] = A22[i,j]
+    end
+    for j=1:n2,i=1:m2
+        A[i+m1,j+n1] = A22[i,j]
     end
     A
 end
