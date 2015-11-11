@@ -23,13 +23,10 @@ for HDSF in (:HierarchicalDomain,:HierarchicalSpace,:HierarchicalFun)
     @eval begin
         export $HDSF
 
-        $HDSF{S}(data::NTuple{2,S}) = $HDSF{S,eltype(S),NTuple{2,S}}(data)
-
-        $HDSF{S,T,HS}(data::Tuple{S,$HDSF{S,T,HS}}) = $HDSF{S,T,Tuple{S,$HDSF{S,T,HS}}}(data)
-        $HDSF{S,T,HS}(data::Tuple{$HDSF{S,T,HS},S}) = $HDSF{S,T,Tuple{$HDSF{S,T,HS},S}}(data)
-
-        $HDSF{S,T,HS}(data::NTuple{2,$HDSF{S,T,HS}}) = $HDSF{S,T,NTuple{2,$HDSF{S,T,HS}}}(data)
-        $HDSF{S,T,HS1,HS2}(data::Tuple{$HDSF{S,T,HS1},$HDSF{S,T,HS2}}) = $HDSF{S,T,Tuple{$HDSF{S,T,HS1},$HDSF{S,T,HS2}}}(data)
+        $HDSF{S1,S2}(data::Tuple{S1,S2}) = $HDSF{promote_type(S1,S2),promote_type(eltype(S1),eltype(S2)),Tuple{S1,S2}}(data)
+        $HDSF{S1,S2,T1,T2,HS1,HS2}(data::Tuple{$HDSF{S1,T1,HS1},$HDSF{S2,T2,HS2}}) = $HDSF{promote_type(S1,S2),promote_type(eltype(S1),eltype(S2),T1,T2),Tuple{$HDSF{S1,T1,HS1},$HDSF{S2,T2,HS2}}}(data)
+        $HDSF{S,S1,T,HS}(data::Tuple{S1,$HDSF{S,T,HS}}) = $HDSF{promote_type(S,S1),promote_type(eltype(S),eltype(S1),T),Tuple{S1,$HDSF{S,T,HS}}}(data)
+        $HDSF{S,S1,T,HS}(data::Tuple{$HDSF{S,T,HS},S1}) = $HDSF{promote_type(S,S1),promote_type(eltype(S),eltype(S1),T),Tuple{$HDSF{S,T,HS},S1}}(data)
 
         $HDSF(data::Vector) = $HDSF(data,round(Int,log2(length(data))))
 

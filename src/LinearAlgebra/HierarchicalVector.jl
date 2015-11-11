@@ -16,13 +16,10 @@ type HierarchicalVector{S,T,HS} <: AbstractHierarchicalVector{S,T,HS}
     HierarchicalVector(data::HS) = new(data)
 end
 
-HierarchicalVector{S}(data::NTuple{2,S}) = HierarchicalVector{S,eltype(S),NTuple{2,S}}(data)
-
-HierarchicalVector{S,T,HS}(data::Tuple{S,HierarchicalVector{S,T,HS}}) = HierarchicalVector{S,T,Tuple{S,HierarchicalVector{S,T,HS}}}(data)
-HierarchicalVector{S,T,HS}(data::Tuple{HierarchicalVector{S,T,HS},S}) = HierarchicalVector{S,T,Tuple{HierarchicalVector{S,T,HS},S}}(data)
-
-HierarchicalVector{S,T,HS}(data::NTuple{2,HierarchicalVector{S,T,HS}}) = HierarchicalVector{S,T,NTuple{2,HierarchicalVector{S,T,HS}}}(data)
-HierarchicalVector{S,T,HS1,HS2}(data::Tuple{HierarchicalVector{S,T,HS1},HierarchicalVector{S,T,HS2}}) = HierarchicalVector{S,T,Tuple{HierarchicalVector{S,T,HS1},HierarchicalVector{S,T,HS2}}}(data)
+HierarchicalVector{S1,S2}(data::Tuple{S1,S2}) = HierarchicalVector{promote_type(S1,S2),promote_type(eltype(S1),eltype(S2)),Tuple{S1,S2}}(data)
+HierarchicalVector{S1,S2,T1,T2,HS1,HS2}(data::Tuple{HierarchicalVector{S1,T1,HS1},HierarchicalVector{S2,T2,HS2}}) = HierarchicalVector{promote_type(S1,S2),promote_type(eltype(S1),eltype(S2),T1,T2),Tuple{HierarchicalVector{S1,T1,HS1},HierarchicalVector{S2,T2,HS2}}}(data)
+HierarchicalVector{S,S1,T,HS}(data::Tuple{S1,HierarchicalVector{S,T,HS}}) = HierarchicalVector{promote_type(S,S1),promote_type(eltype(S),eltype(S1),T),Tuple{S1,HierarchicalVector{S,T,HS}}}(data)
+HierarchicalVector{S,S1,T,HS}(data::Tuple{HierarchicalVector{S,T,HS},S1}) = HierarchicalVector{promote_type(S,S1),promote_type(eltype(S),eltype(S1),T),Tuple{HierarchicalVector{S,T,HS},S1}}(data)
 
 HierarchicalVector(data::Vector) = HierarchicalVector(data,round(Int,log2(length(data))))
 
