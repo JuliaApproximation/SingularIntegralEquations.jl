@@ -60,8 +60,9 @@ println("Adaptive QR  forward error norm is: ",norm(⨍[G]*u1-f))
 @test norm(⨍[G]*u1-f) < 10eps()
 
 hdom = clustertree(dom)
+hsp = Space(hdom)
 
-G1 = GreensFun((x,y)->1/2,CauchyWeight(Space(hdom)⊗Space(hdom),0);method=:Cholesky)
+G1 = GreensFun((x,y)->1/2,CauchyWeight(hsp⊗hsp,0);method=:Cholesky)
 H = ⨍[G1]
 
 @time u2 = H\f
@@ -74,3 +75,34 @@ H = ⨍[G1]
 println("The hierarchical forward error norm is: ",norm(⨍[G]*u2-f))
 
 @test norm(⨍[G]*u2-f) < 10eps()
+
+
+
+# Test three domains
+
+dom = Interval(-2.0,-1.0+0im)∪Interval(1.0,2.0+0im)∪Interval(-0.5-2im,0.5-2im)
+hdom = clustertree(dom)
+dom = UnionDomain(SingularIntegralEquations.collectdata(hdom))
+⨍ = DefiniteLineIntegral(dom)
+f = Fun(x->logabs(x-5im),dom)
+sp = Space(dom)
+
+G = GreensFun((x,y)->1/2,CauchyWeight(sp⊗sp,0);method=:Cholesky)
+
+@time u1 = ⨍[G]\transpose(f)
+
+println("Adaptive QR  forward error norm is: ",norm(⨍[G]*u1-f))
+
+@test norm(⨍[G]*u1-f) < 300eps()
+
+hsp = Space(hdom)
+
+G1 = GreensFun((x,y)->1/2,CauchyWeight(hsp⊗hsp,0);method=:Cholesky)
+H = ⨍[G1]
+
+@time u2 = H\f
+@time u2 = H\f
+
+println("The hierarchical forward error norm is: ",norm(⨍[G]*u2-f))
+
+@test norm(⨍[G]*u2-f) < 100eps()
