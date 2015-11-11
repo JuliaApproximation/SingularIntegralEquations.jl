@@ -34,9 +34,8 @@ type HierarchicalOperator{S,V,T,HS,HV} <: BandedOperator{T}
         H.diagonaldata = diagonaldata
         H.offdiagonaldata = offdiagonaldata
 
-        r1,r2 = map(rank,offdiagonaldata)
-        H.A = eye(T,r1+r2,r1+r2)
-        H.factorization = pivotldufact(H.A,r1,r2)
+        r = mapreduce(rank,+,offdiagonaldata)
+        H.A = eye(T,r,r)
         H.factored = false
 
         H
