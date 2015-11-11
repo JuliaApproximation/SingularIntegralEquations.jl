@@ -155,7 +155,8 @@ end
 
 function partition{PWS<:PiecewiseSpace,S1,S2,T}(f::Vector{Fun{PWS,T}},sp1::S1,sp2::S2)
     p1 = partition(f[1],sp1,sp2)
-    ret1,ret2 = fill(p1[1],length(f)),fill(p1[2],length(f))
+    ret1,ret2 = Vector{typeof(p1[1])}(length(f)),Vector{typeof(p1[2])}(length(f))
+    ret1[1],ret2[1] = p1[1],p1[2]
     for k=2:length(f)
         @inbounds ret1[k],ret2[k] = partition(f[k],sp1,sp2)
     end
@@ -175,7 +176,8 @@ end
 function assemble{S1,S2,T1,T2}(sol1::Vector{Fun{S1,T1}},sol2::Vector{Fun{S2,T2}})
     @assert length(sol1) == length(sol2)
     p = depiece((sol1[1],sol2[1]))
-    ret = fill(p,length(sol1))
+    ret = Vector{typeof(p)}(length(sol1))
+    ret[1] = p
     for k=2:length(sol1)
         @inbounds ret[k] = depiece((sol1[k],sol2[k]))
     end
@@ -185,7 +187,8 @@ end
 function assemble{S1<:PiecewiseSpace,S2<:PiecewiseSpace,T1,T2}(sol1::Vector{Fun{S1,T1}},sol2::Vector{Fun{S2,T2}})
     @assert length(sol1) == length(sol2)
     p = depiece(vcat(pieces(sol1[1]),pieces(sol2[1])))
-    ret = fill(p,length(sol1))
+    ret = Vector{typeof(p)}(length(sol1))
+    ret[1] = p
     for k=2:length(sol1)
         @inbounds ret[k] = depiece(vcat(pieces(sol1[k]),pieces(sol2[k])))
     end
@@ -195,7 +198,8 @@ end
 function assemble{S1<:PiecewiseSpace,S2,T1,T2}(sol1::Vector{Fun{S1,T1}},sol2::Vector{Fun{S2,T2}})
     @assert length(sol1) == length(sol2)
     p = depiece(vcat(pieces(sol1[1]),sol2[1]))
-    ret = fill(p,length(sol1))
+    ret = Vector{typeof(p)}(length(sol1))
+    ret[1] = p
     for k=2:length(sol1)
         @inbounds ret[k] = depiece(vcat(pieces(sol1[k]),sol2[k]))
     end
@@ -205,7 +209,8 @@ end
 function assemble{S1,S2<:PiecewiseSpace,T1,T2}(sol1::Vector{Fun{S1,T1}},sol2::Vector{Fun{S2,T2}})
     @assert length(sol1) == length(sol2)
     p = depiece(vcat(sol1[1],pieces(sol2[1])))
-    ret = fill(p,length(sol1))
+    ret = Vector{typeof(p)}(length(sol1))
+    ret[1] = p
     for k=2:length(sol1)
         @inbounds ret[k] = depiece(vcat(sol1[k],pieces(sol2[k])))
     end
