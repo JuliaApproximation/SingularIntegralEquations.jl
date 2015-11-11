@@ -1,4 +1,4 @@
-const colours = Dict(1=>"r",2=>"g",3=>"b",4=>"c",5=>"m",6=>"y",0=>"k")
+const colours = Dict(0=>"k",1=>"r",2=>"g",3=>"b",4=>"c",5=>"m",6=>"y",7=>"orange")
 
 ## HierarchicalDomain
 
