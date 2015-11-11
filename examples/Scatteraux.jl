@@ -30,7 +30,7 @@ function makegif(x,y,u,L;plotfunction=plot,seconds=1,cmap="seismic",vert=1)
         ApproxFun.plot(dom;color="black")
         plotfunction(x,y,real(u*exp(-im*ω*t)),L;vmin=-umax*vert,vmax=umax*vert,cmap=cmap)
         xlabel("\$x\$");ylabel("\$y\$")
-        savefig(dr * "/" * lpad(k,int(ceil(log10(MLen))),0) * ".png";dpi=150,bbox_inches="tight")
+        savefig(dr * "/" * lpad(k,ceil(Int,log10(MLen)),0) * ".png";dpi=150,bbox_inches="tight")
     end
     # Requires: brew install imagemagick
     run(`convert -delay 6 -loop 0 $dr/*.png $dr/scattering.gif`)
