@@ -30,7 +30,7 @@ function hierarchicalsolve{U<:Operator,V<:AbstractLowRankOperator,F<:Fun}(H::Hie
 
     # Partition the right-hand side
 
-    (f1,f2) = partition(f,N,space(first(U12)))#space(first(U21)))
+    f1,f2 = partition(f,space(first(U12)),space(first(U21)))
 
     # Solve recursively
 
@@ -122,54 +122,42 @@ end
 
 
 # Utilities
-#=
-function partition{PWS<:PiecewiseSpace,T}(f::Fun{PWS,T})
-    N = length(space(f))
-    N2 = div(N,2)
-    if N2 == 1
-        return (pieces(f)[1]),(pieces(f)[2])
-    else
-        return (depiece(pieces(f)[1:N2])),(depiece(pieces(f)[1+N2:N]))
-    end
+
+##
+# partition(f::Fun,sp1,sp2) uses type inference on the spaces sp1 and sp2
+# to achieve type-stability by drawing a distinction between the four cases:
+#
+# [x₁ | ⋯ ⋯ xₙ]
+# [x₁ ⋯ | ⋯ xₙ]
+# [x₁ ⋯ ⋯ | xₙ]
+# [x₁ | x₂]
+##
+
+function partition{PWS<:PiecewiseSpace,S1<:PiecewiseSpace,S2<:PiecewiseSpace,T}(f::Fun{PWS,T},sp1::S1,sp2::S2)
+    p,N1,N2 = pieces(f),length(sp1),length(sp2)
+    return (depiece(p[1:N1])),(depiece(p[1+N1:N1+N2]))
 end
 
-function partition{PWS<:PiecewiseSpace,T}(f::Vector{Fun{PWS,T}})
-    N = length(space(first(f)))
-    N2 = div(N,2)
-    if N2 == 1
-        return (map(x->pieces(x)[1],f),map(x->pieces(x)[2],f))
-    else
-        return (map(x->depiece(pieces(x)[1:N2]),f),map(x->depiece(pieces(x)[1+N2:N]),f))
-    end
-end
-=#
-
-function partition{PWS<:PiecewiseSpace,S<:PiecewiseSpace,T}(f::Fun{PWS,T},N::Int,sp::S)
-    N2 = length(sp)
-    if N > N2+1
-        pf = pieces(f)
-        return (depiece(pf[1:N2])),(depiece(pf[1+N2:N]))
-    else
-        pf = pieces(f)
-        return (depiece(pf[1:N2])),(pf[N])
-    end
+function partition{PWS<:PiecewiseSpace,S1<:PiecewiseSpace,S2,T}(f::Fun{PWS,T},sp1::S1,sp2::S2)
+    p,N1 = pieces(f),length(sp1)
+    return (depiece(p[1:N1])),(p[1+N1])
 end
 
-function partition{PWS<:PiecewiseSpace,S,T}(f::Fun{PWS,T},N::Int,sp::S)
-    if N == 2
-        pf = pieces(f)
-        return (pf[1],pf[2])
-    else
-        pf = pieces(f)
-        return (pf[1],pf[2:N])
-    end
+function partition{PWS<:PiecewiseSpace,S1,S2<:PiecewiseSpace,T}(f::Fun{PWS,T},sp1::S1,sp2::S2)
+    p,N2 = pieces(f),length(sp2)
+    return (p[1]),(depiece(p[2:1+N2]))
 end
 
-function partition{PWS<:PiecewiseSpace,S,T}(f::Vector{Fun{PWS,T}},N::Int,sp::S)
-    p1 = partition(f[1],N,sp)
+function partition{PWS<:PiecewiseSpace,S1,S2,T}(f::Fun{PWS,T},sp1::S1,sp2::S2)
+    p = pieces(f)
+    return (p[1]),(p[2])
+end
+
+function partition{PWS<:PiecewiseSpace,S1,S2,T}(f::Vector{Fun{PWS,T}},sp1::S1,sp2::S2)
+    p1 = partition(f[1],sp1,sp2)
     ret1,ret2 = fill(p1[1],length(f)),fill(p1[2],length(f))
     for k=2:length(f)
-        ret1[k],ret2[k] = partition(f[k],N,sp)
+        ret1[k],ret2[k] = partition(f[k],sp1,sp2)
     end
     ret1,ret2
 end
