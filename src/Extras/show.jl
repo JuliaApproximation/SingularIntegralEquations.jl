@@ -53,5 +53,21 @@ end
 
 function Base.writemime{U<:Operator,V<:AbstractLowRankOperator}(io::IO, ::MIME"text/plain", H::HierarchicalOperator{U,V})
     print(io,"$(nlevels(H))-level HierarchicalOperator with blockwise ranks:\n")
-    show(io,blockrank(H))
+    A = blockrank(H)
+    m,n = size(A)
+    print(io,"[")
+        for j=1:n-1
+            print(io,"$(A[1,j]) ")
+        end
+        print(io,"$(A[1,n])\n")
+    for i=2:m-1
+        for j=1:n-1
+            print(io," $(A[i,j])")
+        end
+        print(io," $(A[i,n])\n")
+    end
+    for j=1:n-1
+        print(io," $(A[m,j])")
+    end
+    print(io," $(A[m,n])]")
 end
