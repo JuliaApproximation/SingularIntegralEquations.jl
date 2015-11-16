@@ -28,34 +28,34 @@ function cauchycircleS(cfs::Vector,z::Number,s::Bool)
 end
 
 
-function cauchy{DD<:Circle}(f::Fun{Laurent{DD}},z,s::Bool)
+function stieltjes{DD<:Circle}(f::Fun{Laurent{DD}},z,s::Bool)
     @assert in(z,d)
-    cauchycircleS(cfs,mappoint(d,Circle(),z),s)
+    -2π*im*cauchycircleS(cfs,mappoint(d,Circle(),z),s)
 end
-function cauchy{DD<:Circle}(f::Fun{Laurent{DD}},z::Number)
+function stieltjes{DD<:Circle}(f::Fun{Laurent{DD}},z::Number)
     z=mappoint(domain(f),Circle(),z)
-    cauchycircleS(coefficients(f),z,abs(z) < 1)
+    -2π*im*cauchycircleS(coefficients(f),z,abs(z) < 1)
 end
 
-cauchy{DD<:Circle}(f::Fun{Laurent{DD}},z::Vector)=[cauchy(f,zk) for zk in z]
-cauchy{DD<:Circle}(f::Fun{Laurent{DD}},z::Matrix)=reshape(cauchy(f,vec(z)),size(z,1),size(z,2))
+stieltjes{DD<:Circle}(f::Fun{Laurent{DD}},z::Vector)=[stieltjes(f,zk) for zk in z]
+stieltjes{DD<:Circle}(f::Fun{Laurent{DD}},z::Matrix)=reshape(stieltjes(f,vec(z)),size(z,1),size(z,2))
 
 
 
 
-cauchy{DD<:Circle}(f::Fun{Fourier{DD}},z,s...)=cauchy(Fun(f,Laurent(domain(f))),z,s...)
+stieltjes{DD<:Circle}(f::Fun{Fourier{DD}},z,s...)=stieltjes(Fun(f,Laurent(domain(f))),z,s...)
 
 
 
 # we implement cauchy ±1 as canonical
-hilbert{DD<:Circle}(f::Fun{Laurent{DD}},z)=im*(cauchy(true,f,z)+cauchy(false,f,z))
+hilbert{DD<:Circle}(f::Fun{Laurent{DD}},z)=(stieltjes(f,z,true)+stieltjes(f,z,false))/(-2π)
 
 
 
 
 
 
-## cauchyintegral and logkernel
+## stieltjesintegral and logkernel
 
 
 function stieltjesintegral{DD<:Circle}(f::Fun{Laurent{DD}},z::Number,s...)

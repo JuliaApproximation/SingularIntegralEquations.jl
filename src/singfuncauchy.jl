@@ -1,4 +1,4 @@
-## SingFun cauchy
+## SingFun stieltjes
 
 export logabs
 logabs(x)=log(abs2(x))/2
@@ -57,14 +57,14 @@ realdivkhornersum{S<:Real}(cfs::AbstractVector{S},y,ys,s) = real(divkhornersum(c
 realdivkhornersum{S<:Complex}(cfs::AbstractVector{S},y,ys,s) = complex(real(divkhornersum(real(cfs),y,ys,s)),real(divkhornersum(imag(cfs),y,ys,s)))
 
 
-cauchy{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},zv::Array,s...)=Complex128[cauchy(u,zv[k,j],s...) for k=1:size(zv,1), j=1:size(zv,2)]
+stieltjes{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},zv::Array,s...)=Complex128[stieltjes(u,zv[k,j],s...) for k=1:size(zv,1), j=1:size(zv,2)]
 
-function cauchy{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},z)
+function stieltjes{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},z)
     d,sp=domain(u),space(u)
 
     if sp.α == sp.β == .5
         cfs = coefficients(u.coefficients,sp.space,Ultraspherical{1}(d))
-        0.5im*hornersum(cfs,intervaloffcircle(true,tocanonical(u,z)))
+        π*hornersum(cfs,intervaloffcircle(true,tocanonical(u,z)))
     elseif sp.α == sp.β == -.5
         cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1}(d))
         z=tocanonical(u,z)
@@ -75,47 +75,47 @@ function cauchy{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},z)
 
 
         if length(cfs) ≥1
-            ret = cfs[1]*0.5im*sx2zi
+            ret = π*cfs[1]*sx2zi
 
             if length(cfs) ≥2
-                ret += cfs[2]*.5im*(z.*sx2zi-1)
+                ret += cfs[2]*π*(z.*sx2zi-1)
             end
 
-            ret - 1.im*hornersum(cfs[3:end],Jm)
+            ret - 2π*hornersum(cfs[3:end],Jm)
         else
             zero(z)
         end
     elseif isapproxinteger(sp.α) && isapproxinteger(sp.β)
-        cauchy(Fun(u,sp.space),z)
+        stieltjes(Fun(u,sp.space),z)
     else
         if domain(u)==Interval()
-            cauchyintervalrecurrence(Fun(u,JacobiWeight(sp.α,sp.β,Jacobi(sp.β,sp.α))),z)
+            stieltjesintervalrecurrence(Fun(u,JacobiWeight(sp.α,sp.β,Jacobi(sp.β,sp.α))),z)
         else
             @assert isa(domain(u),Interval)
-            cauchy(setdomain(u,Interval()),tocanonical(u,z))
+            stieltjes(setdomain(u,Interval()),tocanonical(u,z))
         end
     end
 end
 
 
-function cauchy{SS<:PolynomialSpace,DD}(u::Fun{JacobiWeight{SS,DD}},x::Number,s::Bool)
+function stieltjes{SS<:PolynomialSpace,DD}(u::Fun{JacobiWeight{SS,DD}},x::Number,s::Bool)
     d,sp=domain(u),space(u)
 
     if sp.α == sp.β == .5
         cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1}(d))
-        0.5im*hornersum(cfs,intervaloncircle(!s,tocanonical(u,x)))
+        π*hornersum(cfs,intervaloncircle(!s,tocanonical(u,x)))
     elseif sp.α == sp.β == -.5
         cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1}(d))
         x=tocanonical(u,x)
 
         if length(cfs) ≥1
-            ret = cfs[1]*0.5*(s?1:-1)/sqrt(1-x^2)
+            ret = -π*im*cfs[1]*(s?1:-1)/sqrt(1-x^2)
 
             if length(cfs) ≥2
-                ret += cfs[2]*(0.5*(s?1:-1)*x/sqrt(1-x^2)-.5im)
+                ret += cfs[2]*(-π*im*(s?1:-1)*x/sqrt(1-x^2)-π)
             end
 
-            ret - 1.im*hornersum(cfs[3:end],intervaloncircle(!s,x))
+            ret - 2π*hornersum(cfs[3:end],intervaloncircle(!s,x))
         else
             0.0+0.0im
         end
@@ -123,11 +123,11 @@ function cauchy{SS<:PolynomialSpace,DD}(u::Fun{JacobiWeight{SS,DD}},x::Number,s:
         if domain(u)==Interval()
             S=JacobiWeight(sp.α,sp.β,Jacobi(sp.β,sp.α))
             cfs=coefficients(u,S)
-            cf=cauchyforward(S,length(cfs),x,s)
+            cf=stieltjesforward(S,length(cfs),x,s)
             dotu(cf,cfs)
         else
             @assert isa(domain(u),Interval)
-            cauchy(setdomain(u,Interval()),tocanonical(u,x),s)
+            stieltjes(setdomain(u,Interval()),tocanonical(u,x),s)
         end
     end
 end

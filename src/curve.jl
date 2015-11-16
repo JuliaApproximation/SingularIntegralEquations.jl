@@ -1,21 +1,21 @@
 ## Interval map
 
-function cauchy{C<:Curve,S,T,BT}(f::Fun{MappedSpace{S,C,BT},T},z::Number)
+function stieltjes{C<:Curve,S,T,BT}(f::Fun{MappedSpace{S,C,BT},T},z::Number)
     #project
     fm=Fun(f.coefficients,space(f).space)
-    sum(cauchy(fm,complexroots(domain(f).curve-z)))
+    sum(stieltjes(fm,complexroots(domain(f).curve-z)))
 end
 
-function cauchy{C<:Curve,S,BT,T}(f::Fun{MappedSpace{S,C,BT},T},z::Number,s::Bool)
+function stieltjes{C<:Curve,S,BT,T}(f::Fun{MappedSpace{S,C,BT},T},z::Number,s::Bool)
     #project
     fm=Fun(f.coefficients,space(f).space)
     rts=complexroots(domain(f).curve-z)
     di=domain(fm)
-    mapreduce(rt->in(rt,di)?cauchy(fm,rt,s):cauchy(fm,rt),+,rts)
+    mapreduce(rt->in(rt,di)?stieltjes(fm,rt,s):stieltjes(fm,rt),+,rts)
 end
 
-cauchy{C<:Curve,S,T,BT}(f::Fun{MappedSpace{S,C,BT},T},z::Vector)=Complex128[cauchy(f,z[k]) for k=1:size(z,1)]
-cauchy{C<:Curve,S,T,BT}(f::Fun{MappedSpace{S,C,BT},T},z::Matrix)=Complex128[cauchy(f,z[k,j]) for k=1:size(z,1),j=1:size(z,2)]
+stieltjes{C<:Curve,S,T,BT}(f::Fun{MappedSpace{S,C,BT},T},z::Vector)=Complex128[stieltjes(f,z[k]) for k=1:size(z,1)]
+stieltjes{C<:Curve,S,T,BT}(f::Fun{MappedSpace{S,C,BT},T},z::Matrix)=Complex128[stieltjes(f,z[k,j]) for k=1:size(z,1),j=1:size(z,2)]
 
 ## hilbert on JacobiWeight space mapped by open curves
 
@@ -34,13 +34,13 @@ end
 
 #TODO: the branch cuts of this are screwy, and the large z asymptotics may
 # be off by an integer constant
-function cauchyintegral{CC<:Chebyshev,S,T,TT}(w::Fun{MappedSpace{S,Curve{CC,T},TT}},z)
+function stieltjesintegral{CC<:Chebyshev,S,T,TT}(w::Fun{MappedSpace{S,Curve{CC,T},TT}},z)
     d=domain(w)
     # leading order coefficient
     b=d.curve.coefficients[end]*2^(max(length(d.curve)-2,0))
     g=Fun(w.coefficients,w.space.space)
     g=g*ApproxFun.fromcanonicalD(d,Fun())
-    sum(cauchyintegral(g,complexroots(d.curve-z)))+sum(w)*log(b)/(-2π*im)
+    sum(stieltjesintegral(g,complexroots(d.curve-z)))+sum(w)*log(b)
 end
 
 
@@ -56,35 +56,35 @@ end
 
 ## Circle map
 
-# pseudo cauchy is not normalized at infinity
-function pseudocauchy{DD<:Circle,C<:Curve}(f::Fun{MappedSpace{Laurent{DD},C,Complex{Float64}}},z::Number)
+# pseudo stieltjes is not normalized at infinity
+function pseudostieltjes{DD<:Circle,C<:Curve}(f::Fun{MappedSpace{Laurent{DD},C,Complex{Float64}}},z::Number)
     fcirc=Fun(f.coefficients,f.space.space)  # project to circle
     c=domain(f)  # the curve that f lives on
     @assert domain(fcirc)==Circle()
 
-    sum(cauchy(fcirc,complexroots(c.curve-z)))
+    sum(stieltjes(fcirc,complexroots(c.curve-z)))
 end
 
-function cauchy{DD<:Circle,C<:Curve}(f::Fun{MappedSpace{Laurent{DD},C,Complex{Float64}}},z::Number)
+function stieltjes{DD<:Circle,C<:Curve}(f::Fun{MappedSpace{Laurent{DD},C,Complex{Float64}}},z::Number)
     fcirc=Fun(f.coefficients,f.space.space)  # project to circle
     c=domain(f)  # the curve that f lives on
     @assert domain(fcirc)==Circle()
     # subtract out value at infinity, determined by the fact that leading term is poly
     # we find the
-    sum(cauchy(fcirc,complexroots(c.curve-z)))-div(length(domain(f).curve),2)*cauchy(fcirc,0.)
+    sum(stieltjes(fcirc,complexroots(c.curve-z)))-div(length(domain(f).curve),2)*stieltjes(fcirc,0.)
 end
 
-function cauchy{DD<:Circle,C<:Curve}(f::Fun{MappedSpace{Laurent{DD},C,Complex{Float64}}},z::Number,s::Bool)
+function stieltjes{DD<:Circle,C<:Curve}(f::Fun{MappedSpace{Laurent{DD},C,Complex{Float64}}},z::Number,s::Bool)
     fcirc=Fun(f.coefficients,f.space.space)  # project to circle
     c=domain(f)  # the curve that f lives on
     @assert domain(fcirc)==Circle()
     rts=complexroots(c.curve-z)
 
 
-    ret=-div(length(domain(f).curve),2)*cauchy(fcirc,0.)
+    ret=-div(length(domain(f).curve),2)*stieltjes(fcirc,0.)
 
     for k=2:length(rts)
-        ret+=in(rts[k],Circle())?cauchy(fcirc,rts[k]):cauchy(fcirc,rts[k],s)
+        ret+=in(rts[k],Circle())?stieltjes(fcirc,rts[k]):stieltjes(fcirc,rts[k],s)
     end
     ret
 end
@@ -97,10 +97,10 @@ function hilbert{DD<:Circle,C<:Curve}(f::Fun{MappedSpace{Laurent{DD},C,Complex{F
     rts=complexroots(c.curve-z)
 
 
-    ret=-2im*div(length(domain(f).curve),2)*cauchy(fcirc,0.)
+    ret=div(length(domain(f).curve),2)*stieltjes(fcirc,0.)/π
 
     for k=2:length(rts)
-        ret+=in(rts[k],Circle())?hilbert(fcirc,rts[k]):2im*cauchy(fcirc,rts[k])
+        ret+=in(rts[k],Circle())?hilbert(fcirc,rts[k]):stieltjes(fcirc,rts[k])/(-π)
     end
     ret
 end

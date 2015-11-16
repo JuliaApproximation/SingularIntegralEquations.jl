@@ -1,22 +1,17 @@
 
 
-## cauchy
+## stieltjes
 
 
-#TODO: use hilbert instead of cauchy(g,-1)
-function cauchy{L<:PeriodicLine,S,T}(f::Fun{MappedSpace{S,L,T}},z::Number,s...)
+function stieltjes{L<:PeriodicLine,S,T}(f::Fun{MappedSpace{S,L,T}},z::Number,s...)
     g=Fun(f.coefficients,setdomain(space(f).space,Circle()))
-    cauchy(g,mappoint(domain(f),Circle(),z),s...)-hilbert(g,-1)/(2im)
-    # use im*(C^+ + C^-)=H
-    #-cauchy(g,-1)
+    stieltjes(g,mappoint(domain(f),Circle(),z),s...)+hilbert(g,-1)*π
 end
 
 
 function hilbert{L<:PeriodicLine,S,T}(f::Fun{MappedSpace{S,L,T}},z::Number)
     g=Fun(f.coefficients,setdomain(space(f).space,Circle()))
     hilbert(g,mappoint(domain(f),Circle(),z))-hilbert(g,-1)
-    # use im*(C^+ + C^-)=H
-    #-cauchy(g,-1)
 end
 
 

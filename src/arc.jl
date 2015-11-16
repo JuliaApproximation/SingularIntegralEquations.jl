@@ -3,9 +3,9 @@
 ## Cauchy
 
 # pseudocauchy does not normalize at ∞
-function pseudocauchy{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z,s...)
+function pseudostieltjes{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z,s...)
     g=Fun(f.coefficients,space(f).space)
-    cauchy(g,tocanonical(f,z),s...)
+    stieltjes(g,tocanonical(f,z),s...)
 end
 
 
@@ -15,9 +15,9 @@ function pseudohilbert{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z)
 end
 
 
-function cauchy{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z,s...)
+function stieltjes{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z,s...)
     g=Fun(f.coefficients,space(f).space)
-    cauchy(g,tocanonical(f,z),s...)-cauchy(g,tocanonical(f,Inf))
+    stieltjes(g,tocanonical(f,z),s...)-stieltjes(g,tocanonical(f,Inf))
 end
 
 
@@ -46,21 +46,21 @@ end
 
 
 
-## cauchyintegral
+## stieltjesintegral
 
-function cauchyintegral{LS,RR<:Arc,TT}(w::Fun{MappedSpace{LS,RR,TT}},z)
-    g=Fun(w.coefficients,w.space.space)*ApproxFun.fromcanonicalD(w,Fun())
-    cauchyintegral(g,tocanonical(w,z))-
-        cauchyintegral(g,tocanonical(w,Inf))+
-        sum(w)*log(z-fromcanonical(w,Inf))/(-2π*im)
+function stieltjesintegral{LS,RR<:Arc,TT}(w::Fun{MappedSpace{LS,RR,TT}},z)
+    g=Fun(w.coefficients,w.space.space)*fromcanonicalD(w,Fun())
+    stieltjesintegral(g,tocanonical(w,z))-
+        stieltjesintegral(g,tocanonical(w,Inf))+
+        sum(w)*log(z-fromcanonical(w,Inf))
 end
 
 
-function linesumcauchyintegral{LS,RR<:Arc,TT}(w::Fun{MappedSpace{LS,RR,TT}},z)
+function linesumstieltjesintegral{LS,RR<:Arc,TT}(w::Fun{MappedSpace{LS,RR,TT}},z)
     g=Fun(w.coefficients,w.space.space)*abs(ApproxFun.fromcanonicalD(w,Fun()))
-    cauchyintegral(g,tocanonical(w,z))-
-        cauchyintegral(g,tocanonical(w,Inf))+
-        linesum(w)*log(z-fromcanonical(w,Inf))/(-2π*im)
+    stieltjesintegral(g,tocanonical(w,z))-
+        stieltjesintegral(g,tocanonical(w,Inf))+
+        linesum(w)*log(z-fromcanonical(w,Inf))
 end
 
 
