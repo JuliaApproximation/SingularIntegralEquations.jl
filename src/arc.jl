@@ -33,27 +33,27 @@ end
 
 ## stieltjesintegral
 
-function stieltjesintegral{LS,RR<:Arc,TT}(w::Fun{MappedSpace{LS,RR,TT}},z)
-    g=Fun(w.coefficients,w.space.space)*fromcanonicalD(w,Fun())
-    stieltjesintegral(g,tocanonical(w,z))-
-        stieltjesintegral(g,tocanonical(w,Inf))+
-        sum(w)*log(z-fromcanonical(w,Inf))
+function stieltjesintegral{LS,RR<:Arc,TT}(sp::MappedSpace{LS,RR,TT},w,z)
+    g=Fun(w,sp.space)*fromcanonicalD(sp)
+    stieltjesintegral(g,tocanonical(sp,z))-
+        stieltjesintegral(g,tocanonical(sp,Inf))+
+        sum(Fun(w,sp))*log(z-fromcanonical(sp,Inf))
 end
 
 
-function linesumstieltjesintegral{LS,RR<:Arc,TT}(w::Fun{MappedSpace{LS,RR,TT}},z)
-    g=Fun(w.coefficients,w.space.space)*abs(ApproxFun.fromcanonicalD(w,Fun()))
-    stieltjesintegral(g,tocanonical(w,z))-
-        stieltjesintegral(g,tocanonical(w,Inf))+
-        linesum(w)*log(z-fromcanonical(w,Inf))
+function linesumstieltjesintegral{LS,RR<:Arc,TT}(sp::MappedSpace{LS,RR,TT},w,z)
+    g=Fun(w,sp.space)*abs(fromcanonicalD(sp))
+    stieltjesintegral(g,tocanonical(sp,z))-
+        stieltjesintegral(g,tocanonical(sp,Inf))+
+        linesum(Fun(w,sp))*log(z-fromcanonical(sp,Inf))
 end
 
 
-function logkernel{LS,RR<:Arc,TT}(w::Fun{MappedSpace{LS,RR,TT}},z)
-    g=Fun(w.coefficients,w.space.space)*abs(ApproxFun.fromcanonicalD(w,Fun()))
-    logkernel(g,tocanonical(w,z))-
-        logkernel(g,tocanonical(w,Inf))+
-        linesum(w)*log(abs(z-fromcanonical(w,Inf)))/π
+function logkernel{LS,RR<:Arc,TT}(sp::MappedSpace{LS,RR,TT},w,z)
+    g=Fun(w,sp.space)*abs(fromcanonicalD(sp))
+    logkernel(g,tocanonical(sp,z))-
+        logkernel(g,tocanonical(sp,Inf))+
+        linesum(Fun(w,sp))*log(abs(z-fromcanonical(sp,Inf)))/π
 end
 
 

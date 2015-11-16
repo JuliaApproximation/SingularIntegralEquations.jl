@@ -28,23 +28,23 @@ end
 
 #TODO: the branch cuts of this are screwy, and the large z asymptotics may
 # be off by an integer constant
-function stieltjesintegral{CC<:Chebyshev,S,T,TT}(w::Fun{MappedSpace{S,Curve{CC,T},TT}},z)
-    d=domain(w)
+function stieltjesintegral{CC<:Chebyshev,S,T}(sp::MappedSpace{S,Curve{CC,T}},w,z)
+    d=domain(sp)
     # leading order coefficient
     b=d.curve.coefficients[end]*2^(max(length(d.curve)-2,0))
-    g=Fun(w.coefficients,w.space.space)
-    g=g*ApproxFun.fromcanonicalD(d,Fun())
-    sum(stieltjesintegral(g,complexroots(d.curve-z)))+sum(w)*log(b)
+    g=Fun(w,sp.space)
+    g=g*fromcanonicalD(d)
+    sum(stieltjesintegral(g,complexroots(d.curve-z)))+sum(Fun(w,sp))*log(b)
 end
 
 
-function logkernel{CC<:Chebyshev,S,T,TT}(w::Fun{MappedSpace{S,Curve{CC,T},TT}},z)
-    d=domain(w)
+function logkernel{CC<:Chebyshev,S,T,TT}(sp::MappedSpace{S,Curve{CC,T},TT},w,z)
+    d=domain(sp)
     # leading order coefficient
     b=d.curve.coefficients[end]*2^(max(length(d.curve)-2,0))
-    g=Fun(w.coefficients,w.space.space)
-    g=g*abs(ApproxFun.fromcanonicalD(d,Fun()))
-    sum(logkernel(g,complexroots(d.curve-z)))+linesum(w)*log(abs(b))/π
+    g=Fun(w,sp.space)
+    g=g*abs(fromcanonicalD(d))
+    sum(logkernel(g,complexroots(d.curve-z)))+linesum(Fun(w,sp))*log(abs(b))/π
 end
 
 

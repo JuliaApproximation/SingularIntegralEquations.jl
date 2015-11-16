@@ -175,18 +175,18 @@ realintegratejin(c,cfs,y)=.5*(-cfs[1]*(logabs(y)+logabs(c))+realdivkhornersum(cf
 # logkernel is the real part of stieljes normalized by π.
 #####
 
-function logkernel{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},z)
-    d,sp=domain(u),space(u)
-    a,b=d.a,d.b     # TODO: type not inferred right now
+function logkernel{S<:PolynomialSpace,DD}(sp::JacobiWeight{S,DD},u,z)
+    d=domain(sp)
+    a,b=d.a,d.b
 
     if sp.α == sp.β == .5
-        cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1}(d))
-        z=tocanonical(u,z)
+        cfs=coefficients(u,sp.space,Ultraspherical{1}(d))
+        z=tocanonical(sp,z)
         y = updownjoukowskyinverse(true,z)
         length(d)*realintegratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
-        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1}(d))
-        z=tocanonical(u,z)
+        cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
+        z=tocanonical(sp,z)
         y = updownjoukowskyinverse(true,z)
 
         if length(cfs) ≥1
@@ -209,17 +209,17 @@ function logkernel{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},z)
     end
 end
 
-function stieltjesintegral{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},z)
-    d,sp=domain(u),space(u)
-    a,b=d.a,d.b     # TODO: type not inferred right now
+function stieltjesintegral{S<:PolynomialSpace,DD}(sp::JacobiWeight{S,DD},u,z)
+    d=domain(sp)
+    a,b=d.a,d.b
 
     if sp.α == sp.β == .5
-        cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1}(d))
-        y=intervaloffcircle(true,tocanonical(u,z))
+        cfs=coefficients(u,sp.space,Ultraspherical{1}(d))
+        y=intervaloffcircle(true,tocanonical(sp,z))
         π*complexlength(d)*integratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
-        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1}(d))
-        z=tocanonical(u,z)
+        cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
+        z=tocanonical(sp,z)
         y=intervaloffcircle(true,z)
 
         if length(cfs) ≥1
@@ -242,17 +242,17 @@ function stieltjesintegral{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},z)
     end
 end
 
-function stieltjesintegral{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},z,s::Bool)
-    d,sp=domain(u),space(u)
+function stieltjesintegral{S<:PolynomialSpace,DD}(sp::JacobiWeight{S,DD},u,z,s::Bool)
+    d=domain(u)
     a,b=d.a,d.b     # TODO: type not inferred right now
 
     if sp.α == sp.β == .5
-        cfs=coefficients(u.coefficients,sp.space,Ultraspherical{1}(d))
-        y=intervaloncircle(!s,tocanonical(u,z))
+        cfs=coefficients(u,sp.space,Ultraspherical{1}(d))
+        y=intervaloncircle(!s,tocanonical(sp,z))
         π*complexlength(d)*integratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
-        cfs = coefficients(u.coefficients,sp.space,ChebyshevDirichlet{1,1}(d))
-        z=tocanonical(u,z)
+        cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
+        z=tocanonical(sp,z)
         y=intervaloncircle(!s,z)
 
         if length(cfs) ≥1
