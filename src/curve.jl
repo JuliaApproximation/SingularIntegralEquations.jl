@@ -1,30 +1,24 @@
 ## Interval map
 
-function stieltjes{C<:Curve,S,T,BT}(f::Fun{MappedSpace{S,C,BT},T},z::Number)
+stieltjes{C<:Curve,SS}(S::MappedSpace{SS,C},f,z::Number)=sum(stieltjes(S.space,f,complexroots(domain(S).curve-z)))
+
+function stieltjes{C<:Curve,SS}(S::MappedSpace{SS,C},f,z::Number,s::Bool)
     #project
-    fm=Fun(f.coefficients,space(f).space)
-    sum(stieltjes(fm,complexroots(domain(f).curve-z)))
+    rts=complexroots(domain(S).curve-z)
+    di=domain(S.space)
+    mapreduce(rt->in(rt,di)?stieltjes(S.space,f,rt,s):stieltjes(S.space,f,rt),+,rts)
 end
 
-function stieltjes{C<:Curve,S,BT,T}(f::Fun{MappedSpace{S,C,BT},T},z::Number,s::Bool)
-    #project
-    fm=Fun(f.coefficients,space(f).space)
-    rts=complexroots(domain(f).curve-z)
-    di=domain(fm)
-    mapreduce(rt->in(rt,di)?stieltjes(fm,rt,s):stieltjes(fm,rt),+,rts)
-end
-
-stieltjes{C<:Curve,S,T,BT}(f::Fun{MappedSpace{S,C,BT},T},z::Vector)=Complex128[stieltjes(f,z[k]) for k=1:size(z,1)]
-stieltjes{C<:Curve,S,T,BT}(f::Fun{MappedSpace{S,C,BT},T},z::Matrix)=Complex128[stieltjes(f,z[k,j]) for k=1:size(z,1),j=1:size(z,2)]
+stieltjes{C<:Curve,SS}(S::MappedSpace{SS,C},f,z::Vector)=Complex128[stieltjes(S,f,z[k]) for k=1:size(z,1)]
+stieltjes{C<:Curve,SS}(S::MappedSpace{SS,C},f,z::Matrix)=Complex128[stieltjes(S,f,z[k,j]) for k=1:size(z,1),j=1:size(z,2)]
 
 ## hilbert on JacobiWeight space mapped by open curves
 
-function hilbert{C<:Curve,JW<:JacobiWeight,T,BT}(f::Fun{MappedSpace{JW,C,BT},T},x::Number)
+function hilbert{C<:Curve,JW<:JacobiWeight}(S::MappedSpace{JW,C},f,x::Number)
     #project
-    fm=Fun(f.coefficients,space(f).space)
-    rts=complexroots(domain(f).curve-x)
-    di=domain(fm)
-    mapreduce(rt->in(rt,di)?hilbert(fm,rt):-stieltjes(fm,rt)/π,+,rts)
+    rts=complexroots(domain(S).curve-x)
+    di=domain(S.space)
+    mapreduce(rt->in(rt,di)?hilbert(S.space,f,rt):-stieltjes(S.space,f,rt)/π,+,rts)
 end
 
 
@@ -57,50 +51,46 @@ end
 ## Circle map
 
 # pseudo stieltjes is not normalized at infinity
-function pseudostieltjes{DD<:Circle,C<:Curve}(f::Fun{MappedSpace{Laurent{DD},C,Complex{Float64}}},z::Number)
-    fcirc=Fun(f.coefficients,f.space.space)  # project to circle
-    c=domain(f)  # the curve that f lives on
-    @assert domain(fcirc)==Circle()
+function pseudostieltjes{DD<:Circle,C<:Curve}(S::MappedSpace{Laurent{DD},C},f,z::Number)
+    c=domain(S)  # the curve that f lives on
+    @assert domain(S.space)==Circle()
 
-    sum(stieltjes(fcirc,complexroots(c.curve-z)))
+    sum(stieltjes(S.space,f,complexroots(c.curve-z)))
 end
 
-function stieltjes{DD<:Circle,C<:Curve}(f::Fun{MappedSpace{Laurent{DD},C,Complex{Float64}}},z::Number)
-    fcirc=Fun(f.coefficients,f.space.space)  # project to circle
-    c=domain(f)  # the curve that f lives on
-    @assert domain(fcirc)==Circle()
+function stieltjes{DD<:Circle,C<:Curve}(S::MappedSpace{Laurent{DD},C},f,z::Number)
+    c=domain(S)  # the curve that f lives on
+    @assert domain(S.space)==Circle()
     # subtract out value at infinity, determined by the fact that leading term is poly
     # we find the
-    sum(stieltjes(fcirc,complexroots(c.curve-z)))-div(length(domain(f).curve),2)*stieltjes(fcirc,0.)
+    sum(stieltjes(S.space,f,complexroots(c.curve-z)))-div(length(domain(S).curve),2)*stieltjes(S.space,f,0.)
 end
 
-function stieltjes{DD<:Circle,C<:Curve}(f::Fun{MappedSpace{Laurent{DD},C,Complex{Float64}}},z::Number,s::Bool)
-    fcirc=Fun(f.coefficients,f.space.space)  # project to circle
-    c=domain(f)  # the curve that f lives on
-    @assert domain(fcirc)==Circle()
+function stieltjes{DD<:Circle,C<:Curve}(S::MappedSpace{Laurent{DD},C},f,z::Number,s::Bool)
+    c=domain(S)  # the curve that f lives on
+    @assert domain(S.space)==Circle()
     rts=complexroots(c.curve-z)
 
 
-    ret=-div(length(domain(f).curve),2)*stieltjes(fcirc,0.)
+    ret=-div(length(domain(S).curve),2)*stieltjes(S.space,f,0.)
 
     for k=2:length(rts)
-        ret+=in(rts[k],Circle())?stieltjes(fcirc,rts[k]):stieltjes(fcirc,rts[k],s)
+        ret+=in(rts[k],Circle())?stieltjes(S.space,f,rts[k]):stieltjes(S.space,f,rts[k],s)
     end
     ret
 end
 
 
-function hilbert{DD<:Circle,C<:Curve}(f::Fun{MappedSpace{Laurent{DD},C,Complex{Float64}}},z::Number)
-    fcirc=Fun(f.coefficients,f.space.space)  # project to circle
-    c=domain(f)  # the curve that f lives on
-    @assert domain(fcirc)==Circle()
+function hilbert{DD<:Circle,C<:Curve}(S::MappedSpace{Laurent{DD},C},f,z::Number)
+    c=domain(S)  # the curve that f lives on
+    @assert domain(S.space)==Circle()
     rts=complexroots(c.curve-z)
 
 
-    ret=div(length(domain(f).curve),2)*stieltjes(fcirc,0.)/π
+    ret=div(length(domain(S).curve),2)*stieltjes(S.space,f,0.)/π
 
     for k=2:length(rts)
-        ret+=in(rts[k],Circle())?hilbert(fcirc,rts[k]):stieltjes(fcirc,rts[k])/(-π)
+        ret+=in(rts[k],Circle())?hilbert(S.space,f,rts[k]):stieltjes(S.space,f,rts[k])/(-π)
     end
     ret
 end

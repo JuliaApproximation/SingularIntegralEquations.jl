@@ -37,44 +37,41 @@ stieltjesforward(sp::Space,n,z,s...)=forwardsubstitution(jacobiop(sp)-z,n,
 
 
 
-function stieltjesintervalrecurrence(f::Fun,z)
+function stieltjesintervalrecurrence(S,f::AbstractVector,z)
     tol=1./floor(Int,sqrt(length(f)))
     if (abs(real(z))≤1.+tol) && (abs(imag(z))≤tol)
-       cfs=stieltjesforward(space(f),length(f),z)
-       dotu(cfs,coefficients(f))
+       cfs=stieltjesforward(S,length(f),z)
+       dotu(cfs,f)
     else
-       cfs=stieltjesbackward(space(f),z)
+       cfs=stieltjesbackward(S,z)
        m=min(length(f),length(cfs))
-       dotu(cfs[1:m],coefficients(f)[1:m])
+       dotu(cfs[1:m],f[1:m])
     end
 end
 
 
-function stieltjes{PS<:PolynomialSpace}(f::Fun{PS},z::Number)
-    if domain(f)==Interval()
+function stieltjes{D<:Interval}(S::PolynomialSpace{D},f,z::Number)
+    if domain(S)==Interval()
         #TODO: check tolerance
-        stieltjesintervalrecurrence(Fun(f,Legendre()),z)
+        stieltjesintervalrecurrence(Legendre(),coefficients(f,S,Legendre()),z)
     else
-        @assert isa(domain(f),Interval)
-        stieltjes(setdomain(f,Interval()),tocanonical(f,z))
+        stieltjes(setdomain(S,Interval()),f,tocanonical(S,z))
     end
 end
 
-function stieltjes{PS<:PolynomialSpace}(f::Fun{PS},z::Number,s::Bool)
-    @assert domain(f)==Interval()
+function stieltjes{D<:Interval}(S::PolynomialSpace{D},f,z::Number,s::Bool)
+    @assert domain(S)==Interval()
 
    cfs=stieltjesforward(Legendre(),length(f),z,s)
-   dotu(cfs,coefficients(f,Legendre()))
+   dotu(cfs,coefficients(f,S,Legendre()))
 end
 
 
 # Sum over all inverses of fromcanonical, see [Olver,2014]
-function stieltjes{S,L<:Line,T}(f::Fun{MappedSpace{S,L,T}},z,s...)
-    if domain(f)==Line()
-        p=Fun(f.coefficients,space(f).space)
-        stieltjes(p,tocanonical(f,z),s...) + stieltjes(p,(-1-sqrt(1+4z.^2))./(2z))
+function stieltjes{SS,L<:Line}(S::MappedSpace{SS,L},f,z,s...)
+    if domain(S)==Line()
+        stieltjes(S.space,f,tocanonical(S,z),s...) + stieltjes(S.space,f,(-1-sqrt(1+4z.^2))./(2z))
     else
-        p=Fun(f.coefficients,MappedSpace(Line(),space(f).space))
-        stieltjes(p,mappoint(domain(f),Line(),z),s...)
+        stieltjes(setdomain(S,Line()),f,mappoint(domain(S),Line(),z),s...)
     end
 end

@@ -28,23 +28,18 @@ import ApproxFun: bandinds,SpaceOperator,dotu,linedotu,eps2,
 
 # we don't override for Bool and Function to make overriding below easier
 # TODO: change when cauchy(f,z,s) calls cauchy(f.coefficients,space(f),z,s)
-function stieltjes(f,z,s)
-    if isa(s,Bool)
-        error("Override cauchy for "*string(typeof(f)))
-    end
 
-    @assert isa(s,Function)
-
-    stieltjes(f,z,s==+)
-end
+stieltjes(f::Fun,z,s...)=stieltjes(space(f),coefficients(f),z,s...)
+stieltjes(f::Fun,z,s::Function)=stieltjes(f,z,s==+)
 
 hilbert(f)=Hilbert()*f
-hilbert(f,z)=hilbert(f)(z)
+hilbert(S,f,z)=hilbert(Fun(f,S))(z)
+hilbert(f::Fun,z)=hilbert(space(f),coefficients(f),z)
 
 #TODO: stieltjes -> offhilbert
 
-cauchy(f,z,s...)=stieltjes(f,z,s...)*(im/(2π))
-cauchyintegral(u,z,s...)=stieltjesintegral(u,z,s...)*(im/(2π))
+cauchy(f...)=stieltjes(f...)*(im/(2π))
+cauchyintegral(u...)=stieltjesintegral(u...)*(im/(2π))
 
 
 include("LinearAlgebra/LinearAlgebra.jl")

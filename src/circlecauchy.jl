@@ -2,7 +2,7 @@
 
 ## cauchy
 
-function cauchycircleS(cfs::Vector,z::Number,s::Bool)
+function cauchycircleS(cfs::AbstractVector,z::Number,s::Bool)
     ret=zero(Complex{Float64})
 
     if s
@@ -28,27 +28,29 @@ function cauchycircleS(cfs::Vector,z::Number,s::Bool)
 end
 
 
-function stieltjes{DD<:Circle}(f::Fun{Laurent{DD}},z,s::Bool)
+function stieltjes{DD<:Circle}(sp::Laurent{DD},f,z,s::Bool)
+    d=domain(sp)
     @assert in(z,d)
-    -2π*im*cauchycircleS(cfs,mappoint(d,Circle(),z),s)
+    -2π*im*cauchycircleS(f,mappoint(d,Circle(),z),s)
 end
-function stieltjes{DD<:Circle}(f::Fun{Laurent{DD}},z::Number)
-    z=mappoint(domain(f),Circle(),z)
-    -2π*im*cauchycircleS(coefficients(f),z,abs(z) < 1)
+function stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Number)
+    d=domain(sp)
+    z=mappoint(d,Circle(),z)
+    -2π*im*cauchycircleS(f,z,abs(z) < 1)
 end
 
-stieltjes{DD<:Circle}(f::Fun{Laurent{DD}},z::Vector)=[stieltjes(f,zk) for zk in z]
-stieltjes{DD<:Circle}(f::Fun{Laurent{DD}},z::Matrix)=reshape(stieltjes(f,vec(z)),size(z,1),size(z,2))
+stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Vector)=[stieltjes(sp,f,zk) for zk in z]
+stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Matrix)=reshape(stieltjes(sp,f,vec(z)),size(z,1),size(z,2))
 
 
 
 
-stieltjes{DD<:Circle}(f::Fun{Fourier{DD}},z,s...)=stieltjes(Fun(f,Laurent(domain(f))),z,s...)
+stieltjes{DD<:Circle}(sp::Fourier{DD},f,z,s...)=stieltjes(Laurent(domain(sp)),coefficients(f,sp,Laurent(domain(sp))),z,s...)
 
 
 
 # we implement cauchy ±1 as canonical
-hilbert{DD<:Circle}(f::Fun{Laurent{DD}},z)=(stieltjes(f,z,true)+stieltjes(f,z,false))/(-2π)
+hilbert{DD<:Circle}(sp::Laurent{DD},f,z)=(stieltjes(sp,f,z,true)+stieltjes(sp,f,z,false))/(-2π)
 
 
 

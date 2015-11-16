@@ -3,28 +3,13 @@
 ## Cauchy
 
 # pseudocauchy does not normalize at ∞
-function pseudostieltjes{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z,s...)
-    g=Fun(f.coefficients,space(f).space)
-    stieltjes(g,tocanonical(f,z),s...)
-end
+pseudostieltjes{LS,RR<:Arc}(S::MappedSpace{LS,RR},f,z,s...)=stieltjes(S.space,f,tocanonical(f,z),s...)
+pseudohilbert{LS,RR<:Arc}(S::MappedSpace{LS,RR},f,z)=hilbert(S.space,f,tocanonical(f,z))
 
 
-function pseudohilbert{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z)
-    g=Fun(f.coefficients,space(f).space)
-    hilbert(g,tocanonical(f,z))
-end
+stieltjes{LS,RR<:Arc}(S::MappedSpace{LS,RR},f,z,s...)=stieltjes(S.space,f,tocanonical(S,z),s...)-stieltjes(S.space,f,tocanonical(S,Inf))
+hilbert{LS,RR<:Arc}(S::MappedSpace{LS,RR},f,z)=hilbert(S.space,f,tocanonical(S,z))+(1/π)*stieltjes(S.space,f,tocanonical(S,Inf))
 
-
-function stieltjes{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z,s...)
-    g=Fun(f.coefficients,space(f).space)
-    stieltjes(g,tocanonical(f,z),s...)-stieltjes(g,tocanonical(f,Inf))
-end
-
-
-function hilbert{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z)
-    g=Fun(f.coefficients,space(f).space)
-    hilbert(g,tocanonical(f,z))+(1/π)*stieltjes(g,tocanonical(f,Inf))
-end
 
 
 

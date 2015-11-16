@@ -3,15 +3,15 @@
 ## stieltjes
 
 
-function stieltjes{L<:PeriodicLine,S,T}(f::Fun{MappedSpace{S,L,T}},z::Number,s...)
-    g=Fun(f.coefficients,setdomain(space(f).space,Circle()))
-    stieltjes(g,mappoint(domain(f),Circle(),z),s...)+hilbert(g,-1)*π
+function stieltjes{L<:PeriodicLine,SS}(S::MappedSpace{SS,L},f,z::Number,s...)
+    S2=setdomain(S.space,Circle())
+    stieltjes(S2,f,mappoint(domain(S),Circle(),z),s...)+hilbert(S2,f,-1)*π
 end
 
 
-function hilbert{L<:PeriodicLine,S,T}(f::Fun{MappedSpace{S,L,T}},z::Number)
-    g=Fun(f.coefficients,setdomain(space(f).space,Circle()))
-    hilbert(g,mappoint(domain(f),Circle(),z))-hilbert(g,-1)
+function hilbert{L<:PeriodicLine,SS}(S::MappedSpace{SS,L},f,z::Number)
+    S2=setdomain(S.space,Circle())
+    hilbert(S2,f,mappoint(domain(f),Circle(),z))-hilbert(S2,f,-1)
 end
 
 
