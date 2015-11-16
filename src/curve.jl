@@ -29,7 +29,7 @@ end
 
 #TODO: the branch cuts of this are screwy, and the large z asymptotics may
 # be off by an integer constant
-function stieltjesintegral{CC<:Chebyshev,S,T}(sp::Space{S,Curve{CC,T}},w,z)
+function stieltjesintegral{CC<:Chebyshev,S,T}(sp::Space{S,IntervalCurve{CC,T}},w,z)
     d=domain(sp)
     # leading order coefficient
     b=d.curve.coefficients[end]*2^(max(length(d.curve)-2,0))
@@ -39,7 +39,7 @@ function stieltjesintegral{CC<:Chebyshev,S,T}(sp::Space{S,Curve{CC,T}},w,z)
 end
 
 
-function logkernel{CC<:Chebyshev,S,T}(sp::Space{S,Curve{CC,T}},w,z)
+function logkernel{CC<:Chebyshev,S,T}(sp::Space{S,IntervalCurve{CC,T}},w,z)
     d=domain(sp)
     # leading order coefficient
     b=d.curve.coefficients[end]*2^(max(length(d.curve)-2,0))
@@ -52,14 +52,14 @@ end
 ## Circle map
 
 # pseudo stieltjes is not normalized at infinity
-function pseudostieltjes{C<:Curve}(S::Laurent{C},f,z::Number)
+function pseudostieltjes{C<:PeriodicCurve}(S::Laurent{C},f,z::Number)
     c=domain(S)  # the curve that f lives on
     @assert domain(c.curve)==Circle()
 
     sum(stieltjes(setdomain(S,Circle()),f,complexroots(c.curve-z)))
 end
 
-function stieltjes{C<:Curve}(S::Laurent{C},f,z::Number)
+function stieltjes{C<:PeriodicCurve}(S::Laurent{C},f,z::Number)
     c=domain(S)  # the curve that f lives on
     @assert domain(c.curve)==Circle()
     # subtract out value at infinity, determined by the fact that leading term is poly
@@ -68,7 +68,7 @@ function stieltjes{C<:Curve}(S::Laurent{C},f,z::Number)
             div(length(domain(S).curve),2)*stieltjes(setdomain(S,Circle()),f,0.)
 end
 
-function stieltjes{C<:Curve}(S::Laurent{C},f,z::Number,s::Bool)
+function stieltjes{C<:PeriodicCurve}(S::Laurent{C},f,z::Number,s::Bool)
     c=domain(S)  # the curve that f lives on
     @assert domain(c.curve)==Circle()
     rts=complexroots(c.curve-z)
@@ -83,7 +83,7 @@ function stieltjes{C<:Curve}(S::Laurent{C},f,z::Number,s::Bool)
 end
 
 
-function hilbert{C<:Curve}(S::Laurent{C},f,z::Number)
+function hilbert{C<:PeriodicCurve}(S::Laurent{C},f,z::Number)
     c=domain(S)  # the curve that f lives on
     @assert domain(c.curve)==Circle()
     rts=complexroots(c.curve-z)
@@ -101,7 +101,7 @@ end
 
 ## CurveSpace
 
-function Hilbert{C<:Curve,SS}(S::JacobiWeight{SS,C},k::Int)
+function Hilbert{C<:IntervalCurve,SS}(S::JacobiWeight{SS,C},k::Int)
     @assert k==1
     tol=1E-15
 
@@ -134,7 +134,7 @@ function Hilbert{C<:Curve,SS}(S::JacobiWeight{SS,C},k::Int)
 end
 
 
-function SingularIntegral{CC<:Chebyshev,TTT,TT}(S::JacobiWeight{TTT,Curve{CC,TT}},k::Integer)
+function SingularIntegral{CC<:Chebyshev,TTT,TT}(S::JacobiWeight{TTT,IntervalCurve{CC,TT}},k::Integer)
     @assert k==0
     tol=1E-15
     # the mapped logkernel
