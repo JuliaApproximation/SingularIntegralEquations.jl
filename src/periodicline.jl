@@ -3,14 +3,14 @@
 ## stieltjes
 
 
-function stieltjes{L<:PeriodicLine,SS}(S::MappedSpace{SS,L},f,z::Number,s...)
-    S2=setdomain(S.space,Circle())
+function stieltjes{L<:PeriodicLine,SS}(S::Space{SS,L},f,z::Number,s...)
+    S2=setdomain(S,Circle())
     stieltjes(S2,f,mappoint(domain(S),Circle(),z),s...)+hilbert(S2,f,-1)*π
 end
 
 
-function hilbert{L<:PeriodicLine,SS}(S::MappedSpace{SS,L},f,z::Number)
-    S2=setdomain(S.space,Circle())
+function hilbert{L<:PeriodicLine,SS}(S::Space{SS,L},f,z::Number)
+    S2=setdomain(S,Circle())
     hilbert(S2,f,mappoint(domain(f),Circle(),z))-hilbert(S2,f,-1)
 end
 
@@ -23,11 +23,11 @@ end
 # and C± 1 = ±1/2  (understood as a PV integral) so that H 1 = 0
 
 
-bandinds{S,T}(H::Hilbert{PeriodicLineDirichlet{S,T}})=0,0
-rangespace{S,T}(H::Hilbert{PeriodicLineDirichlet{S,T}})=domainspace(H)
+bandinds{DD<:PeriodicLine}(H::Hilbert{LaurentDirichlet{DD}})=0,0
+rangespace{DD<:PeriodicLine}(H::Hilbert{LaurentDirichlet{DD}})=domainspace(H)
 
 
-function addentries!{T}(H::Hilbert{PeriodicLineDirichlet{false,T}},A,kr::Range,::Colon)
+function addentries!{T}(H::Hilbert{LaurentDirichlet{PeriodicLine{false,T}}},A,kr::Range,::Colon)
     for k=kr
         if iseven(k)  # negative terms
             A[k,k] += -im

@@ -19,10 +19,10 @@ import ApproxFun: bandinds,SpaceOperator,dotu,linedotu,eps2,
                   SumSpace,PiecewiseSpace, interlace,Multiplication,ArraySpace,DiagonalArrayOperator,
                   BandedMatrix,bazeros,ChebyshevDirichlet,PolynomialSpace,AbstractProductSpace,evaluate,order,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,BivariateFun,linesum,complexlength,
-                  Fun, ProductFun, LowRankFun, mappoint, PeriodicLineSpace, PeriodicLineDirichlet,Recurrence, FiniteFunctional,
+                  Fun, ProductFun, LowRankFun, mappoint,Recurrence, FiniteFunctional,
                   real, UnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, BlockOperator,
                   ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, AlmostBandedOperator, ZeroSpace,
-                  DiagonalInterlaceOperator, LowRankPertOperator
+                  DiagonalInterlaceOperator, LowRankPertOperator, LaurentDirichlet, setcanonicaldomain
 
 
 

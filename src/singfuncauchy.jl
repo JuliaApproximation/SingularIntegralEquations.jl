@@ -56,10 +56,10 @@ divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y:
 realdivkhornersum{S<:Real}(cfs::AbstractVector{S},y,ys,s) = real(divkhornersum(cfs,y,ys,s))
 realdivkhornersum{S<:Complex}(cfs::AbstractVector{S},y,ys,s) = complex(real(divkhornersum(real(cfs),y,ys,s)),real(divkhornersum(imag(cfs),y,ys,s)))
 
+#TODO: Make general
+stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,zv::Array,s...)=Complex128[stieltjes(sp,u,zv[k,j],s...) for k=1:size(zv,1), j=1:size(zv,2)]
 
-stieltjes{S<:PolynomialSpace,DD}(sp::JacobiWeight{S,DD},u,zv::Array,s...)=Complex128[stieltjes(sp,u,zv[k,j],s...) for k=1:size(zv,1), j=1:size(zv,2)]
-
-function stieltjes{S<:PolynomialSpace,DD}(sp::JacobiWeight{S,DD},u,z)
+function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
     d=domain(sp)
 
     if sp.α == sp.β == .5
@@ -93,14 +93,13 @@ function stieltjes{S<:PolynomialSpace,DD}(sp::JacobiWeight{S,DD},u,z)
             stieltjesintervalrecurrence(S2,coefficients(u,sp,S2),z)
         else
             # project to interval
-            @assert isa(d,Interval)
             stieltjes(setdomain(sp,Interval()),u,tocanonical(sp,z))
         end
     end
 end
 
 
-function stieltjes{SS<:PolynomialSpace,DD}(sp::JacobiWeight{SS,DD},u,x::Number,s::Bool)
+function stieltjes{SS<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{SS,DD},u,x::Number,s::Bool)
     d=domain(sp)
 
     if sp.α == sp.β == .5
@@ -142,7 +141,7 @@ end
 #  hilbert(f,z)=im*(cauchy(true,f,z)+cauchy(false,f,z))
 ##
 
-function hilbert{DD}(sp::JacobiWeight{Chebyshev{DD},DD},u)
+function hilbert{DD<:Interval}(sp::JacobiWeight{Chebyshev{DD},DD},u)
     d=domain(u)
 
     if sp.α == sp.β == .5
@@ -175,7 +174,7 @@ realintegratejin(c,cfs,y)=.5*(-cfs[1]*(logabs(y)+logabs(c))+realdivkhornersum(cf
 # logkernel is the real part of stieljes normalized by π.
 #####
 
-function logkernel{S<:PolynomialSpace,DD}(sp::JacobiWeight{S,DD},u,z)
+function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
     d=domain(sp)
     a,b=d.a,d.b
 
@@ -209,7 +208,7 @@ function logkernel{S<:PolynomialSpace,DD}(sp::JacobiWeight{S,DD},u,z)
     end
 end
 
-function stieltjesintegral{S<:PolynomialSpace,DD}(sp::JacobiWeight{S,DD},u,z)
+function stieltjesintegral{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
     d=domain(sp)
     a,b=d.a,d.b
 
@@ -242,7 +241,7 @@ function stieltjesintegral{S<:PolynomialSpace,DD}(sp::JacobiWeight{S,DD},u,z)
     end
 end
 
-function stieltjesintegral{S<:PolynomialSpace,DD}(sp::JacobiWeight{S,DD},u,z,s::Bool)
+function stieltjesintegral{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z,s::Bool)
     d=domain(u)
     a,b=d.a,d.b     # TODO: type not inferred right now
 
