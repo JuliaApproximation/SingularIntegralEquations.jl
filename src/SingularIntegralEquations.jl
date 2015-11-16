@@ -19,32 +19,36 @@ import ApproxFun: bandinds,SpaceOperator,dotu,linedotu,eps2,
                   SumSpace,PiecewiseSpace, interlace,Multiplication,ArraySpace,DiagonalArrayOperator,
                   BandedMatrix,bazeros,ChebyshevDirichlet,PolynomialSpace,AbstractProductSpace,evaluate,order,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,BivariateFun,linesum,complexlength,
-                  Fun, ProductFun, LowRankFun, mappoint, PeriodicLineSpace, PeriodicLineDirichlet,Recurrence, FiniteFunctional,
+                  Fun, ProductFun, LowRankFun, mappoint,Recurrence, FiniteFunctional,
                   real, UnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, BlockOperator,
                   ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, AlmostBandedOperator, ZeroSpace,
-                  DiagonalInterlaceOperator, LowRankPertOperator
+                  DiagonalInterlaceOperator, LowRankPertOperator, LaurentDirichlet, setcanonicaldomain,
+                  IntervalCurve,PeriodicCurve
 
 
 
 # we don't override for Bool and Function to make overriding below easier
 # TODO: change when cauchy(f,z,s) calls cauchy(f.coefficients,space(f),z,s)
-function stieltjes(f,z,s)
-    if isa(s,Bool)
-        error("Override cauchy for "*string(typeof(f)))
+
+for OP in (:stieltjes,:stieltjesintegral)
+    @eval begin
+        $OP(f::Fun,z,s...)=$OP(space(f),coefficients(f),z,s...)
+        $OP(f::Fun,z,s::Function)=$OP(f,z,s==+)
     end
-
-    @assert isa(s,Function)
-
-    stieltjes(f,z,s==+)
 end
 
 hilbert(f)=Hilbert()*f
-hilbert(f,z)=hilbert(f)(z)
+hilbert(S,f,z)=hilbert(Fun(f,S))(z)
+hilbert(f::Fun,z)=hilbert(space(f),coefficients(f),z)
 
-#TODO: stieltjes -> offhilbert
+logkernel(f::Fun,z)=logkernel(space(f),coefficients(f),z)
 
-cauchy(f,z,s...)=stieltjes(f,z,s...)*(im/(2π))
-cauchyintegral(u,z,s...)=stieltjesintegral(u,z,s...)*(im/(2π))
+
+
+
+
+cauchy(f...)=stieltjes(f...)*(im/(2π))
+cauchyintegral(u...)=stieltjesintegral(u...)*(im/(2π))
 
 
 include("LinearAlgebra/LinearAlgebra.jl")

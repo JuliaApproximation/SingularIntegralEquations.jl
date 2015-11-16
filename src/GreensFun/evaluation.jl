@@ -55,32 +55,34 @@ for TYP in (:Fourier,:Laurent)
     end
 end
 
-function logkernel{DD}(G::Function,u::Fun{Fourier{DD}},z)
-    sp,n=space(u),2length(u)
-    vals,t = values(pad(u,n)),points(sp,n)
+logkernel(G::Function,u::Fun,z)=logkernel(G,space(u),coefficients(u),z)
+
+function logkernel{DD}(G::Function,sp::Fourier{DD},u,z)
+    n=2length(u)
+    vals,t = values(pad(Fun(u,sp),n)),points(sp,n)
     p = plan_transform(sp,vals)
-    return map(z->logkernel(Fun(transform(sp,G(z,t).*vals,p),sp),z),z)
+    return map(z->logkernel(sp,transform(sp,G(z,t).*vals,p),z),z)
 end
-logkernel{DD}(G::Function,u::Fun{Laurent{DD}},z) = logkernel(G,Fun(u,Fourier),z)
+logkernel{DD}(G::Function,sp::Laurent{DD},u,z)=logkernel(G,Fun(Fun(u,sp),Fourier),z)
 
 for Func in (:(Base.sum),:linesum,:logkernel,:cauchy)
     @eval begin
         $Func{F<:Fun}(G::Function,u::Vector{F},z)=mapreduce(u->$Func(G,u,z),+,u)
-        $Func{P<:PiecewiseSpace,T}(G::Function,u::Fun{P,T},z)=$Func(G,vec(u),z)
-        $Func{PS<:PolynomialSpace,DD}(G::Function,f::Fun{JacobiWeight{PS,DD}},z)=$Func(G,Fun(f,JacobiWeight(f.space.α,f.space.β,Chebyshev(domain(f)))),z)
+        $Func(G::Function,sp::PiecewiseSpace,u,z)=$Func(G,vec(Fun(u,sp)),z)
+        $Func{PS<:PolynomialSpace}(G::Function,sp::JacobiWeight{PS},f,z)=$Func(G,Fun(Fun(f,sp),JacobiWeight(sp.α,sp.β,Chebyshev(domain(sp)))),z)
     end
 end
 
-function logkernel{LS,RR<:Arc,TT}(G::Function,u::Fun{MappedSpace{LS,RR,TT}},z)
-    sp,n=space(u),2length(u)
-    vals,t = itransform(sp,pad(u.coefficients,n)),points(sp,n)
+function logkernel{LS,RR<:Arc}(G::Function,sp::Space{LS,RR},u,z)
+    n=2length(u)
+    vals,t = itransform(sp,pad(u,n)),points(sp,n)
     p = plan_transform(sp,complex(vals))
-    return map(z->logkernel(Fun(transform(sp,G(z,t).*vals,p),sp),z),z)
+    return map(z->logkernel(sp,transform(sp,G(z,t).*vals,p),z),z)
 end
 
-function linesum{LS,RR<:Arc,TT}(G::Function,u::Fun{MappedSpace{LS,RR,TT}},z)
-    sp,n=space(u),2length(u)
-    vals,t = itransform(sp,pad(u.coefficients,n)),points(sp,n)
+function linesum{LS,RR<:Arc}(G::Function,sp::Space{LS,RR},u,z)
+    n=2length(u)
+    vals,t = itransform(sp,pad(u,n)),points(sp,n)
     p = plan_transform(sp,complex(vals))
-    return map(z->linesum(Fun(transform(sp,G(z,t).*vals,p),sp)),z)
+    return map(z->linesum(sp,transform(sp,G(z,t).*vals,p),z),z)
 end

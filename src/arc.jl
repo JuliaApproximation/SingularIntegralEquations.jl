@@ -3,93 +3,79 @@
 ## Cauchy
 
 # pseudocauchy does not normalize at ∞
-function pseudostieltjes{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z,s...)
-    g=Fun(f.coefficients,space(f).space)
-    stieltjes(g,tocanonical(f,z),s...)
-end
+pseudostieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z,s...)=stieltjes(setcanonicaldomain(S),f,tocanonical(f,z),s...)
+pseudohilbert{LS,RR<:Arc}(S::Space{LS,RR},f,z)=hilbert(setdomain(S,Interval()),f,tocanonical(f,z))
 
 
-function pseudohilbert{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z)
-    g=Fun(f.coefficients,space(f).space)
-    hilbert(g,tocanonical(f,z))
-end
-
-
-function stieltjes{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z,s...)
-    g=Fun(f.coefficients,space(f).space)
-    stieltjes(g,tocanonical(f,z),s...)-stieltjes(g,tocanonical(f,Inf))
-end
-
-
-function hilbert{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z)
-    g=Fun(f.coefficients,space(f).space)
-    hilbert(g,tocanonical(f,z))+(1/π)*stieltjes(g,tocanonical(f,Inf))
-end
+stieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z,s...)=stieltjes(setcanonicaldomain(S),f,tocanonical(S,z),s...)-stieltjes(setcanonicaldomain(S),f,tocanonical(S,Inf))
+hilbert{LS,RR<:Arc}(S::Space{LS,RR},f,z)=hilbert(setcanonicaldomain(S),f,tocanonical(S,z))+(1/π)*stieltjes(setcanonicaldomain(S),f,tocanonical(S,Inf))
 
 
 
 
-function PseudoHilbert{LS,RR<:Arc,TT}(sp::MappedSpace{LS,RR,TT},k::Integer)
+
+function PseudoHilbert{LS,RR<:Arc}(sp::JacobiWeight{LS,RR},k::Integer)
     @assert k==1
-    csp=sp.space
+    csp=setcanonicaldomain(sp)
     H=Hilbert(csp)
-    PseudoHilbertWrapper(SpaceOperator(H,MappedSpace(domain(sp),domainspace(H)),MappedSpace(domain(sp),rangespace(H))),k)
+    PseudoHilbertWrapper(SpaceOperator(H,setdomain(domainspace(H),domain(sp)),setdomain(rangespace(H),domain(sp))),k)
 end
 
 
-function Hilbert{LS,RR<:Arc,TT}(sp::MappedSpace{LS,RR,TT},k::Integer)
+function Hilbert{LS,RR<:Arc}(sp::JacobiWeight{LS,RR},k::Integer)
     @assert k==1
-    csp=sp.space
+    csp=setcanonicaldomain(sp)
     H=Hilbert(csp)+(1/π)*Stieltjes(csp,tocanonical(sp,Inf))
-    HilbertWrapper(SpaceOperator(H,MappedSpace(domain(sp),domainspace(H)),MappedSpace(domain(sp),rangespace(H))),k)
+    HilbertWrapper(SpaceOperator(H,setdomain(domainspace(H),domain(sp)),setdomain(rangespace(H),domain(sp))),k)
 end
 
 
 
 ## stieltjesintegral
 
-function stieltjesintegral{LS,RR<:Arc,TT}(w::Fun{MappedSpace{LS,RR,TT}},z)
-    g=Fun(w.coefficients,w.space.space)*fromcanonicalD(w,Fun())
-    stieltjesintegral(g,tocanonical(w,z))-
-        stieltjesintegral(g,tocanonical(w,Inf))+
-        sum(w)*log(z-fromcanonical(w,Inf))
+function stieltjesintegral{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
+    g=Fun(w,setcanonicaldomain(sp))*fromcanonicalD(sp)
+    stieltjesintegral(g,tocanonical(sp,z))-
+        stieltjesintegral(g,tocanonical(sp,Inf))+
+        sum(Fun(w,sp))*log(z-fromcanonical(sp,Inf))
 end
 
 
-function linesumstieltjesintegral{LS,RR<:Arc,TT}(w::Fun{MappedSpace{LS,RR,TT}},z)
-    g=Fun(w.coefficients,w.space.space)*abs(ApproxFun.fromcanonicalD(w,Fun()))
-    stieltjesintegral(g,tocanonical(w,z))-
-        stieltjesintegral(g,tocanonical(w,Inf))+
-        linesum(w)*log(z-fromcanonical(w,Inf))
+function linesumstieltjesintegral{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
+    g=Fun(w,setcanonicaldomain(sp))*abs(fromcanonicalD(sp))
+    stieltjesintegral(g,tocanonical(sp,z))-
+        stieltjesintegral(g,tocanonical(sp,Inf))+
+        linesum(Fun(w,sp))*log(z-fromcanonical(sp,Inf))
 end
 
 
-function logkernel{LS,RR<:Arc,TT}(w::Fun{MappedSpace{LS,RR,TT}},z)
-    g=Fun(w.coefficients,w.space.space)*abs(ApproxFun.fromcanonicalD(w,Fun()))
-    logkernel(g,tocanonical(w,z))-
-        logkernel(g,tocanonical(w,Inf))+
-        linesum(w)*log(abs(z-fromcanonical(w,Inf)))/π
+function logkernel{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
+    g=Fun(w,setcanonicaldomain(sp))*abs(fromcanonicalD(sp))
+    logkernel(g,tocanonical(sp,z))-
+        logkernel(g,tocanonical(sp,Inf))+
+        linesum(Fun(w,sp))*log(abs(z-fromcanonical(sp,Inf)))/π
 end
 
 
-function SingularIntegral{JW,RR<:Arc}(S::MappedSpace{JW,RR},k::Integer)
+function SingularIntegral{JW,RR<:Arc}(S::JacobiWeight{JW,RR},k::Integer)
     @assert k==0
     tol=1E-15
     # the mapped logkernel
     d=domain(S)
-    Σ=SingularIntegral(S.space,0)
-    M=Multiplication(abs(fromcanonicalD(d,Fun(identity,S.space))),S.space)
+    csp=setcanonicaldomain(S)
+    Σ=SingularIntegral(csp,0)
+    M=Multiplication(abs(fromcanonicalD(d,Fun(identity,csp))),csp)
 
     z∞=tocanonical(d,Inf)
     cnst=Array(Float64,0)
     for k=1:10000
-        push!(cnst,logkernel(Fun([zeros(k-1);1.],S.space),z∞))
+        push!(cnst,logkernel(Fun([zeros(k-1);1.],csp),z∞))
         if k≥3&&norm(cnst[end-2:end])<tol
             break
         end
     end
-    L∞=FiniteFunctional(cnst,S.space)
+    L∞=FiniteFunctional(cnst,csp)
 
     x=Fun(identity,S)
-    SpaceOperator((Σ-L∞)*M,S,MappedSpace(d,rangespace(Σ)))+(log(abs(x-fromcanonical(d,Inf)))/π)*DefiniteLineIntegral(S)
+    SpaceOperator((Σ-L∞)*M,S,setdomain(rangespace(Σ),d))+(log(abs(x-fromcanonical(d,Inf)))/π)*DefiniteLineIntegral(S)
 end

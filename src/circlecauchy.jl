@@ -2,7 +2,7 @@
 
 ## cauchy
 
-function cauchycircleS(cfs::Vector,z::Number,s::Bool)
+function cauchycircleS(cfs::AbstractVector,z::Number,s::Bool)
     ret=zero(Complex{Float64})
 
     if s
@@ -28,27 +28,29 @@ function cauchycircleS(cfs::Vector,z::Number,s::Bool)
 end
 
 
-function stieltjes{DD<:Circle}(f::Fun{Laurent{DD}},z,s::Bool)
+function stieltjes{DD<:Circle}(sp::Laurent{DD},f,z,s::Bool)
+    d=domain(sp)
     @assert in(z,d)
-    -2π*im*cauchycircleS(cfs,mappoint(d,Circle(),z),s)
+    -2π*im*cauchycircleS(f,mappoint(d,Circle(),z),s)
 end
-function stieltjes{DD<:Circle}(f::Fun{Laurent{DD}},z::Number)
-    z=mappoint(domain(f),Circle(),z)
-    -2π*im*cauchycircleS(coefficients(f),z,abs(z) < 1)
+function stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Number)
+    d=domain(sp)
+    z=mappoint(d,Circle(),z)
+    -2π*im*cauchycircleS(f,z,abs(z) < 1)
 end
 
-stieltjes{DD<:Circle}(f::Fun{Laurent{DD}},z::Vector)=[stieltjes(f,zk) for zk in z]
-stieltjes{DD<:Circle}(f::Fun{Laurent{DD}},z::Matrix)=reshape(stieltjes(f,vec(z)),size(z,1),size(z,2))
+stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Vector)=[stieltjes(sp,f,zk) for zk in z]
+stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Matrix)=reshape(stieltjes(sp,f,vec(z)),size(z,1),size(z,2))
 
 
 
 
-stieltjes{DD<:Circle}(f::Fun{Fourier{DD}},z,s...)=stieltjes(Fun(f,Laurent(domain(f))),z,s...)
+stieltjes{DD<:Circle}(sp::Fourier{DD},f,z,s...)=stieltjes(Laurent(domain(sp)),coefficients(f,sp,Laurent(domain(sp))),z,s...)
 
 
 
 # we implement cauchy ±1 as canonical
-hilbert{DD<:Circle}(f::Fun{Laurent{DD}},z)=(stieltjes(f,z,true)+stieltjes(f,z,false))/(-2π)
+hilbert{DD<:Circle}(sp::Laurent{DD},f,z)=(stieltjes(sp,f,z,true)+stieltjes(sp,f,z,false))/(-2π)
 
 
 
@@ -58,46 +60,46 @@ hilbert{DD<:Circle}(f::Fun{Laurent{DD}},z)=(stieltjes(f,z,true)+stieltjes(f,z,fa
 ## stieltjesintegral and logkernel
 
 
-function stieltjesintegral{DD<:Circle}(f::Fun{Laurent{DD}},z::Number,s...)
-    d=domain(f)
+function stieltjesintegral{DD<:Circle}(sp::Laurent{DD},f,z::Number,s...)
+    d=domain(sp)
     @assert d==Circle()  #TODO: radius
     ζ=Fun(d)
-    r=stieltjes(integrate(f-f.coefficients[2]/ζ),z,s...)
-    abs(z)<1?r:r+2π*im*f.coefficients[2]*log(z)
+    r=stieltjes(integrate(f-f[2]/ζ),z,s...)
+    abs(z)<1?r:r+2π*im*f[2]*log(z)
 end
 
 
-stieltjesintegral{DD<:Circle}(f::Fun{Fourier{DD}},z::Number,s...)=stieltjesintegral(Fun(f,Laurent),z,s...)
+stieltjesintegral{DD<:Circle}(sp::Fourier{DD},f,z::Number,s...)=stieltjesintegral(Fun(Fun(f,sp),Laurent),z,s...)
 
-function logkernel{DD<:Circle}(g::Fun{Fourier{DD}},z::Number)
-    d=domain(g)
+function logkernel{DD<:Circle}(sp::Fourier{DD},g,z::Number)
+    d=domain(sp)
     c,r=d.center,d.radius
     z=z-c
     if abs(z) ≤r
-        ret=2r*log(r)*g.coefficients[1]
+        ret=2r*log(r)*g[1]
         for j=2:2:length(g)
             k=div(j,2)
-            ret+=-g.coefficients[j]*sin(k*angle(z))*abs(z)^k/(k*r^(k-1))
+            ret+=-g[j]*sin(k*angle(z))*abs(z)^k/(k*r^(k-1))
         end
         for j=3:2:length(g)
             k=div(j,2)
-            ret+=-g.coefficients[j]*cos(k*angle(z))*abs(z)^k/(k*r^(k-1))
+            ret+=-g[j]*cos(k*angle(z))*abs(z)^k/(k*r^(k-1))
         end
         ret
     else
-        ret=2r*logabs(z)*g.coefficients[1]
+        ret=2r*logabs(z)*g[1]
         for j=2:2:length(g)
             k=div(j,2)
-            ret+=-g.coefficients[j]*sin(k*angle(z))*r^(k+1)/(k*abs(z)^k)
+            ret+=-g[j]*sin(k*angle(z))*r^(k+1)/(k*abs(z)^k)
         end
         for j=3:2:length(g)
             k=div(j,2)
-            ret+=-g.coefficients[j]*cos(k*angle(z))*r^(k+1)/(k*abs(z)^k)
+            ret+=-g[j]*cos(k*angle(z))*r^(k+1)/(k*abs(z)^k)
         end
         ret
     end
 end
-logkernel{DD<:Circle}(g::Fun{Fourier{DD}},z::Vector) = promote_type(eltype(g),eltype(z))[logkernel(g,zk) for zk in z]
-logkernel{DD<:Circle}(g::Fun{Fourier{DD}},z::Matrix) = reshape(promote_type(eltype(g),eltype(z))[logkernel(g,zk) for zk in z],size(z))
+logkernel{DD<:Circle}(sp::Fourier{DD},g,z::Vector) = promote_type(eltype(g),eltype(z))[logkernel(sp,g,zk) for zk in z]
+logkernel{DD<:Circle}(sp::Fourier{DD},g,z::Matrix) = reshape(promote_type(eltype(g),eltype(z))[logkernel(sp,g,zk) for zk in z],size(z))
 
-logkernel{DD<:Circle}(g::Fun{Laurent{DD}},z)=logkernel(Fun(g,Fourier),z)
+logkernel{DD<:Circle}(sp::Laurent{DD},g,z)=logkernel(Fun(Fun(g,sp),Fourier),z)
