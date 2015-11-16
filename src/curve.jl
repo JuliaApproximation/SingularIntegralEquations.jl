@@ -6,12 +6,12 @@ function cauchy{C<:Curve,S,T,BT}(f::Fun{MappedSpace{S,C,BT},T},z::Number)
     sum(cauchy(fm,complexroots(domain(f).curve-z)))
 end
 
-function cauchy{C<:Curve,S,BT,T}(s::Bool,f::Fun{MappedSpace{S,C,BT},T},z::Number)
+function cauchy{C<:Curve,S,BT,T}(f::Fun{MappedSpace{S,C,BT},T},z::Number,s::Bool)
     #project
     fm=Fun(f.coefficients,space(f).space)
     rts=complexroots(domain(f).curve-z)
     di=domain(fm)
-    mapreduce(rt->in(rt,di)?cauchy(s,fm,rt):cauchy(fm,rt),+,rts)
+    mapreduce(rt->in(rt,di)?cauchy(fm,rt,s):cauchy(fm,rt),+,rts)
 end
 
 cauchy{C<:Curve,S,T,BT}(f::Fun{MappedSpace{S,C,BT},T},z::Vector)=Complex128[cauchy(f,z[k]) for k=1:size(z,1)]
@@ -74,7 +74,7 @@ function cauchy{DD<:Circle,C<:Curve}(f::Fun{MappedSpace{Laurent{DD},C,Complex{Fl
     sum(cauchy(fcirc,complexroots(c.curve-z)))-div(length(domain(f).curve),2)*cauchy(fcirc,0.)
 end
 
-function cauchy{DD<:Circle,C<:Curve}(s::Bool,f::Fun{MappedSpace{Laurent{DD},C,Complex{Float64}}},z::Number)
+function cauchy{DD<:Circle,C<:Curve}(f::Fun{MappedSpace{Laurent{DD},C,Complex{Float64}}},z::Number,s::Bool)
     fcirc=Fun(f.coefficients,f.space.space)  # project to circle
     c=domain(f)  # the curve that f lives on
     @assert domain(fcirc)==Circle()
@@ -84,7 +84,7 @@ function cauchy{DD<:Circle,C<:Curve}(s::Bool,f::Fun{MappedSpace{Laurent{DD},C,Co
     ret=-div(length(domain(f).curve),2)*cauchy(fcirc,0.)
 
     for k=2:length(rts)
-        ret+=in(rts[k],Circle())?cauchy(s,fcirc,rts[k]):cauchy(fcirc,rts[k])
+        ret+=in(rts[k],Circle())?cauchy(fcirc,rts[k]):cauchy(fcirc,rts[k],s)
     end
     ret
 end

@@ -3,15 +3,11 @@
 ## Cauchy
 
 # pseudocauchy does not normalize at ∞
-function pseudocauchy{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z)
+function pseudocauchy{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z,s...)
     g=Fun(f.coefficients,space(f).space)
-    cauchy(g,tocanonical(f,z))
+    cauchy(g,tocanonical(f,z),s...)
 end
 
-function pseudocauchy{LS,RR<:Arc,TT,T}(s,f::Fun{MappedSpace{LS,RR,TT},T},z)
-    g=Fun(f.coefficients,space(f).space)
-    cauchy(s,g,tocanonical(f,z))
-end
 
 function pseudohilbert{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z)
     g=Fun(f.coefficients,space(f).space)
@@ -19,15 +15,11 @@ function pseudohilbert{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z)
 end
 
 
-function cauchy{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z)
+function cauchy{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z,s...)
     g=Fun(f.coefficients,space(f).space)
-    cauchy(g,tocanonical(f,z))-cauchy(g,tocanonical(f,Inf))
+    cauchy(g,tocanonical(f,z),s...)-cauchy(g,tocanonical(f,Inf))
 end
 
-function cauchy{LS,RR<:Arc,TT,T}(s,f::Fun{MappedSpace{LS,RR,TT},T},z)
-    g=Fun(f.coefficients,space(f).space)
-    cauchy(s,g,tocanonical(f,z))-cauchy(g,tocanonical(f,Inf))
-end
 
 function hilbert{LS,RR<:Arc,TT,T}(f::Fun{MappedSpace{LS,RR,TT},T},z)
     g=Fun(f.coefficients,space(f).space)
@@ -101,7 +93,3 @@ function SingularIntegral{JW,RR<:Arc}(S::MappedSpace{JW,RR},k::Integer)
     x=Fun(identity,S)
     SpaceOperator((Σ-L∞)*M,S,MappedSpace(d,rangespace(Σ)))+(log(abs(x-fromcanonical(d,Inf)))/π)*DefiniteLineIntegral(S)
 end
-
-
-
-

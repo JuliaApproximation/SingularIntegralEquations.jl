@@ -24,14 +24,18 @@ import ApproxFun: bandinds,SpaceOperator,dotu,linedotu,eps2,
                   ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, AlmostBandedOperator, ZeroSpace,
                   DiagonalInterlaceOperator, LowRankPertOperator
 
-function cauchy(s,f,z)
+
+
+# we don't override for Bool and Function to make overriding below easier
+# TODO: change when cauchy(f,z,s) calls cauchy(f.coefficients,space(f),z,s)
+function cauchy(f,z,s)
     if isa(s,Bool)
         error("Override cauchy for "*string(typeof(f)))
     end
 
-    @assert abs(s) == 1
+    @assert isa(s,Function)
 
-    cauchy(s==1,f,z)
+    cauchy(f,z,s==+)
 end
 
 hilbert(f)=Hilbert()*f
@@ -39,8 +43,8 @@ hilbert(f,z)=hilbert(f)(z)
 
 #TODO: cauchy ->stieljtjes
 #TODO: stieltjes -> offhilbert
-stieltjes(s,f,z)=-2π*im*cauchy(s,f,z)
-stieltjes(f,z)=-2π*im*cauchy(f,z)
+
+stieltjes(f,z,s...)=-2π*im*cauchy(f,z,s...)
 cauchyintegral(u,z)=im/(2π)*stieltjesintegral(u,z)
 
 

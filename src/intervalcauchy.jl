@@ -32,11 +32,9 @@ end
 
 forwardsubstitution(R,n,μ1,μ2)=forwardsubstitution!(Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n),R,n,μ1,μ2)
 
-cauchyforward(sp::Space,n,z)=forwardsubstitution(jacobiop(sp)-z,n,
-                        cauchymoment(sp,1,z),cauchymoment(sp,2,z))
+cauchyforward(sp::Space,n,z,s...)=forwardsubstitution(jacobiop(sp)-z,n,
+                        cauchymoment(sp,1,z,s...),cauchymoment(sp,2,z,s...))
 
-cauchyforward(s::Bool,sp::Space,n,z)=forwardsubstitution(jacobiop(sp)-z,n,
-                        cauchymoment(s,sp,1,z),cauchymoment(s,sp,2,z))
 
 
 function cauchyintervalrecurrence(f::Fun,z)
@@ -62,21 +60,21 @@ function cauchy{PS<:PolynomialSpace}(f::Fun{PS},z::Number)
     end
 end
 
-function cauchy{PS<:PolynomialSpace}(s::Bool,f::Fun{PS},z::Number)
+function cauchy{PS<:PolynomialSpace}(f::Fun{PS},z::Number,s::Bool)
     @assert domain(f)==Interval()
 
-   cfs=cauchyforward(s,Legendre(),length(f),z)
+   cfs=cauchyforward(Legendre(),length(f),z,s)
    dotu(cfs,coefficients(f,Legendre()))
 end
 
 
 # Sum over all inverses of fromcanonical, see [Olver,2014]
-function cauchy{S,L<:Line,T}(f::Fun{MappedSpace{S,L,T}},z)
+function cauchy{S,L<:Line,T}(f::Fun{MappedSpace{S,L,T}},z,s...)
     if domain(f)==Line()
         p=Fun(f.coefficients,space(f).space)
-        cauchy(p,tocanonical(f,z)) + cauchy(p,(-1-sqrt(1+4z.^2))./(2z))
+        cauchy(p,tocanonical(f,z),s...) + cauchy(p,(-1-sqrt(1+4z.^2))./(2z))
     else
         p=Fun(f.coefficients,MappedSpace(Line(),space(f).space))
-        cauchy(p,mappoint(domain(f),Line(),z))
+        cauchy(p,mappoint(domain(f),Line(),z),s...)
     end
 end

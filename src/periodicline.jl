@@ -3,33 +3,12 @@
 ## cauchy
 
 
-# function cauchyS(s::Bool,d::PeriodicLine,cfs::Vector,z)
-#     cauchyS(s,Circle(),cfs,mappoint(d,Circle(),z))-    cauchyS(s,Circle(),cfs,-1.)
-# end
-#
-#
-# function cauchy(d::PeriodicLine,cfs::Vector,z)
-#     cauchy(Circle(),cfs,mappoint(d,Circle(),z))-    cauchyS(true,Circle(),cfs,-1.)
-# end
-#
-# function cauchy(s::Bool,d::PeriodicLine,cfs::Vector,z)
-#     @assert abs(abs(mappoint(d,Circle(),z))-1.) < 100eps()
-#
-#     cauchyS(s,d,cfs,z)
-# end
-
-
 #TODO: use hilbert instead of cauchy(g,-1)
-function cauchy{L<:PeriodicLine,S,T}(f::Fun{MappedSpace{S,L,T}},z::Number)
+function cauchy{L<:PeriodicLine,S,T}(f::Fun{MappedSpace{S,L,T}},z::Number,s...)
     g=Fun(f.coefficients,setdomain(space(f).space,Circle()))
-    cauchy(g,mappoint(domain(f),Circle(),z))-hilbert(g,-1)/(2im)
+    cauchy(g,mappoint(domain(f),Circle(),z),s...)-hilbert(g,-1)/(2im)
     # use im*(C^+ + C^-)=H
     #-cauchy(g,-1)
-end
-
-function cauchy{L<:PeriodicLine,S,T}(s::Bool,f::Fun{MappedSpace{S,L,T}},z::Number)
-    g=Fun(f.coefficients,setdomain(space(f).space,Circle()))
-    cauchy(s,g,mappoint(domain(f),Circle(),z))-hilbert(g,-1)/(2im)
 end
 
 
@@ -39,10 +18,6 @@ function hilbert{L<:PeriodicLine,S,T}(f::Fun{MappedSpace{S,L,T}},z::Number)
     # use im*(C^+ + C^-)=H
     #-cauchy(g,-1)
 end
-
-# cauchy{S,T}(f::Fun{PeriodicLineDirichlet{S,T}},z::Number)=cauchy(Fun(f,domain(f)),z)
-# cauchy{S,T}(s::Bool,f::Fun{PeriodicLineDirichlet{S,T}},z::Number)=cauchy(s,Fun(f,domain(f)),z)
-
 
 
 

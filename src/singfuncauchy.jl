@@ -57,8 +57,7 @@ realdivkhornersum{S<:Real}(cfs::AbstractVector{S},y,ys,s) = real(divkhornersum(c
 realdivkhornersum{S<:Complex}(cfs::AbstractVector{S},y,ys,s) = complex(real(divkhornersum(real(cfs),y,ys,s)),real(divkhornersum(imag(cfs),y,ys,s)))
 
 
-#cauchy{S<:PolynomialSpace}(u::Fun{JacobiWeight{S}},zv::Array)=Complex128[cauchy(u,zv[k,j]) for k=1:size(zv,1), j=1:size(zv,2)]
-cauchy{S<:PolynomialSpace,DD}(s::Bool,u::Fun{JacobiWeight{S,DD}},zv::Array)=Complex128[cauchy(s,u,zv[k,j]) for k=1:size(zv,1), j=1:size(zv,2)]
+cauchy{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},zv::Array,s...)=Complex128[cauchy(u,zv[k,j],s...) for k=1:size(zv,1), j=1:size(zv,2)]
 
 function cauchy{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},z)
     d,sp=domain(u),space(u)
@@ -99,7 +98,7 @@ function cauchy{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},z)
 end
 
 
-function cauchy{SS<:PolynomialSpace,DD}(s::Bool,u::Fun{JacobiWeight{SS,DD}},x::Number)
+function cauchy{SS<:PolynomialSpace,DD}(u::Fun{JacobiWeight{SS,DD}},x::Number,s::Bool)
     d,sp=domain(u),space(u)
 
     if sp.α == sp.β == .5
@@ -124,11 +123,11 @@ function cauchy{SS<:PolynomialSpace,DD}(s::Bool,u::Fun{JacobiWeight{SS,DD}},x::N
         if domain(u)==Interval()
             S=JacobiWeight(sp.α,sp.β,Jacobi(sp.β,sp.α))
             cfs=coefficients(u,S)
-            cf=cauchyforward(s,S,length(cfs),x)
+            cf=cauchyforward(S,length(cfs),x,s)
             dotu(cf,cfs)
         else
             @assert isa(domain(u),Interval)
-            cauchy(s,setdomain(u,Interval()),tocanonical(u,x))
+            cauchy(setdomain(u,Interval()),tocanonical(u,x),s)
         end
     end
 end
@@ -243,7 +242,7 @@ function stieltjesintegral{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},z)
     end
 end
 
-function stieltjesintegral{S<:PolynomialSpace,DD}(s::Bool,u::Fun{JacobiWeight{S,DD}},z)
+function stieltjesintegral{S<:PolynomialSpace,DD}(u::Fun{JacobiWeight{S,DD}},z,s::Bool)
     d,sp=domain(u),space(u)
     a,b=d.a,d.b     # TODO: type not inferred right now
 
