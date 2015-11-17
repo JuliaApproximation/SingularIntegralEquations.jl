@@ -43,24 +43,30 @@ function OffHilbert(ds::Space,rs::Space,order::Int)
     @assert order==1
     tol=1E-13
 
-    b=Fun([1.],ds);
-    v1=chop(Fun(x->-stieltjes(b,x)/π,rs).coefficients,tol)
-    b=Fun([0.,1.],ds);
-    v2=chop(Fun(x->-stieltjes(b,x)/π,rs).coefficients,tol)
-    m=max(length(v1),length(v2))
-    C=Array(Complex128,m,1000)
-
-    C[:,1]=pad!(v1,m)
-    C[:,2]=pad!(v2,m)
-
-    for k=3:1000
+    vv=Array(Vector{Complex128},0)
+    m=1000
+    for k=1:2:1000
         b=Fun([zeros(k-1);1.],ds)
-        cfs=Fun(x->-stieltjes(b,x)/π,rs,m).coefficients
-        C[:,k]=cfs
-        if norm(cfs)<tol
-            return OffHilbert(convert(BandedMatrix,C[:,1:k]),ds,rs,order)
+        v1=Fun(x->-stieltjes(b,x)/π,rs,m)
+        b=Fun([zeros(k);1.],ds)
+        v2=Fun(x->-stieltjes(b,x)/π,rs,m)
+        if abs(v1.coefficients[end-1])>100tol || abs(v1.coefficients[end])>100tol ||
+            abs(v2.coefficients[end-1])>100tol || abs(v2.coefficients[end])>100tol
+            warn("OffHilbert not resolved with $m rows")
         end
+        if norm(v1.coefficients,Inf)<tol &&
+            norm(v2.coefficients,Inf)<tol
+            C=zeros(Complex128,mapreduce(length,max,vv),length(vv))
+            for j=1:length(vv)
+                @inbounds C[1:length(vv[j]),j]=vv[j]
+            end
+            return OffHilbert(convert(BandedMatrix,C),ds,rs,order)
+        end
+
+        push!(vv,v1.coefficients)
+        push!(vv,v2.coefficients)
     end
+
     warn("Max Iteration Reached for OffHilbert from "*string(ds)*" to "*string(rs))
     OffHilbert(convert(BandedMatrix,C),ds,rs,order)
 end
@@ -182,6 +188,12 @@ function OffHilbert{D1<:Circle,D2<:Circle}(DS::Laurent{D1},RS::Laurent{D2},order
     OffHilbert(2im*M,DS,RS)
 end
 
+function OffHilbert{D1<:Circle,D2<:Circle}(DS::Fourier{D1},RS::Fourier{D2},order::Int)
+    LD=Laurent(domain(DS))
+    LR=Laurent(domain(RS))
+    OffHilbertWrapper(Conversion(LR,RS)*OffHilbert(LD,LR)*Conversion(DS,LD),
+        order)
+end
 
 
 ## OffHilbert Functional
@@ -298,7 +310,7 @@ function disjoint_cauchy(a::Circle,b::Circle)
 
     f=Fun(z->r/(z-c),b)
 
-        ret=Array(Fun{Laurent{typeof(b)},Complex{Float64}},300)
+    ret=Array(Fun{Laurent{typeof(b)},Complex{Float64}},300)
     ret[1]=f
     n=1
 
