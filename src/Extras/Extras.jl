@@ -1,3 +1,5 @@
 include("plot.jl")
 include("show.jl")
-include("normalderivative.jl")
+if isdir(Pkg.dir("DualNumbers"))
+    include("normalderivative.jl")
+end
