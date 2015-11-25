@@ -199,7 +199,7 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::Ab
             G[i,j] = transpose(G[j,i])
         end
     end
-    mapreduce(typeof,promote_type,G)[G[i,j] for i=1:N,j=1:N]
+    G
 end
 
 function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,g::Function,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:unsplit,tolerance::Symbol=:absolute,kwds...)
@@ -221,7 +221,7 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,g::Fun
             G[i,j] = transpose(G[j,i])
         end
     end
-    mapreduce(typeof,promote_type,G)[G[i,j] for i=1:N,j=1:N]
+    G
 end
 
 # HierarchicalMatrix of GreensFuns on TensorSpace of HierarchicalSpaces
