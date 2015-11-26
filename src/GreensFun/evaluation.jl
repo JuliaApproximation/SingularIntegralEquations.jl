@@ -55,7 +55,7 @@ for TYP in (:Fourier,:Laurent)
     end
 end
 
-logkernel(G::Function,u::Fun,z)=logkernel(G,space(u),coefficients(u),z)
+
 
 function logkernel{DD}(G::Function,sp::Fourier{DD},u,z)
     n=2length(u)
@@ -69,6 +69,7 @@ for Func in (:(Base.sum),:linesum,:logkernel,:cauchy)
     @eval begin
         $Func{F<:Fun}(G::Function,u::Vector{F},z)=mapreduce(u->$Func(G,u,z),+,u)
         $Func(G::Function,sp::PiecewiseSpace,u,z)=$Func(G,vec(Fun(u,sp)),z)
+        $Func(G::Function,u::Fun,z)=$Func(G,space(u),coefficients(u),z)
         $Func{PS<:PolynomialSpace}(G::Function,sp::JacobiWeight{PS},f,z)=$Func(G,Fun(Fun(f,sp),JacobiWeight(sp.α,sp.β,Chebyshev(domain(sp)))),z)
     end
 end
