@@ -23,7 +23,7 @@ import ApproxFun: bandinds,SpaceOperator,dotu,linedotu,eps2,
                   real, UnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, BlockOperator,
                   ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, AlmostBandedOperator, ZeroSpace,
                   DiagonalInterlaceOperator, LowRankPertOperator, LaurentDirichlet, setcanonicaldomain,
-                  IntervalCurve,PeriodicCurve
+                  IntervalCurve,PeriodicCurve, reverseorientation
 
 
 

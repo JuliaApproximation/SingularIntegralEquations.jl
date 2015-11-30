@@ -30,11 +30,18 @@ end
 
 function stieltjes{DD<:Circle}(sp::Laurent{DD},f,z,s::Bool)
     d=domain(sp)
+    if !d.orientation
+        return -stieltjes(reverseorientation(Fun(f,sp)),z,!s)
+    end
     @assert in(z,d)
     -2π*im*cauchycircleS(f,mappoint(d,Circle(),z),s)
 end
 function stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Number)
     d=domain(sp)
+    if !d.orientation
+        return -stieltjes(reverseorientation(Fun(f,sp)),z)
+    end
+
     z=mappoint(d,Circle(),z)
     -2π*im*cauchycircleS(f,z,abs(z) < 1)
 end
