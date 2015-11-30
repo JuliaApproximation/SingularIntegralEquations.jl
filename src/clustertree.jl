@@ -26,27 +26,19 @@ for (TYP,HTYP) in ((:Number,:HierarchicalVector),(:Domain,:HierarchicalDomain))
             rbar,ibar = abs2(real(cmax)),abs2(imag(cmax))
             rmid,imid = reim((c[i]+c[j])/2)
 
-            (f,mid) = rbar > ibar ? (real,rmid) : (imag,imid)
+            (f,mid) = rbar ≥ ibar ? (real,rmid) : (imag,imid)
 
             np₁,np₂ = 0,0
             for k in p
-                if f(c[k]) < mid
-                    np₁+=1
-                else
-                    np₂+=1
-                end
+                f(c[k]) < mid ? np₁+=1 : np₂+=1
             end
             p₁,p₂ = zeros(Int,np₁),zeros(Int,np₂)
             kp₁,kp₂ = 1,1
             for k in p
-                if f(c[k]) < mid
-                    p₁[kp₁] = k
-                    kp₁+=1
-                else
-                    p₂[kp₂] = k
-                    kp₂+=1
-                end
+                f(c[k]) < mid ? (p₁[kp₁] = k; kp₁+=1) : (p₂[kp₂] = k; kp₂+=1)
             end
+            np₁ == 0 && (push!(p₁,p₂[1]); shift!(p₂))
+            np₂ == 0 && (push!(p₂,p₁[1]); shift!(p₁))
 
             if length(p₁) == 1 && length(p₂) == 1
                 return $HTYP((x[p₁[1]],x[p₂[1]]))
