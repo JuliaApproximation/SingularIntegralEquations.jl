@@ -174,15 +174,31 @@ function OffHilbert{D1<:Circle,D2<:Circle}(DS::Laurent{D1},RS::Laurent{D2},order
     ds=domain(DS);rs=domain(RS)
     @assert order==1
 
+
+    # Correct for orrientation
+    if !ds.orientation
+        rDS=reverseorientation(DS)
+        return (-OffHilbert(rDS,RS))*Conversion(DS,rDS)
+    end
+
+    if !rs.orientation
+        rRS=reverseorientation(RS)
+        return Conversion(rRS,RS)*(-OffHilbert(DS,rRS))
+    end
+
+
+
+
     c2=rs.center;c1=ds.center
     r2=rs.radius;r1=ds.radius
 
+    # make positive orientation
     if r1>r2&&abs(c1-c2)<r1  # we are inside the circle, use Taylor series
-        M=interior_cauchy(ds,rs)
+        M=interior_cauchy(Circle(c1,r1),Circle(c2,r2))
     elseif r1<r2&&abs(c1-c2)<r2 # we surround the domain, use Hardy{False} series
-        M=exterior_cauchy(ds,rs)
+        M=exterior_cauchy(Circle(c1,r1),Circle(c2,r2))
     else
-        M=disjoint_cauchy(ds,rs)
+        M=disjoint_cauchy(Circle(c1,r1),Circle(c2,r2))
     end
 
     OffHilbert(2im*M,DS,RS)
@@ -191,8 +207,7 @@ end
 function OffHilbert{D1<:Circle,D2<:Circle}(DS::Fourier{D1},RS::Fourier{D2},order::Int)
     LD=Laurent(domain(DS))
     LR=Laurent(domain(RS))
-    OffHilbertWrapper(Conversion(LR,RS)*OffHilbert(LD,LR)*Conversion(DS,LD),
-        order)
+    Conversion(LR,RS)*OffHilbert(LD,LR,order)*Conversion(DS,LD)
 end
 
 
@@ -266,11 +281,7 @@ function exterior_cauchy(b::Circle,a::Circle)
 end
 
 function interior_cauchy(a::Circle,b::Circle)
-    c=a.center
-    r=a.radius
-
-
-    z=Fun(z->(z-c)/r,b)
+    z=mappoint(a,Circle(),Fun(b))
 
     ret=Array(Fun{Laurent{typeof(b)},Complex{Float64}},300)
     ret[1]=ones(b)
