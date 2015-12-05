@@ -96,8 +96,16 @@ SingularIntegral(sp::Space,n)=SingularIntegral{typeof(sp),typeof(n),typeof(lengt
 
 # Override sumspace
 
-Hilbert{DD}(F::Fourier{DD},n)=Hilbert{typeof(F),typeof(n),Complex{Float64}}(F,n)
-SingularIntegral{DD}(F::Fourier{DD},n)=SingularIntegral{typeof(F),typeof(n),Float64}(F,n)
+for TYP in (:Hilbert,:SingularIntegral)
+    @eval function $TYP{DD}(F::Fourier{DD},n)
+        if !domain(F).orientation
+            R=reverseorientation(F)
+            Conversion(R,F)*(-$TYP(R,n))*Conversion(F,R)
+        else
+            $TYP{typeof(F),typeof(n),Complex{Float64}}(F,n)
+        end
+    end
+end
 
 ### Operator Entries
 
@@ -147,12 +155,7 @@ function addentries!{DD<:Circle}(H::Hilbert{Fourier{DD}},A,kr::Range,::Colon)
     r = domain(H).radius
     if H.order == 0
         for k=kr
-            if k==1
-                A[1,1]+=2r*log(r)
-            else
-                j=div(k,2)
-                A[k,k]+=-r/j
-            end
+            A[k,k]+=k==1?2r*log(r):(-r/(k÷2))
         end
     elseif H.order == 1
         for k=kr
