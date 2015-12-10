@@ -107,17 +107,17 @@ function GreensFun{SS<:AbstractProductSpace}(f::Function,ss::SS;method::Symbol=:
         # Extract diagonal value.
         d = domain(ss)
         xm,ym = mean([first(d[1]),last(d[1])]),mean([first(d[2]),last(d[2])])
-        F1m = F1[xm,ym]
+        F1m = F1(xm,ym)
         # Set this normalized part to be the singular part.
         F1 = ProductFun(-coefficients(F1)/F1m/2,ss)
         # Approximate real & smooth part after singular extraction.
         m,n = size(F1)
-        if typeof(ss.space) <: TensorSpace{(Chebyshev,Chebyshev)}
-            F2 = skewProductFun((x,y)->f(x,y) - F1[x,y],ss.space,nextpow2(m),nextpow2(n)+1)
-        elseif typeof(ss.space) <: TensorSpace{(Laurent,Laurent)}
-            F2 = skewProductFun((x,y)->f(x,y) - F1[x,y],ss.space,nextpow2(m),nextpow2(n))
+        if typeof(ss.space) <: TensorSpace && all(k->typeof(ss.space.spaces[k]) <: Chebyshev,1:2)
+            F2 = skewProductFun((x,y)->f(x,y) - F1(x,y),ss.space,nextpow2(m),nextpow2(n)+1)
+        elseif typeof(ss.space) <: TensorSpace && all(k->typeof(ss.space.spaces[k]) <: Laurent,1:2)
+            F2 = skewProductFun((x,y)->f(x,y) - F1(x,y),ss.space,nextpow2(m),nextpow2(n))
         end
-        F = [F1,F2]
+        F = [F1;F2]
     elseif method == :lowrank
         F = LowRankFun(f,ss;method=:standard,kwds...)
     elseif method == :Cholesky
@@ -134,12 +134,12 @@ function GreensFun{SS<:AbstractProductSpace}(f::Function,g::Function,ss::SS;meth
         F1 = ProductFun(-coefficients(G)/2,ss)
         # Approximate real & smooth part after singular extraction.
         m,n = size(F1)
-        if typeof(ss.space) <: TensorSpace{(Chebyshev,Chebyshev)}
-            F2 = skewProductFun((x,y)->f(x,y) - F1[x,y],ss.space,nextpow2(m),nextpow2(n)+1)
-        elseif typeof(ss.space) <: TensorSpace{(Laurent,Laurent)}
-            F2 = skewProductFun((x,y)->f(x,y) - F1[x,y],ss.space,nextpow2(m),nextpow2(n))
+        if typeof(ss.space) <: TensorSpace && all(k->typeof(ss.space.spaces[k]) <: Chebyshev,1:2)
+            F2 = skewProductFun((x,y)->f(x,y) - F1(x,y),ss.space,nextpow2(m),nextpow2(n)+1)
+        elseif typeof(ss.space) <: TensorSpace && all(k->typeof(ss.space.spaces[k]) <: Laurent,1:2)
+            F2 = skewProductFun((x,y)->f(x,y) - F1(x,y),ss.space,nextpow2(m),nextpow2(n))
         end
-        F = [F1,F2]
+        F = [F1;F2]
     end
     GreensFun(F)
 end
