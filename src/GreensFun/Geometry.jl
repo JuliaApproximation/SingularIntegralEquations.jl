@@ -1,17 +1,27 @@
-center(x) = x
+# centroid is the geometric centre
+
+centroid(x) = x
+
+centroid(d::Circle) = d.center
+centroid(d::Interval) = mean((first(d),last(d)))
+
+# dist and dist2 are the nearest distance and distance-squared between x and y
+
 dist(x,y) = sqrt(dist2(x,y))
-
-center(d::Circle) = d.center
-center(d::Interval) = mean((first(d),last(d)))
-
-# distance-squared between two numbers
+dist2(x,y) = dist(x,y)^2
 
 dist2(x::Number,y::Number) = abs2(x-y)
-
-# Nearest distance between domains
-
-dist(d1::Domain,d2::Domain) = minimum(extrema(d1,d2))
 dist2(d1::Domain,d2::Domain) = minimum(extrema2(d1,d2))
+
+# diam is the diameter of x
+
+diam(x) = sqrt(diam2(x))
+diam2(x) = diam(x)^2
+
+diam2(x::Number) = 1
+diam(d::Circle) = 2d.radius
+diam2(d::Interval) = abs2(first(d)-last(d))
+diam2(d::UnionDomain) = maximum(extrema2(d))
 
 # Extremal distances between domains
 
@@ -24,6 +34,24 @@ function extrema2(d1::Domain,d2::Domain)
     ext[1]^2,ext[2]^2
 end
 
+for op in (:(Base.extrema),:extrema2)
+    @eval begin
+        function $op(d::UnionDomain)
+            ext = [$op(d1,d2) for d1 in d,d2 in d]
+            minimum(minimum(ext)),maximum(maximum(ext))
+        end
+        function $op(d1::UnionDomain,d2::UnionDomain)
+            ext = [$op(d11,d22) for d11 in d1,d22 in d2]
+            minimum(minimum(ext)),maximum(maximum(ext))
+        end
+        function $op(d1::Domain,d2::UnionDomain)
+            ext = [$op(d1,d22) for d22 in d2]
+            minimum(minimum(ext)),maximum(maximum(ext))
+        end
+        $op(d1::UnionDomain,d2::Domain) = $op(d2,d1)
+    end
+end
+
 #
 # Geometry for non-intersecting Intervals
 #
@@ -32,9 +60,9 @@ function dist2(c::Number,d::Interval)
         zero(real(c))
     else
         a,b = d.a,d.b
-        x1,y1 = real(a),imag(a)
-        x2,y2 = real(b),imag(b)
-        x3,y3 = real(c),imag(c)
+        x1,y1 = reim(a)
+        x2,y2 = reim(b)
+        x3,y3 = reim(c)
         px,py = x2-x1,y2-y1
         u = ((x3-x1)px+(y3-y1)py)/(px^2+py^2)
         u = u > 1 ? 1 : u ≥ 0 ? u : 0
