@@ -62,7 +62,6 @@ for (Op,OpWrap,OffOp) in ((:PseudoHilbert,:PseudoHilbertWrapper,:OffPseudoHilber
         bandinds{DD}(H::$Op{JacobiWeight{Ultraspherical{1,DD},DD}})=H.order > 0 ? (-1,H.order-1) : (-2,0)
 
         choosedomainspace(H::$Op{UnsetSpace},sp::Ultraspherical)=ChebyshevWeight(ChebyshevDirichlet{1,1}(domain(sp)))
-        choosedomainspace(H::$Op{UnsetSpace},sp::MappedSpace)=MappedSpace(domain(sp),choosedomainspace(H,sp.space))
         choosedomainspace(H::$Op{UnsetSpace},sp::PiecewiseSpace)=PiecewiseSpace(map(s->choosedomainspace(H,s),sp.spaces))
 
 
@@ -73,23 +72,11 @@ for (Op,OpWrap,OffOp) in ((:PseudoHilbert,:PseudoHilbertWrapper,:OffPseudoHilber
                                sp::Ultraspherical)=TupleSpace(ConstantSpace(),
                                                             JacobiWeight(0.5,0.5,
                                                                          Ultraspherical{1}(domain(sp))))
-        function choosedomainspace{T,V}(P::BlockOperator{$Op{UnsetSpace,T,V}},
-                                        sp::MappedSpace)
-            r=choosedomainspace(P,sp.space)
-            @assert isa(r,TupleSpace) && length(r.spaces)==2 && isa(r.spaces[1],ConstantSpace)
-            TupleSpace(ConstantSpace(),MappedSpace(domain(sp),r.spaces[2]))
-        end
 
         choosedomainspace{T,V,W}(P::BlockOperator{ReOperator{$Op{UnsetSpace,T,V},W}},
                                sp::Ultraspherical)=TupleSpace(ConstantSpace(),
                                                             JacobiWeight(0.5,0.5,
                                                                          Ultraspherical{1}(domain(sp))))
-        function choosedomainspace{T,V,W}(P::BlockOperator{ReOperator{$Op{UnsetSpace,T,V},W}},
-                               sp::MappedSpace)
-            r=choosedomainspace(P,sp.space)
-            @assert isa(r,TupleSpace) && length(r.spaces)==2 && isa(r.spaces[1],ConstantSpace)
-            TupleSpace(ConstantSpace(),MappedSpace(domain(sp),r.spaces[2]))
-        end
     end
 end
 
@@ -109,8 +96,16 @@ SingularIntegral(sp::Space,n)=SingularIntegral{typeof(sp),typeof(n),typeof(lengt
 
 # Override sumspace
 
-Hilbert{DD}(F::Fourier{DD},n)=Hilbert{typeof(F),typeof(n),Complex{Float64}}(F,n)
-SingularIntegral{DD}(F::Fourier{DD},n)=SingularIntegral{typeof(F),typeof(n),Float64}(F,n)
+for TYP in (:Hilbert,:SingularIntegral)
+    @eval function $TYP{DD}(F::Fourier{DD},n)
+        if !domain(F).orientation
+            R=reverseorientation(F)
+            Conversion(R,F)*(-$TYP(R,n))*Conversion(F,R)
+        else
+            $TYP{typeof(F),typeof(n),Complex{Float64}}(F,n)
+        end
+    end
+end
 
 ### Operator Entries
 
@@ -160,12 +155,7 @@ function addentries!{DD<:Circle}(H::Hilbert{Fourier{DD}},A,kr::Range,::Colon)
     r = domain(H).radius
     if H.order == 0
         for k=kr
-            if k==1
-                A[1,1]+=2r*log(r)
-            else
-                j=div(k,2)
-                A[k,k]+=-r/j
-            end
+            A[k,k]+=k==1?2r*log(r):(-r/(k÷2))
         end
     elseif H.order == 1
         for k=kr
@@ -261,7 +251,7 @@ end
 for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),
                         (:SingularIntegral,:SingularIntegralWrapper,:length))
     @eval begin
-        function $Op{DD}(S::JacobiWeight{Chebyshev{DD},DD},n::Int)
+        function $Op{DD<:Interval}(S::JacobiWeight{Chebyshev{DD},DD},n::Int)
             if S.α==S.β==-0.5
                 $Op{JacobiWeight{Chebyshev{DD},DD},typeof(n),typeof($Len(domain(S)))}(S,n)
             elseif S.α==S.β==0.5
@@ -278,12 +268,11 @@ for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),
             end
         end
 
-        function addentries!{DD}(H::$Op{JacobiWeight{Chebyshev{DD},DD}},A,kr::Range,::Colon)
+        function addentries!{DD<:Interval}(H::$Op{JacobiWeight{Chebyshev{DD},DD}},A,kr::Range,::Colon)
             m=H.order
             d=domain(H)
             sp=domainspace(H)
 
-            @assert isa(d,Interval)
             @assert sp.α==sp.β==-0.5
 
             C=(4./$Len(d))^(m-1)
@@ -301,14 +290,12 @@ for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),
         end
 
         # we always have real for n==1
-        $Op{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},n)=Hilbert{typeof(sp),typeof(n),
+        $Op{DD<:Interval}(sp::JacobiWeight{Ultraspherical{1,DD},DD},n)=Hilbert{typeof(sp),typeof(n),
                                                            n==1?real(eltype(domain(sp))):typeof($Len(domain(sp)))}(sp,n)
-        function addentries!{DD}(H::$Op{JacobiWeight{Ultraspherical{1,DD},DD}},A,kr::UnitRange,::Colon)
+        function addentries!{DD<:Interval}(H::$Op{JacobiWeight{Ultraspherical{1,DD},DD}},A,kr::UnitRange,::Colon)
             m=H.order
             d=domain(H)
             sp=domainspace(H)
-
-            @assert isa(d,Interval)
             @assert sp.α==sp.β==0.5
 
             C=(4./$Len(d))^(m-1)

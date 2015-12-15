@@ -120,10 +120,28 @@ f=Fun(sech,Line())
 @test_approx_eq cauchy(f,1.+im) cauchy(f2,1.+im)
 
 
+f=Fun(z->exp(exp(0.1im)*z+1/z),Laurent(Circle()))
+
+@test_approx_eq hilbert(f,exp(0.2im)) hilbert(Fun(f,Fourier),exp(0.2im))
+@test_approx_eq hilbert(f,exp(0.2im)) -hilbert(reverseorientation(f),exp(0.2im))
+@test_approx_eq hilbert(f,exp(0.2im)) -hilbert(reverseorientation(Fun(f,Fourier)),exp(0.2im))
+
+@test_approx_eq cauchy(f,0.5exp(0.2im)) cauchy(Fun(f,Fourier),0.5exp(0.2im))
+@test_approx_eq cauchy(f,0.5exp(0.2im)) -cauchy(reverseorientation(f),0.5exp(0.2im))
+@test_approx_eq cauchy(f,0.5exp(0.2im)) -cauchy(reverseorientation(Fun(f,Fourier)),0.5exp(0.2im))
+@test_approx_eq cauchy(f,0.5exp(0.2im)) (OffHilbert(space(f),Laurent(Circle(0.5)))*f)(0.5exp(0.2im))/(2im)
+
+f=Fun(z->exp(exp(0.1im)*z+1/(z-1.)),Laurent(Circle(1.,0.5)))
+@test_approx_eq cauchy(f,0.5exp(0.2im)) cauchy(Fun(f,Fourier),0.5exp(0.2im))
+@test_approx_eq cauchy(f,0.5exp(0.2im)) -cauchy(reverseorientation(f),0.5exp(0.2im))
+@test_approx_eq cauchy(f,0.5exp(0.2im)) -cauchy(reverseorientation(Fun(f,Fourier)),0.5exp(0.2im))
+
+
 Γ=Circle()∪Circle(0.5)
 f=depiece([Fun(z->z^(-1),Γ[1]),Fun(z->z,Γ[2])])
 A=I-(f-Fun(one,space(f)))*Cauchy(-1)
 u=A\(f-Fun(one,space(f)))
+
 @test_approx_eq 1+cauchy(u,.1) 1
 @test_approx_eq 1+cauchy(u,.8) 1/0.8
 @test_approx_eq 1+cauchy(u,2.) 1
@@ -137,40 +155,40 @@ C=Cauchy(Space(d1),Space(d2))
 @test norm((C*Fun(exp,d1)-Fun(exp,d2)).coefficients)<100eps()
 
 C2=Cauchy(Space(d2),Space(d1))
-@test norm((C2*Fun(z->exp(1/z)-1,d2)+Fun(z->exp(1/z)-1,d1)).coefficients)<10000eps()
+@test norm((C2*Fun(z->exp(1/z)-1,d2)+Fun(z->exp(1/z)-1,d1)).coefficients)<100000eps()
 
 c1=0.1+.1im;r1=.4;
 c2=-2.+.2im;r2=0.3;
 d1=Circle(c1,r1)
 d2=Circle(c2,r2)
-@test norm((Cauchy(d1,d2)*Fun(z->exp(1/z)-1,d1)+Fun(z->exp(1/z)-1,d2)).coefficients)<200eps()
+@test norm((Cauchy(d1,d2)*Fun(z->exp(1/z)-1,d1)+Fun(z->exp(1/z)-1,d2)).coefficients)<2000eps()
 
 
 # complex contour
 
-if isdir(Pkg.dir("FastGaussQuadrature"))
-    #Legendre uses FastGuassQuadrature
-    f=Fun(exp,Legendre())
-    @test_approx_eq cauchy(f,.1+0.000000000001im) cauchy(+1,f,.1)
-    @test_approx_eq cauchy(f,.1-0.000000000001im) cauchy(-1,f,.1)
-    @test_approx_eq (cauchy(+1,f,.1)-cauchy(-1,f,.1)) exp(.1)
 
-    ω=2.
-    d=Interval(0.5im,30.im/ω)
-    x=Fun(identity,Legendre(d))
-    @test_approx_eq cauchy(exp(im*ω*x),1.+im) (-0.025430235512791915911 + 0.0016246822285867573678im)
+#Legendre uses FastGuassQuadrature
+f=Fun(exp,Legendre())
+@test_approx_eq cauchy(f,.1+0.000000000001im) cauchy(f,.1,+)
+@test_approx_eq cauchy(f,.1-0.000000000001im) cauchy(f,.1,-)
+@test_approx_eq (cauchy(f,.1,+)-cauchy(f,.1,-)) exp(.1)
+
+ω=2.
+d=Interval(0.5im,30.im/ω)
+x=Fun(identity,Legendre(d))
+@test_approx_eq cauchy(exp(im*ω*x),1.+im) (-0.025430235512791915911 + 0.0016246822285867573678im)
 
 
-    println("Arc test")
+println("Arc test")
 
-    a=Arc(0.,1.,0.,π/2)
-    ζ=Fun(identity,a)
-    f=Fun(exp,a)*sqrt(abs((ζ-1)*(ζ-im)))
-    z=.1+.2im
-    #@test_approx_eq cauchy(f,z) sum(f/(ζ-z))/(2π*im)
-    z=exp(.1im)
-    @test_approx_eq hilbert(f,z) im*(cauchy(+1,f,z)+cauchy(-1,f,z))
-end
+a=Arc(0.,1.,0.,π/2)
+ζ=Fun(identity,a)
+f=Fun(exp,a)*sqrt(abs((ζ-1)*(ζ-im)))
+z=.1+.2im
+#@test_approx_eq cauchy(f,z) sum(f/(ζ-z))/(2π*im)
+z=exp(.1im)
+@test_approx_eq hilbert(f,z) im*(cauchy(f,z,+)+cauchy(f,z,-))
+
 
 
 
@@ -282,6 +300,14 @@ include("FundamentalSolutionsTest.jl")
 println("Convolution ProductFun test")
 
 include("convolutionProductFunTest.jl")
+
+println("LowRankMatrix test")
+
+include("LowRankMatrixTest.jl")
+
+println("HierarchicalVector test")
+
+include("HierarchicalVectorTest.jl")
 
 println("Hierarchical solve test")
 

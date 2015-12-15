@@ -39,6 +39,9 @@ kernels(G::GreensFun) = G.kernels
 Base.rank{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(rank,+,G.kernels)
 slices{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(x->x.A,vcat,G.kernels),mapreduce(x->x.B,vcat,G.kernels)
 slices{L<:LowRankFun}(G::GreensFun{L},k::Int) = slices(G)[k]
+LowRankIntegralOperator{L<:LowRankFun}(G::GreensFun{L}) = LowRankIntegralOperator(slices(G)...)
+
+Base.promote_rule{K,T,K1,T1}(::Type{GreensFun{K,T}},::Type{GreensFun{K1,T1}}) = GreensFun{promote_type(K,K1),promote_type(T,T1)}
 
 Base.getindex(⨍::Operator,G::GreensFun) = mapreduce(f->getindex(⨍,f),+,G.kernels)
 
@@ -104,17 +107,17 @@ function GreensFun{SS<:AbstractProductSpace}(f::Function,ss::SS;method::Symbol=:
         # Extract diagonal value.
         d = domain(ss)
         xm,ym = mean([first(d[1]),last(d[1])]),mean([first(d[2]),last(d[2])])
-        F1m = F1[xm,ym]
+        F1m = F1(xm,ym)
         # Set this normalized part to be the singular part.
         F1 = ProductFun(-coefficients(F1)/F1m/2,ss)
         # Approximate real & smooth part after singular extraction.
         m,n = size(F1)
-        if typeof(ss.space) <: TensorSpace{(Chebyshev,Chebyshev)}
-            F2 = skewProductFun((x,y)->f(x,y) - F1[x,y],ss.space,nextpow2(m),nextpow2(n)+1)
-        elseif typeof(ss.space) <: TensorSpace{(Laurent,Laurent)}
-            F2 = skewProductFun((x,y)->f(x,y) - F1[x,y],ss.space,nextpow2(m),nextpow2(n))
+        if typeof(ss.space) <: TensorSpace && all(k->typeof(ss.space.spaces[k]) <: Chebyshev,1:2)
+            F2 = skewProductFun((x,y)->f(x,y) - F1(x,y),ss.space,nextpow2(m),nextpow2(n)+1)
+        elseif typeof(ss.space) <: TensorSpace && all(k->typeof(ss.space.spaces[k]) <: Laurent,1:2)
+            F2 = skewProductFun((x,y)->f(x,y) - F1(x,y),ss.space,nextpow2(m),nextpow2(n))
         end
-        F = [F1,F2]
+        F = [F1;F2]
     elseif method == :lowrank
         F = LowRankFun(f,ss;method=:standard,kwds...)
     elseif method == :Cholesky
@@ -131,23 +134,20 @@ function GreensFun{SS<:AbstractProductSpace}(f::Function,g::Function,ss::SS;meth
         F1 = ProductFun(-coefficients(G)/2,ss)
         # Approximate real & smooth part after singular extraction.
         m,n = size(F1)
-        if typeof(ss.space) <: TensorSpace{(Chebyshev,Chebyshev)}
-            F2 = skewProductFun((x,y)->f(x,y) - F1[x,y],ss.space,nextpow2(m),nextpow2(n)+1)
-        elseif typeof(ss.space) <: TensorSpace{(Laurent,Laurent)}
-            F2 = skewProductFun((x,y)->f(x,y) - F1[x,y],ss.space,nextpow2(m),nextpow2(n))
+        if typeof(ss.space) <: TensorSpace && all(k->typeof(ss.space.spaces[k]) <: Chebyshev,1:2)
+            F2 = skewProductFun((x,y)->f(x,y) - F1(x,y),ss.space,nextpow2(m),nextpow2(n)+1)
+        elseif typeof(ss.space) <: TensorSpace && all(k->typeof(ss.space.spaces[k]) <: Laurent,1:2)
+            F2 = skewProductFun((x,y)->f(x,y) - F1(x,y),ss.space,nextpow2(m),nextpow2(n))
         end
-        F = [F1,F2]
+        F = [F1;F2]
     end
     GreensFun(F)
 end
 
 # Array of GreensFun on TensorSpace of PiecewiseSpaces
 
-function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{@compat(Tuple{PWS1,PWS2})};method::Symbol=:lowrank,hierarchical::Bool=false,tolerance::Symbol=:absolute,kwds...)
+function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...)
     M,N = length(ss[1]),length(ss[2])
-    if hierarchical
-        return hierarchicalGreensFun(f,ss;method=method,tolerance=tolerance,kwds...)
-    end
     @assert M == N
     G = Array(GreensFun,N,N)
     if method == :standard
@@ -199,10 +199,10 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::Ab
             G[i,j] = transpose(G[j,i])
         end
     end
-    mapreduce(typeof,promote_type,G)[G[i,j] for i=1:N,j=1:N]
+    G
 end
 
-function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,g::Function,ss::AbstractProductSpace{@compat(Tuple{PWS1,PWS2})};method::Symbol=:unsplit,tolerance::Symbol=:absolute,kwds...)
+function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,g::Function,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:unsplit,tolerance::Symbol=:absolute,kwds...)
     M,N = length(ss[1]),length(ss[2])
     @assert M == N
     G = Array(GreensFun,N,N)
@@ -221,38 +221,60 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,g::Fun
             G[i,j] = transpose(G[j,i])
         end
     end
-    mapreduce(typeof,promote_type,G)[G[i,j] for i=1:N,j=1:N]
+    G
 end
 
-function hierarchicalGreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{@compat(Tuple{PWS1,PWS2})};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...)
-    N = length(ss[2])
-    @assert length(ss[1]) == N && ispow2(N)
-    N2 = div(N,2)
-    meth1 = method == :lowrank ? :standard : method
-    meth2 = method == :Cholesky || method == :lowrank ? :standard : method
-    if N2 == 1
-        G11 = GreensFun(LowRankFun(f,ss[1,1];method=meth1,kwds...))
-        G22 = GreensFun(LowRankFun(f,ss[2,2];method=meth1,kwds...))
-        G21 = GreensFun(LowRankFun(f,ss[2:2,1:1];method=meth2,kwds...))
-        G12 = method == :Cholesky ? transpose(G21) : GreensFun(LowRankFun(f,ss[1:1,2:2];method=meth2,kwds...))
-        return HierarchicalMatrix((G11,G22),(G21,G12))
-    elseif N2 ≥ 2
-        G21 = GreensFun(LowRankFun(f,ss[1+N2:N,1:N2];method=meth2,kwds...))
-        G12 = method == :Cholesky ? transpose(G21) : GreensFun(LowRankFun(f,ss[1:N2,1+N2:N];method=meth2,kwds...))
-        return HierarchicalMatrix((hierarchicalGreensFun(f,ss[1:N2,1:N2];method=method,tolerance=tolerance,kwds...),hierarchicalGreensFun(f,ss[1+N2:N,1+N2:N];method=method,tolerance=tolerance,kwds...)),(G21,G12))
-    end
+# HierarchicalMatrix of GreensFuns on TensorSpace of HierarchicalSpaces
+
+converttoPiecewiseSpace(H::Space) = H
+converttoPiecewiseSpace(H::HierarchicalSpace) = PiecewiseSpace(H)
+
+function partition{HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}(ss::ApproxFun.TensorSpace{Tuple{HS1,HS2}})
+    ss11,ss12 = partition(ss[1])
+    ss21,ss22 = partition(ss[2])
+    (ss11⊗ss21,ss12⊗ss22),(converttoPiecewiseSpace(ss12)⊗converttoPiecewiseSpace(ss21),converttoPiecewiseSpace(ss11)⊗converttoPiecewiseSpace(ss22))
 end
 
-Base.size{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = 2^H.n,2^H.n
+function partition{O,HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}(ss::CauchyWeight{O,Tuple{HS1,HS2}})
+    ss11,ss12 = partition(ss[1])
+    ss21,ss22 = partition(ss[2])
+    (CauchyWeight(ss11⊗ss21,O),CauchyWeight(ss12⊗ss22,O)),(CauchyWeight(converttoPiecewiseSpace(ss12)⊗converttoPiecewiseSpace(ss21),O),CauchyWeight(converttoPiecewiseSpace(ss11)⊗converttoPiecewiseSpace(ss22),O))
+end
+
+function GreensFun{HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}(f::Function,ss::AbstractProductSpace{Tuple{HS1,HS2}};method::Symbol=:lowrank,kwds...)
+    (ss11,ss22),(ss21,ss12) = partition(ss)
+    meth1 = method == :Cholesky || method == :lowrank ? :standard : method
+    G11 = GreensFun(f,ss11;method=method,kwds...)
+    G22 = GreensFun(f,ss22;method=method,kwds...)
+    G21 = GreensFun(LowRankFun(f,ss21;method=meth1,kwds...))
+    G12 = method == :Cholesky ? transpose(G21) : GreensFun(LowRankFun(f,ss12;method=meth1,kwds...))
+    return HierarchicalMatrix((G11,G22),(G21,G12))
+end
+
+blocksize{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = map(length,domain(H).domains)
+
+function domain{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G})
+    H11,H22 = diagonaldata(H)
+    H21,H12 = offdiagonaldata(H)
+    m1,n2 = domain(H12)[1],domain(H12)[2]
+    m2,n1 = domain(H21)[1],domain(H21)[2]
+    @assert (m1,n1) == (domain(H11)[1],domain(H11)[2])
+    @assert (m2,n2) == (domain(H22)[1],domain(H22)[2])
+    (m1∪m2)*(n1∪n2)
+end
 
 function Base.getindex{G<:GreensFun,L<:LowRankFun,T}(⨍::DefiniteLineIntegral,H::HierarchicalMatrix{G,GreensFun{L,T}})
-    #m,n = size(H)
-    #wsp = domainspace(⨍)
-    #@assert m == length(wsp.spaces)
-    #⨍ = DefiniteLineIntegral()
-    val1 = collectdiagonaldata(H)
-    val2 = collectoffdiagonaldata(H)
-    diagonaldata = map(A->DefiniteLineIntegral(domain(A)[1])[A],val1)
-    offdiagonaldata = map(LowRankOperator,val2)
-    HO = HierarchicalMatrix(diagonaldata,offdiagonaldata)
+    H11,H22 = diagonaldata(H)
+    wsp = domainspace(⨍)
+    if length(domain(H11)[2]) ≥ 2
+        ⨍1 = DefiniteLineIntegral(PiecewiseSpace(wsp[1:length(domain(H11)[2])]))
+    else
+        ⨍1 = DefiniteLineIntegral(wsp[1])
+    end
+    if length(domain(H22)[2]) ≥ 2
+        ⨍2 = DefiniteLineIntegral(PiecewiseSpace(wsp[1+length(domain(H11)[2]):end]))
+    else
+        ⨍2 = DefiniteLineIntegral(wsp[end])
+    end
+    HierarchicalOperator((⨍1[H11],⨍2[H22]),map(LowRankIntegralOperator,offdiagonaldata(H)))
 end

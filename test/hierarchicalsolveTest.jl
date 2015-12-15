@@ -13,7 +13,8 @@ D = Array(Diagonal{Float64},8)
 
 H = HierarchicalMatrix(D,L)
 
-@test rank(H) == fill(2,8,8)+diagm(fill(48,8))
+@test rank(H) == 400
+#@test blockrank(H) == fill(2,8,8)+diagm(fill(48,8))
 @test isfactored(H) == false
 
 B = Array(Vector{Float64},8)
@@ -29,7 +30,7 @@ H = HierarchicalMatrix(D,L)
 
 @test isfactored(H) == true
 
-CH = cond(full(H))
+CH = cond(H)
 
 @test norm(x-xw) ≤ 10CH^2*eps()
 @test norm(H*x-b) ≤ 10CH*eps()
@@ -38,3 +39,70 @@ CH = cond(full(H))
 
 H+H-(H-H)
 @test norm(full(H-H)) < 10norm(full(H))*eps()
+
+
+
+# Hierarchical operators case
+
+i = 2
+
+dom = cantor(Interval(),i)
+⨍ = DefiniteLineIntegral(dom)
+f = Fun(x->logabs(x-5im),dom)
+sp = Space(dom)
+
+G = GreensFun((x,y)->1/2,CauchyWeight(sp⊗sp,0);method=:Cholesky)
+
+@time u1 = ⨍[G]\transpose(f)
+
+println("Adaptive QR  forward error norm is: ",norm(⨍[G]*u1-f))
+
+@test norm(⨍[G]*u1-f) < 10eps()
+
+hdom = clustertree(dom)
+hsp = Space(hdom)
+
+G1 = GreensFun((x,y)->1/2,CauchyWeight(hsp⊗hsp,0);method=:Cholesky)
+H = ⨍[G1]
+
+@time u2 = H\f
+@time u2 = H\f
+
+@test condest(H) ≤ 20.0
+
+@test blockrank(H) == [Inf 8.0 9.0 9.0; 8.0 Inf 9.0 9.0; 9.0 9.0 Inf 8.0; 9.0 9.0 8.0 Inf]
+
+println("The hierarchical forward error norm is: ",norm(⨍[G]*u2-f))
+
+@test norm(⨍[G]*u2-f) < 10eps()
+
+
+
+# Test three domains
+
+dom = Interval(-2.0,-1.0+0im)∪Interval(1.0,2.0+0im)∪Interval(-0.5-2im,0.5-2im)
+hdom = clustertree(dom)
+dom = UnionDomain(SingularIntegralEquations.collectdata(hdom))
+⨍ = DefiniteLineIntegral(dom)
+f = Fun(x->logabs(x-5im),dom)
+sp = Space(dom)
+
+G = GreensFun((x,y)->1/2,CauchyWeight(sp⊗sp,0);method=:Cholesky)
+
+@time u1 = ⨍[G]\transpose(f)
+
+println("Adaptive QR  forward error norm is: ",norm(⨍[G]*u1-f))
+
+@test norm(⨍[G]*u1-f) < 300eps()
+
+hsp = Space(hdom)
+
+G1 = GreensFun((x,y)->1/2,CauchyWeight(hsp⊗hsp,0);method=:Cholesky)
+H = ⨍[G1]
+
+@time u2 = H\f
+@time u2 = H\f
+
+println("The hierarchical forward error norm is: ",norm(⨍[G]*u2-f))
+
+@test norm(⨍[G]*u2-f) < 100eps()

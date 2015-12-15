@@ -6,10 +6,10 @@ import ApproxFun: dotu,SliceOperator
 jacobiop(S::PolynomialSpace)=transpose(Recurrence(S))
 jacobiop(S::JacobiWeight)=jacobiop(S.space)
 
-function cauchybackward(S::Space,z::Number)
+function stieltjesbackward(S::Space,z::Number)
     J=SliceOperator(jacobiop(S)-z,1,0,1)  # drop first row
     [BasisFunctional(1),
-        J]\[cauchymoment(S,1,z)]
+        J]\[stieltjesmoment(S,1,z)]
 end
 
 
@@ -32,51 +32,46 @@ end
 
 forwardsubstitution(R,n,μ1,μ2)=forwardsubstitution!(Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n),R,n,μ1,μ2)
 
-cauchyforward(sp::Space,n,z)=forwardsubstitution(jacobiop(sp)-z,n,
-                        cauchymoment(sp,1,z),cauchymoment(sp,2,z))
-
-cauchyforward(s::Bool,sp::Space,n,z)=forwardsubstitution(jacobiop(sp)-z,n,
-                        cauchymoment(s,sp,1,z),cauchymoment(s,sp,2,z))
+stieltjesforward(sp::Space,n,z,s...)=forwardsubstitution(jacobiop(sp)-z,n,
+                        stieltjesmoment(sp,1,z,s...),stieltjesmoment(sp,2,z,s...))
 
 
-function cauchyintervalrecurrence(f::Fun,z)
+
+function stieltjesintervalrecurrence(S,f::AbstractVector,z)
     tol=1./floor(Int,sqrt(length(f)))
     if (abs(real(z))≤1.+tol) && (abs(imag(z))≤tol)
-       cfs=cauchyforward(space(f),length(f),z)
-       dotu(cfs,coefficients(f))
+       cfs=stieltjesforward(S,length(f),z)
+       dotu(cfs,f)
     else
-       cfs=cauchybackward(space(f),z)
+       cfs=stieltjesbackward(S,z)
        m=min(length(f),length(cfs))
-       dotu(cfs[1:m],coefficients(f)[1:m])
+       dotu(cfs[1:m],f[1:m])
     end
 end
 
 
-function cauchy{PS<:PolynomialSpace}(f::Fun{PS},z::Number)
-    if domain(f)==Interval()
+function stieltjes{D<:Interval}(S::PolynomialSpace{D},f,z::Number)
+    if domain(S)==Interval()
         #TODO: check tolerance
-        cauchyintervalrecurrence(Fun(f,Legendre()),z)
+        stieltjesintervalrecurrence(Legendre(),coefficients(f,S,Legendre()),z)
     else
-        @assert isa(domain(f),Interval)
-        cauchy(setdomain(f,Interval()),tocanonical(f,z))
+        stieltjes(setdomain(S,Interval()),f,tocanonical(S,z))
     end
 end
 
-function cauchy{PS<:PolynomialSpace}(s::Bool,f::Fun{PS},z::Number)
-    @assert domain(f)==Interval()
+function stieltjes{D<:Interval}(S::PolynomialSpace{D},f,z::Number,s::Bool)
+    @assert domain(S)==Interval()
 
-   cfs=cauchyforward(s,Legendre(),length(f),z)
-   dotu(cfs,coefficients(f,Legendre()))
+   cfs=stieltjesforward(Legendre(),length(f),z,s)
+   dotu(cfs,coefficients(f,S,Legendre()))
 end
 
 
 # Sum over all inverses of fromcanonical, see [Olver,2014]
-function cauchy{S,L<:Line,T}(f::Fun{MappedSpace{S,L,T}},z)
-    if domain(f)==Line()
-        p=Fun(f.coefficients,space(f).space)
-        cauchy(p,tocanonical(f,z)) + cauchy(p,(-1-sqrt(1+4z.^2))./(2z))
+function stieltjes{SS,L<:Line}(S::Space{SS,L},f,z,s...)
+    if domain(S)==Line()
+        stieltjes(setcanonicaldomain(S),f,tocanonical(S,z),s...) + stieltjes(setcanonicaldomain(S),f,(-1-sqrt(1+4z.^2))./(2z))
     else
-        p=Fun(f.coefficients,MappedSpace(Line(),space(f).space))
-        cauchy(p,mappoint(domain(f),Line(),z))
+        stieltjes(setdomain(S,Line()),f,mappoint(domain(S),Line(),z),s...)
     end
 end
