@@ -4,16 +4,6 @@
 
 An experimental Julia package for solving singular integral equations.
 
-# Installation
-
-Requires ApproxFun development:
-
-```julia
-Pkg.add("SingularIntegralEquations")
-Pkg.checkout("SingularIntegralEquations")
-Pkg.checkout("ApproxFun","development")
-using ApproxFun, SingularIntegralEquations
-```
 
 # Acoustic Scattering
 
