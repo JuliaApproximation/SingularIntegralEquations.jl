@@ -99,7 +99,7 @@ SingularIntegral(sp::Space,n)=ConcreteSingularIntegral(sp,n)
 
 for TYP in (:Hilbert,:SingularIntegral)
     ConcOp=parse("Concrete"*string(TYP))
-    @eval function $TYP{DD}(F::Fourier{DD},n)
+    @eval function $TYP{DD<:Circle}(F::Fourier{DD},n)
         if !domain(F).orientation
             R=reverseorientation(F)
             Conversion(R,F)*(-$TYP(R,n))*Conversion(F,R)
