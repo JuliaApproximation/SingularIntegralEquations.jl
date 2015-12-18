@@ -180,10 +180,10 @@ FourierDirichlet()=FourierDirichlet(PeriodicInterval())
 
 
 
-bandinds{L<:PeriodicLine,T}(H::Hilbert{MappedSpace{FourierDirichlet,L,T}})=-2,2
-    rangespace{L<:PeriodicLine,T}(H::Hilbert{MappedSpace{FourierDirichlet,L,T}})=MappedSpace(domain(H),Fourier())
+bandinds{L<:PeriodicLine,T}(H::ConcreteHilbert{MappedSpace{FourierDirichlet,L,T}})=-2,2
+    rangespace{L<:PeriodicLine,T}(H::ConcreteHilbert{MappedSpace{FourierDirichlet,L,T}})=MappedSpace(domain(H),Fourier())
 
-    function addentries!{L<:PeriodicLine,T}(H::Hilbert{MappedSpace{FourierDirichlet,L,T}},A,kr::Range,::Colon)
+    function addentries!{L<:PeriodicLine,T}(H::ConcreteHilbert{MappedSpace{FourierDirichlet,L,T}},A,kr::Range,::Colon)
         if 1 in kr
             A[1,1]+=1
         end

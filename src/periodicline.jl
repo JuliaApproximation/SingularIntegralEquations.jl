@@ -23,11 +23,11 @@ end
 # and C± 1 = ±1/2  (understood as a PV integral) so that H 1 = 0
 
 
-bandinds{DD<:PeriodicLine}(H::Hilbert{LaurentDirichlet{DD}})=0,0
-rangespace{DD<:PeriodicLine}(H::Hilbert{LaurentDirichlet{DD}})=domainspace(H)
+bandinds{DD<:PeriodicLine}(H::ConcreteHilbert{LaurentDirichlet{DD}})=0,0
+rangespace{DD<:PeriodicLine}(H::ConcreteHilbert{LaurentDirichlet{DD}})=domainspace(H)
 
 
-function addentries!{T}(H::Hilbert{LaurentDirichlet{PeriodicLine{false,T}}},A,kr::Range,::Colon)
+function addentries!{T}(H::ConcreteHilbert{LaurentDirichlet{PeriodicLine{false,T}}},A,kr::Range,::Colon)
     for k=kr
         if iseven(k)  # negative terms
             A[k,k] += -im

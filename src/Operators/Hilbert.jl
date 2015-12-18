@@ -18,9 +18,10 @@ ApproxFun.@calculus_operator(PseudoHilbert)
 ApproxFun.@calculus_operator(Hilbert)
 ApproxFun.@calculus_operator(SingularIntegral)
 
-for (Op,OpWrap,OffOp) in ((:PseudoHilbert,:PseudoHilbertWrapper,:OffPseudoHilbert),
-                          (:Hilbert,:HilbertWrapper,:OffHilbert),
-                          (:SingularIntegral,:SingularIntegralWrapper,:OffSingularIntegral))
+for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
+    ConcOp=parse("Concrete"*string(Op))
+    OpWrap=parse(string(Op)*"Wrapper")
+    OffOp=parse("Off"*string(Op))
     @eval begin
         ## Convenience routines
         $Op(d::IntervalDomain,n::Int)=$Op(JacobiWeight(-.5,-.5,Chebyshev(d)),n)
@@ -41,25 +42,25 @@ for (Op,OpWrap,OffOp) in ((:PseudoHilbert,:PseudoHilbertWrapper,:OffPseudoHilber
             $OpWrap(interlace(D),n)
         end
 
-        bandinds{s,DD}(::$Op{Hardy{s,DD}})=0,0
-        domainspace{s,DD}(H::$Op{Hardy{s,DD}})=H.space
-        rangespace{s,DD}(H::$Op{Hardy{s,DD}})=H.space
+        bandinds{s,DD}(::$ConcOp{Hardy{s,DD}})=0,0
+        domainspace{s,DD}(H::$ConcOp{Hardy{s,DD}})=H.space
+        rangespace{s,DD}(H::$ConcOp{Hardy{s,DD}})=H.space
 
-        bandinds{DD}(H::$Op{Fourier{DD}})=-H.order,H.order
-        domainspace{DD}(H::$Op{Fourier{DD}})=H.space
-        rangespace{DD}(H::$Op{Fourier{DD}})=H.space
+        bandinds{DD}(H::$ConcOp{Fourier{DD}})=-H.order,H.order
+        domainspace{DD}(H::$ConcOp{Fourier{DD}})=H.space
+        rangespace{DD}(H::$ConcOp{Fourier{DD}})=H.space
 
-        function rangespace{DD}(H::$Op{JacobiWeight{Chebyshev{DD},DD}})
+        function rangespace{DD}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD}})
             @assert domainspace(H).α==domainspace(H).β==-0.5
             Ultraspherical{H.order}(domain(H))
         end
-        function rangespace{DD}(H::$Op{JacobiWeight{Ultraspherical{1,DD},DD}})
+        function rangespace{DD}(H::$ConcOp{JacobiWeight{Ultraspherical{1,DD},DD}})
             @assert domainspace(H).α==domainspace(H).β==0.5
             Ultraspherical{max(H.order-1,0)}(domain(H))
         end
-        bandinds{λ,DD}(H::$Op{JacobiWeight{Ultraspherical{λ,DD},DD}})=-λ,H.order-λ
-        bandinds{DD}(H::$Op{JacobiWeight{Chebyshev{DD},DD}})=0,H.order
-        bandinds{DD}(H::$Op{JacobiWeight{Ultraspherical{1,DD},DD}})=H.order > 0 ? (-1,H.order-1) : (-2,0)
+        bandinds{λ,DD}(H::$ConcOp{JacobiWeight{Ultraspherical{λ,DD},DD}})=-λ,H.order-λ
+        bandinds{DD}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD}})=0,H.order
+        bandinds{DD}(H::$ConcOp{JacobiWeight{Ultraspherical{1,DD},DD}})=H.order > 0 ? (-1,H.order-1) : (-2,0)
 
         choosedomainspace(H::$Op{UnsetSpace},sp::Ultraspherical)=ChebyshevWeight(ChebyshevDirichlet{1,1}(domain(sp)))
         choosedomainspace(H::$Op{UnsetSpace},sp::PiecewiseSpace)=PiecewiseSpace(map(s->choosedomainspace(H,s),sp.spaces))
@@ -68,12 +69,12 @@ for (Op,OpWrap,OffOp) in ((:PseudoHilbert,:PseudoHilbertWrapper,:OffPseudoHilber
 
         # BlockOperator [1 Hilbert()] which allows for bounded solutions
         #TODO: Array values?
-        choosedomainspace{T,V}(P::BlockOperator{$Op{UnsetSpace,T,V}},
+        choosedomainspace{T,V}(P::BlockOperator{$ConcOp{UnsetSpace,T,V}},
                                sp::Ultraspherical)=TupleSpace(ConstantSpace(),
                                                             JacobiWeight(0.5,0.5,
                                                                          Ultraspherical{1}(domain(sp))))
 
-        choosedomainspace{T,V,W}(P::BlockOperator{ReOperator{$Op{UnsetSpace,T,V},W}},
+        choosedomainspace{T,V,W}(P::BlockOperator{ReOperator{$ConcOp{UnsetSpace,T,V},W}},
                                sp::Ultraspherical)=TupleSpace(ConstantSpace(),
                                                             JacobiWeight(0.5,0.5,
                                                                          Ultraspherical{1}(domain(sp))))
@@ -88,21 +89,22 @@ end
 
 # Length catch
 
-Hilbert(sp::Space{ComplexBasis},n)=Hilbert{typeof(sp),typeof(n),Complex{real(eltype(domain(sp)))}}(sp,n)
-Hilbert(sp::Space,n)=Hilbert{typeof(sp),typeof(n),typeof(complexlength(domain(sp)))}(sp,n)
+Hilbert(sp::Space{ComplexBasis},n)=ConcreteHilbert{typeof(sp),typeof(n),Complex{real(eltype(domain(sp)))}}(sp,n)
+Hilbert(sp::Space,n)=ConcreteHilbert{typeof(sp),typeof(n),typeof(complexlength(domain(sp)))}(sp,n)
 
-SingularIntegral(sp::Space{ComplexBasis},n)=SingularIntegral{typeof(sp),typeof(n),Complex{real(eltype(domain(sp)))}}(sp,n)
-SingularIntegral(sp::Space,n)=SingularIntegral{typeof(sp),typeof(n),typeof(length(domain(sp)))}(sp,n)
+SingularIntegral(sp::Space{ComplexBasis},n)=ConcreteSingularIntegral(sp,n)
+SingularIntegral(sp::Space,n)=ConcreteSingularIntegral(sp,n)
 
 # Override sumspace
 
 for TYP in (:Hilbert,:SingularIntegral)
+    ConcOp=parse("Concrete"*string(TYP))
     @eval function $TYP{DD}(F::Fourier{DD},n)
         if !domain(F).orientation
             R=reverseorientation(F)
             Conversion(R,F)*(-$TYP(R,n))*Conversion(F,R)
         else
-            $TYP{typeof(F),typeof(n),Complex{Float64}}(F,n)
+            $ConcOp(F,n)
         end
     end
 end
@@ -111,7 +113,7 @@ end
 
 ## Circle
 
-function addentries!{DD<:Circle}(H::Hilbert{Hardy{true,DD}},A,kr::Range,::Colon)
+function addentries!{DD<:Circle}(H::ConcreteHilbert{Hardy{true,DD}},A,kr::Range,::Colon)
 ##TODO: Add scale for different radii.
     m=H.order
     d=domain(H)
@@ -133,7 +135,7 @@ function addentries!{DD<:Circle}(H::Hilbert{Hardy{true,DD}},A,kr::Range,::Colon)
     A
 end
 
-function addentries!{DD<:Circle}(H::Hilbert{Hardy{false,DD}},A,kr::Range,::Colon)
+function addentries!{DD<:Circle}(H::ConcreteHilbert{Hardy{false,DD}},A,kr::Range,::Colon)
 ##TODO: Add scale for different radii.
     m=H.order
     d=domain(H)
@@ -151,7 +153,7 @@ function addentries!{DD<:Circle}(H::Hilbert{Hardy{false,DD}},A,kr::Range,::Colon
     A
 end
 
-function addentries!{DD<:Circle}(H::Hilbert{Fourier{DD}},A,kr::Range,::Colon)
+function addentries!{DD<:Circle}(H::ConcreteHilbert{Fourier{DD}},A,kr::Range,::Colon)
     r = domain(H).radius
     if H.order == 0
         for k=kr
@@ -174,7 +176,7 @@ function addentries!{DD<:Circle}(H::Hilbert{Fourier{DD}},A,kr::Range,::Colon)
     A
 end
 
-function addentries!{DD<:Circle}(H::SingularIntegral{Hardy{true,DD}},A,kr::Range,::Colon)
+function addentries!{DD<:Circle}(H::ConcreteSingularIntegral{Hardy{true,DD}},A,kr::Range,::Colon)
 ##TODO: Add scale for different radii.
     m=H.order
     d=domain(H)
@@ -197,7 +199,7 @@ function addentries!{DD<:Circle}(H::SingularIntegral{Hardy{true,DD}},A,kr::Range
     A
 end
 
-function addentries!{DD<:Circle}(H::SingularIntegral{Hardy{false,DD}},A,kr::Range,::Colon)
+function addentries!{DD<:Circle}(H::ConcreteSingularIntegral{Hardy{false,DD}},A,kr::Range,::Colon)
 ##TODO: Add scale for different radii.
     m=H.order
     d=domain(H)
@@ -216,7 +218,7 @@ function addentries!{DD<:Circle}(H::SingularIntegral{Hardy{false,DD}},A,kr::Rang
     A
 end
 
-function addentries!{DD<:Circle}(H::SingularIntegral{Fourier{DD}},A,kr::Range,::Colon)
+function addentries!{DD<:Circle}(H::ConcreteSingularIntegral{Fourier{DD}},A,kr::Range,::Colon)
     r = domain(H).radius
     if H.order == 0
         for k=kr
@@ -248,12 +250,15 @@ end
 
 ## JacobiWeight
 
-for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),
-                        (:SingularIntegral,:SingularIntegralWrapper,:length))
+for (Op,Len) in ((:Hilbert,:complexlength),
+                        (:SingularIntegral,:length))
+    ConcOp=parse("Concrete"*string(Op))
+    OpWrap=parse(string(Op)*"Wrapper")
+
     @eval begin
         function $Op{DD<:Interval}(S::JacobiWeight{Chebyshev{DD},DD},n::Int)
             if S.α==S.β==-0.5
-                $Op{JacobiWeight{Chebyshev{DD},DD},typeof(n),typeof($Len(domain(S)))}(S,n)
+                $ConcOp(S,n)
             elseif S.α==S.β==0.5
                 d=domain(S)
                 if n==1
@@ -268,7 +273,7 @@ for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),
             end
         end
 
-        function addentries!{DD<:Interval}(H::$Op{JacobiWeight{Chebyshev{DD},DD}},A,kr::Range,::Colon)
+        function addentries!{DD<:Interval}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD}},A,kr::Range,::Colon)
             m=H.order
             d=domain(H)
             sp=domainspace(H)
@@ -290,9 +295,9 @@ for (Op,OpWrap,Len) in ((:Hilbert,:HilbertWrapper,:complexlength),
         end
 
         # we always have real for n==1
-        $Op{DD<:Interval}(sp::JacobiWeight{Ultraspherical{1,DD},DD},n)=Hilbert{typeof(sp),typeof(n),
+        $Op{DD<:Interval}(sp::JacobiWeight{Ultraspherical{1,DD},DD},n)=$ConcOp{typeof(sp),typeof(n),
                                                            n==1?real(eltype(domain(sp))):typeof($Len(domain(sp)))}(sp,n)
-        function addentries!{DD<:Interval}(H::$Op{JacobiWeight{Ultraspherical{1,DD},DD}},A,kr::UnitRange,::Colon)
+        function addentries!{DD<:Interval}(H::$ConcOp{JacobiWeight{Ultraspherical{1,DD},DD}},A,kr::UnitRange,::Colon)
             m=H.order
             d=domain(H)
             sp=domainspace(H)
@@ -329,5 +334,5 @@ end
 # The default is Hilbert
 
 
-addentries!(H::PseudoHilbert,A,kr::Range,::Colon)=addentries!(Hilbert(H.space,H.order),A,kr,:)
-bandinds(H::PseudoHilbert)=bandinds(Hilbert(H.space,H.order))
+addentries!(H::ConcretePseudoHilbert,A,kr::Range,::Colon)=addentries!(Hilbert(H.space,H.order),A,kr,:)
+bandinds(H::ConcretePseudoHilbert)=bandinds(Hilbert(H.space,H.order))
