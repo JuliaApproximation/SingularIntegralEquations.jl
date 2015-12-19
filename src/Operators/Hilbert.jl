@@ -43,12 +43,16 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
         end
 
         bandinds{s,DD}(::$ConcOp{Hardy{s,DD}})=0,0
-        domainspace{s,DD}(H::$ConcOp{Hardy{s,DD}})=H.space
         rangespace{s,DD}(H::$ConcOp{Hardy{s,DD}})=H.space
 
         bandinds{DD}(H::$ConcOp{Fourier{DD}})=-H.order,H.order
-        domainspace{DD}(H::$ConcOp{Fourier{DD}})=H.space
         rangespace{DD}(H::$ConcOp{Fourier{DD}})=H.space
+
+        bandinds{DD<:PeriodicInterval}(H::$ConcOp{CosSpace{DD}})=(0,1)
+        bandinds{DD<:PeriodicInterval}(H::$ConcOp{SinSpace{DD}})=(-1,0)
+        rangespace{DD<:PeriodicInterval}(H::$ConcOp{CosSpace{DD}})=SinSpace(domain(H))
+        rangespace{DD<:PeriodicInterval}(H::$ConcOp{SinSpace{DD}})=CosSpace(domain(H))
+
 
         function rangespace{DD}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD}})
             @assert domainspace(H).α==domainspace(H).β==-0.5
@@ -247,6 +251,67 @@ function addentries!{DD<:Circle}(H::ConcreteSingularIntegral{Fourier{DD}},A,kr::
 end
 
 
+## PeriodicInterval
+
+complexlength(d::PeriodicInterval) = d.b-d.a
+
+function addentries!{DD<:PeriodicInterval}(H::ConcreteHilbert{Taylor{DD}},A,kr::Range,::Colon)
+    d = domain(H)
+    a,b = d.a,d.b
+    if H.order == 1
+        for k=kr
+            if k>1
+                A[k,k]+=im
+            end
+        end
+    else
+        error("Hilbert order $(H.order) not implemented for Taylor")
+    end
+
+    A
+end
+
+function addentries!{DD<:PeriodicInterval}(H::ConcreteHilbert{Hardy{false,DD}},A,kr::Range,::Colon)
+    d = domain(H)
+    a,b = d.a,d.b
+    if H.order == 1
+        for k=kr
+            A[k,k]-=im
+        end
+    else
+        error("Hilbert order $(H.order) not implemented for Hardy{false}")
+    end
+
+    A
+end
+
+function addentries!{DD<:PeriodicInterval}(H::ConcreteHilbert{CosSpace{DD}},A,kr::Range,::Colon)
+    d = domain(H)
+    a,b = d.a,d.b
+    if H.order == 1
+        for k=kr
+            A[k,k+1]-=1
+        end
+    else
+        error("Hilbert order $(H.order) not implemented for CosSpace")
+    end
+
+    A
+end
+
+function addentries!{DD<:PeriodicInterval}(H::ConcreteHilbert{SinSpace{DD}},A,kr::Range,::Colon)
+    d = domain(H)
+    a,b = d.a,d.b
+    if H.order == 1
+        for k=kr
+            A[k,k-1]+=1
+        end
+    else
+        error("Hilbert order $(H.order) not implemented for CosSpace")
+    end
+
+    A
+end
 
 ## JacobiWeight
 

@@ -11,7 +11,7 @@ end
 
 function hilbert{L<:PeriodicLine,SS}(S::Space{SS,L},f,z::Number)
     S2=setdomain(S,Circle())
-    hilbert(S2,f,mappoint(domain(f),Circle(),z))-hilbert(S2,f,-1)
+    hilbert(S2,f,mappoint(domain(S),Circle(),z))-hilbert(S2,f,-1)
 end
 
 

@@ -1,4 +1,4 @@
-examples/.ipynb_checkpoints/Manipulate SIEs-checkpoint.ipynb
+examples/.ipynb_checkpoints/*.ipynb
 src/CUDA/**/*.ptx
 deps/**/*.o
 deps/**/*.dll
