@@ -54,6 +54,16 @@ w = sqrt(1-x^2)
 H = Hilbert(space(w))
 @test_approx_eq (H[w]*exp(x))(.1) hilbert(w*exp(x))(.1)
 
+#
+# Hilbert transform on the real line for periodic functions on [a,b).
+# It is involutory, so H^2*f = - f, except it zeros the constant.
+#
+
+H = Hilbert()
+f = Fun(ones(20),Laurent(PeriodicInterval()))
+@test norm(H^2*f+f-1) == 0.0
+f = Fun(ones(20),Fourier(PeriodicInterval()))
+@test norm(H^2*f+f-1) == 0.0
 
 println("Stieltjes test")
 
