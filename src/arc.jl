@@ -3,8 +3,8 @@
 ## Cauchy
 
 # pseudocauchy does not normalize at ∞
-pseudostieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z,s...)=stieltjes(setcanonicaldomain(S),f,tocanonical(f,z),s...)
-pseudohilbert{LS,RR<:Arc}(S::Space{LS,RR},f,z)=hilbert(setdomain(S,Interval()),f,tocanonical(f,z))
+pseudostieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z,s...)=stieltjes(setcanonicaldomain(S),f,tocanonical(S,z),s...)
+pseudohilbert{LS,RR<:Arc}(S::Space{LS,RR},f,z)=hilbert(setdomain(S,Interval()),f,tocanonical(S,z))
 
 
 stieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z,s...)=stieltjes(setcanonicaldomain(S),f,tocanonical(S,z),s...)-stieltjes(setcanonicaldomain(S),f,tocanonical(S,Inf))

@@ -1,5 +1,4 @@
-using ApproxFun,SingularIntegralEquations,Gadfly
-set_default_plot_format(:svg)
+using Plots,ApproxFun,SingularIntegralEquations;  gadfly()
 
 ##
 #  Ideal fluid flow consists of level sets of the imagainary part of a function
@@ -19,13 +18,15 @@ m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
 
-k=101;
+k=33
     Γ=Interval(0.,1+0.5im)
     z=Fun(Γ)
     α=exp(-π*k/50im)
     c,ui=[1 Hilbert()]\imag(α*z)
-    Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-2.5:.05:2.5])))
+    plot(Γ)
+    contour!(x,y,imag(u(xx,yy))).o
+
+
 ##
 # On an arc, the Hilbert transform no longer gives the imaginary part
 #  However, pseudohilbert gives the imaginary part of pseudocauchy
@@ -39,14 +40,13 @@ u(x,y)=α*(x+im*y)+2pseudocauchy(ui,x+im*y)
 m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
-k=217;
-    Γ=0.5+exp(im*Interval(0.1,5))
+k=222;
+    Γ=0.5+exp(im*Interval(0.1,3))
     z=Fun(Γ)
     α=exp(-k/50im)
     c,ui=[1 PseudoHilbert()]\imag(α*z)
-    Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3:.05:3])))
-
+    plot(Γ)
+    contour!(x,y,imag(u(xx,yy))).o
 
 ##
 #  Circle
@@ -61,13 +61,13 @@ u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
 m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
-k=154;
+k=239;
     α=exp(-k/45im)
     c,ui=[0 BasisFunctional(1);
           1 real(Hilbert())]\[0.,imag(α*z)]
 
-    Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-2.5:.05:2.5])))
+    plot(Γ)
+    contour!(x,y,imag(u(xx,yy))).o
 
 ##
 # On a curve, the Hilbert transform may be complex, so we
@@ -84,8 +84,8 @@ m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     z=Fun(Γ)
     α=im
     c,ui=[1 real(Hilbert())]\imag(α*z)
-    Gadfly.plot(ApproxFun.layer(Γ),
-                    layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3:.05:3])))
+    plot(Γ)
+    contour!(x,y,imag(u(xx,yy))).o
 
 
 
@@ -108,8 +108,8 @@ m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
 k=114;
     α=exp(k/50*im)
     a,b,ui=[ones(Γ[1]) ones(Γ[2]) Hilbert(ds)]\imag(α*z)
-    Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3.:.05:3.])))
+    plot(Γ)
+    contour!(x,y,imag(u(xx,yy))).o
 
 
 Γ=Interval(-1.,0.)∪Interval(0.5im,1.)
@@ -125,8 +125,8 @@ m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
 k=114;
     α=exp(k/50*im)
     a,b,ui=[ones(Γ[1]) ones(Γ[2]) real(Hilbert(ds))]\imag(α*z)
-    Gadfly.plot(ApproxFun.layer(Γ),
-                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3.:.05:3.])))
+    plot(Γ)
+    contour!(x,y,imag(u(xx,yy)))
 
 
 
@@ -151,6 +151,10 @@ Gadfly.plot(ApproxFun.layer(Γ),
 
 
 ## Channel
+
+
+
+
 
 
 # TODO: rename

@@ -30,7 +30,7 @@ import ApproxFun: bandinds,SpaceOperator,dotu,linedotu,eps2,
 # we don't override for Bool and Function to make overriding below easier
 # TODO: change when cauchy(f,z,s) calls cauchy(f.coefficients,space(f),z,s)
 
-for OP in (:stieltjes,:stieltjesintegral)
+for OP in (:stieltjes,:stieltjesintegral,:pseudostieltjes)
     @eval begin
         $OP(f::Fun,z,s...)=$OP(space(f),coefficients(f),z,s...)
         $OP(f::Fun,z,s::Function)=$OP(f,z,s==+)
@@ -48,6 +48,7 @@ logkernel(f::Fun,z)=logkernel(space(f),coefficients(f),z)
 
 
 cauchy(f...)=stieltjes(f...)*(im/(2π))
+pseudocauchy(f...)=pseudostieltjes(f...)*(im/(2π))
 cauchyintegral(u...)=stieltjesintegral(u...)*(im/(2π))
 
 
