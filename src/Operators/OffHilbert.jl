@@ -44,7 +44,7 @@ function OffHilbert(ds::Space,rs::Space,order::Int)
     tol=1E-13
 
     vv=Array(Vector{Complex128},0)
-    m=1000
+    m=100
     for k=1:2:1000
         b=Fun([zeros(k-1);1.],ds)
         v1=Fun(x->-stieltjes(b,x)/π,rs,m)

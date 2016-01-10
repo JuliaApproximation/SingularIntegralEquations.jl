@@ -158,12 +158,13 @@ Gadfly.plot(ApproxFun.layer(Γ),
 
 
 # TODO: rename
-using ApproxFun,SingularIntegralEquations,SO
+using ApproxFun,SingularIntegralEquations,SO,Plots
     import ApproxFun:RealUnivariateSpace,ComplexBasis,canonicalspace,bandinds,addentries!,conversion_rule,
-            spacescompatible,toeplitz_addentries!,domainscompatible,rangespace
-    import SingularIntegralEquations:cauchy
-immutable FourierDirichlet <: RealUnivariateSpace
-    domain::PeriodicDomain
+            spacescompatible,toeplitz_addentries!,domainscompatible,rangespace, ConcreteConversion,
+            coefficients
+    import SingularIntegralEquations:cauchy,ConcreteHilbert, stieltjes
+immutable FourierDirichlet{DD} <: RealUnivariateSpace{DD}
+    domain::DD
 end
 
 FourierDirichlet()=FourierDirichlet(PeriodicInterval())
@@ -172,22 +173,35 @@ FourierDirichlet()=FourierDirichlet(PeriodicInterval())
 
     canonicalspace(S::FourierDirichlet)=Fourier(domain(S))
 
-    bandinds(::Conversion{FourierDirichlet,Fourier})=-1,1
-    function addentries!(C::Conversion{FourierDirichlet,Fourier},A,kr::Range,::Colon)
+    bandinds{DD}(::ConcreteConversion{FourierDirichlet{DD},Fourier{DD}})=-1,1
+    function addentries!{DD}(C::ConcreteConversion{FourierDirichlet{DD},Fourier{DD}},A,kr::Range,::Colon)
         toeplitz_addentries!([1.],[0.,1.],A,kr)
     end
 
 
-    conversion_rule(b::FourierDirichlet,a::Fourier)=b
+    conversion_rule{DD}(b::FourierDirichlet{DD},a::Fourier{DD})=b
+
+    setdomain(F::FourierDirichlet,d::Domain)=FourierDirichlet(d)
+
+
+    function coefficients(v::Vector,a::FourierDirichlet,b::Fourier)
+        ret=zeros(typeof(v),length(v)+1)
+        ret[2]=v[1]
+        for k=2:length(v)
+            ret[k-1]+=v[k]
+            ret[k+1]+=v[k]
+        end
+        ret
+    end
 
 
 
 
 
-bandinds{L<:PeriodicLine,T}(H::ConcreteHilbert{MappedSpace{FourierDirichlet,L,T}})=-2,2
-    rangespace{L<:PeriodicLine,T}(H::ConcreteHilbert{MappedSpace{FourierDirichlet,L,T}})=MappedSpace(domain(H),Fourier())
+bandinds{L<:PeriodicLine}(H::ConcreteHilbert{FourierDirichlet{L}})=-2,2
+    rangespace{L<:PeriodicLine}(H::ConcreteHilbert{FourierDirichlet{L}})=Fourier(domain(H))
 
-    function addentries!{L<:PeriodicLine,T}(H::ConcreteHilbert{MappedSpace{FourierDirichlet,L,T}},A,kr::Range,::Colon)
+    function addentries!{L<:PeriodicLine}(H::ConcreteHilbert{FourierDirichlet{L}},A,kr::Range,::Colon)
         if 1 in kr
             A[1,1]+=1
         end
@@ -196,27 +210,47 @@ bandinds{L<:PeriodicLine,T}(H::ConcreteHilbert{MappedSpace{FourierDirichlet,L,T}
     end
 
 
-cauchy(f::Fun{FourierDirichlet},z)=cauchy(Fun(f,Fourier),z)
-cauchy{PL,T}(f::Fun{MappedSpace{Fourier,PL,T}},z::Vector)=Complex128[cauchy(f,zk) for zk in z]
-cauchy{PL,T}(f::Fun{MappedSpace{Fourier,PL,T}},z::Matrix)=reshape(cauchy(f,vec(z)),size(z,1),size(z,2))::Matrix{Complex128}
-cauchy{PL,T}(f::Fun{MappedSpace{FourierDirichlet,PL,T}},z)=cauchy(Fun(f,MappedSpace(domain(f),Fourier())),z)
+stieltjes{DD}(sp::FourierDirichlet{DD},cfs,z)=stieltjes(Fun(Fun(f,sp),Fourier),z)
+    stieltjes{PL}(f::Fun{Fourier{PL}},z::Vector)=Complex128[stieltjes(f,zk) for zk in z]
+    stieltjes{PL}(f::Fun{Fourier{PL}},z::Matrix)=reshape(stieltjes(f,vec(z)),size(z,1),size(z,2))::Matrix{Complex128}
+    stieltjes{PL}(f::Fun{FourierDirichlet{PL}},z)=stieltjes(Fun(f,Fourier),z)
 
 
 
-S=MappedSpace(PeriodicLine()-1.im,FourierDirichlet())
+S=FourierDirichlet(PeriodicLine()-1.im)
+PS=PiecewiseSpace([S,JacobiWeight(0.5,0.5,Ultraspherical{1}(Interval(-0.5im,1.+1.1im))),
+                    JacobiWeight(0.5,0.5,Ultraspherical{1}(Interval(-0.5,-0.5+.5im)))])
 
-PS=PiecewiseSpace([S,JacobiWeight(0.5,0.5,Ultraspherical{1}(Interval(-0.5im,1.+1.1im)))])
+
+
 H=Hilbert(PS)
 
 f=Fun(z->imag(z+1.im),rangespace(H))
 Γ=domain(PS)
 
-a,ui=linsolve([ones(Γ[2]) real(H)],f;tolerance=1E-10)
-m=80;x = linspace(-2.,3.,m);y = linspace(-1.5,2.,m+1)
+a,b,ui=linsolve([ones(Γ[2]) ones(Γ[3]) real(H)],f;tolerance=1E-10)
+m=80;x = linspace(-2.,3.,m);y = linspace(-1.,3.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
+
 u(x,y)=(x+im*y)+2cauchy(ui,x+im*y)
+    vals=imag(u(xx,yy))
+
+pyplot()
+plot(Γ[2];color=:Blue,legend=false)
+    plot!(Γ[3];color=:Blue)
+    plot!(Interval(-2.-im,3.0-im);color=:Blue)
+    contour!(x,y,vals;ylims=(-2.,3.),levels=-1.:.1:3.)
+
+Main.PyPlot.savefig("halfg.png";dpi=200,bbox_inches="tight")
+
+png("halfplane")
+
+gadfly()
+pdf("halfplane")
+
 Gadfly.plot(ApproxFun.layer(Γ[2]),
+
             ApproxFun.layer(Interval(-2.-im,3.0-im)),
                 layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-1.:0.05:2.])))
 
