@@ -75,7 +75,7 @@ end
 
 for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
     @eval begin
-        function $Op{DD}(ds::JacobiWeight{Ultraspherical{1,DD},DD},rs::Space,order::Int)
+        function $Op{DD<:Interval}(ds::JacobiWeight{Ultraspherical{1,DD},DD},rs::Space,order::Int)
             @assert ds.α==ds.β==0.5
             d = domain(ds)
             C = (.5*$Len(d))^(1-order) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
@@ -118,7 +118,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
             $Op(M,ds,rs,order)
         end
 
-        function $Op{DD}(ds::JacobiWeight{ChebyshevDirichlet{1,1,DD},DD},rs::PolynomialSpace,order::Int)
+        function $Op{DD<:Interval}(ds::JacobiWeight{ChebyshevDirichlet{1,1,DD},DD},rs::PolynomialSpace,order::Int)
             @assert ds.α==ds.β==-0.5
             d = domain(ds)
             C = (.5*$Len(d))^(1-order) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
