@@ -56,8 +56,14 @@ divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y:
 realdivkhornersum{S<:Real}(cfs::AbstractVector{S},y,ys,s) = real(divkhornersum(cfs,y,ys,s))
 realdivkhornersum{S<:Complex}(cfs::AbstractVector{S},y,ys,s) = complex(real(divkhornersum(real(cfs),y,ys,s)),real(divkhornersum(imag(cfs),y,ys,s)))
 
-#TODO: Make general
-stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,zv::Array,s...)=Complex128[stieltjes(sp,u,zv[k,j],s...) for k=1:size(zv,1), j=1:size(zv,2)]
+
+function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,zv::Array,s...)
+    ret=similar(zv,Complex128)
+    for k=1:length(zv)
+        @inbounds ret[k]=stieltjes(sp,u,zv[k],s...)
+    end
+    ret
+end
 
 function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
     d=domain(sp)
