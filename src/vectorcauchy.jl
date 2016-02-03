@@ -14,16 +14,16 @@ for op in (:(stieltjes),:(cauchy),:(logkernel),:(stieltjesintegral),:(cauchyinte
     @eval begin
         $op{F<:Fun}(v::Vector{F},z)=mapreduce(f->$op(f,z),+,v)
         $op(v::Vector{Any},z)=mapreduce(f->$op(f,z),+,v)
-        $op{P<:PiecewiseSpace,T}(v::Fun{P,T},z)=$op(vec(v),z)
+        $op(S::PiecewiseSpace,v,z)=$op(pieces(Fun(v,S)),z)
 
         $op{F<:Fun}(v::Vector{F},z,s::Bool)=mapreduce(f->(z in domain(f))?$op(f,z,s):$op(f,z),+,v)
         $op(v::Vector{Any},z,s::Bool)=mapreduce(f->(z in domain(f))?$op(f,z,s):$op(f,z),+,v)
-        $op{P<:PiecewiseSpace,T}(v::Fun{P,T},z,s::Bool)=$op(pieces(v),z,s)
+        $op(S::PiecewiseSpace,v,z,s::Bool)=$op(pieces(Fun(v,S)),z,s)
     end
 end
 
 hilbert{F<:Union{Fun,Any}}(v::Vector{F},x)=mapreduce(f->(x in domain(f))?hilbert(f,x):-stieltjes(f,x)/π,+,v)
-hilbert{P<:PiecewiseSpace,T}(v::Fun{P,T},z)=hilbert(pieces(v),z)
+hilbert(S::PiecewiseSpace,v,z)=hilbert(pieces(Fun(v,S)),z)
 
 
 
