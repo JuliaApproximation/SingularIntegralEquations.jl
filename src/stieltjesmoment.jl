@@ -132,7 +132,7 @@ end
 stieltjesmoment{DD}(S::JacobiWeight{Chebyshev{DD},DD},k::Integer,z,s...)=stieltjesjacobimoment(S.α,S.β,k,tocanonical(S,z),s...)
 
 
-function stieltjesmoment{DD}(S::JacobiWeight{Jacobi{DD},DD},k::Integer,z,s...)
+function stieltjesmoment{T,DD}(S::JacobiWeight{Jacobi{T,DD},DD},k::Integer,z,s...)
     z=tocanonical(S,z)
     J=S.space
 
