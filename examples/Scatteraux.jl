@@ -14,7 +14,7 @@ function g3neumann(x,y)
 end
 @vectorize_2arg Number g3neumann
 
-function makegif(x,y,u,L;plotfunction=plot,seconds=1,cmap="seismic",vert=1)
+function makegif(x,y,u,L;plotfunction=Main.Plots.PyPlot.contourf,seconds=1,cmap="seismic",vert=1)
     tm=string(time_ns())
     dr = pwd()*"/"*tm*"mov"
     mkdir(dr)
@@ -23,14 +23,13 @@ function makegif(x,y,u,L;plotfunction=plot,seconds=1,cmap="seismic",vert=1)
     fps = 24
     MLen = seconds*fps
     for k=1:MLen
-        clf()
         t = 2π/ω*(k-1)/fps
-        axes(aspect="equal")
-        setplotter("PyPlot")
-        ApproxFun.plot(dom;color="black")
-        plotfunction(x,y,real(u*exp(-im*ω*t)),L;vmin=-umax*vert,vmax=umax*vert,cmap=cmap)
-        xlabel("\$x\$");ylabel("\$y\$")
-        savefig(dr * "/" * lpad(k,max(4,ceil(Int,log10(MLen))),0) * ".png";dpi=150,bbox_inches="tight")
+        Main.Plots.PyPlot.clf()
+        Main.Plots.PyPlot.axes(aspect="equal")
+        plot!(dom;color=:black,legend=false)
+        plotfunction(x,y,real(u*exp(-im*ω*t)),L;vmin=-umax*vert,vmax=umax*vert,cmap="seismic")
+        xlabel!("\$x\$");ylabel!("\$y\$")
+        Main.Plots.PyPlot.savefig(dr * "/" * lpad(k,max(4,ceil(Int,log10(MLen))),0) * ".png";dpi=150,bbox_inches="tight")
     end
     # Requires: brew install imagemagick
     run(`convert -delay 6 -loop 0 $dr/*.png $dr/scattering.gif`)

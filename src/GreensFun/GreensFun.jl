@@ -272,7 +272,7 @@ function Base.getindex{G<:GreensFun,L<:LowRankFun,T}(⨍::DefiniteLineIntegral,H
         ⨍1 = DefiniteLineIntegral(wsp[1])
     end
     if length(domain(H22)[2]) ≥ 2
-        ⨍2 = DefiniteLineIntegral(PiecewiseSpace(wsp[1+length(domain(H11)[2]):end]))
+        ⨍2 = DefiniteLineIntegral(PiecewiseSpace(wsp[end-length(domain(H22)[2])+1:end]))
     else
         ⨍2 = DefiniteLineIntegral(wsp[end])
     end
