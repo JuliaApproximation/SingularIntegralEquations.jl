@@ -72,7 +72,7 @@ function weightedadjacency(x::AbstractVector)
     for j=1:n,i=1:j
         @inbounds A[i,j] = dist2(x[i],x[j])/min(diam2(x[i]),diam2(x[j]))
     end
-    for j=1:n,i=1:j-1
+    for j=2:n,i=1:j-1
         @inbounds A[j,i] = A[i,j]
     end
     A

@@ -25,9 +25,9 @@ blockrank(A)=rank(A)
 # top right, then followed recursively by top left and bottom right.
 ##
 
-typealias AbstractHierarchicalMatrix{S,V,T,HS,HV} AbstractHierarchicalArray{Tuple{S,V},T,Tuple{HS,HV},2}
+#typealias AbstractHierarchicalMatrix{S,V,T,HS,HV} AbstractHierarchicalArray{Tuple{S,V},T,Tuple{HS,HV},2}
 
-type HierarchicalMatrix{S,V,T,HS,HV} <: AbstractHierarchicalMatrix{S,V,T,HS,HV}
+type HierarchicalMatrix{S,V,T,HS,HV}# <: AbstractHierarchicalMatrix{S,V,T,HS,HV}
     diagonaldata::HS
     offdiagonaldata::HV
 

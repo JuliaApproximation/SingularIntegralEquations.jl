@@ -15,17 +15,17 @@ end
 for (op,opformatted) in ((:+,:⊕),(:-,:⊖))
     @eval begin
 
-        function $opformatted(H::HierarchicalVector,J::Vector)
+        function $opformatted{S,T}(H::HierarchicalVector{S},J::Vector{T})
             @assert length(H) == length(J)
-            H1,H2 = data(H)
-            n1,n2 = length(H1),length(H2)
-            HierarchicalVector(($opformatted(H1,J[1:n1]),$opformatted(H2,J[1+n1:n1+n2])))
+            K = similar(H, promote_type(S,T))
+            for i=1:length(H) K[i] = $op(H[i],J[i]) end
+            K
         end
-        function $opformatted(J::Vector,H::HierarchicalVector)
+        function $opformatted{S,T}(J::Vector{S},H::HierarchicalVector{T})
             @assert length(H) == length(J)
-            H1,H2 = data(H)
-            n1,n2 = length(H1),length(H2)
-            HierarchicalVector(($opformatted(J[1:n1],H1),$opformatted(J[1+n1:n1+n2],H2)))
+            K = similar(H, promote_type(S,T))
+            for i=1:length(H) K[i] = $op(J[i],H[i]) end
+            K
         end
 
         $opformatted(L::LowRankMatrix,a::Number) = $opformatted(L,LowRankMatrix(a,size(L)...))

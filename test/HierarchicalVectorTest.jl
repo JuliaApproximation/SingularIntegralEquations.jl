@@ -3,7 +3,7 @@
 #
 using ApproxFun, SingularIntegralEquations, Base.Test
 
-a = rand(5);b = rand(5);v = HierarchicalVector((a,b)); V = HierarchicalVector((v,v));r = rand(10);
+a = rand(5);b = rand(5);v = HierarchicalVector((a,b)); V = HierarchicalVector((v,a,v));r = rand(10);
 
 @test isa(v,HierarchicalVector)
 
@@ -17,14 +17,23 @@ a = rand(5);b = rand(5);v = HierarchicalVector((a,b)); V = HierarchicalVector((v
 
 @test norm((v+r)⊖(r⊕v)) < 10eps()
 
-@test 2(v⋅v) == V⋅V
+@test v⋅v+a⋅a+v⋅v == V⋅V == (V'*V)[1]
 
 @test 1+nlevels(v) == nlevels(V)
 
 @test abs(cumsum(v)[end]-sum(v)) < 10eps()
 
-@test partition(V) == (v,v)
+@test partition(V) == (v,a,v)
 
+@test promote_rule(HierarchicalVector{Float32,nchildren(V)},typeof(V)) == typeof(V)
+
+@test promote_rule(HierarchicalVector{Complex128,nchildren(V)},typeof(V)) == HierarchicalVector{Complex128,nchildren(V)}
+
+@test norm(convert(HierarchicalVector{Complex128,nchildren(V)},V)-V) == 0
+
+x = v+im*r
+y = v⊕im*r
+@test norm(x-y) == 0
 w = v+im*v
 u = copy(w)
 
