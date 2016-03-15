@@ -1,5 +1,4 @@
-using Plots,ApproxFun,SingularIntegralEquations;
-gadfly()
+using Plots,ApproxFun,SingularIntegralEquations;  gadfly()
 
 ##
 #  Ideal fluid flow consists of level sets of the imagainary part of a function
@@ -18,13 +17,24 @@ u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
 m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
-k=-10
-    Γ=Interval()
+c
+
+ui|>space
+Number(c)+hilbert(ui)(0.25+0.125im)
+
+imag(α*(0.25+0.125im))
+
+Hilbert()*ui
+
+∪
+
+k=50
+    Γ=Interval(0.,1+0.5im)
     z=Fun(Γ)
     α=exp(-π*k/50im)
     c,ui=[1 Hilbert()]\imag(α*z)
-    plot(Γ;legend=false)
-    contour!(x,y,imag(u(xx,yy));nlevels=80)
+    plot(Γ)
+    contour!(x,y,imag(u(xx,yy))).o
 
 
 ##
@@ -40,8 +50,8 @@ u(x,y)=α*(x+im*y)+2pseudocauchy(ui,x+im*y)
 m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
-k=222;
-    Γ=0.5+exp(im*Interval(0.1,3))
+k=227;
+    Γ=0.5+exp(im*Interval(0.1,-42))
     z=Fun(Γ)
     α=exp(-k/50im)
     c,ui=[1 PseudoHilbert()]\imag(α*z)
@@ -54,22 +64,20 @@ k=222;
 
 Γ=Circle()
 z=Fun(Fourier(Γ))
+
+
 u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
 
 m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
-pyplot()
 
-ApproxFun.choosedomainspace(real(Hilbert()),space(imag(z)))
-real(Hilbert(space(imag(z))))[1:10,1:10]
 k=239;
     α=exp(-k/45im)
     c,ui=[0 BasisFunctional(1);
           1 real(Hilbert())]\[0.,imag(α*z)]
 
-    plot(Γ;legend=false)
-    contour!(x,y,imag(u(xx,yy));nlevels=80)
-png("fluidcircle")
+    plot(Γ)
+    contour!(x,y,imag(u(xx,yy))).o
 
 ##
 # On a curve, the Hilbert transform may be complex, so we
@@ -86,9 +94,8 @@ m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     z=Fun(Γ)
     α=im
     c,ui=[1 real(Hilbert())]\imag(α*z)
-    plot(Γ;legend=false)
-    contour!(x,y,imag(u(xx,yy));nlevels=80)
-
+    plot(Γ)
+    contour!(x,y,imag(u(xx,yy))).o
 
 
 
@@ -105,7 +112,7 @@ ds=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical{1}(d)),Γ.domains))
 
 u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
 
-m=80;x = lco(-2.,2.,m);y = linspace(-1.,1.,m+1)
+m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
 k=114;
@@ -133,61 +140,23 @@ k=114;
 
 
 
+
 Γ=Interval(-im,1.0-im)∪Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))
 z=Fun(Γ)
 
 ds=PiecewiseSpace([JacobiWeight(0.5,0.5,Ultraspherical{1}(Γ[1])),
-                       JacobiWeight(0.5,0.5,Ultraspherical{1}(Γ[2]))])
+                       MappedSpace(Γ[2],JacobiWeight(0.5,0.5,Ultraspherical{1}()))])
 
 
-m=80;x = linspace(-4.,2.,m);y = linspace(-3.,2.,m+1)
+m=80;x = linspace(-2.,2.,m);y = linspace(-3.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
 
 k=114;
     α=exp(k/50*im)
     a,b,ui=[ones(Γ[1]) ones(Γ[2]) real(Hilbert(ds))]\imag(α*z)
-
-
-u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
-plot(Γ;legend=false)
-    contour!(x,y,imag(u(xx,yy));nlevels=80)
-
-Γ=Interval(-im,1.0-im)∪Circle(-2.,0.4)∪Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))
-
-z=Fun(Γ)
-
-ds=PiecewiseSpace([JacobiWeight(0.5,0.5,Ultraspherical{1}(Γ[1])),
-                       Fourier(Γ[2]),
-                       JacobiWeight(0.5,0.5,Ultraspherical{1}(Γ[3]))])
-k=114;
-    α=exp(k/50*im)
-a,b,c,ui=[0          0          0          BasisFunctional(2);
-          ones(Γ[1]) ones(Γ[2]) ones(Γ[3]) real(Hilbert(ds))]\Any[0.;imag(α*z)]
-
-a,b,c
-
-ApproxFun.choosedomainspace(real(Hilbert()),space(imag(α*z)))
-
-
-ApproxFun.interlace(A)[end]|>bandinds
-
-[end]|>bandinds
-
-u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
-
-
-m=120;x = linspace(-4.,2.,m);y = linspace(-3.,2.,m+1)
-    xx,yy = x.+0.*y',0.*x.+y'
-
-
-plot(Γ;legend=false)
-    contour!(x,y,imag(u(xx,yy));nlevels=80)
-
-
-png("idealthree")
-
-imag(u(xx,yy))
+Gadfly.plot(ApproxFun.layer(Γ),
+                layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-3.:.05:4.])))
 
 
 

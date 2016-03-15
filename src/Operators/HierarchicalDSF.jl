@@ -110,7 +110,7 @@ end
 *(H::HierarchicalFun,a::Number) = HierarchicalFun((H.data[1]*a,H.data[2]*a))
 *(a::Number,H::HierarchicalFun) = H*a
 
-for op in (:linedotu,:dotu)
+for op in (:linebilinearform,:bilinearform)
     @eval begin
         $op(H::HierarchicalFun,J::HierarchicalFun) = $op(H.data[1],J.data[1])+$op(H.data[2],J.data[2])
         $op{S<:PiecewiseSpace}(H::HierarchicalFun,J::Fun{S}) = sum(map($op,collectdata(H),pieces(J)))

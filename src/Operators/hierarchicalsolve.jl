@@ -83,8 +83,8 @@ end
 function fillpivotmatrix!{V1,V2,A1,A2,T}(A::Matrix{T},V12::Vector{Fun{V1,T}},V21::Vector{Fun{V2,T}},H22U21::Vector{Fun{A1,T}},H11U12::Vector{Fun{A2,T}})
     r1,r2 = length(V12),length(V21)
     for i=1:r1,j=1:r2
-        @inbounds A[i,j+r1] += linedotu(V12[i],H22U21[j])
-        @inbounds A[j+r2,i] += linedotu(V21[j],H11U12[i])
+        @inbounds A[i,j+r1] += linebilinearform(V12[i],H22U21[j])
+        @inbounds A[j+r2,i] += linebilinearform(V21[j],H11U12[i])
     end
 end
 
@@ -109,10 +109,10 @@ function computepivots{V1,V2,A1,A2,T}(V12::Vector{Fun{V1,T}},V21::Vector{Fun{V2,
     b1,b2 = zeros(T,r1,nf),zeros(T,r2,nf)
     for i=1:nf
         for j=1:r1
-            @inbounds b1[j,i] += linedotu(V12[j],H22f2[i])
+            @inbounds b1[j,i] += linebilinearform(V12[j],H22f2[i])
         end
         for j=1:r2
-            @inbounds b2[j,i] += linedotu(V21[j],H11f1[i])
+            @inbounds b2[j,i] += linebilinearform(V21[j],H11f1[i])
         end
     end
     A_ldiv_B1B2!(A,b1,b2)
