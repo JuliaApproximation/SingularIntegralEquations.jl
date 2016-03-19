@@ -28,7 +28,7 @@ function cauchycircleS(cfs::AbstractVector,z::Number,s::Bool)
 end
 
 
-function stieltjes{DD<:Circle}(sp::Laurent{DD},f,z,s::Bool)
+function stieltjes{DD<:Circle}(sp::Laurent{DD},f::AbstractVector,z,s::Bool)
     d=domain(sp)
     if !d.orientation
         return -stieltjes(reverseorientation(Fun(f,sp)),z,!s)
@@ -36,7 +36,7 @@ function stieltjes{DD<:Circle}(sp::Laurent{DD},f,z,s::Bool)
     @assert in(z,d)
     -2π*im*cauchycircleS(f,mappoint(d,Circle(),z),s)
 end
-function stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Number)
+function stieltjes{DD<:Circle}(sp::Laurent{DD},f::AbstractVector,z::Number)
     d=domain(sp)
     if !d.orientation
         return -stieltjes(reverseorientation(Fun(f,sp)),z)
