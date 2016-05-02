@@ -21,7 +21,8 @@ for Op in (:OffHilbert,:OffSingularIntegral)
             order::Int
         end
 
-        addentries!(C::$Op,A,kr,::Colon)=addentries!(C.data,A,kr,:)
+        getindex(C::$Op,k::Integer,j::Integer) =
+            k ≤ size(C.data,1) && j ≤ size(C.data,2) ? C.data[k,j] : zero(eltype(C))
 
         Base.convert{BT<:Operator}(::Type{BT},OH::$Op)=$Op{typeof(OH.domainspace),
                                                            typeof(OH.rangespace),
@@ -111,7 +112,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
                 end
             end
 
-            M=bazeros(promote_type(typeof(C),eltype(y)),l+1,n,l,u)
+            M=bzeros(promote_type(typeof(C),eltype(y)),l+1,n,l,u)
             for k=1:n,j=1:length(ret[k])
                 M[j,k]=C*ret[k].coefficients[j]
             end
@@ -160,7 +161,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
                 end
             end
 
-            M=bazeros(promote_type(typeof(C),eltype(y)),l+3,n,l,u)
+            M=bzeros(promote_type(typeof(C),eltype(y)),l+3,n,l,u)
             for k=1:n,j=1:length(ret[k])
                 M[j,k]=C*ret[k].coefficients[j]
             end
@@ -271,7 +272,7 @@ function exterior_cauchy(b::Circle,a::Circle)
         m=max(m,length(ret[n])-2)
     end
 
-    M=bazeros(Complex{Float64},2n,2n,m,0)
+    M=bzeros(Complex{Float64},2n,2n,m,0)
     #j+2k-2≤2n
     #j≤2(n-k)+2
     for k=1:n,j=2:2:min(length(ret[k].coefficients),2(n-k)+2)
@@ -307,7 +308,7 @@ function interior_cauchy(a::Circle,b::Circle)
         end
     end
 
-    M=bazeros(Complex{Float64},2n-1,2n-1,0,m)
+    M=bzeros(Complex{Float64},2n-1,2n-1,0,m)
     for k=1:n,j=max(1,2k-1-m):2:2k-1
         M[j,2k-1]=ret[k].coefficients[j]
     end
@@ -347,7 +348,7 @@ function disjoint_cauchy(a::Circle,b::Circle)
         end
     end
 
-    M=bazeros(Complex{Float64},2n-1,2n,l,u)
+    M=bzeros(Complex{Float64},2n-1,2n,l,u)
     for k=1:n,j=max(1,2k-u):2:min(length(ret[k]),2n-1)
             M[j,2k]=-ret[k].coefficients[j]
     end

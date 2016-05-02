@@ -27,13 +27,12 @@ bandinds{DD<:PeriodicLine}(H::ConcreteHilbert{LaurentDirichlet{DD}})=0,0
 rangespace{DD<:PeriodicLine}(H::ConcreteHilbert{LaurentDirichlet{DD}})=domainspace(H)
 
 
-function addentries!{T}(H::ConcreteHilbert{LaurentDirichlet{PeriodicLine{false,T}}},A,kr::Range,::Colon)
-    for k=kr
-        if iseven(k)  # negative terms
-            A[k,k] += -im
-        elseif k > 0 # positive terms
-            A[k,k] += im
-        end
+function getindex{T}(H::ConcreteHilbert{LaurentDirichlet{PeriodicLine{false,T}}},k::Integer,j::Integer)
+    if k==j && iseven(k)
+        -T(im)
+    elseif k==j && isodd(k) && k > 0
+        T(im)
+    else
+        zero(T)
     end
-    A
 end

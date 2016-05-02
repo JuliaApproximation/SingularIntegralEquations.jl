@@ -1,7 +1,7 @@
 
 __precompile__()
 module SingularIntegralEquations
-    using Base, ApproxFun
+    using Base, BandedMatrices, ApproxFun
 
 export cauchy, cauchyintegral, stieltjes, logkernel,
        stieltjesintegral, hilbert, pseudohilbert, pseudocauchy
@@ -11,19 +11,21 @@ import Base: values,getindex,setindex!,*,.*,+,.+,-,.-,==,<,<=,>,
                 >=,./,/,.^,^,\,∪,transpose
 
 
+import BandedMatrices: bzeros
+
 import ApproxFun
 import ApproxFun: bandinds,SpaceOperator,bilinearform,linebilinearform,eps2,dotu,
                   plan_transform,plan_itransform,transform,itransform,transform!,itransform!,
                   rangespace, domainspace, addentries!, BandedOperator, AnySpace,
                   canonicalspace, domain, space, Space, promotedomainspace, promoterangespace, AnyDomain, CalculusOperator,
                   SumSpace,PiecewiseSpace, interlace,Multiplication,ArraySpace,DiagonalArrayOperator,
-                  BandedMatrix,bazeros,ChebyshevDirichlet,PolynomialSpace,AbstractProductSpace,evaluate,order,
+                  BandedMatrix,ChebyshevDirichlet,PolynomialSpace,AbstractProductSpace,evaluate,order,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,BivariateFun,linesum,complexlength,
                   Fun, ProductFun, LowRankFun, mappoint,Recurrence, FiniteFunctional,
                   real, UnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, BlockOperator,
                   ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, AlmostBandedOperator, ZeroSpace,
                   DiagonalInterlaceOperator, LowRankPertOperator, LaurentDirichlet, setcanonicaldomain,
-                  IntervalCurve,PeriodicCurve, reverseorientation, op_eltype
+                  IntervalCurve,PeriodicCurve, reverseorientation, op_eltype, @wrapper
 
 
 
