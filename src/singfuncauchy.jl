@@ -70,10 +70,10 @@ function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
 
     if sp.α == sp.β == .5
         cfs = coefficients(u,sp.space,Ultraspherical{1}(d))
-        π*hornersum(cfs,intervaloffcircle(true,tocanonical(sp,z)))
+        π*hornersum(cfs,intervaloffcircle(true,mobius(sp,z)))
     elseif sp.α == sp.β == -.5
         cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
-        z=tocanonical(sp,z)
+        z=mobius(sp,z)
 
         sx2z=sqrtx2(z)
         sx2zi=1./sx2z
@@ -99,7 +99,7 @@ function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
             stieltjesintervalrecurrence(S2,coefficients(u,sp,S2),z)
         else
             # project to interval
-            stieltjes(setdomain(sp,Interval()),u,tocanonical(sp,z))
+            stieltjes(setdomain(sp,Interval()),u,mobius(sp,z))
         end
     end
 end
@@ -110,10 +110,10 @@ function stieltjes{SS<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{SS,DD},u,x
 
     if sp.α == sp.β == .5
         cfs=coefficients(u,sp.space,Ultraspherical{1}(d))
-        π*hornersum(cfs,intervaloncircle(!s,tocanonical(sp,x)))
+        π*hornersum(cfs,intervaloncircle(!s,mobius(sp,x)))
     elseif sp.α == sp.β == -.5
         cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
-        x=tocanonical(sp,x)
+        x=mobius(sp,x)
 
         if length(cfs) ≥1
             ret = -π*im*cfs[1]*(s?1:-1)/sqrt(1-x^2)
@@ -134,7 +134,7 @@ function stieltjes{SS<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{SS,DD},u,x
             dotu(cf,cfs)
         else
             @assert isa(d,Interval)
-            stieltjes(setdomain(sp,Interval()),u,tocanonical(sp,x),s)
+            stieltjes(setdomain(sp,Interval()),u,mobius(sp,x),s)
         end
     end
 end
@@ -186,12 +186,12 @@ function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
 
     if sp.α == sp.β == .5
         cfs=coefficients(u,sp.space,Ultraspherical{1}(d))
-        z=tocanonical(sp,z)
+        z=mobius(sp,z)
         y = updownjoukowskyinverse(true,z)
         length(d)*realintegratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
         cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
-        z=tocanonical(sp,z)
+        z=mobius(sp,z)
         y = updownjoukowskyinverse(true,z)
 
         if length(cfs) ≥1
@@ -220,11 +220,11 @@ function stieltjesintegral{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,D
 
     if sp.α == sp.β == .5
         cfs=coefficients(u,sp.space,Ultraspherical{1}(d))
-        y=intervaloffcircle(true,tocanonical(sp,z))
+        y=intervaloffcircle(true,mobius(sp,z))
         π*complexlength(d)*integratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
         cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
-        z=tocanonical(sp,z)
+        z=mobius(sp,z)
         y=intervaloffcircle(true,z)
 
         if length(cfs) ≥1
@@ -253,11 +253,11 @@ function stieltjesintegral{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,D
 
     if sp.α == sp.β == .5
         cfs=coefficients(u,sp.space,Ultraspherical{1}(d))
-        y=intervaloncircle(!s,tocanonical(sp,z))
+        y=intervaloncircle(!s,mobius(sp,z))
         π*complexlength(d)*integratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
         cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
-        z=tocanonical(sp,z)
+        z=mobius(sp,z)
         y=intervaloncircle(!s,z)
 
         if length(cfs) ≥1

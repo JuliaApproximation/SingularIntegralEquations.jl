@@ -68,7 +68,9 @@ end
 # Sum over all inverses of fromcanonical, see [Olver,2014]
 function stieltjes{SS,L<:Line}(S::Space{SS,L},f,z,s...)
     if domain(S)==Line()
-        stieltjes(setcanonicaldomain(S),f,tocanonical(S,z),s...) + stieltjes(setcanonicaldomain(S),f,(-1-sqrt(1+4z.^2))./(2z))
+        # TODO: rename tocanonical
+        stieltjes(setcanonicaldomain(S),f,tocanonical(S,z),s...) +
+            stieltjes(setcanonicaldomain(S),f,(-1-sqrt(1+4z.^2))./(2z))
     else
         stieltjes(setdomain(S,Line()),f,mappoint(domain(S),Line(),z),s...)
     end

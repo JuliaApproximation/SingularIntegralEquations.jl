@@ -83,7 +83,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
 
             if order == 0
                 z=Fun(identity,rs)
-                x=tocanonical(ds,z)
+                x=mobius(ds,z)
                 y=intervaloffcircle(true,x)
                 yk,ykp1=y,y*y
                 ret=Array(typeof(y),300)
@@ -99,7 +99,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
                     l=max(l,length(ret[n])-n)
                 end
             elseif order == 1
-                y=Fun(z->intervaloffcircle(true,tocanonical(ds,z)),rs)
+                y=Fun(z->intervaloffcircle(true,mobius(ds,z)),rs)
                 ret=Array(typeof(y),300)
                 ret[1]=-y
                 n,l,u = 1,length(ret[1])-1,0
@@ -126,7 +126,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
 
             if order == 0
                 z=Fun(identity,rs)
-                x=tocanonical(ds,z)
+                x=mobius(ds,z)
                 y=intervaloffcircle(true,x)
                 yk,ykp1=y,y*y
                 ret=Array(typeof(y),300)
@@ -145,7 +145,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
                 end
             elseif order == 1
                 z=Fun(identity,rs)
-                x=tocanonical(ds,z)
+                x=mobius(ds,z)
                 y=intervaloffcircle(true,x)
                 ret=Array(typeof(y),300)
                 ret[1]=-1/sqrtx2(x)
@@ -233,7 +233,7 @@ end
 
 function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
     if sp.α == sp.β == 0.5
-        π*HornerFunctional(intervaloffcircle(true,tocanonical(sp,z)),sp)
+        π*HornerFunctional(intervaloffcircle(true,mobius(sp,z)),sp)
     else
         error("Not implemented")
     end
@@ -424,9 +424,9 @@ HornerFunctional(y0,sp)=FiniteFunctional(hornervector(y0),sp)
 function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
     if sp.α == sp.β == 0.5
         # this translates the following cauchy to a functional
-        #    0.5im*hornersum(cfs,intervaloffcircle(true,tocanonical(u,z)))
+        #    0.5im*hornersum(cfs,intervaloffcircle(true,mobius(u,z)))
         # which consists of multiplying by 2*im
-        -HornerFunctional(intervaloffcircle(true,tocanonical(sp,z)),sp)
+        -HornerFunctional(intervaloffcircle(true,mobius(sp,z)),sp)
     else
         # calculate directly
         r=Array(eltype(z),0)
@@ -449,7 +449,7 @@ end
 
 function OffHilbert{DD}(sp::JacobiWeight{ChebyshevDirichlet{1,1,DD},DD},z::Number)
     if sp.α == sp.β == -0.5
-        z=tocanonical(sp,z)
+        z=mobius(sp,z)
 
         sx2z=sqrtx2(z)
         sx2zi=1./sx2z
