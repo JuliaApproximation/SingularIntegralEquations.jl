@@ -154,12 +154,14 @@ end
 
 
 function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Fourier{DD},OT,T},k::Integer,j::Integer)
-    r = domain(H).radius
+    d = domain(H)
+    r = d.radius
+    o = d.orientation
     if H.order == 0 && k==j
         T(k==1?2r*log(r):(-r/(k÷2)))
     elseif H.order == 1
         if k==j==1
-            T(im)
+            T(o?im:-im)
         elseif iseven(k) && j==k+1
             -one(T)
         elseif isodd(k) && j==k-1
