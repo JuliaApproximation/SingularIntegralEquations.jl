@@ -4,7 +4,7 @@ const ρ = 0.72
 immutable ℤ end
 
 Base.in(n::Integer,::Type{ℤ}) = true
-Base.in(n::Number,::Type{ℤ}) = n-round(Int,n) == 0
+Base.in(n::Number,::Type{ℤ}) = n == round(Int,n)
 
 abeqcd(a,b,cd) = a == b == cd
 abeqcd(a,b,c,d) = (a == c && b == d)
