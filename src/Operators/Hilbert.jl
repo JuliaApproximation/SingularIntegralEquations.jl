@@ -89,11 +89,15 @@ end
 
 # Length catch
 
-Hilbert(sp::Space{ComplexBasis},n)=ConcreteHilbert{typeof(sp),typeof(n),Complex{real(eltype(domain(sp)))}}(sp,n)
-Hilbert(sp::Space,n)=ConcreteHilbert{typeof(sp),typeof(n),typeof(complexlength(domain(sp)))}(sp,n)
+ConcreteHilbert(sp::Space{ComplexBasis},n) =
+    ConcreteHilbert{typeof(sp),typeof(n),Complex{real(eltype(domain(sp)))}}(sp,n)
+ConcreteHilbert(sp::Space,n) =
+    ConcreteHilbert{typeof(sp),typeof(n),typeof(complexlength(domain(sp)))}(sp,n)
 
-SingularIntegral(sp::Space{ComplexBasis},n)=ConcreteSingularIntegral(sp,n)
-SingularIntegral(sp::Space,n)=ConcreteSingularIntegral(sp,n)
+ConcreteSingularIntegral(sp::Space{ComplexBasis},n) =
+    ConcreteSingularIntegral{typeof(sp),typeof(n),Complex{real(eltype(domain(sp)))}}(sp,n)
+ConcreteSingularIntegral(sp::Space,n) =
+    ConcreteSingularIntegral{typeof(sp),typeof(n),typeof(complexlength(domain(sp)))}(sp,n)
 
 # Override sumspace
 
@@ -113,67 +117,61 @@ end
 
 ## Circle
 
-function addentries!{DD<:Circle}(H::ConcreteHilbert{Hardy{true,DD}},A,kr::Range,::Colon)
-##TODO: Add scale for different radii.
-    m=H.order
-    d=domain(H)
-    sp=domainspace(H)
+Hilbert{s,DD<:Circle}(S::Hardy{s,DD},m::Integer) = m==1?
+    HilbertWrapper(SpaceOperator(ConstantOperator((s?1:-1)*im),S,S),m):
+    ConcreteHilbert(S,m)
 
-    if m == 0
-        for k=kr
-            A[k,k] += k==1?-2log(2):1./(k-1)
-        end
-    elseif m == 1
-        for k=kr
-            A[k,k] += im
-        end
+
+
+function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Hardy{true,DD},OT,T},k::Integer,j::Integer)
+    ##TODO: Add scale for different radii.
+    m=H.order
+    @assert m ≠ 1
+    if k==j && m==0
+        k==1?-T(2log(2)):one(T)/(k-1)
+    elseif k==j && k ≠ 1
+        k==im*(one(T)*im*(k-1))^(m-1)
     else
-        for k=kr
-            A[k,k] += k==1?0.0:1.im*(1.im*(k-1))^(m-1)
-        end
+        zero(T)
     end
-    A
 end
 
-function addentries!{DD<:Circle}(H::ConcreteHilbert{Hardy{false,DD}},A,kr::Range,::Colon)
-##TODO: Add scale for different radii.
+function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Hardy{false,DD},OT,T},k::Integer,j::Integer)
+    ##TODO: Add scale for different radii.
     m=H.order
-    d=domain(H)
-    sp=domainspace(H)
-
-    if m== 1
-        for k=kr
-            A[k,k]-= im
-        end
+    @assert m ≠ 1
+    if k==j
+        -im*(one(T)*im*k)^(m-1)
     else
-        for k=kr
-            A[k,k]-=1.im*(1.im*k)^(m-1)
-        end
+        zero(T)
     end
-    A
 end
 
-function addentries!{DD<:Circle}(H::ConcreteHilbert{Fourier{DD}},A,kr::Range,::Colon)
-    r = domain(H).radius
-    if H.order == 0
-        for k=kr
-            A[k,k]+=k==1?2r*log(r):(-r/(k÷2))
-        end
+function Hilbert{DD<:Circle}(S::Fourier{DD},m::Integer)
+    @assert m==0 || m==1
+    ConcreteHilbert(S,m)
+end
+
+
+function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Fourier{DD},OT,T},k::Integer,j::Integer)
+    d = domain(H)
+    r = d.radius
+    o = d.orientation
+    if H.order == 0 && k==j
+        T(k==1?2r*log(r):(-r/(k÷2)))
     elseif H.order == 1
-        for k=kr
-            if k==1
-                A[1,1]+=1.0im
-            elseif iseven(k)
-                A[k,k+1]-=1
-            else   #isodd(k)
-                A[k,k-1]+=1
-            end
+        if k==j==1
+            T(o?im:-im)
+        elseif iseven(k) && j==k+1
+            -one(T)
+        elseif isodd(k) && j==k-1
+            one(T)
+        else
+            zero(T)
         end
     else
-            error("Hilbert order $(H.order) not implemented for Fourier")
+        zero(T)
     end
-
-    A
 end
 
 function addentries!{DD<:Circle}(H::ConcreteSingularIntegral{Hardy{true,DD}},A,kr::Range,::Colon)
@@ -256,72 +254,82 @@ for (Op,Len) in ((:Hilbert,:complexlength),
     OpWrap=parse(string(Op)*"Wrapper")
 
     @eval begin
-        function $Op{DD<:Interval}(S::JacobiWeight{Chebyshev{DD},DD},n::Int)
+        function $Op{DD<:Interval}(S::JacobiWeight{Chebyshev{DD},DD},m::Int)
             if S.α==S.β==-0.5
-                $ConcOp(S,n)
+                if m==0
+                    $ConcOp(S,m)
+                else
+                    d=domain(S)
+                    C=(4./$Len(d))^(m-1)
+                    $OpWrap(SpaceOperator(
+                        ToeplitzOperator([0.],[zeros(m);C]),S,Ultraspherical{m}(d)),m)
+                end
             elseif S.α==S.β==0.5
                 d=domain(S)
-                if n==1
+                if m==1
                     J=JacobiWeight(0.5,0.5,Ultraspherical{1}(d))
-                    $OpWrap($Op(J,n)*Conversion(S,J),n)
+                    $OpWrap($Op(J,m)*Conversion(S,J),m)
                 else
                     J=JacobiWeight(-0.5,-0.5,Chebyshev(d))
-                    $OpWrap($Op(J,n)*Conversion(S,J),n)
+                    $OpWrap($Op(J,m)*Conversion(S,J),m)
                 end
             else
                 error(string($Op)*" not implemented for parameters $(S.α),$(S.β)")
             end
         end
 
-        function addentries!{DD<:Interval}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD}},A,kr::Range,::Colon)
-            m=H.order
-            d=domain(H)
+        function getindex{DD<:Interval,OT,T}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD},OT,T},k::Integer,j::Integer)
             sp=domainspace(H)
-
+            @assert H.order == 0
             @assert sp.α==sp.β==-0.5
 
-            C=(4./$Len(d))^(m-1)
-            if m == 0
-                for k=kr
-                    A[k,k] -= k==1?-2C*log(C):2C/(k-1)
-                end
+            if k==j
+                d=domain(H)
+                C=$Len(d)/4
+                -T(k==1?-2C*log(C):2C/(k-1))
             else
-                for k=kr
-                    A[k,k+m] += C
-                end
+                zero(T)
             end
-
-            A
         end
 
         # we always have real for n==1
-        $Op{DD<:Interval}(sp::JacobiWeight{Ultraspherical{1,DD},DD},n)=$ConcOp{typeof(sp),typeof(n),
-                                                           n==1?real(eltype(domain(sp))):typeof($Len(domain(sp)))}(sp,n)
-        function addentries!{DD<:Interval}(H::$ConcOp{JacobiWeight{Ultraspherical{1,DD},DD}},A,kr::UnitRange,::Colon)
+        function $Op{DD<:Interval}(S::JacobiWeight{Ultraspherical{1,DD},DD},m)
+            if S.α==S.β==0.5
+                if m==1
+                    $OpWrap(SpaceOperator(
+                        ToeplitzOperator([-1.],[0.]),S,Ultraspherical{max(m-1,0)}(domain(S))),m)
+                else
+                    $ConcOp(sp,m)
+                end
+            else
+                error(string($Op)*" not implemented for parameters $(S.α),$(S.β)")
+            end
+        end
+        function getindex{DD<:Interval,OT,T}(H::$ConcOp{JacobiWeight{Ultraspherical{1,DD},DD},OT,T},k::Integer,j::Integer)
             m=H.order
             d=domain(H)
             sp=domainspace(H)
             @assert sp.α==sp.β==0.5
+            @assert m ≠ 1
+
+
 
             C=(4./$Len(d))^(m-1)
             if m == 0
-                for k=kr
-                    A[k,k] -= k==1? -C*log(C) : C/(k-1)
+                if k==j==1
+                    T(C*log(C))
+                elseif k==j
+                    -T(C/(k-1))
+                elseif j==k-2
+                    T(C/(k-1))
+                else
+                    zero(T)
                 end
-                for k=max(kr[1],3):kr[end]
-                    A[k,k-2] += C/(k-1)
-                end
-            elseif m == 1
-                for k=max(kr[1],2):kr[end]
-                    A[k,k-1] -= 1.
-                end
+            elseif j==k+m-2
+                -T(.5C*k/(m-1))
             else
-                for k=kr
-                    A[k,k+m-2] -= .5C*k/(m-1)
-                end
+                zero(T)
             end
-
-            A
         end
     end
 end
@@ -334,5 +342,5 @@ end
 # The default is Hilbert
 
 
-addentries!(H::ConcretePseudoHilbert,A,kr::Range,::Colon)=addentries!(Hilbert(H.space,H.order),A,kr,:)
-bandinds(H::ConcretePseudoHilbert)=bandinds(Hilbert(H.space,H.order))
+# getindex(H::ConcretePseudoHilbert,k::Integer,j::Integer)=Hilbert(H.space,H.order)[k,j]
+# bandinds(H::ConcretePseudoHilbert)=bandinds(Hilbert(H.space,H.order))

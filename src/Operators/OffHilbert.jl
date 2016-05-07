@@ -21,7 +21,8 @@ for Op in (:OffHilbert,:OffSingularIntegral)
             order::Int
         end
 
-        addentries!(C::$Op,A,kr,::Colon)=addentries!(C.data,A,kr,:)
+        getindex(C::$Op,k::Integer,j::Integer) =
+            k ≤ size(C.data,1) && j ≤ size(C.data,2) ? C.data[k,j] : zero(eltype(C))
 
         Base.convert{BT<:Operator}(::Type{BT},OH::$Op)=$Op{typeof(OH.domainspace),
                                                            typeof(OH.rangespace),
@@ -82,7 +83,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
 
             if order == 0
                 z=Fun(identity,rs)
-                x=tocanonical(ds,z)
+                x=mobius(ds,z)
                 y=intervaloffcircle(true,x)
                 yk,ykp1=y,y*y
                 ret=Array(typeof(y),300)
@@ -98,7 +99,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
                     l=max(l,length(ret[n])-n)
                 end
             elseif order == 1
-                y=Fun(z->intervaloffcircle(true,tocanonical(ds,z)),rs)
+                y=Fun(z->intervaloffcircle(true,mobius(ds,z)),rs)
                 ret=Array(typeof(y),300)
                 ret[1]=-y
                 n,l,u = 1,length(ret[1])-1,0
@@ -111,7 +112,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
                 end
             end
 
-            M=bazeros(promote_type(typeof(C),eltype(y)),l+1,n,l,u)
+            M=bzeros(promote_type(typeof(C),eltype(y)),l+1,n,l,u)
             for k=1:n,j=1:length(ret[k])
                 M[j,k]=C*ret[k].coefficients[j]
             end
@@ -125,7 +126,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
 
             if order == 0
                 z=Fun(identity,rs)
-                x=tocanonical(ds,z)
+                x=mobius(ds,z)
                 y=intervaloffcircle(true,x)
                 yk,ykp1=y,y*y
                 ret=Array(typeof(y),300)
@@ -144,7 +145,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
                 end
             elseif order == 1
                 z=Fun(identity,rs)
-                x=tocanonical(ds,z)
+                x=mobius(ds,z)
                 y=intervaloffcircle(true,x)
                 ret=Array(typeof(y),300)
                 ret[1]=-1/sqrtx2(x)
@@ -160,7 +161,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
                 end
             end
 
-            M=bazeros(promote_type(typeof(C),eltype(y)),l+3,n,l,u)
+            M=bzeros(promote_type(typeof(C),eltype(y)),l+3,n,l,u)
             for k=1:n,j=1:length(ret[k])
                 M[j,k]=C*ret[k].coefficients[j]
             end
@@ -232,7 +233,7 @@ end
 
 function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
     if sp.α == sp.β == 0.5
-        π*HornerFunctional(intervaloffcircle(true,tocanonical(sp,z)),sp)
+        π*HornerFunctional(intervaloffcircle(true,mobius(sp,z)),sp)
     else
         error("Not implemented")
     end
@@ -271,7 +272,7 @@ function exterior_cauchy(b::Circle,a::Circle)
         m=max(m,length(ret[n])-2)
     end
 
-    M=bazeros(Complex{Float64},2n,2n,m,0)
+    M=bzeros(Complex{Float64},2n,2n,m,0)
     #j+2k-2≤2n
     #j≤2(n-k)+2
     for k=1:n,j=2:2:min(length(ret[k].coefficients),2(n-k)+2)
@@ -307,7 +308,7 @@ function interior_cauchy(a::Circle,b::Circle)
         end
     end
 
-    M=bazeros(Complex{Float64},2n-1,2n-1,0,m)
+    M=bzeros(Complex{Float64},2n-1,2n-1,0,m)
     for k=1:n,j=max(1,2k-1-m):2:2k-1
         M[j,2k-1]=ret[k].coefficients[j]
     end
@@ -347,7 +348,7 @@ function disjoint_cauchy(a::Circle,b::Circle)
         end
     end
 
-    M=bazeros(Complex{Float64},2n-1,2n,l,u)
+    M=bzeros(Complex{Float64},2n-1,2n,l,u)
     for k=1:n,j=max(1,2k-u):2:min(length(ret[k]),2n-1)
             M[j,2k]=-ret[k].coefficients[j]
     end
@@ -423,9 +424,9 @@ HornerFunctional(y0,sp)=FiniteFunctional(hornervector(y0),sp)
 function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
     if sp.α == sp.β == 0.5
         # this translates the following cauchy to a functional
-        #    0.5im*hornersum(cfs,intervaloffcircle(true,tocanonical(u,z)))
+        #    0.5im*hornersum(cfs,intervaloffcircle(true,mobius(u,z)))
         # which consists of multiplying by 2*im
-        -HornerFunctional(intervaloffcircle(true,tocanonical(sp,z)),sp)
+        -HornerFunctional(intervaloffcircle(true,mobius(sp,z)),sp)
     else
         # calculate directly
         r=Array(eltype(z),0)
@@ -448,7 +449,7 @@ end
 
 function OffHilbert{DD}(sp::JacobiWeight{ChebyshevDirichlet{1,1,DD},DD},z::Number)
     if sp.α == sp.β == -0.5
-        z=tocanonical(sp,z)
+        z=mobius(sp,z)
 
         sx2z=sqrtx2(z)
         sx2zi=1./sx2z
