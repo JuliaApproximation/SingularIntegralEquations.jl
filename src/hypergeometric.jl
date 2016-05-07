@@ -106,7 +106,7 @@ function _₂F₁taylor{T}(a::Real,b::Real,c::Real,z::T)
     while err > 100eps2(T)
         rⱼ = (a+j)/(j+1)*(b+j)/(c+j)
         S₀,S₁ = S₁,S₁+(S₁-S₀)*rⱼ*z
-        err = abs(S₁/S₀-one(T))
+        err = abs((S₁-S₀)/S₀)
         j+=1
     end
     return S₁
@@ -118,7 +118,7 @@ function _₂F₁continuation{T}(s::Real,t::Real,c::Real,z₀::Real,z::T)
     while err > 100eps2(T)
         d0,d1,izz₀j = d1,(j+s-one(T))/j/(j+2s-t)*(((j+s)*(1-2z₀)+(t+1)*z₀-c)*d1 + z₀*(1-z₀)*(j+s-2)*d0),izz₀j*izz₀
         S₀,S₁ = S₁,S₁+d1*izz₀j
-        err = abs(S₁/S₀-one(T))
+        err = abs((S₁-S₀)/S₀)
         j+=1
     end
     return S₁
