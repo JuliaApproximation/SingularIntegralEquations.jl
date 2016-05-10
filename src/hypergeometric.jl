@@ -116,6 +116,14 @@ function _₂F₁general{T}(a::Real,b::Real,c::Real,z::T)
         else
             zero(T) # TODO: full 15.8.10
         end
+    elseif abs(z-0.5) > 0.5
+        if a-b ∉ ℤ
+            gamma(c)*(gamma(b-a)/gamma(b)/gamma(c-a)*(0.5-z)^(-a)*_₂F₁continuation(a,a+b,c,0.5,z) + gamma(a-b)/gamma(a)/gamma(c-b)*(0.5-z)^(-b)*_₂F₁continuation(b,a+b,c,0.5,z))
+        elseif a == b # except c == a + 0.5 !
+            gamma(c)/gamma(a)/gamma(c-a)*(0.5-z)^(-a)*_₂F₁continuationalt(a,c,0.5,z)
+        else
+            zero(T)
+        end
     elseif abs(inv(z)) ≤ ρ && absarg(1-z) < convert(real(T),π) && absarg(z) < convert(real(T),π)
         w = inv(z)
         if a-b ∉ ℤ # 15.8.2
@@ -133,14 +141,6 @@ function _₂F₁general{T}(a::Real,b::Real,c::Real,z::T)
         w = 1-inv(z)
         gamma(c)*(z^(-a)*gamma(c-a-b)/gamma(c-a)/gamma(c-b)*_₂F₁taylor(a,a-c+1,a+b-c+1,w)+z^(a-c)*(1-z)^(c-a-b)*gamma(a+b-c)/gamma(a)/gamma(b)*_₂F₁taylor(c-a,1-a,c-a-b+1,w))
         # TODO: 15.8.11
-    elseif abs(z-0.5) > 0.5
-        if a-b ∉ ℤ
-            gamma(c)*(gamma(b-a)/gamma(b)/gamma(c-a)*(0.5-z)^(-a)*_₂F₁continuation(a,a+b,c,0.5,z) + gamma(a-b)/gamma(a)/gamma(c-b)*(0.5-z)^(-b)*_₂F₁continuation(b,a+b,c,0.5,z))
-        elseif a == b
-            gamma(c)/gamma(a)/gamma(c-a)*(0.5-z)^(-a)*_₂F₁continuationalt(a,c,0.5,z)
-        else
-            zero(T)
-        end
     else
         #throw(DomainError())
         zero(T)
@@ -193,7 +193,7 @@ function _₂F₁continuationalt{T}(a::Real,c::Real,z₀::Real,z::T)
     while err > 10eps2(T)
         f0,f1 = f1,(((j+a)*(1-2z₀)+(2a+1)*z₀-c)*f1+z₀*(1-z₀)*(j-1)*f0+(1-2z₀)*e1+2z₀*(1-z₀)*e0)/j
         e0,e1 = e1,(((j+a)*(1-2z₀)+(2a+1)*z₀-c)*e1+z₀*(1-z₀)*(j-1)*e0)/j
-        C *= (a+j)/(j+1)*izz₀
+        C *= (a+j-1)*izz₀/j
         cⱼ += 2/T(j)-one(T)/(a+j-one(T))
         S₀,S₁ = S₁,S₁+(e1*cⱼ-f1)*C
         err = abs((S₁-S₀)/S₀)
