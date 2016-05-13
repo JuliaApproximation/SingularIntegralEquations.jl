@@ -25,7 +25,8 @@ import ApproxFun: bandinds,SpaceOperator,bilinearform,linebilinearform,eps2,dotu
                   real, UnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, BlockOperator,
                   ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, AlmostBandedOperator, ZeroSpace,
                   DiagonalInterlaceOperator, LowRankPertOperator, LaurentDirichlet, setcanonicaldomain,
-                  IntervalCurve,PeriodicCurve, reverseorientation, op_eltype, @wrapper, mobius
+                  IntervalCurve,PeriodicCurve, reverseorientation, op_eltype, @wrapper, mobius,
+                  defaultgetindex
 
 
 

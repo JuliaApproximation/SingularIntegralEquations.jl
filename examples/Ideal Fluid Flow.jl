@@ -25,6 +25,22 @@ Number(c)+hilbert(ui)(0.25+0.125im)
 imag(α*(0.25+0.125im))
 
 Hilbert()*ui
+x=Fun()
+f=Fun(exp)*sqrt(1-x^2)
+cauchy(f,.1+.000001im)
+2cauchy(f,.1,+)
+f(.1)-im*hilbert(f,.1)
+
+d=Circle()
+z=Fun(d)
+f=exp(real(z))
+f(exp(im*0.1))
+
+2imag(cauchy(f,exp(im*0.1),+))+real(hilbert(f,exp(im*0.1)))
+
+
+im*sum(f/z)
+linesum(f)
 
 ∪
 
@@ -305,3 +321,67 @@ u(x,y)=(x+im*y)+2cauchy(ui,x+im*y)
 Gadfly.plot(ApproxFun.layer(Γ[2]),
             ApproxFun.layer(Interval(-2.-im,3.0-im)),
                 layer(x=x,y=y,z=imag(u(xx,yy)),Main.Gadfly.Geom.contour(levels=[-1.:0.05:2.])))
+
+
+
+
+d=Circle()
+f=Fun(exp,d)
+g=Fun(cos,d)
+
+
+s=z->imag(conj(z)*cauchy(f,z)+cauchy(g,z))
+pyplot()
+x=y=linspace(-1.1,1.1,40)
+z=Float64[s(x+im*y) for x in x, y in y]
+
+s(0.999999999exp(im*1.))-imag(exp(-im)*f(exp(im))+g(exp(im)))
+s(0.999999999exp(im*1.))
+exp(dual(0.99999999999exp(im*1.),exp(im*1.)))
+z=dual(0.99999999999exp(im*1.),exp(im*1.))
+conj(z(&exp(
+
+exp(im*1.)*exp(exp(im*1.))
+z=Fun(d)
+Multiplication(Fun([0.,0.,1.],Fourier(d)),Fourier(d))
+Multiplication(conj(z),Laurent(d))
+imag(f(z) +  conj(z)*g(z))
+
+g(z)==r(z)/2
+f(z)==q(z)-z/2*r(z)
+
+
+imag(q(z) +  (z+conj(z))/2*r(z))
+
+
+imag(exp(z))
+imag(conj(z)(1/abs(z)*f(z)      +z*f'(z)))+z*g(z)) == 0
+
+
+realpart(imag(z*exp(z))           )
+realpart(imag(conj(z)(1/abs(z)*f(z)      +z*f'(z)))+z*g(z))        )
+dualpart(imag(conj(z)*exp(z))          )-(realpart(imag(conj(z)/abs(z)*exp(z)           + conj(z)*z*exp(z))))
+
+
+
+
+conj(z)
+
+
+
+s(dual(0.99999999999exp(im*1.),exp(im*1.)))
+dualpart(cos((10E5)*dual(1,2)))+2*10E5*sin(10E5)
+2exp(1.)
+expm([1 1 1/2;
+      0 1 1;
+      0 0 1])
+cauchy(f,exp(im),+)
+cauchy(g,exp(im),+)
+gui()
+surface(x,y,z)
+s(.1+.2im)
+
+
+real(Hilbert())  # Im g(z)
+
+

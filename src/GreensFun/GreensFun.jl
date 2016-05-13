@@ -43,9 +43,9 @@ LowRankIntegralOperator{L<:LowRankFun}(G::GreensFun{L}) = LowRankIntegralOperato
 
 Base.promote_rule{K,T,K1,T1}(::Type{GreensFun{K,T}},::Type{GreensFun{K1,T1}}) = GreensFun{promote_type(K,K1),promote_type(T,T1)}
 
-Base.getindex(⨍::Operator,G::GreensFun) = mapreduce(f->getindex(⨍,f),+,G.kernels)
+defaultgetindex(⨍::Operator,G::GreensFun) = mapreduce(f->getindex(⨍,f),+,G.kernels)
 
-function Base.getindex{F<:BivariateFun}(⨍::DefiniteLineIntegral,B::Matrix{F})
+function getindex{F<:BivariateFun}(⨍::DefiniteLineIntegral,B::Matrix{F})
     m,n = size(B)
     wsp = domainspace(⨍)
     @assert m == length(wsp.spaces)
