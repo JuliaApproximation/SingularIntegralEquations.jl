@@ -1,7 +1,7 @@
 
 __precompile__()
 module SingularIntegralEquations
-    using Base, BandedMatrices, ApproxFun
+    using Base, BandedMatrices, ApproxFun, DualNumbers
 
 export cauchy, cauchyintegral, stieltjes, logkernel,
        stieltjesintegral, hilbert, pseudohilbert, pseudocauchy
@@ -22,12 +22,11 @@ import ApproxFun: bandinds,SpaceOperator,bilinearform,linebilinearform,eps2,dotu
                   BandedMatrix,ChebyshevDirichlet,PolynomialSpace,AbstractProductSpace,evaluate,order,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,BivariateFun,linesum,complexlength,
                   Fun, ProductFun, LowRankFun, mappoint,Recurrence, FiniteFunctional,
-                  real, UnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, BlockOperator,
+                  real, UnivariateSpace, RealUnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, BlockOperator,
                   ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, AlmostBandedOperator, ZeroSpace,
                   DiagonalInterlaceOperator, LowRankPertOperator, LaurentDirichlet, setcanonicaldomain,
                   IntervalCurve,PeriodicCurve, reverseorientation, op_eltype, @wrapper, mobius,
-                  defaultgetindex
-
+                  defaultgetindex, WeightSpace
 
 
 # we don't override for Bool and Function to make overriding below easier
@@ -61,6 +60,8 @@ include("FundamentalSolutions/FundamentalSolutions.jl")
 include("hypergeometric.jl")
 
 include("stieltjesmoment.jl")
+include("JacobiQWeight.jl")
+include("JacobiQ.jl")
 
 include("circlecauchy.jl")
 include("intervalcauchy.jl")

@@ -1,4 +1,4 @@
-export _₂F₁
+export _₂F₁, _₃F₂
 
 const ρ = 0.72
 immutable ℤ end
@@ -6,8 +6,8 @@ immutable ℤ end
 Base.in(n::Integer,::Type{ℤ}) = true
 Base.in(n::Number,::Type{ℤ}) = n == round(Int,n)
 
-abeqcd(a,b,cd) = a == b == cd
-abeqcd(a,b,c,d) = (a == c && b == d)
+abeqcd(a,b,cd) = isequal(a,b) && isequal(b,cd)
+abeqcd(a,b,c,d) = (isequal(a,c) && isequal(b,d))
 
 absarg(z) = abs(angle(z))
 
@@ -18,12 +18,12 @@ cosnasinsqrt(n,x) = cos(n*asin(sqrt(x)))
 expnlog1pcoshatanhsqrt(n,x) = x == 0 ? one(x) : (s = sqrt(x); (exp(n*log1p(s))+exp(n*log1p(-s)))/2)
 expnlog1psinhatanhsqrt(n,x) = x == 0 ? one(x) : (s = sqrt(x); (exp(n*log1p(s))-exp(n*log1p(-s)))/(2n*s))
 
-sqrtatanhsqrt(x::Real) = x == 0 ? one(x) : x > 0 ? (s = sqrt(x); atanh(s)/s) : (s = sqrt(-x); atan(s)/s)
-sqrtasinsqrt(x::Real) = x == 0 ? one(x) : x > 0 ? (s = sqrt(x); asin(s)/s) : (s = sqrt(-x); asinh(s)/s)
-sinnasinsqrt(n,x::Real) = x == 0 ? one(x) : x > 0 ? (s = sqrt(x); sin(n*asin(s))/(n*s)) : (s = sqrt(-x); sinh(n*asinh(s))/(n*s))
-cosnasinsqrt(n,x::Real) = x > 0 ? cos(n*asin(sqrt(x))) : cosh(n*asinh(sqrt(-x)))
-expnlog1pcoshatanhsqrt(n,x::Real) = x == 0 ? one(x) : x > 0 ? exp(n/2*log1p(-x))*cosh(n*atanh(sqrt(x))) : exp(n/2*log1p(-x))*cos(n*atan(sqrt(-x)))
-expnlog1psinhatanhsqrt(n,x::Real) = x == 0 ? one(x) : x > 0 ? (s = sqrt(x); exp(n/2*log1p(-x))*sinh(n*atanh(s))/(n*s)) : (s = sqrt(-x); exp(n/2*log1p(-x))*sin(n*atan(s))/(n*s))
+sqrtatanhsqrt{T<:Real}(x::Union{T,Dual{T}}) = x == 0 ? one(x) : x > 0 ? (s = sqrt(x); atanh(s)/s) : (s = sqrt(-x); atan(s)/s)
+sqrtasinsqrt{T<:Real}(x::Union{T,Dual{T}}) = x == 0 ? one(x) : x > 0 ? (s = sqrt(x); asin(s)/s) : (s = sqrt(-x); asinh(s)/s)
+sinnasinsqrt{T<:Real}(n,x::Union{T,Dual{T}}) = x == 0 ? one(x) : x > 0 ? (s = sqrt(x); sin(n*asin(s))/(n*s)) : (s = sqrt(-x); sinh(n*asinh(s))/(n*s))
+cosnasinsqrt{T<:Real}(n,x::Union{T,Dual{T}}) = x > 0 ? cos(n*asin(sqrt(x))) : cosh(n*asinh(sqrt(-x)))
+expnlog1pcoshatanhsqrt{T<:Real}(n,x::Union{T,Dual{T}}) = x == 0 ? one(x) : x > 0 ? exp(n/2*log1p(-x))*cosh(n*atanh(sqrt(x))) : exp(n/2*log1p(-x))*cos(n*atan(sqrt(-x)))
+expnlog1psinhatanhsqrt{T<:Real}(n,x::Union{T,Dual{T}}) = x == 0 ? one(x) : x > 0 ? (s = sqrt(x); exp(n/2*log1p(-x))*sinh(n*atanh(s))/(n*s)) : (s = sqrt(-x); exp(n/2*log1p(-x))*sin(n*atan(s))/(n*s))
 
 expm1nlog1p(n,x) = x == 0 ? one(x) : expm1(n*log1p(x))/(n*x)
 
@@ -48,22 +48,22 @@ function speciallog(x::Complex128)
     end
 end
 # The Taylor series fails to be accurate to 1e-15 near x ≈ ±0.2. So we use a highly accurate Chebyshev expansion.
-speciallogseries(x::Float64) = @clenshaw(5.0x,1.0087391788544393911192,1.220474262857857637288e-01,8.7957928919918696061703e-03,6.9050958578444820505037e-04,5.7037120050065804396306e-05,4.8731405131379353370205e-06,4.2648797509486828820613e-07,3.800372208946157617901e-08,3.434168059359993493634e-09,3.1381484326392473547608e-10,2.8939845618385022798906e-11,2.6892186934806386106143e-12,2.5150879096374730760324e-13,2.3652490233687788117887e-14,2.2349973917002118259929e-15,2.120769988408948118084e-16)
-speciallogseries(x::Complex128) = @evalpoly(x,1.0000000000000000000000,5.9999999999999999999966e-01,4.2857142857142857142869e-01,3.3333333333333333333347e-01,2.7272727272727272727292e-01,2.3076923076923076923072e-01,1.9999999999999999999996e-01,1.7647058823529411764702e-01,1.5789473684210526315786e-01,1.4285714285714285714283e-01,1.3043478260869565217384e-01,1.2000000000000000000000e-01,1.1111111111111111111109e-01,1.0344827586206896551722e-01,9.6774193548387096774217e-02,9.0909090909090909090938e-02,8.5714285714285714285696e-02,8.1081081081081081081064e-02,7.6923076923076923076907e-02,7.3170731707317073170688e-02)
+speciallogseries(x::Union{Float64,Dual128}) = @clenshaw(5.0x,1.0087391788544393911192,1.220474262857857637288e-01,8.7957928919918696061703e-03,6.9050958578444820505037e-04,5.7037120050065804396306e-05,4.8731405131379353370205e-06,4.2648797509486828820613e-07,3.800372208946157617901e-08,3.434168059359993493634e-09,3.1381484326392473547608e-10,2.8939845618385022798906e-11,2.6892186934806386106143e-12,2.5150879096374730760324e-13,2.3652490233687788117887e-14,2.2349973917002118259929e-15,2.120769988408948118084e-16)
+speciallogseries(x::Union{Complex128,DualComplex256}) = @evalpoly(x,1.0000000000000000000000,5.9999999999999999999966e-01,4.2857142857142857142869e-01,3.3333333333333333333347e-01,2.7272727272727272727292e-01,2.3076923076923076923072e-01,1.9999999999999999999996e-01,1.7647058823529411764702e-01,1.5789473684210526315786e-01,1.4285714285714285714283e-01,1.3043478260869565217384e-01,1.2000000000000000000000e-01,1.1111111111111111111109e-01,1.0344827586206896551722e-01,9.6774193548387096774217e-02,9.0909090909090909090938e-02,8.5714285714285714285696e-02,8.1081081081081081081064e-02,7.6923076923076923076907e-02,7.3170731707317073170688e-02)
 
 # The references to special cases are to Table of Integrals, Series, and Products, § 9.121, followed by NIST's DLMF.
 
 """
 Compute the Gauss hypergeometric function `₂F₁(a,b;c;z)`.
 """
-function _₂F₁(a::Real,b::Real,c::Real,z::Number)
+function _₂F₁(a::Number,b::Number,c::Number,z::Number)
     if a > b
         return _₂F₁(b,a,c,z) # ensure a ≤ b
-    elseif a == c # 1. 15.4.6
+    elseif isequal(a,c) # 1. 15.4.6
         return exp(-b*log1p(-z))
-    elseif b == c # 1. 15.4.6
+    elseif isequal(b,c) # 1. 15.4.6
         return exp(-a*log1p(-z))
-    elseif c == 0.5
+    elseif isequal(c,0.5)
         if a+b == 0 # 31. 15.4.11 & 15.4.12
             return cosnasinsqrt(2b,z)
         elseif a+b == 1 # 32. 15.4.13 & 15.4.14
@@ -71,7 +71,7 @@ function _₂F₁(a::Real,b::Real,c::Real,z::Number)
         elseif b-a == 0.5 # 15.4.7 & 15.4.8
             return expnlog1pcoshatanhsqrt(-2a,z)
         end
-    elseif c == 1.5
+    elseif isequal(c,1.5)
         if abeqcd(a,b,0.5) # 13. 15.4.4 & 15.4.5
             return sqrtasinsqrt(z)
         elseif abeqcd(a,b,1) # 14.
@@ -85,7 +85,7 @@ function _₂F₁(a::Real,b::Real,c::Real,z::Number)
         elseif b-a == 0.5 # 4. 15.4.9 & 15.4.10
             return expnlog1psinhatanhsqrt(1-2a,z)
         end
-    elseif c == 2
+    elseif isequal(c,2)
         if abeqcd(a,b,1) # 6. 15.4.1
             return (s = -z; log1p(s)/s)
         elseif a ∈ ℤ && b == 1 # 5.
@@ -93,14 +93,15 @@ function _₂F₁(a::Real,b::Real,c::Real,z::Number)
         elseif a == 1 && b ∈ ℤ # 5.
             return expm1nlog1p(1-b,-z)
         end
-    elseif c == 2.5 && abeqcd(a,b,1,1.5)
+    elseif isequal(c,2.5) && abeqcd(a,b,1,1.5)
          return speciallog(z)
     end
     _₂F₁general(a,b,c,z) # catch-all
 end
-_₂F₁{T}(a::Real,b::Real,c::Real,z::AbstractArray{T}) = reshape(promote_type(typeof(a),typeof(b),typeof(c),T)[ _₂F₁(a,b,c,z[i]) for i in eachindex(z) ], size(z))
+_₂F₁(a::Number,b::Number,c::Number,z::AbstractArray) = reshape(promote_type(typeof(a),typeof(b),typeof(c),eltype(z))[ _₂F₁(a,b,c,z[i]) for i in eachindex(z) ], size(z))
 
-function _₂F₁general{T}(a::Real,b::Real,c::Real,z::T)
+function _₂F₁general(a::Number,b::Number,c::Number,z::Number)
+    T = promote_type(typeof(a),typeof(b),typeof(c),typeof(z))
     if abs(z) ≤ ρ
         w = z
         _₂F₁taylor(a,b,c,w)
@@ -115,14 +116,6 @@ function _₂F₁general{T}(a::Real,b::Real,c::Real,z::T)
             gamma(a+b)/gamma(a)/gamma(b)*_₂F₁logsum(a,b,z,w)
         else
             zero(T) # TODO: full 15.8.10
-        end
-    elseif abs(z-0.5) > 0.5
-        if a-b ∉ ℤ
-            gamma(c)*(gamma(b-a)/gamma(b)/gamma(c-a)*(0.5-z)^(-a)*_₂F₁continuation(a,a+b,c,0.5,z) + gamma(a-b)/gamma(a)/gamma(c-b)*(0.5-z)^(-b)*_₂F₁continuation(b,a+b,c,0.5,z))
-        elseif a == b # except c == a + 0.5 !
-            gamma(c)/gamma(a)/gamma(c-a)*(0.5-z)^(-a)*_₂F₁continuationalt(a,c,0.5,z)
-        else
-            zero(T)
         end
     elseif abs(inv(z)) ≤ ρ && absarg(1-z) < convert(real(T),π) && absarg(z) < convert(real(T),π)
         w = inv(z)
@@ -141,13 +134,22 @@ function _₂F₁general{T}(a::Real,b::Real,c::Real,z::T)
         w = 1-inv(z)
         gamma(c)*(z^(-a)*gamma(c-a-b)/gamma(c-a)/gamma(c-b)*_₂F₁taylor(a,a-c+1,a+b-c+1,w)+z^(a-c)*(1-z)^(c-a-b)*gamma(a+b-c)/gamma(a)/gamma(b)*_₂F₁taylor(c-a,1-a,c-a-b+1,w))
         # TODO: 15.8.11
+    elseif abs(z-0.5) > 0.5
+        if a-b ∉ ℤ
+            gamma(c)*(gamma(b-a)/gamma(b)/gamma(c-a)*(0.5-z)^(-a)*_₂F₁continuation(a,a+b,c,0.5,z) + gamma(a-b)/gamma(a)/gamma(c-b)*(0.5-z)^(-b)*_₂F₁continuation(b,a+b,c,0.5,z))
+        elseif a == b # except c == a + 0.5 !
+            gamma(c)/gamma(a)/gamma(c-a)*(0.5-z)^(-a)*_₂F₁continuationalt(a,c,0.5,z)
+        else
+            zero(T)
+        end
     else
         #throw(DomainError())
         zero(T)
     end
 end
 
-function _₂F₁taylor{T}(a::Real,b::Real,c::Real,z::T)
+function _₂F₁taylor(a::Number,b::Number,c::Number,z::Number)
+    T = promote_type(typeof(a),typeof(b),typeof(c),typeof(z))
     S₀,S₁,err,j = one(T),one(T)+a*b*z/c,one(real(T)),1
     while err > 10eps2(T)
         rⱼ = (a+j)/(j+1)*(b+j)/(c+j)
@@ -158,7 +160,8 @@ function _₂F₁taylor{T}(a::Real,b::Real,c::Real,z::T)
     return S₁
 end
 
-function _₂F₁tayloralt{T}(a::Real,b::Real,c::Real,z::T)
+function _₂F₁tayloralt(a::Number,b::Number,c::Number,z::Number)
+    T = promote_type(typeof(a),typeof(b),typeof(c),typeof(z))
     C,S,err,j = one(T),one(T),one(real(T)),0
     while err > 10eps2(T)
         C *= (a+j)/(j+1)*(b+j)/(c+j)*z
@@ -169,7 +172,8 @@ function _₂F₁tayloralt{T}(a::Real,b::Real,c::Real,z::T)
     return S
 end
 
-function _₂F₁continuation{T}(s::Real,t::Real,c::Real,z₀::Real,z::T)
+function _₂F₁continuation(s::Number,t::Number,c::Number,z₀::Number,z::Number)
+    T = promote_type(typeof(s),typeof(t),typeof(c),typeof(z₀),typeof(z))
     izz₀,d0,d1 = inv(z-z₀),one(T),s/(2s-t+one(T))*((s+1)*(1-2z₀)+(t+1)*z₀-c)
     S₀,S₁,izz₀j,err,j = one(T),one(T)+d1*izz₀,izz₀,one(real(T)),2
     while err > 10eps2(T)
@@ -181,7 +185,8 @@ function _₂F₁continuation{T}(s::Real,t::Real,c::Real,z₀::Real,z::T)
     return S₁
 end
 
-function _₂F₁continuationalt{T}(a::Real,c::Real,z₀::Real,z::T)
+function _₂F₁continuationalt(a::Number,c::Number,z₀::Number,z::Number)
+    T = promote_type(typeof(a),typeof(c),typeof(z₀),typeof(z))
     izz₀ = inv(z-z₀)
     e0,e1 = one(T),(a+one(T))*(one(T)-2z₀)+(2a+one(T))*z₀-c
     f0,f1 = zero(T),one(T)-2z₀
@@ -202,7 +207,8 @@ function _₂F₁continuationalt{T}(a::Real,c::Real,z₀::Real,z::T)
     return S₁
 end
 
-function _₂F₁logsum{T}(a::Real,b::Real,z::T,w::T)
+function _₂F₁logsum(a::Number,b::Number,z::Number,w::Number)
+    T = promote_type(typeof(a),typeof(b),typeof(z),typeof(w))
     cⱼ = 2digamma(one(T))-digamma(a)-digamma(b)-log1p(-z)
     C,S,err,j = one(T),cⱼ,one(real(T)),0
     while err > 10eps2(T)
@@ -215,7 +221,8 @@ function _₂F₁logsum{T}(a::Real,b::Real,z::T,w::T)
     return S
 end
 
-function _₂F₁logsumalt{T}(a::Real,c::Real,z::T)
+function _₂F₁logsumalt(a::Number,c::Number,z::Number)
+    T = promote_type(typeof(a),typeof(c),typeof(z))
     b,cⱼ = one(T)-c+a,log(-z)+2digamma(one(T))-digamma(a)-digamma(c-a)
     C,S,err,j = one(T),cⱼ,one(real(T)),0
     while err > 10eps2(T)
@@ -227,3 +234,25 @@ function _₂F₁logsumalt{T}(a::Real,c::Real,z::T)
     end
     return S
 end
+
+function _₃F₂taylor(a₁::Number,a₂::Number,a₃::Number,b₁::Number,b₂::Number,z::Number)
+    T = promote_type(typeof(a₁),typeof(a₂),typeof(a₃),typeof(b₁),typeof(b₂),typeof(z))
+    S₀,S₁,err,j = one(T),one(T)+(a₁*a₂*a₃*z)/(b₁*b₂),one(real(T)),1
+    while err > 100eps2(T)
+        rⱼ = ((a₁+j)*(a₂+j)*(a₃+j))/((b₁+j)*(b₂+j)*(j+1))
+        S₀,S₁ = S₁,S₁+(S₁-S₀)*rⱼ*z
+        err = abs((S₁-S₀)/S₀)
+        j+=1
+    end
+    return S₁
+end
+
+function _₃F₂(a₁::Number,a₂::Number,a₃::Number,b₁::Number,b₂::Number,z::Number)
+    if abs(z) ≤ ρ
+        _₃F₂taylor(a₁,a₂,a₃,b₁,b₂,z)
+    else
+        zero(z)
+    end
+end
+_₃F₂(a₁::Number,a₂::Number,a₃::Number,b₁::Number,b₂::Number,z::AbstractArray) = reshape(promote_type(typeof(a₁),typeof(a₂),typeof(a₃),typeof(b₁),typeof(b₂),eltype(z))[ _₃F₂(a₁,a₂,a₃,b₁,b₂,z[i]) for i in eachindex(z) ], size(z))
+_₃F₂(a₁::Number,b₁::Number,z) = _₃F₂(1,1,a₁,2,b₁,z)

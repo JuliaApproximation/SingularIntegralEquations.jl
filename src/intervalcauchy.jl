@@ -9,6 +9,7 @@ jacobiop(S::JacobiWeight)=jacobiop(S.space)
 function stieltjesbackward(S::Space,z::Number)
     J=(jacobiop(S)-z)[2:end,:]  # drop the first row
     [BasisFunctional(1);J]\[stieltjesmoment(S,1,z)]
+    #[BasisFunctional(1);J]\[stieltjesmoment(S,0,z)]
 end
 
 
@@ -32,6 +33,7 @@ forwardsubstitution(R,n,μ1,μ2)=forwardsubstitution!(Array(promote_type(eltype(
 
 stieltjesforward(sp::Space,n,z,s...)=forwardsubstitution(jacobiop(sp)-z,n,
                         stieltjesmoment(sp,1,z,s...),stieltjesmoment(sp,2,z,s...))
+                        #stieltjesmoment(sp,0,z,s...),stieltjesmoment(sp,1,z,s...))
 
 
 

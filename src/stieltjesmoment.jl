@@ -1,13 +1,13 @@
 ##
 # cauchymoment implements the moments of the cauchy transform of a space
-#  note that it starts from k==1
+#  note that it starts from k==0
 ##
 
 
 cauchymoment(S...)=stieltjesmoment(S...)/(-2π*im)
 
 
-
+#=
 # gives \int_-1^1 x^(k-1)/(z-x) dx
 function stieltjeslegendremoment(k::Integer,z)
     if k==1
@@ -72,8 +72,43 @@ function sqrtatansqrt(x,s::Bool)
     y=sqrt(-x)
     (log((1+y)/(y-1))-(s?1:-1)*π*im)/(2y)
 end
+=#
+
+stieltjesmoment(S::WeightedJacobi,n::Int,z) = stieltjesjacobimoment(S.space.a,S.space.b,n,tocanonical(S,z))
+stieltjesmoment(S::WeightedJacobi,z) = stieltjesjacobimoment(S.space.a,S.space.b,tocanonical(S,z))
+
+stieltjesmoment(S::Jacobi,n::Int,z) = stieltjeslegendremoment(n,tocanonical(S,z))
+stieltjesmoment(S::Jacobi,z) = stieltjeslegendremoment(tocanonical(S,z))
 
 
+normalization(n::Int,α::Real,β::Real) = 2^(α+β)*gamma(n+α+1)*gamma(n+β+1)/gamma(2n+α+β+2)
+stieltjesjacobimoment(α::Real,β::Real,n::Int,z) = (x = 2./(1-z);normalization(n,α,β)*(-x).^(n+1).*_₂F₁(n+1,n+α+1,2n+α+β+2,x))
+stieltjesjacobimoment(α::Real,β::Real,z) = stieltjesjacobimoment(α,β,0,z)
+
+
+function logjacobimoment(α::Real,β::Real,n::Int,z)
+    x = 2./(1-z)
+    if n == 0
+        2normalization(0,α,β)*(log(z-1)-dualpart(_₂F₁(dual(zero(α),one(β)),α+1,α+β+2,x)))
+        # For testing purposes only, should be equivalent to above within radius of convergence
+        #2normalization(0,α,β)*(log(z-1)-(α+1)/(α+β+2)*x.*_₃F₂(α+2,α+β+3,x))
+    else
+        -2normalization(n,α,β)/n*(-x).^n.*_₂F₁(n,n+α+1,2n+α+β+2,x)
+    end
+end
+logjacobimoment(α::Real,β::Real,z) = logjacobimoment(α,β,0,z)
+
+
+
+
+
+stieltjeslegendremoment(n::Int,z) = stieltjesjacobimoment(zero(eltype(z)),zero(eltype(z)),n,z)
+stieltjeslegendremoment(z) = stieltjeslegendremoment(0,z)
+
+logabslegendremoment(z) = real(z*log((z+1)/(z-1))+log(z^2-1)-2)
+@vectorize_1arg Number logabslegendremoment
+
+#=
 #TODO: this is for x^k but we probably want P_k
 
 #These formulae are from mathematica
@@ -127,8 +162,6 @@ function stieltjesjacobimoment(α,β,k::Integer,z,s::Bool)
 end
 
 
-
-
 stieltjesmoment{DD}(S::JacobiWeight{Chebyshev{DD},DD},k::Integer,z,s...)=stieltjesjacobimoment(S.α,S.β,k,tocanonical(S,z),s...)
 
 
@@ -147,7 +180,7 @@ function stieltjesmoment{T,DD}(S::JacobiWeight{Jacobi{T,DD},DD},k::Integer,z,s..
     end
     error("stieltjesmoment not implemented for JacobiWeight "*string(S.α)*string(S.β))
 end
-
+=#
 
 
 function hilbertmoment(S::JacobiWeight,k::Integer,x)
