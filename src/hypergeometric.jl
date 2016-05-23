@@ -1,13 +1,30 @@
 export _₂F₁, _₃F₂
 
 const ρ = 0.72
+
+immutable ℕ end
+
+Base.in(n::Integer,::Type{ℕ}) = n > 0
+Base.in(n::Real,::Type{ℕ}) = (ν = round(Int,n); n == ν && ν ∈ ℕ)
+Base.in(n::Complex,::Type{ℕ}) = imag(n) == 0 && real(n) ∈ ℕ
+Base.in(n::Dual,::Type{ℕ}) = realpart(n) ∈ ℕ
+
+immutable ℕ₀ end
+
+Base.in(n::Integer,::Type{ℕ₀}) = n ≥ 0
+Base.in(n::Real,::Type{ℕ₀}) = (ν = round(Int,n); n == ν && ν ∈ ℕ₀)
+Base.in(n::Complex,::Type{ℕ₀}) = imag(n) == 0 && real(n) ∈ ℕ₀
+Base.in(n::Dual,::Type{ℕ₀}) = realpart(n) ∈ ℕ₀
+
 immutable ℤ end
 
 Base.in(n::Integer,::Type{ℤ}) = true
-Base.in(n::Number,::Type{ℤ}) = n == round(Int,n)
+Base.in(n::Real,::Type{ℤ}) = n == round(Int,n)
+Base.in(n::Complex,::Type{ℤ}) = imag(n) == 0 && real(n) ∈ ℤ
+Base.in(n::Dual,::Type{ℤ}) = realpart(n) ∈ ℤ
 
 abeqcd(a,b,cd) = isequal(a,b) && isequal(b,cd)
-abeqcd(a,b,c,d) = (isequal(a,c) && isequal(b,d))
+abeqcd(a,b,c,d) = isequal(a,c) && isequal(b,d)
 
 absarg(z) = abs(angle(z))
 
@@ -78,11 +95,11 @@ function _₂F₁(a::Number,b::Number,c::Number,z::Number)
             return sqrtasinsqrt(z)*exp(-0.5log1p(-z))
         elseif abeqcd(a,b,0.5,1) # 15. 15.4.2 & 15.4.3
             return sqrtatanhsqrt(z)
-        elseif a+b == 1 # 29. 15.4.15 & 15.4.16
+        elseif isequal(a+b,1) # 29. 15.4.15 & 15.4.16
             return sinnasinsqrt(1-2b,z)
-        elseif a+b == 2 # 30.
+        elseif isequal(a+b,2) # 30.
             return sinnasinsqrt(2-2b,z)*exp(-0.5log1p(-z))
-        elseif b-a == 0.5 # 4. 15.4.9 & 15.4.10
+        elseif isequal(b-a,0.5) # 4. 15.4.9 & 15.4.10
             return expnlog1psinhatanhsqrt(1-2a,z)
         end
     elseif isequal(c,2)
@@ -102,43 +119,52 @@ _₂F₁(a::Number,b::Number,c::Number,z::AbstractArray) = reshape(promote_type(
 
 function _₂F₁general(a::Number,b::Number,c::Number,z::Number)
     T = promote_type(typeof(a),typeof(b),typeof(c),typeof(z))
-    if abs(z) ≤ ρ
-        w = z
-        _₂F₁taylor(a,b,c,w)
-    elseif abs(z/(z-1)) ≤ ρ # 15.8.1
+    if abs(z) ≤ ρ || -a ∈ ℕ₀ || -b ∈ ℕ₀
+        _₂F₁taylor(a,b,c,z)
+    elseif abs(z/(z-1)) ≤ ρ && absarg(1-z) < convert(real(T),π) # 15.8.1
         w = z/(z-1)
         _₂F₁taylor(a,c-b,c,w)*exp(-a*log1p(-z))
-    elseif abs(1-z) ≤ ρ
-        w = 1-z
-        if c-a-b ∉ ℤ # 15.8.4
-            gamma(c)*(gamma(c-a-b)/gamma(c-a)/gamma(c-b)*_₂F₁taylor(a,b,a+b-c+1,w)+exp((c-a-b)*log1p(-z))*gamma(a+b-c)/gamma(a)/gamma(b)*_₂F₁taylor(c-a,c-b,c-a-b+1,w))
-        elseif c == a+b # 15.8.10
-            gamma(a+b)/gamma(a)/gamma(b)*_₂F₁logsum(a,b,z,w)
-        else
-            zero(T) # TODO: full 15.8.10
-        end
-    elseif abs(inv(z)) ≤ ρ && absarg(1-z) < convert(real(T),π) && absarg(z) < convert(real(T),π)
+    elseif abs(inv(z)) ≤ ρ && absarg(-z) < convert(real(T),π)
         w = inv(z)
-        if a-b ∉ ℤ # 15.8.2
+        if isapprox(a,b) # 15.8.8
+            gamma(c)/gamma(a)/gamma(c-a)*(-w)^a*_₂F₁logsumalt(a,c-a,z,w)
+        elseif a-b ∉ ℤ # 15.8.2
             gamma(c)*((-w)^a*gamma(b-a)/gamma(b)/gamma(c-a)*_₂F₁taylor(a,a-c+1,a-b+1,w)+(-w)^b*gamma(a-b)/gamma(a)/gamma(c-b)*_₂F₁taylor(b,b-c+1,b-a+1,w))
-        elseif a == b # 15.8.8
-            gamma(c)/gamma(a)/gamma(c-a)*(-w)^a*_₂F₁logsumalt(a,c,z)
         else
             zero(T) # TODO: full 15.8.8
         end
-    elseif abs(inv(1-z)) ≤ ρ && absarg(1-z) < convert(real(T),π) && a-b ∉ ℤ # 15.8.3
+    elseif abs(inv(1-z)) ≤ ρ && absarg(-z) < convert(real(T),π)
         w = inv(1-z)
-        gamma(c)*(exp(-a*log1p(-z))*gamma(b-a)/gamma(b)/gamma(c-a)*_₂F₁taylor(a,c-b,a-b+1,w)+exp(-b*log1p(-z))*gamma(a-b)/gamma(a)/gamma(c-b)*_₂F₁taylor(b,c-a,b-a+1,w))
-        # TODO: 15.8.9
-    elseif abs(1-inv(z)) ≤ ρ && absarg(1-z) < convert(real(T),π) && c-a-b ∉ ℤ # 15.8.5
+        if isapprox(a,b) # 15.8.9
+            gamma(c)*exp(-a*log1p(-z))/gamma(a)/gamma(c-b)*_₂F₁logsum(a,c-a,z,w,1)
+        elseif a-b ∉ ℤ # 15.8.3
+            gamma(c)*(exp(-a*log1p(-z))*gamma(b-a)/gamma(b)/gamma(c-a)*_₂F₁taylor(a,c-b,a-b+1,w)+exp(-b*log1p(-z))*gamma(a-b)/gamma(a)/gamma(c-b)*_₂F₁taylor(b,c-a,b-a+1,w))
+        else
+            zero(T) # TODO: full 15.8.9
+        end
+    elseif abs(1-z) ≤ ρ && absarg(z) < convert(real(T),π) && absarg(1-z) < convert(real(T),π)
+        w = 1-z
+        if isapprox(c,a+b) # 15.8.10
+            gamma(c)/gamma(a)/gamma(b)*_₂F₁logsum(a,b,z,w,-1)
+        elseif c-a-b ∉ ℤ # 15.8.4
+            gamma(c)*(gamma(c-a-b)/gamma(c-a)/gamma(c-b)*_₂F₁taylor(a,b,a+b-c+1,w)+exp((c-a-b)*log1p(-z))*gamma(a+b-c)/gamma(a)/gamma(b)*_₂F₁taylor(c-a,c-b,c-a-b+1,w))
+        else
+            zero(T) # TODO: full 15.8.10
+        end
+    elseif abs(1-inv(z)) ≤ ρ && absarg(z) < convert(real(T),π) && absarg(1-z) < convert(real(T),π)
         w = 1-inv(z)
-        gamma(c)*(z^(-a)*gamma(c-a-b)/gamma(c-a)/gamma(c-b)*_₂F₁taylor(a,a-c+1,a+b-c+1,w)+z^(a-c)*(1-z)^(c-a-b)*gamma(a+b-c)/gamma(a)/gamma(b)*_₂F₁taylor(c-a,1-a,c-a-b+1,w))
-        # TODO: 15.8.11
+        if isapprox(c,a+b) # 15.8.11
+            gamma(c)*z^(-a)/gamma(a)*_₂F₁logsumalt(a,b,z,w)
+        elseif c-a-b ∉ ℤ # 15.8.5
+            gamma(c)*(z^(-a)*gamma(c-a-b)/gamma(c-a)/gamma(c-b)*_₂F₁taylor(a,a-c+1,a+b-c+1,w)+z^(a-c)*(1-z)^(c-a-b)*gamma(a+b-c)/gamma(a)/gamma(b)*_₂F₁taylor(c-a,1-a,c-a-b+1,w))
+        else
+            zero(T) # TODO: full 15.8.11
+        end
     elseif abs(z-0.5) > 0.5
-        if a-b ∉ ℤ
-            gamma(c)*(gamma(b-a)/gamma(b)/gamma(c-a)*(0.5-z)^(-a)*_₂F₁continuation(a,a+b,c,0.5,z) + gamma(a-b)/gamma(a)/gamma(c-b)*(0.5-z)^(-b)*_₂F₁continuation(b,a+b,c,0.5,z))
-        elseif a == b # except c == a + 0.5 !
+        if isapprox(a,b) && !isapprox(c,a+0.5)
             gamma(c)/gamma(a)/gamma(c-a)*(0.5-z)^(-a)*_₂F₁continuationalt(a,c,0.5,z)
+        elseif a-b ∉ ℤ
+            gamma(c)*(gamma(b-a)/gamma(b)/gamma(c-a)*(0.5-z)^(-a)*_₂F₁continuation(a,a+b,c,0.5,z) + gamma(a-b)/gamma(a)/gamma(c-b)*(0.5-z)^(-b)*_₂F₁continuation(b,a+b,c,0.5,z))
         else
             zero(T)
         end
@@ -207,9 +233,9 @@ function _₂F₁continuationalt(a::Number,c::Number,z₀::Number,z::Number)
     return S₁
 end
 
-function _₂F₁logsum(a::Number,b::Number,z::Number,w::Number)
+function _₂F₁logsum(a::Number,b::Number,z::Number,w::Number,s::Int)
     T = promote_type(typeof(a),typeof(b),typeof(z),typeof(w))
-    cⱼ = 2digamma(one(T))-digamma(a)-digamma(b)-log1p(-z)
+    cⱼ = 2digamma(one(T))-digamma(a)-digamma(b)+s*log1p(-z)
     C,S,err,j = one(T),cⱼ,one(real(T)),0
     while err > 10eps2(T)
         C *= (a+j)/(j+1)^2*(b+j)*w
@@ -221,13 +247,13 @@ function _₂F₁logsum(a::Number,b::Number,z::Number,w::Number)
     return S
 end
 
-function _₂F₁logsumalt(a::Number,c::Number,z::Number)
-    T = promote_type(typeof(a),typeof(c),typeof(z))
-    b,cⱼ = one(T)-c+a,log(-z)+2digamma(one(T))-digamma(a)-digamma(c-a)
+function _₂F₁logsumalt(a::Number,b::Number,z::Number,w::Number)
+    T = promote_type(typeof(a),typeof(b),typeof(z),typeof(w))
+    d,cⱼ = one(T)-b,2digamma(one(T))-digamma(a)-digamma(b)-log(-w)
     C,S,err,j = one(T),cⱼ,one(real(T)),0
     while err > 10eps2(T)
-        C *= (a+j)/(j+1)^2*(b+j)/z
-        cⱼ += 2/(j+one(T))-one(T)/(a+j)+one(T)/(c-a-(j+one(T)))
+        C *= (a+j)/(j+1)^2*(d+j)*w
+        cⱼ += 2/(j+one(T))-one(T)/(a+j)+one(T)/(b-(j+one(T)))
         S += C*cⱼ
         err = abs(C/S)
         j+=1
