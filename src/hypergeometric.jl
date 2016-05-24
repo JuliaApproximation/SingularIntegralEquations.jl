@@ -1,6 +1,7 @@
 export _₂F₁, _₃F₂
 
 const ρ = 0.72
+const ρϵ = 0.71
 
 immutable ℕ end
 
@@ -64,7 +65,7 @@ function speciallog(x::Complex128)
         speciallogseries(x)
     end
 end
-# The Taylor series fails to be accurate to 1e-15 near x ≈ ±0.2. So we use a highly accurate Chebyshev expansion.
+# The Maclaurin series fails to be accurate to 1e-15 near x ≈ ±0.2. So we use a highly accurate Chebyshev expansion.
 speciallogseries(x::Union{Float64,Dual128}) = @clenshaw(5.0x,1.0087391788544393911192,1.220474262857857637288e-01,8.7957928919918696061703e-03,6.9050958578444820505037e-04,5.7037120050065804396306e-05,4.8731405131379353370205e-06,4.2648797509486828820613e-07,3.800372208946157617901e-08,3.434168059359993493634e-09,3.1381484326392473547608e-10,2.8939845618385022798906e-11,2.6892186934806386106143e-12,2.5150879096374730760324e-13,2.3652490233687788117887e-14,2.2349973917002118259929e-15,2.120769988408948118084e-16)
 speciallogseries(x::Union{Complex128,DualComplex256}) = @evalpoly(x,1.0000000000000000000000,5.9999999999999999999966e-01,4.2857142857142857142869e-01,3.3333333333333333333347e-01,2.7272727272727272727292e-01,2.3076923076923076923072e-01,1.9999999999999999999996e-01,1.7647058823529411764702e-01,1.5789473684210526315786e-01,1.4285714285714285714283e-01,1.3043478260869565217384e-01,1.2000000000000000000000e-01,1.1111111111111111111109e-01,1.0344827586206896551722e-01,9.6774193548387096774217e-02,9.0909090909090909090938e-02,8.5714285714285714285696e-02,8.1081081081081081081064e-02,7.6923076923076923076907e-02,7.3170731707317073170688e-02)
 
@@ -113,23 +114,23 @@ function _₂F₁(a::Number,b::Number,c::Number,z::Number)
     elseif isequal(c,2.5) && abeqcd(a,b,1,1.5)
          return speciallog(z)
     end
-    _₂F₁general(a,b,c,z) # catch-all
+    _₂F₁general2(a,b,c,z) # catch-all
 end
 _₂F₁(a::Number,b::Number,c::Number,z::AbstractArray) = reshape(promote_type(typeof(a),typeof(b),typeof(c),eltype(z))[ _₂F₁(a,b,c,z[i]) for i in eachindex(z) ], size(z))
 
 function _₂F₁general(a::Number,b::Number,c::Number,z::Number)
     T = promote_type(typeof(a),typeof(b),typeof(c),typeof(z))
     if abs(z) ≤ ρ || -a ∈ ℕ₀ || -b ∈ ℕ₀
-        _₂F₁taylor(a,b,c,z)
+        _₂F₁maclaurin(a,b,c,z)
     elseif abs(z/(z-1)) ≤ ρ && absarg(1-z) < convert(real(T),π) # 15.8.1
         w = z/(z-1)
-        _₂F₁taylor(a,c-b,c,w)*exp(-a*log1p(-z))
+        _₂F₁maclaurin(a,c-b,c,w)*exp(-a*log1p(-z))
     elseif abs(inv(z)) ≤ ρ && absarg(-z) < convert(real(T),π)
         w = inv(z)
         if isapprox(a,b) # 15.8.8
             gamma(c)/gamma(a)/gamma(c-a)*(-w)^a*_₂F₁logsumalt(a,c-a,z,w)
         elseif a-b ∉ ℤ # 15.8.2
-            gamma(c)*((-w)^a*gamma(b-a)/gamma(b)/gamma(c-a)*_₂F₁taylor(a,a-c+1,a-b+1,w)+(-w)^b*gamma(a-b)/gamma(a)/gamma(c-b)*_₂F₁taylor(b,b-c+1,b-a+1,w))
+            gamma(c)*((-w)^a*gamma(b-a)/gamma(b)/gamma(c-a)*_₂F₁maclaurin(a,a-c+1,a-b+1,w)+(-w)^b*gamma(a-b)/gamma(a)/gamma(c-b)*_₂F₁maclaurin(b,b-c+1,b-a+1,w))
         else
             zero(T) # TODO: full 15.8.8
         end
@@ -138,7 +139,7 @@ function _₂F₁general(a::Number,b::Number,c::Number,z::Number)
         if isapprox(a,b) # 15.8.9
             gamma(c)*exp(-a*log1p(-z))/gamma(a)/gamma(c-b)*_₂F₁logsum(a,c-a,z,w,1)
         elseif a-b ∉ ℤ # 15.8.3
-            gamma(c)*(exp(-a*log1p(-z))*gamma(b-a)/gamma(b)/gamma(c-a)*_₂F₁taylor(a,c-b,a-b+1,w)+exp(-b*log1p(-z))*gamma(a-b)/gamma(a)/gamma(c-b)*_₂F₁taylor(b,c-a,b-a+1,w))
+            gamma(c)*(exp(-a*log1p(-z))*gamma(b-a)/gamma(b)/gamma(c-a)*_₂F₁maclaurin(a,c-b,a-b+1,w)+exp(-b*log1p(-z))*gamma(a-b)/gamma(a)/gamma(c-b)*_₂F₁maclaurin(b,c-a,b-a+1,w))
         else
             zero(T) # TODO: full 15.8.9
         end
@@ -147,7 +148,7 @@ function _₂F₁general(a::Number,b::Number,c::Number,z::Number)
         if isapprox(c,a+b) # 15.8.10
             gamma(c)/gamma(a)/gamma(b)*_₂F₁logsum(a,b,z,w,-1)
         elseif c-a-b ∉ ℤ # 15.8.4
-            gamma(c)*(gamma(c-a-b)/gamma(c-a)/gamma(c-b)*_₂F₁taylor(a,b,a+b-c+1,w)+exp((c-a-b)*log1p(-z))*gamma(a+b-c)/gamma(a)/gamma(b)*_₂F₁taylor(c-a,c-b,c-a-b+1,w))
+            gamma(c)*(gamma(c-a-b)/gamma(c-a)/gamma(c-b)*_₂F₁maclaurin(a,b,a+b-c+1,w)+exp((c-a-b)*log1p(-z))*gamma(a+b-c)/gamma(a)/gamma(b)*_₂F₁maclaurin(c-a,c-b,c-a-b+1,w))
         else
             zero(T) # TODO: full 15.8.10
         end
@@ -156,7 +157,7 @@ function _₂F₁general(a::Number,b::Number,c::Number,z::Number)
         if isapprox(c,a+b) # 15.8.11
             gamma(c)*z^(-a)/gamma(a)*_₂F₁logsumalt(a,b,z,w)
         elseif c-a-b ∉ ℤ # 15.8.5
-            gamma(c)*(z^(-a)*gamma(c-a-b)/gamma(c-a)/gamma(c-b)*_₂F₁taylor(a,a-c+1,a+b-c+1,w)+z^(a-c)*(1-z)^(c-a-b)*gamma(a+b-c)/gamma(a)/gamma(b)*_₂F₁taylor(c-a,1-a,c-a-b+1,w))
+            gamma(c)*(z^(-a)*gamma(c-a-b)/gamma(c-a)/gamma(c-b)*_₂F₁maclaurin(a,a-c+1,a+b-c+1,w)+z^(a-c)*(1-z)^(c-a-b)*gamma(a+b-c)/gamma(a)/gamma(b)*_₂F₁maclaurin(c-a,1-a,c-a-b+1,w))
         else
             zero(T) # TODO: full 15.8.11
         end
@@ -173,8 +174,248 @@ function _₂F₁general(a::Number,b::Number,c::Number,z::Number)
         zero(T)
     end
 end
+_₂F₁general(a::Number,b::Number,c::Number,z::AbstractArray) = reshape(promote_type(typeof(a),typeof(b),typeof(c),eltype(z))[ _₂F₁general(a,b,c,z[i]) for i in eachindex(z) ], size(z))
 
-function _₂F₁taylor(a::Number,b::Number,c::Number,z::Number)
+function _₂F₁general2(a::Number,b::Number,c::Number,z::Number)
+    T = promote_type(typeof(a),typeof(b),typeof(c),typeof(z))
+
+    real(b) < real(a) && (return _₂F₁general2(b,a,c,z))
+    real(c) < real(a)+real(b) && (return exp((c-a-b)*log1p(-z))*_₂F₁general2(c-a,c-b,c,z))
+
+    if abs(z) ≤ ρ || -a ∈ ℕ₀ || -b ∈ ℕ₀
+        _₂F₁maclaurin(a,b,c,z)
+    elseif abs(z/(z-1)) ≤ ρ && absarg(1-z) < convert(real(T),π)
+        exp(-a*log1p(-z))_₂F₁maclaurin(a,c-b,c,z/(z-1))
+    elseif abs(inv(z)) ≤ ρ && absarg(-z) < convert(real(T),π)
+        _₂F₁Inf(a,b,c,z)
+    elseif abs(1-inv(z)) ≤ ρ && absarg(z) < convert(real(T),π) && absarg(1-z) < convert(real(T),π)
+        exp(-a*log1p(-z))*_₂F₁Inf(a,c-b,c,z/(z-1))
+    elseif abs(1-z) ≤ ρ && absarg(z) < convert(real(T),π) && absarg(1-z) < convert(real(T),π)
+        _₂F₁one(a,b,c,z)
+    elseif abs(inv(1-z)) ≤ ρ && absarg(-z) < convert(real(T),π)
+        exp(-a*log1p(-z))*_₂F₁one(a,c-b,c,z/(z-1))
+    #=
+    elseif abs(z-0.5) > 0.5
+        if isapprox(a,b) && !isapprox(c,a+0.5)
+            gamma(c)/gamma(a)/gamma(c-a)*(0.5-z)^(-a)*_₂F₁continuationalt(a,c,0.5,z)
+        elseif a-b ∉ ℤ
+            gamma(c)*(gamma(b-a)/gamma(b)/gamma(c-a)*(0.5-z)^(-a)*_₂F₁continuation(a,a+b,c,0.5,z) + gamma(a-b)/gamma(a)/gamma(c-b)*(0.5-z)^(-b)*_₂F₁continuation(b,a+b,c,0.5,z))
+        else
+            zero(T)
+        end
+    =#
+    elseif absarg(1-z) < convert(real(T),π)
+        _₂F₁taylor(a,b,c,z)
+    else
+        #throw(DomainError())
+        zero(T)
+    end
+end
+_₂F₁general2(a::Number,b::Number,c::Number,z::AbstractArray) = reshape(promote_type(typeof(a),typeof(b),typeof(c),eltype(z))[ _₂F₁general2(a,b,c,z[i]) for i in eachindex(z) ], size(z))
+
+tanpi(z) = sinpi(z)/cospi(z)
+@vectorize_1arg Number tanpi
+
+const libm = Base.libm_name
+
+unsafe_gamma(x::Float64) = ccall((:tgamma,libm),  Float64, (Float64,), x)
+unsafe_gamma(x::Float32) = ccall((:tgammaf,libm),  Float32, (Float32,), x)
+unsafe_gamma(x::Real) = unsafe_gamma(float(x))
+function unsafe_gamma(x::BigFloat)
+    z = BigFloat()
+    ccall((:mpfr_gamma, :libmpfr), Int32, (Ptr{BigFloat}, Ptr{BigFloat}, Int32), &z, &x, Base.MPFR.ROUNDING_MODE[end])
+    return z
+end
+unsafe_gamma(z::Complex) = gamma(z)
+@vectorize_1arg Number unsafe_gamma
+
+
+# Compute ∑_{i=1}^N cᵢ/(z-1+i)/(z-1+i+ϵ) / ( c₀ + ∑_{i=1}^N cᵢ/(z-1+i) )
+
+macro lanczosratio(z, ϵ, c₀, c...)
+    ex_num = :(zero(zm1))
+    ex_den = esc(c₀)
+    for i = 0:length(c)-1
+        temp = :(inv(zm1+$i))
+        ex_num = :(muladd($(esc(c[i+1])),$temp*inv(zm1pϵ+$i),$ex_num))
+        ex_den = :(muladd($(esc(c[i+1])),$temp,$ex_den))
+    end
+    ex = :($ex_num/$ex_den)
+    Expr(:block, :(zm1 = $(esc(z))), :(zm1pϵ = $(esc(z))+$(esc(ϵ))), ex)
+end
+
+Hsum(z::Union{Float64,Complex128},ϵ::Union{Float64,Complex128}) = @lanczosratio(z,ϵ,0.99999999999999709182,57.156235665862923517,-59.597960355475491248,14.136097974741747174,-0.49191381609762019978,0.33994649984811888699E-4,0.46523628927048575665E-4,-0.98374475304879564677E-4,0.15808870322491248884E-3,-0.21026444172410488319E-3,0.21743961811521264320E-3,-0.16431810653676389022E-3,0.84418223983852743293E-4,-0.26190838401581408670E-4,0.36899182659531622704E-5)
+
+function H(z::Union{Float64,Complex128},ϵ::Union{Float64,Complex128})
+    zm0p5 = z-0.5
+    zpgm0p5 = zm0p5+4.7421875
+    if real(z) ≥ 1/2
+        if z == z+ϵ # ϵ is numerical 0
+            zm0p5/zpgm0p5 + log(zpgm0p5) - 1. - Hsum(z,ϵ)
+        else
+            expm1( zm0p5*log1p(ϵ/zpgm0p5) + ϵ*log(zpgm0p5+ϵ) - ϵ + log1p(-ϵ*Hsum(z,ϵ)) )/ϵ
+        end
+    else
+        tpz = tanpi(z)
+        if z == z+ϵ # ϵ is numerical 0
+            H(1.-z,ϵ) - π/tpz
+        else
+            temp = (cospi(ϵ) + sinpi(ϵ)/tpz)*H(1.-z,-ϵ) + .5ϵ*(π*sinc(.5ϵ))^2 - π*sinc(ϵ)/tpz
+            temp/(1.-ϵ*temp)
+        end
+    end
+end
+
+# Compute the function (1/Γ(z)-1/Γ(z+ϵ))/ϵ
+function G(z::Union{Float64,Complex128},ϵ::Union{Float64,Complex128})
+    n,zpϵ = round(Int,real(z)),z+ϵ
+    if abs(ϵ) > 0.1
+        (inv(unsafe_gamma(z))-inv(unsafe_gamma(zpϵ)))/ϵ
+    elseif z ≠ zpϵ
+        m = round(Int,real(zpϵ))
+        if z == n && n ≤ 0
+            -inv(ϵ*unsafe_gamma(zpϵ))
+        elseif zpϵ == m && m ≤ 0
+            inv(ϵ*unsafe_gamma(z))
+        elseif abs(z+abs(n)) < abs(zpϵ+abs(m))
+            H(z,ϵ)/unsafe_gamma(zpϵ)
+        else
+            H(zpϵ,-ϵ)/unsafe_gamma(z)
+        end
+    else # ϵ is numerical 0
+        if z == n && n ≤ 0
+            (-1)^(n+1)*unsafe_gamma(1-n)
+        else
+            digamma(z)/unsafe_gamma(z)
+        end
+    end
+end
+
+G(z,ϵ) = ϵ == 0 ? digamma(z)/unsafe_gamma(z) : (inv(unsafe_gamma(z))-inv(unsafe_gamma(z+ϵ)))/ϵ
+
+
+# Compute the function ((z+ϵ,m)-(z,m))/ϵ
+function P(z::Number,ϵ::Number,m::Int)
+    n₀ = -round(Int,real(z))
+    if ϵ == 0
+        if 0 ≤ n₀ < m
+            ret1,ret2,n = one(z),zero(z),0
+            while n < m
+                n == n₀ && (n+=1; continue)
+                ret1 *= z+n
+                ret2 += inv(z+n)
+                n+=1
+            end
+            ret1 + pochhammer(z,m)*ret2
+        else
+            ret = zero(z)
+            for n=0:m-1
+                ret += inv(z+n)
+            end
+            pochhammer(z,m)*ret
+        end
+    else
+        if 0 ≤ n₀ < m
+            zpϵ,ret1,ret2,n = z+ϵ,one(z),zero(z),0
+            while n < m
+                n == n₀ && (n+=1; continue)
+                ret1 *= zpϵ+n
+                ret2 += log1p(ϵ/(z+n))
+                n+=1
+            end
+            ret1 + pochhammer(z,m)*expm1(ret2)/ϵ
+        else
+            ret = zero(z)
+            for n=0:m-1
+                ret += log1p(ϵ/(z+n))
+            end
+            pochhammer(z,m)*expm1(ret)/ϵ
+        end
+    end
+end
+
+E(z,ϵ) = ϵ == 0 ? z : expm1(ϵ*z)/ϵ
+
+@vectorize_2arg Number E
+@vectorize_2arg Number G
+@vectorize_2arg Number H
+G(z::AbstractVector{BigFloat},ϵ::BigFloat) = BigFloat[G(zi,ϵ) for zi in z]
+
+# Transformation formula w = 1-z
+
+reconeα₀(a,b,c,m::Int,ϵ) = ϵ == 0 ? (-1)^m*gamma(m)*gamma(c)/(gamma(a+m)*gamma(b+m)) : gamma(c)/(ϵ*gamma(1-m-ϵ)*gamma(a+m+ϵ)*gamma(b+m+ϵ))
+reconeβ₀(a,b,c,w,m::Int,ϵ) = abs(ϵ) > 0.1 ? ( pochhammer(float(a),m)*pochhammer(b,m)/(gamma(1-ϵ)*gamma(a+m+ϵ)*gamma(b+m+ϵ)*gamma(m+1)) - w^ϵ/(gamma(a)*gamma(b)*gamma(m+1+ϵ)) )*gamma(c)*w^m/ϵ : ( (G(1.0,-ϵ)/gamma(m+1)+G(m+1.0,ϵ))/(gamma(a+m+ϵ)*gamma(b+m+ϵ)) - (G(a+m,ϵ)/gamma(b+m+ϵ)+G(b+m,ϵ)/gamma(a+m))/gamma(m+1+ϵ) - E(log(w),ϵ)/(gamma(a+m)*gamma(b+m)*gamma(m+1+ϵ)) )*gamma(c)*pochhammer(float(a),m)*pochhammer(b,m)*w^m
+reconeγ₀(a,b,c,w,m::Int,ϵ) = gamma(c)*pochhammer(float(a),m)*pochhammer(b,m)*w^m/(gamma(a+m+ϵ)*gamma(b+m+ϵ)*gamma(m+1)*gamma(1-ϵ))
+
+function Aone(a,b,c,w,m::Int,ϵ)
+    αₙ = reconeα₀(a,b,c,m,ϵ)*one(w)
+    ret = m ≤ 0 ? zero(w) : αₙ
+    for n = 0:m-2
+        αₙ *= (a+n)*(b+n)/((n+1)*(1-m-ϵ+n))*w
+        ret += αₙ
+    end
+    ret
+end
+
+function Bone(a,b,c,w,m::Int,ϵ)
+    βₙ,γₙ = reconeβ₀(a,b,c,w,m,ϵ)*one(w),reconeγ₀(a,b,c,w,m,ϵ)*w
+    ret,err,n = βₙ,1.0,0
+    while err > 10eps()
+        βₙ = (a+m+n+ϵ)*(b+m+n+ϵ)/((m+n+1+ϵ)*(n+1))*w*βₙ + ( (a+m+n)*(b+m+n)/(m+n+1) - (a+m+n) - (b+m+n) - ϵ + (a+m+n+ϵ)*(b+m+n+ϵ)/(n+1) )*γₙ/((m+n+1+ϵ)*(n+1-ϵ))
+        ret += βₙ
+        err = abs(βₙ/ret)
+        γₙ *= (a+m+n)*(b+m+n)/((m+n+1)*(n+1-ϵ))*w
+        n+=1
+    end
+    ret
+end
+
+function _₂F₁one(a,b,c,z)
+    @assert real(c-a-b) ≥ 0
+    m = round(Int,real(c-a-b))
+    ϵ = c-a-b-m
+    w = 1-z
+    (-1)^m/sinc(ϵ)*(Aone(a,b,c,w,m,ϵ) + Bone(a,b,c,w,m,ϵ))
+end
+
+# Transformation formula w = 1/z
+
+recInfα₀(a,b,c,m::Int,ϵ) = ϵ == 0 ? (-1)^m*gamma(m)*gamma(c)/(gamma(a+m)*gamma(c-a)) : gamma(c)/(ϵ*gamma(1-m-ϵ)*gamma(a+m+ϵ)*gamma(c-a))
+recInfβ₀(a,b,c,w,m::Int,ϵ) = abs(ϵ) > 0.1 ? ( pochhammer(float(a),m)*pochhammer(float(1-c+a),m)/(gamma(1-ϵ)*gamma(a+m+ϵ)*gamma(c-a)*gamma(m+1)) - (-w)^ϵ*pochhammer(float(1-c+a)+ϵ,m)/(gamma(a)*gamma(c-a-ϵ)*gamma(m+1+ϵ)) )*gamma(c)*w^m/ϵ : ( (pochhammer(float(1-c+a)+ϵ,m)*G(1.0,-ϵ)-P(1-c+a,ϵ,m)/gamma(1-ϵ))/(gamma(c-a)*gamma(a+m+ϵ)*gamma(m+1)) + pochhammer(float(1-c+a)+ϵ,m)*( (G(m+1.0,ϵ)/gamma(a+m+ϵ) - G(a+m,ϵ)/gamma(m+1+ϵ))/gamma(c-a) - (G(c-a,-ϵ) - E(-log(-w),-ϵ)/gamma(c-a-ϵ))/(gamma(m+1+ϵ)*gamma(a+m)) ) )*gamma(c)*pochhammer(float(a),m)*w^m
+recInfγ₀(a,b,c,w,m::Int,ϵ) = gamma(c)*pochhammer(float(a),m)*pochhammer(float(1-c+a),m)*w^m/(gamma(a+m+ϵ)*gamma(c-a)*gamma(m+1)*gamma(1-ϵ))
+
+function AInf(a,b,c,w,m::Int,ϵ)
+    αₙ = recInfα₀(a,b,c,m,ϵ)*one(w)
+    ret = m ≤ 0 ? zero(w) : αₙ
+    for n = 0:m-2
+        αₙ *= (a+n)*(1-c+a+n)/((n+1)*(1-m-ϵ+n))*w
+        ret += αₙ
+    end
+    ret
+end
+
+function BInf(a,b,c,w,m::Int,ϵ)
+    βₙ,γₙ = recInfβ₀(a,b,c,w,m,ϵ)*one(w),recInfγ₀(a,b,c,w,m,ϵ)*w
+    ret,err,n = βₙ,1.0,0
+    while err > 10eps()
+        βₙ = (a+m+n+ϵ)*(1-c+a+m+n+ϵ)/((m+n+1+ϵ)*(n+1))*w*βₙ + ( (a+m+n)*(1-c+a+m+n)/(m+n+1) - (a+m+n) - (1-c+a+m+n) - ϵ + (a+m+n+ϵ)*(1-c+a+m+n+ϵ)/(n+1) )*γₙ/((m+n+1+ϵ)*(n+1-ϵ))
+        ret += βₙ
+        err = abs(βₙ/ret)
+        γₙ *= (a+m+n)*(1-c+a+m+n)/((m+n+1)*(n+1-ϵ))*w
+        n+=1
+    end
+    ret
+end
+
+function _₂F₁Inf(a,b,c,z)
+    @assert real(b-a) ≥ 0
+    m = round(Int,real(b-a))
+    ϵ = b-a-m
+    w = inv(z)
+    (-1)^m*(-w)^a/sinc(ϵ)*(AInf(a,b,c,w,m,ϵ) + BInf(a,b,c,w,m,ϵ))
+end
+
+function _₂F₁maclaurin(a::Number,b::Number,c::Number,z::Number)
     T = promote_type(typeof(a),typeof(b),typeof(c),typeof(z))
     S₀,S₁,err,j = one(T),one(T)+a*b*z/c,one(real(T)),1
     while err > 10eps2(T)
@@ -186,7 +427,7 @@ function _₂F₁taylor(a::Number,b::Number,c::Number,z::Number)
     return S₁
 end
 
-function _₂F₁tayloralt(a::Number,b::Number,c::Number,z::Number)
+function _₂F₁maclaurinalt(a::Number,b::Number,c::Number,z::Number)
     T = promote_type(typeof(a),typeof(b),typeof(c),typeof(z))
     C,S,err,j = one(T),one(T),one(real(T)),0
     while err > 10eps2(T)
@@ -261,7 +502,25 @@ function _₂F₁logsumalt(a::Number,b::Number,z::Number,w::Number)
     return S
 end
 
-function _₃F₂taylor(a₁::Number,a₂::Number,a₃::Number,b₁::Number,b₂::Number,z::Number)
+function _₂F₁taylor(a::Number,b::Number,c::Number,z::Number)
+    T = promote_type(typeof(a),typeof(b),typeof(c),typeof(z))
+    z₀ = abs(z) < 1 ? ρϵ*sign(z) : sign(z)/ρϵ
+    q₀,q₁ = _₂F₁(a,b,c,z₀),a*b/c*_₂F₁(a+1,b+1,c+1,z₀)
+    S₀,zz₀ = q₀,z-z₀
+    S₁,err,zz₀j,j = S₀+q₁*zz₀,one(real(T)),zz₀,0
+    while err > 10eps2(T)
+        q₀,q₁ = q₁,((j*(2z₀-one(T))-c+(a+b+one(T))*z₀)*q₁ + (a+j)*(b+j)/(j+one(T))*q₀)/(z₀*(one(T)-z₀)*(j+2))
+        zz₀j *= zz₀
+        S₀,S₁ = S₁,S₁+q₁*zz₀j
+        err = abs((S₀-S₁)/S₀)
+        j+=1
+    end
+    return S₁
+end
+
+# Generalized hypergeometric functions
+
+function _₃F₂maclaurin(a₁::Number,a₂::Number,a₃::Number,b₁::Number,b₂::Number,z::Number)
     T = promote_type(typeof(a₁),typeof(a₂),typeof(a₃),typeof(b₁),typeof(b₂),typeof(z))
     S₀,S₁,err,j = one(T),one(T)+(a₁*a₂*a₃*z)/(b₁*b₂),one(real(T)),1
     while err > 100eps2(T)
@@ -275,7 +534,7 @@ end
 
 function _₃F₂(a₁::Number,a₂::Number,a₃::Number,b₁::Number,b₂::Number,z::Number)
     if abs(z) ≤ ρ
-        _₃F₂taylor(a₁,a₂,a₃,b₁,b₂,z)
+        _₃F₂maclaurin(a₁,a₂,a₃,b₁,b₂,z)
     else
         zero(z)
     end
