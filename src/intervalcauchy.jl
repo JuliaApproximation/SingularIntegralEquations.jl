@@ -6,10 +6,12 @@ import ApproxFun: dotu
 jacobiop(S::PolynomialSpace)=transpose(Recurrence(S))
 jacobiop(S::JacobiWeight)=jacobiop(S.space)
 
+jacobiop(S::JacobiQWeight) = jacobiop(S.space)
+jacobiop(S::JacobiQ) = transpose(Recurrence(S))
+
 function stieltjesbackward(S::Space,z::Number)
     J=(jacobiop(S)-z)[2:end,:]  # drop the first row
-    [BasisFunctional(1);J]\[stieltjesmoment(S,1,z)]
-    #[BasisFunctional(1);J]\[stieltjesmoment(S,0,z)]
+    [BasisFunctional(1);J]\[stieltjesmoment(S,0,z)]
 end
 
 
@@ -32,8 +34,8 @@ end
 forwardsubstitution(R,n,μ1,μ2)=forwardsubstitution!(Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n),R,n,μ1,μ2)
 
 stieltjesforward(sp::Space,n,z,s...)=forwardsubstitution(jacobiop(sp)-z,n,
-                        stieltjesmoment(sp,1,z,s...),stieltjesmoment(sp,2,z,s...))
-                        #stieltjesmoment(sp,0,z,s...),stieltjesmoment(sp,1,z,s...))
+                        #stieltjesmoment(sp,1,z,s...),stieltjesmoment(sp,2,z,s...))
+                        stieltjesmoment(sp,0,z,s...),stieltjesmoment(sp,1,z,s...))
 
 
 
@@ -48,6 +50,7 @@ function stieltjesintervalrecurrence(S,f::AbstractVector,z)
        dotu(cfs[1:m],f[1:m])
     end
 end
+stieltjesintervalrecurrence(S,f::AbstractVector,z::AbstractArray) = reshape(promote_type(eltype(f),eltype(z))[ stieltjesintervalrecurrence(S,f,z[i]) for i in eachindex(z) ], size(z))
 
 
 function stieltjes{D<:Interval}(S::PolynomialSpace{D},f,z::Number)

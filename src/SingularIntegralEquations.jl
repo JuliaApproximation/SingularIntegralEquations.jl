@@ -4,7 +4,8 @@ module SingularIntegralEquations
     using Base, BandedMatrices, ApproxFun, DualNumbers
 
 export cauchy, cauchyintegral, stieltjes, logkernel,
-       stieltjesintegral, hilbert, pseudohilbert, pseudocauchy
+       stieltjesintegral, hilbert, pseudohilbert, pseudocauchy,
+       stieltjesjacobimoment, logjacobimoment
 
 
 import Base: values,getindex,setindex!,*,.*,+,.+,-,.-,==,<,<=,>,
@@ -26,7 +27,7 @@ import ApproxFun: bandinds,SpaceOperator,bilinearform,linebilinearform,eps2,dotu
                   ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, AlmostBandedOperator, ZeroSpace,
                   DiagonalInterlaceOperator, LowRankPertOperator, LaurentDirichlet, setcanonicaldomain,
                   IntervalCurve,PeriodicCurve, reverseorientation, op_eltype, @wrapper, mobius,
-                  defaultgetindex, WeightSpace, pochhammer
+                  defaultgetindex, WeightSpace, pochhammer, spacescompatible
 
 
 # we don't override for Bool and Function to make overriding below easier
@@ -34,6 +35,7 @@ import ApproxFun: bandinds,SpaceOperator,bilinearform,linebilinearform,eps2,dotu
 
 for OP in (:stieltjes,:stieltjesintegral,:pseudostieltjes)
     @eval begin
+        $OP(f::Fun)=$OP(space(f),coefficients(f))
         $OP(f::Fun,z,s...)=$OP(space(f),coefficients(f),z,s...)
         $OP(f::Fun,z,s::Function)=$OP(f,z,s==+)
     end
@@ -59,9 +61,9 @@ include("Operators/Operators.jl")
 include("FundamentalSolutions/FundamentalSolutions.jl")
 include("HypergeometricFunctions/HypergeometricFunctions.jl")
 
-include("stieltjesmoment.jl")
 include("JacobiQWeight.jl")
 include("JacobiQ.jl")
+include("stieltjesmoment.jl")
 
 include("circlecauchy.jl")
 include("intervalcauchy.jl")

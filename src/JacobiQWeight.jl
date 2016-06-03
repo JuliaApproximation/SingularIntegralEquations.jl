@@ -30,8 +30,8 @@ JacobiQWeight(a::Number,b::Number,s::PiecewiseSpace) = PiecewiseSpace(JacobiQWei
 
 
 spacescompatible(A::JacobiQWeight,B::JacobiQWeight)=A.α==B.α && A.β == B.β && spacescompatible(A.space,B.space)
-spacescompatible(A::JacobiQWeight,B::RealUnivariateSpace)=spacescompatible(A,JacobiQWeight(0,0,B))
-spacescompatible(B::RealUnivariateSpace,A::JacobiQWeight)=spacescompatible(A,JacobiQWeight(0,0,B))
+#spacescompatible{D<:IntervalDomain}(A::JacobiQWeight,B::RealUnivariateSpace{D})=spacescompatible(A,JacobiQWeight(0,0,B))
+#spacescompatible{D<:IntervalDomain}(B::RealUnivariateSpace{D},A::JacobiQWeight)=spacescompatible(A,JacobiQWeight(0,0,B))
 
 transformtimes{JW1<:JacobiQWeight,JW2<:JacobiQWeight}(f::Fun{JW1},g::Fun{JW2})=
             Fun(coefficients(transformtimes(Fun(f.coefficients,f.space.space),

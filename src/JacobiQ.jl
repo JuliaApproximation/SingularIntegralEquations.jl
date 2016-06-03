@@ -2,7 +2,7 @@ import ApproxFun: recA, recB, recC, recα, recβ, recγ
 import ApproxFun: jacobirecA, jacobirecB, jacobirecC, jacobirecα, jacobirecβ, jacobirecγ
 
 
-export JacobiQ, LegendreQ, WeightedJacobiQ
+export JacobiQ, LegendreQ, WeightedJacobiQ, WeightedLegendreQ
 
 
 immutable JacobiQ{T,D<:Domain} <: RealUnivariateSpace{D}
@@ -12,7 +12,7 @@ immutable JacobiQ{T,D<:Domain} <: RealUnivariateSpace{D}
 end
 LegendreQ(domain)=JacobiQ(0.,0.,domain)
 LegendreQ()=LegendreQ(Interval())
-JacobiQ(a,b,d::Domain)=JacobiQ{promote_type(typeof(a),typeof(b)),typeof(d)}(a,b,d)
+JacobiQ(a,b,d::Domain)=JacobiQ(promote(a,b)...,d)
 JacobiQ(a,b,d)=JacobiQ(a,b,Domain(d))
 JacobiQ(a,b)=JacobiQ(a,b,Interval())
 #JacobiQ{m}(A::Ultraspherical{m})=JacobiQ(m-0.5,m-0.5,domain(A))
@@ -21,10 +21,13 @@ JacobiQ(a,b)=JacobiQ(a,b,Interval())
 Base.promote_rule{T,V,D}(::Type{JacobiQ{T,D}},::Type{JacobiQ{V,D}})=JacobiQ{promote_type(T,V),D}
 Base.convert{T,V,D}(::Type{JacobiQ{T,D}},J::JacobiQ{V,D})=JacobiQ{T,D}(J.a,J.b,J.domain)
 
-typealias WeightedJacobiQ{D} JacobiQWeight{JacobiQ{Float64,D},D}
+typealias WeightedJacobiQ{T,D} JacobiQWeight{JacobiQ{T,D},D}
 
 Base.call(::Type{WeightedJacobiQ},α,β,d::Domain)=JacobiQWeight(α,β,JacobiQ(β,α,d))
 Base.call(::Type{WeightedJacobiQ},α,β)=JacobiQWeight(α,β,JacobiQ(β,α))
+
+WeightedLegendreQ(d::Domain) = WeightedJacobiQ(zero(real(eltype(d))),zero(real(eltype(d))),d)
+WeightedLegendreQ() = WeightedJacobiQ(0.,0.)
 
 spacescompatible(a::JacobiQ,b::JacobiQ)=a.a==b.a && a.b==b.b
 
@@ -43,9 +46,19 @@ for (REC,JREC) in ((:recα,:jacobirecα),(:recβ,:jacobirecβ),(:recγ,:jacobire
 end
 
 function stieltjes{T,D}(f::Fun{Jacobi{T,D}})
-    @assert f.space.a == f.space.b == 0
-    Fun(coefficients(f),WeightedJacobiQ(0,0,domain(f)))
+    g = Fun(f,Legendre(domain(f)))
+    Fun(2coefficients(g),WeightedLegendreQ(domain(f)))
 end
-stieltjes{D}(f::Fun{WeightedJacobi{D}}) = Fun(coefficients(f),WeightedJacobiQ(f.space.α,f.space.β,domain(f)))
+function stieltjes{D}(f::Fun{Chebyshev{D}})
+    g = Fun(f,Legendre(domain(f)))
+    Fun(2coefficients(g),WeightedLegendreQ(domain(f)))
+end
 
-evaluate(f::AbstractVector,S::JacobiQ,x) = stieltjesintervalrecurrence(S,f,tocanonical(S,x))
+function stieltjes{S,D}(f::Fun{JacobiWeight{S,D}})
+    # Jacobi parameters need to transform to:
+    α,β = f.space.α,f.space.β
+    g = Fun(f,WeightedJacobi(α,β,domain(f)))
+    Fun(2coefficients(g),WeightedJacobiQ(α,β,domain(f)))
+end
+
+evaluate(f::AbstractVector,S::JacobiQ,x) = stieltjesintervalrecurrence(S,f,tocanonical(S,x))./2jacobiQweight(S.b,S.a,tocanonical(S,x))

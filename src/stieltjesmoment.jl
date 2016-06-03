@@ -1,6 +1,6 @@
 ##
 # cauchymoment implements the moments of the cauchy transform of a space
-#  note that it starts from k==0
+#  note that it starts from k==1
 ##
 
 
@@ -74,12 +74,16 @@ function sqrtatansqrt(x,s::Bool)
 end
 =#
 
-stieltjesmoment(S::WeightedJacobi,n::Int,z) = stieltjesjacobimoment(S.space.a,S.space.b,n,tocanonical(S,z))
-stieltjesmoment(S::WeightedJacobi,z) = stieltjesjacobimoment(S.space.a,S.space.b,tocanonical(S,z))
+stieltjesmoment(S::WeightedJacobi,n::Int,z) = stieltjesjacobimoment(S.space.a,S.space.b,n,z)
+stieltjesmoment(S::WeightedJacobi,z) = stieltjesjacobimoment(S.space.a,S.space.b,z)
 
-stieltjesmoment(S::Jacobi,n::Int,z) = stieltjeslegendremoment(n,tocanonical(S,z))
-stieltjesmoment(S::Jacobi,z) = stieltjeslegendremoment(tocanonical(S,z))
+stieltjesmoment(S::WeightedJacobiQ,n::Int,z) = stieltjesjacobimoment(S.space.a,S.space.b,n,z)
+stieltjesmoment(S::WeightedJacobiQ,z) = stieltjesjacobimoment(S.space.a,S.space.b,z)
 
+stieltjesmoment(S::Jacobi,n::Int,z) = stieltjesjacobimoment(S.a,S.b,n,z)
+stieltjesmoment(S::Jacobi,z) = stieltjesjacobimoment(S.a,S.b,z)
+stieltjesmoment(S::JacobiQ,n::Int,z) = stieltjesjacobimoment(S.a,S.b,n,z)
+stieltjesmoment(S::JacobiQ,z) = stieltjesjacobimoment(S.a,S.b,z)
 
 normalization(n::Int,α::Real,β::Real) = 2^(α+β)*gamma(n+α+1)*gamma(n+β+1)/gamma(2n+α+β+2)
 stieltjesjacobimoment(α::Real,β::Real,n::Int,z) = (x = 2./(1-z);normalization(n,α,β)*(-x).^(n+1).*_₂F₁(n+1,n+α+1,2n+α+β+2,x))
@@ -101,7 +105,7 @@ logjacobimoment(α::Real,β::Real,z) = logjacobimoment(α,β,0,z)
 
 
 
-stieltjeslegendremoment(n::Int,z) = stieltjesjacobimoment(zero(eltype(z)),zero(eltype(z)),n,z)
+stieltjeslegendremoment(n::Int,z) = stieltjesjacobimoment(zero(real(eltype(z))),zero(real(eltype(z))),n,z)
 stieltjeslegendremoment(z) = stieltjeslegendremoment(0,z)
 
 logabslegendremoment(z) = real(z*log((z+1)/(z-1))+log(z^2-1)-2)
