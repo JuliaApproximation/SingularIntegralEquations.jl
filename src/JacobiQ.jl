@@ -23,8 +23,8 @@ Base.convert{T,V,D}(::Type{JacobiQ{T,D}},J::JacobiQ{V,D})=JacobiQ{T,D}(J.a,J.b,J
 
 typealias WeightedJacobiQ{T,D} JacobiQWeight{JacobiQ{T,D},D}
 
-Base.call(::Type{WeightedJacobiQ},α,β,d::Domain)=JacobiQWeight(α,β,JacobiQ(β,α,d))
-Base.call(::Type{WeightedJacobiQ},α,β)=JacobiQWeight(α,β,JacobiQ(β,α))
+@compat (::Type{WeightedJacobiQ})(α,β,d::Domain)=JacobiQWeight(α,β,JacobiQ(β,α,d))
+@compat (::Type{WeightedJacobiQ})(α,β)=JacobiQWeight(α,β,JacobiQ(β,α))
 
 WeightedLegendreQ(d::Domain) = WeightedJacobiQ(zero(real(eltype(d))),zero(real(eltype(d))),d)
 WeightedLegendreQ() = WeightedJacobiQ(0.,0.)
