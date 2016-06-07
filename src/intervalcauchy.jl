@@ -1,19 +1,9 @@
-import ApproxFun: dotu
+import ApproxFun: dotu, mindotu
 
 
 # This solves as a boundary value provblem
 
-jacobiop(S::PolynomialSpace)=transpose(Recurrence(S))
-jacobiop(S::JacobiWeight)=jacobiop(S.space)
-
-jacobiop(S::JacobiQWeight) = jacobiop(S.space)
-jacobiop(S::JacobiQ) = transpose(Recurrence(S))
-
-function stieltjesbackward(S::Space,z::Number)
-    J=(jacobiop(S)-z)[2:end,:]  # drop the first row
-    [BasisFunctional(1);J]\[stieltjesmoment(S,0,z)]
-end
-
+stieltjesbackward(S::Space,z::Number) = JacobiZ(S,z)\[stieltjesmoment(S,0,z)]
 
 # This solves via forward substitution
 function forwardsubstitution!(ret,B,n,μ1,μ2)
@@ -33,20 +23,18 @@ end
 
 forwardsubstitution(R,n,μ1,μ2)=forwardsubstitution!(Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n),R,n,μ1,μ2)
 
-stieltjesforward(sp::Space,n,z,s...)=forwardsubstitution(jacobiop(sp)-z,n,
+stieltjesforward(sp::Space,n,z,s...)=forwardsubstitution(JacobiZ(sp,z),n,
                         stieltjesmoment(sp,0,z,s...),stieltjesmoment(sp,1,z,s...))
-
 
 
 function stieltjesintervalrecurrence(S,f::AbstractVector,z)
     tol=1./floor(Int,sqrt(length(f)))
     if (abs(real(z))≤1.+tol) && (abs(imag(z))≤tol)
-       cfs=stieltjesforward(S,length(f),z)
-       dotu(cfs,f)
+        cfs = stieltjesforward(S,length(f),z)
+        dotu(cfs,f)
     else
-       cfs=stieltjesbackward(S,z)
-       m=min(length(f),length(cfs))
-       dotu(cfs[1:m],f[1:m])
+        cfs = stieltjesbackward(S,z)
+        mindotu(cfs,f)
     end
 end
 stieltjesintervalrecurrence(S,f::AbstractVector,z::AbstractArray) = reshape(promote_type(eltype(f),eltype(z))[ stieltjesintervalrecurrence(S,f,z[i]) for i in eachindex(z) ], size(z))

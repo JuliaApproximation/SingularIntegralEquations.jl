@@ -22,7 +22,7 @@ import ApproxFun: bandinds,SpaceOperator,bilinearform,linebilinearform,eps2,dotu
                   SumSpace,PiecewiseSpace, interlace,Multiplication,ArraySpace,DiagonalArrayOperator,
                   BandedMatrix,ChebyshevDirichlet,PolynomialSpace,AbstractProductSpace,evaluate,order,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,BivariateFun,linesum,complexlength,
-                  Fun, ProductFun, LowRankFun, mappoint,Recurrence, FiniteFunctional,
+                  Fun, ProductFun, LowRankFun, mappoint, JacobiZ, FiniteFunctional,
                   real, UnivariateSpace, RealUnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, BlockOperator,
                   ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, AlmostBandedOperator, ZeroSpace,
                   DiagonalInterlaceOperator, LowRankPertOperator, LaurentDirichlet, setcanonicaldomain,
