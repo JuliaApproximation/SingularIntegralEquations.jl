@@ -2,7 +2,7 @@ import ApproxFun: recA, recB, recC, recα, recβ, recγ
 import ApproxFun: jacobirecA, jacobirecB, jacobirecC, jacobirecα, jacobirecβ, jacobirecγ
 
 
-export JacobiQ, LegendreQ, WeightedJacobiQ, WeightedLegendreQ
+export JacobiQ, LegendreQ, WeightedJacobiQ
 
 
 immutable JacobiQ{T,D<:Domain} <: RealUnivariateSpace{D}
@@ -26,9 +26,6 @@ typealias WeightedJacobiQ{T,D} JacobiQWeight{JacobiQ{T,D},D}
 @compat (::Type{WeightedJacobiQ})(α,β,d::Domain)=JacobiQWeight(α,β,JacobiQ(β,α,d))
 @compat (::Type{WeightedJacobiQ})(α,β)=JacobiQWeight(α,β,JacobiQ(β,α))
 
-WeightedLegendreQ(d::Domain) = WeightedJacobiQ(zero(real(eltype(d))),zero(real(eltype(d))),d)
-WeightedLegendreQ() = WeightedJacobiQ(0.,0.)
-
 spacescompatible(a::JacobiQ,b::JacobiQ)=a.a==b.a && a.b==b.b
 
 function canonicalspace(S::JacobiQ)
@@ -40,6 +37,8 @@ function canonicalspace(S::JacobiQ)
     #end
 end
 
+setdomain(S::JacobiQ,d::Domain)=JacobiQ(S.a,S.b,d)
+
 for (REC,JREC) in ((:recα,:jacobirecα),(:recβ,:jacobirecβ),(:recγ,:jacobirecγ),
                    (:recA,:jacobirecA),(:recB,:jacobirecB),(:recC,:jacobirecC))
     @eval $REC{T}(::Type{T},sp::JacobiQ,k)=$JREC(T,sp.a,sp.b,k)
@@ -47,11 +46,11 @@ end
 
 function stieltjes{T,D}(f::Fun{Jacobi{T,D}})
     g = Fun(f,Legendre(domain(f)))
-    Fun(2coefficients(g),WeightedLegendreQ(domain(f)))
+    Fun(2coefficients(g),LegendreQ(domain(f)))
 end
 function stieltjes{D}(f::Fun{Chebyshev{D}})
     g = Fun(f,Legendre(domain(f)))
-    Fun(2coefficients(g),WeightedLegendreQ(domain(f)))
+    Fun(2coefficients(g),LegendreQ(domain(f)))
 end
 
 function stieltjes{S,D}(f::Fun{JacobiWeight{S,D}})
@@ -61,4 +60,8 @@ function stieltjes{S,D}(f::Fun{JacobiWeight{S,D}})
     Fun(2coefficients(g),WeightedJacobiQ(α,β,domain(f)))
 end
 
-evaluate(f::AbstractVector,S::JacobiQ,x) = stieltjesintervalrecurrence(S,f,tocanonical(S,x))./2jacobiQweight(S.b,S.a,tocanonical(S,x))
+evaluate{T,D<:Interval}(f::AbstractVector,S::JacobiQ{T,D},x) = stieltjesintervalrecurrence(S,f,tocanonical(S,x))./2jacobiQweight(S.b,S.a,tocanonical(S,x))
+function evaluate{T,D<:Curve}(f::AbstractVector,S::JacobiQ{T,D},z::Number)
+    sum(evaluate(f,setcanonicaldomain(S),complexroots(domain(S).curve-z)))
+end
+evaluate{T,D<:Curve}(f::AbstractVector,S::JacobiQ{T,D},z::AbstractArray) = reshape(promote_type(eltype(f),T,eltype(z))[ evaluate(f,S,z[i]) for i in eachindex(z) ], size(z))

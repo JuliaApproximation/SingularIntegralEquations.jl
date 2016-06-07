@@ -34,7 +34,6 @@ end
 forwardsubstitution(R,n,μ1,μ2)=forwardsubstitution!(Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n),R,n,μ1,μ2)
 
 stieltjesforward(sp::Space,n,z,s...)=forwardsubstitution(jacobiop(sp)-z,n,
-                        #stieltjesmoment(sp,1,z,s...),stieltjesmoment(sp,2,z,s...))
                         stieltjesmoment(sp,0,z,s...),stieltjesmoment(sp,1,z,s...))
 
 
