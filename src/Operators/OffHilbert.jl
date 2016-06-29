@@ -74,7 +74,7 @@ end
 
 ## JacobiWeight
 
-for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
+for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
     @eval begin
         function $Op{DD<:Interval}(ds::JacobiWeight{Ultraspherical{1,DD},DD},rs::Space,order::Int)
             @assert ds.α==ds.β==0.5
@@ -88,7 +88,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
                 yk,ykp1=y,y*y
                 ret=Array(typeof(y),300)
                 ret[1]=-.5logabs(2y)+.25real(ykp1)
-                n,l,u = 1,length(ret[1])-1,0
+                n,l,u = 1,ncoefficients(ret[1])-1,0
                 while norm(ret[n].coefficients)>100eps()
                     n+=1
                     if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
@@ -96,24 +96,24 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
                     ret[n]=chop!(.5*(real(ykp1)/(n+1)-real(yk)/(n-1)) ,100eps())  #will be length 2n-1
                     yk*=y
                     u+=1   # upper bandwidth
-                    l=max(l,length(ret[n])-n)
+                    l=max(l,ncoefficients(ret[n])-n)
                 end
             elseif order == 1
                 y=Fun(z->intervaloffcircle(true,mobius(ds,z)),rs)
                 ret=Array(typeof(y),300)
                 ret[1]=-y
-                n,l,u = 1,length(ret[1])-1,0
+                n,l,u = 1,ncoefficients(ret[1])-1,0
                 while norm(ret[n].coefficients)>100eps()
                     n+=1
                     if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
                     ret[n]=chop!(y*ret[n-1],100eps())  #will be length 2n-1
                     u+=1   # upper bandwidth
-                    l=max(l,length(ret[n])-n)
+                    l=max(l,ncoefficients(ret[n])-n)
                 end
             end
 
             M=bzeros(promote_type(typeof(C),eltype(y)),l+1,n,l,u)
-            for k=1:n,j=1:length(ret[k])
+            for k=1:n,j=1:ncoefficients(ret[k])
                 M[j,k]=C*ret[k].coefficients[j]
             end
             $Op(M,ds,rs,order)
@@ -133,7 +133,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
                 ret[1]=-logabs(2y/C)
                 ret[2]=-real(yk)
                 ret[3]=chop!(-ret[1]-.5real(ykp1),100eps())
-                n,l,u = 3,max(length(ret[1])-1,length(ret[2])-2,length(ret[3])-3),2
+                n,l,u = 3,max(ncoefficients(ret[1])-1,ncoefficients(ret[2])-2,ncoefficients(ret[3])-3),2
                 while norm(ret[n].coefficients)>100eps()
                     n+=1
                     if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
@@ -141,7 +141,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
                     ret[n]=chop!(real(yk)/(n-3)-real(ykp1)/(n-1),100eps())  #will be length 2n-1
                     yk*=y
                     u+=1   # upper bandwidth
-                    l=max(l,length(ret[n])-n)
+                    l=max(l,ncoefficients(ret[n])-n)
                 end
             elseif order == 1
                 z=Fun(identity,rs)
@@ -151,18 +151,18 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:length))
                 ret[1]=-1/sqrtx2(x)
                 ret[2]=x*ret[1]+1
                 ret[3]=2y
-                n,l,u = 3,max(length(ret[1])-1,length(ret[2])-2,length(ret[3])-3),2
+                n,l,u = 3,max(ncoefficients(ret[1])-1,ncoefficients(ret[2])-2,ncoefficients(ret[3])-3),2
                 while norm(ret[n].coefficients)>100eps()
                     n+=1
                     if n > length(ret) resize!(ret,2length(ret)) end  # double preallocated ret
                     ret[n]=chop!(y*ret[n-1],100eps())  #will be length 2n-1
                     u+=1   # upper bandwidth
-                    l=max(l,length(ret[n])-n)
+                    l=max(l,ncoefficients(ret[n])-n)
                 end
             end
 
             M=bzeros(promote_type(typeof(C),eltype(y)),l+3,n,l,u)
-            for k=1:n,j=1:length(ret[k])
+            for k=1:n,j=1:ncoefficients(ret[k])
                 M[j,k]=C*ret[k].coefficients[j]
             end
             $Op(M,ds,rs,order)
@@ -261,7 +261,7 @@ function exterior_cauchy(b::Circle,a::Circle)
     ret=Array(Fun{Laurent{typeof(a)},Complex{Float64}},300)
     ret[1]=Fun(z->(r/(z-c)),a)
     n=1
-    m=length(ret[1])-2
+    m=ncoefficients(ret[1])-2
     f1=ret[1]*S
     while norm(ret[n].coefficients)>100eps()
         n+=1
@@ -269,7 +269,7 @@ function exterior_cauchy(b::Circle,a::Circle)
             resize!(ret,2length(ret))
         end
         ret[n]=chop!(f1*ret[n-1],100eps())
-        m=max(m,length(ret[n])-2)
+        m=max(m,ncoefficients(ret[n])-2)
     end
 
     M=bzeros(Complex{Float64},2n,2n,m,0)
@@ -326,7 +326,7 @@ function disjoint_cauchy(a::Circle,b::Circle)
     ret[1]=f
     n=1
 
-    l=length(f)-2   #lower bandwidth
+    l=ncoefficients(f)-2   #lower bandwidth
     u=1             #upper bandwidth
 
     while norm(ret[n].coefficients)>100eps()
@@ -336,11 +336,11 @@ function disjoint_cauchy(a::Circle,b::Circle)
             resize!(ret,2length(ret))
         end
     ret[n]=chop!(f*ret[n-1],100eps())  #will be length 2n-1
-    u=max(u,length(ret[n])-2n)   # upper bandwidth
+    u=max(u,ncoefficients(ret[n])-2n)   # upper bandwidth
 
         # find bandwidth by checking how many coefficients are zero
         # we jump over negative coefficients
-        for j=1:2:length(ret[n])
+        for j=1:2:ncoefficients(ret[n])
             if norm(ret[n].coefficients[j])>100eps()
                 l=max(l,2n-j)
                 break
@@ -349,7 +349,7 @@ function disjoint_cauchy(a::Circle,b::Circle)
     end
 
     M=bzeros(Complex{Float64},2n-1,2n,l,u)
-    for k=1:n,j=max(1,2k-u):2:min(length(ret[k]),2n-1)
+    for k=1:n,j=max(1,2k-u):2:min(ncoefficients(ret[k]),2n-1)
             M[j,2k]=-ret[k].coefficients[j]
     end
     M

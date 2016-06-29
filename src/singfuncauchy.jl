@@ -10,7 +10,7 @@ sqrtx2(x::Real)=sign(x)*sqrt(x^2-1)
 function sqrtx2(f::Fun)
     B=Evaluation(first(domain(f)))
     A=Derivative()-f*differentiate(f)/(f^2-1)
-    linsolve([B,A],sqrtx2(first(f));tolerance=length(f)*10E-15)
+    linsolve([B,A],sqrtx2(first(f));tolerance=ncoefficients(f)*10E-15)
 end
 
 # intervaloffcircle maps the slit plane to the interior(true)/exterior(false) disk
@@ -50,8 +50,10 @@ function divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVec
     y*ys*ret
 end
 
-divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractVector{T},ys::AbstractVector{U},s::V) = promote_type(S,T,U,V)[divkhornersum(cfs,y[k],ys[k],s) for k=1:length(y)]
-divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractArray{T,2},ys::AbstractArray{U,2},s::V) = promote_type(S,T,U,V)[divkhornersum(cfs,y[k,j],ys[k,j],s) for k=1:size(y,1),j=1:size(y,2)]
+divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractVector{T},ys::AbstractVector{U},s::V) =
+    promote_type(S,T,U,V)[divkhornersum(cfs,y[k],ys[k],s) for k=1:length(y)]
+divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractArray{T,2},ys::AbstractArray{U,2},s::V) =
+    promote_type(S,T,U,V)[divkhornersum(cfs,y[k,j],ys[k,j],s) for k=1:size(y,1),j=1:size(y,2)]
 
 realdivkhornersum{S<:Real}(cfs::AbstractVector{S},y,ys,s) = real(divkhornersum(cfs,y,ys,s))
 realdivkhornersum{S<:Complex}(cfs::AbstractVector{S},y,ys,s) = complex(real(divkhornersum(real(cfs),y,ys,s)),real(divkhornersum(imag(cfs),y,ys,s)))
@@ -188,21 +190,21 @@ function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
         cfs=coefficients(u,sp.space,Ultraspherical{1}(d))
         z=mobius(sp,z)
         y = updownjoukowskyinverse(true,z)
-        length(d)*realintegratejin(4/(b-a),cfs,y)/2
+        arclength(d)*realintegratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
         cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
         z=mobius(sp,z)
         y = updownjoukowskyinverse(true,z)
 
         if length(cfs) ≥1
-            ret = -cfs[1]*length(d)*(logabs(y)+logabs(4/(b-a)))/2
+            ret = -cfs[1]*arclength(d)*(logabs(y)+logabs(4/(b-a)))/2
 
             if length(cfs) ≥2
-                ret += -length(d)*cfs[2]*real(y)/2
+                ret += -arclength(d)*cfs[2]*real(y)/2
             end
 
             if length(cfs) ≥3
-                ret - length(d)*realintegratejin(4/(b-a),slice(cfs,3:length(cfs)),y)
+                ret - arclength(d)*realintegratejin(4/(b-a),slice(cfs,3:length(cfs)),y)
             else
                 ret
             end

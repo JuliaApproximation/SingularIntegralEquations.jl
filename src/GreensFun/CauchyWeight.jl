@@ -9,10 +9,11 @@ end
 CauchyWeight{SV,T}(space::TensorSpace{SV,T,2},O) = CauchyWeight{O,SV,T}(space)
 
 order{O}(C::CauchyWeight{O}) = O
-domain(C::CauchyWeight)=domain(C.space)
-Base.getindex(C::CauchyWeight,k::Integer)=C.space[k]
-ApproxFun.columnspace(C::CauchyWeight,::)=C[1]
-Base.getindex{O,PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(C::CauchyWeight{O,Tuple{PWS1,PWS2}},i,j)=CauchyWeight(C.space[i,j],O)
+domain(C::CauchyWeight) = domain(C.space)
+Base.getindex(C::CauchyWeight,k::Integer) = C.space[k]
+ApproxFun.columnspace(C::CauchyWeight,::) = C[1]
+Base.getindex{O,PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(C::CauchyWeight{O,Tuple{PWS1,PWS2}},i,j) =
+    CauchyWeight(C.space[i,j],O)
 Base.transpose{O}(C::CauchyWeight{O}) = CauchyWeight(transpose(C.space),O)
 
 cauchyweight(O,x,y) = O == 0 ? logabs(y-x)/π : (y-x).^(-O)/π
@@ -52,7 +53,8 @@ end
 ## TODO: for different domains, should be OffOp instead of ⨍
 ## This will change for v0.0.2 with the switch to ChebyshevDirichlet{1,1} bases
 
-for (Func,Op) in ((:(ApproxFun.AbstractDefiniteIntegral),:Hilbert),(:(ApproxFun.AbstractDefiniteLineIntegral),:SingularIntegral))
+for (Func,Op) in ((:(ApproxFun.DefiniteIntegral),:Hilbert),
+                    (:(ApproxFun.DefiniteLineIntegral),:SingularIntegral))
     @eval begin
         function Base.getindex{S,V,O,T,V1,T1,T2}(⨍::$Func{V1,T1},f::ProductFun{S,V,CauchyWeight{O,Tuple{S,V},T2},T})
             if domain(f.space[1]) == domain(f.space[2])

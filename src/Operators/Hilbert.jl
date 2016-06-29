@@ -249,7 +249,7 @@ end
 ## JacobiWeight
 
 for (Op,Len) in ((:Hilbert,:complexlength),
-                        (:SingularIntegral,:length))
+                        (:SingularIntegral,:arclength))
     ConcOp=parse("Concrete"*string(Op))
     OpWrap=parse(string(Op)*"Wrapper")
 

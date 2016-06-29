@@ -32,7 +32,7 @@ end
 function stieltjesintegral{CC<:Chebyshev,S,T}(sp::Space{S,IntervalCurve{CC,T}},w,z)
     d=domain(sp)
     # leading order coefficient
-    b=d.curve.coefficients[end]*2^(max(length(d.curve)-2,0))
+    b=d.curve.coefficients[end]*2^(max(ncoefficients(d.curve)-2,0))
     g=Fun(w,setcanonicaldomain(sp))
     g=g*fromcanonicalD(d)
     sum(stieltjesintegral(g,complexroots(d.curve-z)))+sum(Fun(w,sp))*log(b)
@@ -42,7 +42,7 @@ end
 function logkernel{CC<:Chebyshev,S,T}(sp::Space{S,IntervalCurve{CC,T}},w,z)
     d=domain(sp)
     # leading order coefficient
-    b=d.curve.coefficients[end]*2^(max(length(d.curve)-2,0))
+    b=d.curve.coefficients[end]*2^(max(ncoefficients(d.curve)-2,0))
     g=Fun(w,setcanonicaldomain(sp))
     g=g*abs(fromcanonicalD(d))
     sum(logkernel(g,complexroots(d.curve-z)))+linesum(Fun(w,sp))*log(abs(b))/π
@@ -65,7 +65,7 @@ function stieltjes{C<:PeriodicCurve}(S::Laurent{C},f,z::Number)
     # subtract out value at infinity, determined by the fact that leading term is poly
     # we find the
     sum(stieltjes(setdomain(S,Circle()),f,complexroots(c.curve-z)))-
-            div(length(domain(S).curve),2)*stieltjes(setdomain(S,Circle()),f,0.)
+            div(ncoefficients(domain(S).curve),2)*stieltjes(setdomain(S,Circle()),f,0.)
 end
 
 function stieltjes{C<:PeriodicCurve}(S::Laurent{C},f,z::Number,s::Bool)
@@ -74,7 +74,7 @@ function stieltjes{C<:PeriodicCurve}(S::Laurent{C},f,z::Number,s::Bool)
     rts=complexroots(c.curve-z)
 
     csp=setdomain(S,Circle())
-    ret=-div(length(domain(S).curve),2)*stieltjes(csp,f,0.)
+    ret=-div(ncoefficients(domain(S).curve),2)*stieltjes(csp,f,0.)
 
     for k=2:length(rts)
         ret+=in(rts[k],Circle())?stieltjes(csp,f,rts[k]):stieltjes(csp,f,rts[k],s)
@@ -89,7 +89,7 @@ function hilbert{C<:PeriodicCurve}(S::Laurent{C},f,z::Number)
     rts=complexroots(c.curve-z)
 
     csp=setdomain(S,Circle())
-    ret=div(length(domain(S).curve),2)*stieltjes(csp,f,0.)/π
+    ret=div(ncoefficients(domain(S).curve),2)*stieltjes(csp,f,0.)/π
 
     for k=2:length(rts)
         ret+=in(rts[k],Circle())?hilbert(csp,f,rts[k]):stieltjes(csp,f,rts[k])/(-π)
@@ -112,7 +112,7 @@ function Hilbert{C<:IntervalCurve,SS}(S::JacobiWeight{SS,C},k::Int)
     d=domain(S)
 
     # find the number of coefficients needed to resolve the first column
-    m=length(Fun(x->sum(stieltjes(Fun([1.0],csp),filter(y->!in(y,Interval()),complexroots(d.curve-fromcanonical(d,x))))/π),rs))
+    m=ncoefficients(Fun(x->sum(stieltjes(Fun([1.0],csp),filter(y->!in(y,Interval()),complexroots(d.curve-fromcanonical(d,x))))/π),rs))
     #precompute the roots
     rts=Vector{Complex128}[filter(y->!in(y,Interval()),complexroots(d.curve-x)) for x in fromcanonical(d,points(rs,m))]
 
@@ -144,11 +144,11 @@ function SingularIntegral{CC<:Chebyshev,TTT,TT}(S::JacobiWeight{TTT,IntervalCurv
     d=domain(S)
 
     # hiighest order coeff
-    b=d.curve.coefficients[end]*2^(max(length(d.curve)-2,0))
+    b=d.curve.coefficients[end]*2^(max(ncoefficients(d.curve)-2,0))
 
 
     # find the number of coefficients needed to resolve the first column
-    m=length(Fun(x->sum(logkernel(Fun([1.0],csp),filter(y->!in(y,Interval()),complexroots(d.curve-fromcanonical(d,x))))),rs))
+    m=ncoefficients(Fun(x->sum(logkernel(Fun([1.0],csp),filter(y->!in(y,Interval()),complexroots(d.curve-fromcanonical(d,x))))),rs))
     #precompute the roots
     rts=Vector{Complex128}[filter(y->!in(y,Interval()),complexroots(d.curve-x)) for x in fromcanonical(d,points(rs,m))]
 
