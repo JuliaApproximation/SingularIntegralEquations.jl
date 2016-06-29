@@ -70,7 +70,7 @@ end
 function refactorsvd!{S,T}(U::Matrix{S},Σ::Vector{T},V::Matrix{S})
     conj!(V)
     σmax = Σ[1]
-    r=max(1,count(s->s>10eps(T),Σ))
+    r=max(1,count(s->s>10σmax*eps(T),Σ))
     m,n = size(U,1),size(V,1)
     for k=1:r
         σk = sqrt(Σ[k])

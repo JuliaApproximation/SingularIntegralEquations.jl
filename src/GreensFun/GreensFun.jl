@@ -266,13 +266,13 @@ end
 function Base.getindex{G<:GreensFun,L<:LowRankFun,T}(⨍::DefiniteLineIntegral,H::HierarchicalMatrix{G,GreensFun{L,T}})
     H11,H22 = diagonaldata(H)
     wsp = domainspace(⨍)
-    if arclength(domain(H11)[2]) ≥ 2
-        ⨍1 = DefiniteLineIntegral(PiecewiseSpace(wsp[1:arclength(domain(H11)[2])]))
+    if length(domain(H11)[2]) ≥ 2
+        ⨍1 = DefiniteLineIntegral(PiecewiseSpace(wsp[1:length(domain(H11)[2])]))
     else
         ⨍1 = DefiniteLineIntegral(wsp[1])
     end
-    if arclength(domain(H22)[2]) ≥ 2
-        ⨍2 = DefiniteLineIntegral(PiecewiseSpace(wsp[end-arclength(domain(H22)[2])+1:end]))
+    if length(domain(H22)[2]) ≥ 2
+        ⨍2 = DefiniteLineIntegral(PiecewiseSpace(wsp[end-length(domain(H22)[2])+1:end]))
     else
         ⨍2 = DefiniteLineIntegral(wsp[end])
     end
