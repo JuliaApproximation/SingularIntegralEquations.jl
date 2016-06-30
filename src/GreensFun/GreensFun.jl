@@ -32,6 +32,7 @@ Base.convert(::Type{GreensFun},F::Union{ProductFun,LowRankFun}) = GreensFun(F)
 Base.rank(G::GreensFun) = error("Not all kernels are low rank approximations.")
 
 domain(G::GreensFun) = domain(first(G.kernels))
+@compat (G::GreensFun)(x,y)=evaluate(G,x,y)
 evaluate(G::GreensFun,x,y) = mapreduce(f->evaluate(f,x,y),+,G.kernels)
 kernels(B::BivariateFun) = B
 kernels(G::GreensFun) = G.kernels
@@ -276,5 +277,8 @@ function Base.getindex{G<:GreensFun,L<:LowRankFun,T}(⨍::DefiniteLineIntegral,H
     else
         ⨍2 = DefiniteLineIntegral(wsp[end])
     end
-    HierarchicalOperator((⨍1[H11],⨍2[H22]),map(LowRankIntegralOperator,offdiagonaldata(H)))
+    HierarchicalOperator((qrfact(⨍1[H11]),qrfact(⨍2[H22])),map(LowRankIntegralOperator,offdiagonaldata(H)))
 end
+
+Base.qrfact(H::HierarchicalOperator) = H # trivial no-op for now.
+Base.qrfact(H::Operator) = qrfact([H]) # fix to get it working.

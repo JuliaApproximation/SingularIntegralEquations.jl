@@ -10,7 +10,7 @@
 hierarchicalsolve{U<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalOperator{U,V},f::Fun) = hierarchicalsolve(H,[f])[1]
 
 hierarchicalsolve(H::Operator,f::Fun) = H\f
-hierarchicalsolve{F<:Fun}(H::Operator,f::Vector{F}) = vec(H\transpose(f))
+hierarchicalsolve{F<:Fun}(H::Operator,f::Vector{F}) = map(g->H\g,f)#vec(H\transpose(f))
 
 function hierarchicalsolve{U<:Operator,V<:AbstractLowRankOperator,F<:Fun}(H::HierarchicalOperator{U,V},f::Vector{F})
     # Pre-compute Factorization
