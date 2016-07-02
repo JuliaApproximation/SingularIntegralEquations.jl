@@ -14,6 +14,8 @@ import Base: values,getindex,setindex!,*,.*,+,.+,-,.-,==,<,<=,>,
 
 import BandedMatrices: bzeros
 
+import Compat: view
+
 import ApproxFun
 import ApproxFun: bandinds,SpaceOperator,bilinearform,linebilinearform,eps2,dotu,
                   plan_transform,plan_itransform,transform,itransform,transform!,itransform!,

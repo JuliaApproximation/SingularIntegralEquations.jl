@@ -173,8 +173,8 @@ end
 
 
 
-integratejin(c,cfs,y)=.5*(-cfs[1]*(log(y)+log(c))+divkhornersum(cfs,y,y,1)-divkhornersum(slice(cfs,2:length(cfs)),y,zero(y)+1,0))
-realintegratejin(c,cfs,y)=.5*(-cfs[1]*(logabs(y)+logabs(c))+realdivkhornersum(cfs,y,y,1)-realdivkhornersum(slice(cfs,2:length(cfs)),y,zero(y)+1,0))
+integratejin(c,cfs,y)=.5*(-cfs[1]*(log(y)+log(c))+divkhornersum(cfs,y,y,1)-divkhornersum(view(cfs,2:length(cfs)),y,zero(y)+1,0))
+realintegratejin(c,cfs,y)=.5*(-cfs[1]*(logabs(y)+logabs(c))+realdivkhornersum(cfs,y,y,1)-realdivkhornersum(view(cfs,2:length(cfs)),y,zero(y)+1,0))
 
 #########
 # stieltjesintegral is an indefinite integral of stieltjes
@@ -204,7 +204,7 @@ function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
             end
 
             if length(cfs) ≥3
-                ret - arclength(d)*realintegratejin(4/(b-a),slice(cfs,3:length(cfs)),y)
+                ret - arclength(d)*realintegratejin(4/(b-a),view(cfs,3:length(cfs)),y)
             else
                 ret
             end
@@ -237,7 +237,7 @@ function stieltjesintegral{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,D
             end
 
             if length(cfs) ≥3
-                ret - π*complexlength(d)*integratejin(4/(b-a),slice(cfs,3:length(cfs)),y)
+                ret - π*complexlength(d)*integratejin(4/(b-a),view(cfs,3:length(cfs)),y)
             else
                 ret
             end
@@ -270,7 +270,7 @@ function stieltjesintegral{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,D
             end
 
             if length(cfs) ≥3
-                ret - π*complexlength(d)*integratejin(4/(b-a),slice(cfs,3:length(cfs)),y)
+                ret - π*complexlength(d)*integratejin(4/(b-a),view(cfs,3:length(cfs)),y)
             else
                 ret
             end
