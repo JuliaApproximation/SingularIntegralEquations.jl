@@ -69,14 +69,14 @@ end
 ## HierarchicalMatrix{F<:GreensFun,G<:GreensFun}
 # Base.writemime because HierarchicalMatrix <: AbstractArray
 
-function Base.writemime{F<:GreensFun,L<:LowRankFun,T}(io::IO, ::MIME"text/plain", H::HierarchicalMatrix{F,GreensFun{L,T}})
+@compat function Base.show{F<:GreensFun,L<:LowRankFun,T}(io::IO, ::MIME"text/plain", H::HierarchicalMatrix{F,GreensFun{L,T}})
     print(io,"$(nlevels(H))-level HierarchicalMatrix of GreensFun's with blockwise ranks:\n")
     show(io,blockrank(H))
 end
 
 ## HierarchicalOperator{U<:Operator,V<:AbstractLowRankOperator}
 
-function Base.writemime{U<:Operator,V<:AbstractLowRankOperator}(io::IO, ::MIME"text/plain", H::HierarchicalOperator{U,V})
+@compat function Base.show{U<:Operator,V<:AbstractLowRankOperator}(io::IO, ::MIME"text/plain", H::HierarchicalOperator{U,V})
     print(io,"$(nlevels(H))-level HierarchicalOperator with blockwise ranks:\n")
     A = blockrank(H)
     m,n = size(A)
