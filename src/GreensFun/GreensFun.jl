@@ -281,4 +281,3 @@ function Base.getindex{G<:GreensFun,L<:LowRankFun,T}(⨍::DefiniteLineIntegral,H
 end
 
 Base.qrfact(H::HierarchicalOperator) = H # trivial no-op for now.
-Base.qrfact(H::Operator) = qrfact([H]) # fix to get it working.
