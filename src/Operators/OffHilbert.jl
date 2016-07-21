@@ -14,7 +14,7 @@ export OffHilbert,OffSingularIntegral,Stieltjes,Cauchy
 
 for Op in (:OffHilbert,:OffSingularIntegral)
     @eval begin
-        immutable $Op{D<:Space,R<:Space,T} <: BandedOperator{T}
+        immutable $Op{D<:Space,R<:Space,T} <: Operator{T}
             data::BandedMatrix{T}
             domainspace::D
             rangespace::R
@@ -228,7 +228,7 @@ function HornerFunctional(y0,sp)
         r[k]=r[k-1]*y0
     end
 
-    FiniteFunctional(r[1:k],sp)
+    FiniteOperator(r[1:k],sp,ConstantSpace())
 end
 
 function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
@@ -419,7 +419,7 @@ function hornervector(y0)
     r[1:k]
 end
 
-HornerFunctional(y0,sp)=FiniteFunctional(hornervector(y0),sp)
+HornerFunctional(y0,sp)=FiniteOperator(hornervector(y0),sp,ConstantSpace())
 
 function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
     if sp.α == sp.β == 0.5
@@ -436,7 +436,7 @@ function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
                 break
             end
         end
-        FiniteFunctional(r,sp)
+        FiniteOperator(r,sp,ConstantSpace())
     end
 end
 
@@ -454,7 +454,7 @@ function OffHilbert{DD}(sp::JacobiWeight{ChebyshevDirichlet{1,1,DD},DD},z::Numbe
         sx2z=sqrtx2(z)
         sx2zi=1./sx2z
 
-        FiniteFunctional([-sx2zi;1-sx2zi;2*hornervector(z-sx2z)],sp)
+        FiniteOperator([-sx2zi;1-sx2zi;2*hornervector(z-sx2z)],sp,ConstantSpace())
     else
         # try converting to Canonical
         us=JacobiWeight(sp.α,sp.β,Chebyshev(domain(sp)))

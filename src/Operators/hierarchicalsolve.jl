@@ -72,7 +72,7 @@ function factorize!{U<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalOpera
     H.factored = true
 end
 
-function fillpivotmatrix!{A1,A2,T}(A::Matrix{T},V12::Vector{Functional{T}},V21::Vector{Functional{T}},H22U21::Vector{Fun{A1,T}},H11U12::Vector{Fun{A2,T}})
+function fillpivotmatrix!{A1,A2,T}(A::Matrix{T},V12::Vector{Operator{T}},V21::Vector{Operator{T}},H22U21::Vector{Fun{A1,T}},H11U12::Vector{Fun{A2,T}})
     r1,r2 = length(V12),length(V21)
     for i=1:r1,j=1:r2
         @inbounds A[i,j+r1] += V12[i]*H22U21[j]
@@ -88,7 +88,7 @@ function fillpivotmatrix!{V1,V2,A1,A2,T}(A::Matrix{T},V12::Vector{Fun{V1,T}},V21
     end
 end
 
-function computepivots{A1,A2,T}(V12::Vector{Functional{T}},V21::Vector{Functional{T}},H11f1::Vector{Fun{A1,T}},H22f2::Vector{Fun{A2,T}},A::PivotLDU{T})
+function computepivots{A1,A2,T}(V12::Vector{Operator{T}},V21::Vector{Operator{T}},H11f1::Vector{Fun{A1,T}},H22f2::Vector{Fun{A2,T}},A::PivotLDU{T})
     @assert length(H11f1) == length(H22f2)
     nf,r1,r2 = length(H11f1),length(V12),length(V21)
     b1,b2 = zeros(T,r1,nf),zeros(T,r2,nf)

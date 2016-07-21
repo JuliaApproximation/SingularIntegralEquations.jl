@@ -21,7 +21,7 @@ export HierarchicalOperator
 # top right, then followed recursively by top left and bottom right.
 ##
 
-type HierarchicalOperator{S,V,T,HS,HV} <: BandedOperator{T}
+type HierarchicalOperator{S,V,T,HS,HV} <: Operator{T}
     diagonaldata::HS
     offdiagonaldata::HV
 
