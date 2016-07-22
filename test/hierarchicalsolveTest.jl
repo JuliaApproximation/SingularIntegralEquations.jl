@@ -106,4 +106,4 @@ H = ⨍[G1]
 
 println("The hierarchical forward error norm is: ",norm(⨍[G]*u2-f))
 
-@test norm(⨍[G]*u2-f) < 100eps()
+@test norm(⨍[G]*u2-f) < 10000eps()
