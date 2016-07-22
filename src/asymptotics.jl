@@ -4,7 +4,7 @@ function LogKernelAsymptotics(S::Fourier,k)
     d=domain(S)
     r=d.radius
     if k==-1  # coefficient in front of logabs term
-        FiniteOperator([2r].',S,ConstantSpace())
+        FiniteFunctional([2r],S)
     else
         error("Not implemented")
     end
@@ -19,7 +19,7 @@ function LogKernelAsymptotics{CD<:ChebyshevDirichlet{1,1}}(S::JacobiWeight{CD},k
     @assert S.α==S.β==-0.5
     d=domain(S)
     if k==-1  # coefficient in front of logabs term
-        FiniteOperator([arclength(d)/2,0,-arclength(d)/2].',S)
+        FiniteFunctional([arclength(d)/2,0,-arclength(d)/2],S)
     else
         error("Not implemented")
     end
@@ -30,7 +30,7 @@ function LogKernelAsymptotics{C<:Chebyshev}(S::JacobiWeight{C},k)
     @assert S.α==S.β==-0.5
     d=domain(S)
     if k==-1  # coefficient in front of logabs term
-        FiniteOperator([arclength(d)/2].',S,ConstantSpace())
+        FiniteFunctional([arclength(d)/2],S)
     else
         error("Not implemented")
     end
