@@ -74,7 +74,7 @@ function SingularIntegral{JW,RR<:Arc}(S::JacobiWeight{JW,RR},k::Integer)
             break
         end
     end
-    L∞=FiniteOperator(cnst,csp,ConstantSpace())
+    L∞=FiniteOperator(cnst.',csp,ConstantSpace())
 
     x=Fun(identity,S)
     SpaceOperator((Σ-L∞)*M,S,setdomain(rangespace(Σ),d))+(log(abs(x-fromcanonical(d,Inf)))/π)*DefiniteLineIntegral(S)
