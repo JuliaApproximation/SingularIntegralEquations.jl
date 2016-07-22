@@ -19,17 +19,17 @@ import Compat: view
 import ApproxFun
 import ApproxFun: bandinds,SpaceOperator,bilinearform,linebilinearform,eps2,dotu,
                   plan_transform,plan_itransform,transform,itransform,transform!,itransform!,
-                  rangespace, domainspace, addentries!, BandedOperator, AnySpace,
+                  rangespace, domainspace, addentries!, AnySpace,
                   canonicalspace, domain, space, Space, promotedomainspace, promoterangespace, AnyDomain, CalculusOperator,
                   SumSpace,PiecewiseSpace, interlace,Multiplication,ArraySpace,DiagonalArrayOperator,
                   BandedMatrix,ChebyshevDirichlet,PolynomialSpace,AbstractProductSpace,evaluate,order,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace,ReImSpace,ReImOperator,BivariateFun,linesum,complexlength,
-                  Fun, ProductFun, LowRankFun, mappoint, JacobiZ, FiniteFunctional,
+                  Fun, ProductFun, LowRankFun, mappoint, JacobiZ,
                   real, UnivariateSpace, RealUnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, BlockOperator,
-                  ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, AlmostBandedOperator, ZeroSpace,
+                  ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, ZeroSpace,
                   DiagonalInterlaceOperator, LowRankPertOperator, LaurentDirichlet, setcanonicaldomain,
                   IntervalCurve,PeriodicCurve, reverseorientation, op_eltype, @wrapper, mobius,
-                  defaultgetindex, WeightSpace, pochhammer, spacescompatible
+                  defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞
 
 
 # we don't override for Bool and Function to make overriding below easier

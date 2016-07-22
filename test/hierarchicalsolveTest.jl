@@ -70,7 +70,8 @@ H = ⨍[G1]
 
 @test condest(H) ≤ 20.0
 
-@test blockrank(H) == [Inf 8.0 9.0 9.0; 8.0 Inf 9.0 9.0; 9.0 9.0 Inf 8.0; 9.0 9.0 8.0 Inf]
+import ApproxFun: ∞
+@test blockrank(H) == Number[∞ 8 9 9; 8 ∞ 9 9; 9 9 ∞ 8; 9 9 8 ∞]
 
 println("The hierarchical forward error norm is: ",norm(⨍[G]*u2-f))
 
@@ -105,4 +106,4 @@ H = ⨍[G1]
 
 println("The hierarchical forward error norm is: ",norm(⨍[G]*u2-f))
 
-@test norm(⨍[G]*u2-f) < 100eps()
+@test norm(⨍[G]*u2-f) < 10000eps()

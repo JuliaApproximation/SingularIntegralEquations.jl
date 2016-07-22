@@ -69,30 +69,24 @@ end
 ## HierarchicalMatrix{F<:GreensFun,G<:GreensFun}
 # Base.writemime because HierarchicalMatrix <: AbstractArray
 
-@compat function Base.show{F<:GreensFun,L<:LowRankFun,T}(io::IO, ::MIME"text/plain", H::HierarchicalMatrix{F,GreensFun{L,T}})
-    print(io,"$(nlevels(H))-level HierarchicalMatrix of GreensFun's with blockwise ranks:\n")
-    show(io,blockrank(H))
-end
-
 ## HierarchicalOperator{U<:Operator,V<:AbstractLowRankOperator}
 
-@compat function Base.show{U<:Operator,V<:AbstractLowRankOperator}(io::IO, ::MIME"text/plain", H::HierarchicalOperator{U,V})
-    print(io,"$(nlevels(H))-level HierarchicalOperator with blockwise ranks:\n")
-    A = blockrank(H)
-    m,n = size(A)
-    print(io,"[")
-        for j=1:n-1
-            print(io,"$(A[1,j]) ")
-        end
-        print(io,"$(A[1,n])\n")
-    for i=2:m-1
-        for j=1:n-1
-            print(io," $(A[i,j])")
-        end
-        print(io," $(A[i,n])\n")
+if VERSION < v"0.5.0-dev+4340" # hack for now
+    function Base.writemime{F<:GreensFun,L<:LowRankFun,T}(io::IO, ::MIME"text/plain", H::HierarchicalMatrix{F,GreensFun{L,T}})
+        print(io,"$(nlevels(H))-level HierarchicalMatrix of GreensFun's with blockwise ranks:\n")
+        show(io,blockrank(H))
     end
-    for j=1:n-1
-        print(io," $(A[m,j])")
+    function Base.writemime{U<:Operator,V<:AbstractLowRankOperator}(io::IO, ::MIME"text/plain", H::HierarchicalOperator{U,V})
+        print(io,"$(nlevels(H))-level HierarchicalOperator with blockwise ranks:\n")
+        Base.print_matrix(io,blockrank(H),(s = Base.tty_size(); (s[1]-4, s[2])),"["," ","]")
     end
-    print(io," $(A[m,n])]")
+else
+    function Base.show{F<:GreensFun,L<:LowRankFun,T}(io::IO, ::MIME"text/plain", H::HierarchicalMatrix{F,GreensFun{L,T}})
+        print(io,"$(nlevels(H))-level HierarchicalMatrix of GreensFun's with blockwise ranks:\n")
+        show(io,blockrank(H))
+    end
+    function Base.show{U<:Operator,V<:AbstractLowRankOperator}(io::IO, ::MIME"text/plain", H::HierarchicalOperator{U,V})
+        print(io,"$(nlevels(H))-level HierarchicalOperator with blockwise ranks:\n")
+        Base.print_matrix(io,blockrank(H),(s = Base.tty_size(); (s[1]-4, s[2])),"["," ","]")
+    end
 end

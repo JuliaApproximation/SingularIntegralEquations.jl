@@ -21,7 +21,7 @@ export HierarchicalOperator
 # top right, then followed recursively by top left and bottom right.
 ##
 
-type HierarchicalOperator{S,V,T,HS,HV} <: BandedOperator{T}
+type HierarchicalOperator{S,V,T,HS,HV} <: Operator{T}
     diagonaldata::HS
     offdiagonaldata::HV
 
@@ -105,7 +105,7 @@ Base.ctranspose(H::HierarchicalOperator) = HierarchicalOperator(map(ctranspose,d
 Base.copy(H::HierarchicalOperator) = HierarchicalOperator(map(copy,diagonaldata(H)),map(copy,offdiagonaldata(H)))
 Base.copy!(H::HierarchicalOperator,J::HierarchicalOperator) = (map(copy!,diagonaldata(H),diagonaldata(J));map(copy!,offdiagonaldata(H),offdiagonaldata(J));H)
 
-Base.rank(A::Operator)=Inf
+Base.rank(A::Operator) = ∞
 
 function blockrank(H::HierarchicalOperator)
     m,n = blocksize(H)
