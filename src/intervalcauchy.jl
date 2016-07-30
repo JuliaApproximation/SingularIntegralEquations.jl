@@ -1,4 +1,4 @@
-import ApproxFun: dotu, mindotu
+import ApproxFun: dotu
 
 
 # This solves as a boundary value provblem
@@ -34,7 +34,7 @@ function stieltjesintervalrecurrence(S,f::AbstractVector,z)
         dotu(cfs,f)
     else
         cfs = stieltjesbackward(S,z)
-        mindotu(cfs,f)
+        dotu(cfs,f)
     end
 end
 stieltjesintervalrecurrence(S,f::AbstractVector,z::AbstractArray) = reshape(promote_type(eltype(f),eltype(z))[ stieltjesintervalrecurrence(S,f,z[i]) for i in eachindex(z) ], size(z))
