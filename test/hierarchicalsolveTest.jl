@@ -54,7 +54,6 @@ sp = Space(dom)
 G = GreensFun((x,y)->1/2,CauchyWeight(sp⊗sp,0);method=:Cholesky)
 
 @time u1 = ⨍[G]\transpose(f)
-
 println("Adaptive QR  forward error norm is: ",norm(⨍[G]*u1-f))
 
 @test norm(⨍[G]*u1-f) < 10eps()

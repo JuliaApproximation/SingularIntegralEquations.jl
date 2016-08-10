@@ -87,6 +87,7 @@ else
     end
     function Base.show{U<:Operator,V<:AbstractLowRankOperator}(io::IO, ::MIME"text/plain", H::HierarchicalOperator{U,V})
         print(io,"$(nlevels(H))-level HierarchicalOperator with blockwise ranks:\n")
-        Base.print_matrix(io,blockrank(H),(s = Base.tty_size(); (s[1]-4, s[2])),"["," ","]")
+        # TODO: Reenable for 0.5
+        # Base.print_matrix(io,blockrank(H),(s = Base.tty_size(); (s[1]-4, s[2])),"["," ","]")
     end
 end

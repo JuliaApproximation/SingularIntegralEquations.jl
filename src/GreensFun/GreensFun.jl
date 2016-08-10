@@ -51,14 +51,17 @@ function getindex{F<:BivariateFun}(⨍::DefiniteLineIntegral,B::Matrix{F})
     wsp = domainspace(⨍)
     @assert m == length(wsp.spaces)
     ⨍j = DefiniteLineIntegral(wsp[1])
-    ret = Array(Any,m,n)
+    ret = Array(Operator{promote_type(eltype(⨍j),map(eltype,B)...)},m,n)
     for j=1:n
         ⨍j = DefiniteLineIntegral(wsp[j])
         for i=1:m
             ret[i,j] = ⨍j[B[i,j]]
         end
     end
-    interlace(mapreduce(typeof,promote_type,ret)[ret[j,i] for j=1:n,i=1:m])
+    ops=promotespaces(ret)
+    InterlaceOperator(ops,
+                      PiecewiseSpace(map(domainspace,ret[1,:])),
+                      PiecewiseSpace(map(rangespace,ret[:,1])))
 end
 
 # Algebra with BivariateFun's
