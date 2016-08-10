@@ -80,7 +80,7 @@ domain(H::HierarchicalSpace) = HierarchicalDomain(map(domain,data(H)))
 space(H::HierarchicalFun) = HierarchicalSpace(map(space,data(H)))
 
 ApproxFun.basistype(H::HierarchicalSpace) = mapreduce(typeof,promote_type,data(H))
-Base.ndims(H::HierarchicalSpace) = 1
+ApproxFun.domaindimension(H::HierarchicalSpace) = 1
 Space(H::HierarchicalDomain) = HierarchicalSpace(map(Space,data(H)))
 
 PiecewiseSpace(H::HierarchicalSpace) = PiecewiseSpace(map(PiecewiseSpace,data(H))...)
