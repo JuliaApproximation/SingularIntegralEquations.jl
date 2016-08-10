@@ -55,5 +55,5 @@ zBF = xBF.+im*yBF'
 
 for i in eachindex(E)
     ℜ = lhelm_riemann(z,0z,E[i])
-    @test norm(ℜ-𝕽[i],Inf) < 1250eps()
+    @test norm(ℜ-𝕽[i],Inf) < 2500eps()
 end

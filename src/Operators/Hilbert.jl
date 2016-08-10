@@ -91,13 +91,9 @@ end
 
 ConcreteHilbert(sp::Space{ComplexBasis},n) =
     ConcreteHilbert{typeof(sp),typeof(n),Complex{real(eltype(domain(sp)))}}(sp,n)
-ConcreteHilbert(sp::Space,n) =
-    ConcreteHilbert{typeof(sp),typeof(n),typeof(complexlength(domain(sp)))}(sp,n)
-
 ConcreteSingularIntegral(sp::Space{ComplexBasis},n) =
     ConcreteSingularIntegral{typeof(sp),typeof(n),Complex{real(eltype(domain(sp)))}}(sp,n)
-ConcreteSingularIntegral(sp::Space,n) =
-    ConcreteSingularIntegral{typeof(sp),typeof(n),typeof(complexlength(domain(sp)))}(sp,n)
+
 
 # Override sumspace
 

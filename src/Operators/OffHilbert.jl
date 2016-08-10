@@ -213,26 +213,6 @@ function OffHilbert{D1<:Circle,D2<:Circle}(DS::Fourier{D1},RS::Fourier{D2},order
 end
 
 
-## OffHilbert Functional
-
-
-function HornerFunctional(y0,sp)
-    r=Array(typeof(y0),200)
-    r[1]=y0
-    k=1
-    tol=eps()
-    while(abs(r[k])>tol)
-        k+=1
-        if k>length(r)
-            resize!(r,2length(r))
-        end
-        r[k]=r[k-1]*y0
-    end
-
-    FiniteOperator(r[1:k].',sp,ConstantSpace())
-end
-
-
 
 
 ## Special cases
@@ -403,9 +383,12 @@ function hornervector(y0)
     r[1:k]
 end
 
+
+## OffHilbert Functional
+
 HornerFunctional(y0,sp) =
     FiniteOperator(hornervector(y0).',sp,ConstantSpace())
-    
+
 
 function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
     if sp.α == sp.β == 0.5
