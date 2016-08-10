@@ -29,7 +29,7 @@ import ApproxFun: bandinds,SpaceOperator,bilinearform,linebilinearform,dotu,
                   ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, ZeroSpace,
                   DiagonalInterlaceOperator, LowRankPertOperator, LaurentDirichlet, setcanonicaldomain,
                   IntervalCurve,PeriodicCurve, reverseorientation, op_eltype, @wrapper, mobius,
-                  defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix
+                  defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, refactorsvd!
 
 
 # we don't override for Bool and Function to make overriding below easier
