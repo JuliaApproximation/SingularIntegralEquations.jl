@@ -191,7 +191,7 @@ function addentries!{DD<:Circle}(H::ConcreteSingularIntegral{Hardy{true,DD}},A,k
         end
     else
         for k=kr
-            A[k,k] += k==1?0.0:1.im*(1.im*(k-1))^(m-1)
+            A[k,k] += k==1?0.0:1.0im*(1.0im*(k-1))^(m-1)
         end
     end
     A
@@ -210,7 +210,7 @@ function addentries!{DD<:Circle}(H::ConcreteSingularIntegral{Hardy{false,DD}},A,
         end
     else
         for k=kr
-            A[k,k]-=1.im*(1.im*k/r)^(m-1)
+            A[k,k]-=1.0im*(1.0im*k/r)^(m-1)
         end
     end
     A

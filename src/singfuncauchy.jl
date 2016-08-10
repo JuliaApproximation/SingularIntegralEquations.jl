@@ -18,7 +18,7 @@ end
 
 # it is more accurate near infinity to do 1/J_- as it avoids round off
 intervaloffcircle(s::Bool,z)=s?1./intervaloffcircle(false,z):(z+sqrtx2(z))
-intervaloncircle(s::Bool,x)=x+1.im*(s?1:-1).*sqrt(1-x).*sqrt(x+1)
+intervaloncircle(s::Bool,x)=x+1.0im*(s?1:-1).*sqrt(1-x).*sqrt(x+1)
 
 intervaloffcircle(s::Int,x)=intervaloffcircle(s==1,x)
 intervaloncircle(s::Int,x)=intervaloncircle(s==1,x)

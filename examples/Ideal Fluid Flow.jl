@@ -243,7 +243,7 @@ stieltjes{DD}(sp::FourierDirichlet{DD},cfs,z)=stieltjes(Fun(Fun(f,sp),Fourier),z
 
 
 
-S=FourierDirichlet(PeriodicLine()-1.im)
+S=FourierDirichlet(PeriodicLine()-1.0im)
 PS=PiecewiseSpace([S,JacobiWeight(0.5,0.5,Ultraspherical{1}(Interval(-0.5im,1.+1.1im))),
                     JacobiWeight(0.5,0.5,Ultraspherical{1}(Interval(-0.5,-0.5+.5im)))])
 
@@ -251,7 +251,7 @@ PS=PiecewiseSpace([S,JacobiWeight(0.5,0.5,Ultraspherical{1}(Interval(-0.5im,1.+1
 
 H=Hilbert(PS)
 
-f=Fun(z->imag(z+1.im),rangespace(H))
+f=Fun(z->imag(z+1.0im),rangespace(H))
 Γ=domain(PS)
 
 a,b,ui=linsolve([ones(Γ[2]) ones(Γ[3]) real(H)],f;tolerance=1E-10)
@@ -290,8 +290,8 @@ g|>ApproxFun.plot
 
 
 
-S1=MappedSpace(PeriodicLine()-1.im,FourierDirichlet())
-S2=MappedSpace(PeriodicLine()+1.im,FourierDirichlet())
+S1=MappedSpace(PeriodicLine()-1.0im,FourierDirichlet())
+S2=MappedSpace(PeriodicLine()+1.0im,FourierDirichlet())
 
 PS=PiecewiseSpace([S1,S2])
 H=Hilbert(PS)
@@ -304,13 +304,13 @@ b=Fun([zeros(18);1.],ds);
     Fun(x->-stieltjes(b,x)/π,rs).coefficients|>chopm
 
 g=Fun(b,MappedSpace(domain(PS[1]),Fourier()))
-@which cauchy(b,5.0-1.im)
-cauchy(g,5.0-1.im)
+@which cauchy(b,5.0-1.0im)
+cauchy(g,5.0-1.0im)
 Fun(x->-stieltjes(b,x)/π,rs,20)
 
 v1=chop(Fun(x->-stieltjes(b,x)/π,rs).coefficients,tol)
 
-f=Fun(z->imag(z+1.im),rangespace(H))
+f=Fun(z->imag(z+1.0im),rangespace(H))
 Γ=domain(PS)
 
 a,ui=linsolve([ones(Γ[2]) real(H)],f;tolerance=1E-5)
@@ -383,5 +383,3 @@ s(.1+.2im)
 
 
 real(Hilbert())  # Im g(z)
-
-

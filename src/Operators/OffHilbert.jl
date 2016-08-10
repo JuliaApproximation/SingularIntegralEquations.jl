@@ -232,23 +232,6 @@ function HornerFunctional(y0,sp)
     FiniteOperator(r[1:k].',sp,ConstantSpace())
 end
 
-function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
-    if sp.α == sp.β == 0.5
-        π*HornerFunctional(intervaloffcircle(true,mobius(sp,z)),sp)
-    else
-        error("Not implemented")
-    end
-end
-
-function OffHilbert{DD}(sp::JacobiWeight{Chebyshev{DD},DD},z::Number)
-    if sp.α == sp.β == 0.5
-        us=JacobiWeight(0.5,0.5,Ultraspherical{1}(domain(sp)))
-        OffHilbert(us,z)*Conversion(sp,us)
-    else
-        error("Not implemented")
-    end
-end
-
 
 
 
@@ -422,6 +405,7 @@ end
 
 HornerFunctional(y0,sp) =
     FiniteOperator(hornervector(y0).',sp,ConstantSpace())
+    
 
 function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
     if sp.α == sp.β == 0.5

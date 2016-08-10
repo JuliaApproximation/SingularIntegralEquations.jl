@@ -102,7 +102,6 @@ for op in (:+,:-,:.+,:.-,:.*)
         $op(a::Number,H::HierarchicalFun) = HierarchicalFun(($op(a,H.data[1]),$op(a,H.data[2])))
 
         $op(H::HierarchicalFun,J::HierarchicalFun) = HierarchicalFun(map($op,data(H),data(J)))
-        $op(H::HierarchicalFun,J::Fun) = $op(full(H),J)
         $op(H::HierarchicalFun,J::Fun) = $op(J,full(H))
     end
 end
