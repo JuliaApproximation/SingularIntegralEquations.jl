@@ -10,7 +10,7 @@ sqrtx2(x::Real)=sign(x)*sqrt(x^2-1)
 function sqrtx2(f::Fun)
     B=Evaluation(first(domain(f)))
     A=Derivative()-f*differentiate(f)/(f^2-1)
-    linsolve([B,A],sqrtx2(first(f));tolerance=ncoefficients(f)*10E-15)
+    linsolve([B,A],[sqrtx2(first(f))];tolerance=ncoefficients(f)*10E-15)
 end
 
 # intervaloffcircle maps the slit plane to the interior(true)/exterior(false) disk

@@ -29,10 +29,9 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
         $Op(d::PeriodicDomain,n::Int)=$Op(Laurent(d),n)
         $Op(d::PeriodicDomain)=$Op(Laurent(d))
 
-        ## Modifiers for SumSpace, ArraySpace, ReImSpace, and PiecewiseSpace
+        ## Modifiers for SumSpace, ArraySpace, and PiecewiseSpace
 
         $Op(AS::ArraySpace,n::Int)=$OpWrap(DiagonalArrayOperator($Op(AS.space,n),size(AS)),n)
-        $Op(AS::ReImSpace,n::Int)=$OpWrap(ReImOperator($Op(AS.space,n)),n)
         function $Op(S::PiecewiseSpace,n::Int)
             sp=vec(S)
             m=length(sp)
