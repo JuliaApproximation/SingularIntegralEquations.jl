@@ -38,7 +38,8 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
             diag=Any[$Op(sp[k],n) for k=1:m]
             C=Any[k==j?diag[k]:$OffOp(sp[k],rangespace(diag[j]),n) for j=1:m,k=1:m]
             D=Operator{mapreduce(i->eltype(C[i]),promote_type,1:m^2)}[C[j,k] for j=1:m,k=1:m]
-            $OpWrap(interlace(D),n)
+            D=promotespaces(D)
+            $OpWrap(InterlaceOperator(D,S,PiecewiseSpace(map(rangespace,D[:,1]))),n)
         end
 
         bandinds{s,DD}(::$ConcOp{Hardy{s,DD}})=0,0

@@ -54,7 +54,7 @@ function balance!{T}(U::Matrix{T},V::Matrix{T},m::Int,n::Int,r::Int)
         end
         uk,vk = sqrt(uk),sqrt(vk)
         σk = sqrt(uk*vk)
-        if abs2(uk) ≥ eps2(T)^2 && abs2(vk) ≥ eps2(T)^2
+        if abs2(uk) ≥ eps(T)^2 && abs2(vk) ≥ eps(T)^2
             uk,vk = σk/uk,σk/vk
             for i=1:m
                 @inbounds U[i,k] *= uk
