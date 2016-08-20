@@ -77,7 +77,8 @@ end
 
 for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
     @eval begin
-        function $Op{DD<:Interval}(ds::JacobiWeight{Ultraspherical{1,DD},DD},rs::Space,order::Int)
+        function $Op{DD<:Interval}(ds::JacobiWeight{Ultraspherical{Int,DD},DD},rs::Space,order::Int)
+            @assert order(ds.space) == 1
             @assert ds.α==ds.β==0.5
             d = domain(ds)
             C = (.5*$Len(d))^(1-order) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
@@ -390,7 +391,8 @@ HornerFunctional(y0,sp) =
     FiniteOperator(hornervector(y0).',sp,ConstantSpace())
 
 
-function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
+function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{Int,DD},DD},z::Number)
+    @assert order(sp.space) == 1
     if sp.α == sp.β == 0.5
         # this translates the following cauchy to a functional
         #    0.5im*hornersum(cfs,intervaloffcircle(true,mobius(u,z)))
@@ -410,8 +412,8 @@ function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
 end
 
 function OffHilbert{DD}(sp::JacobiWeight{Chebyshev{DD},DD},z::Number)
-    #try converting to Ultraspherical{1}
-    us=JacobiWeight(sp.α,sp.β,Ultraspherical{1}(domain(sp)))
+    #try converting to Ultraspherical(1)
+    us=JacobiWeight(sp.α,sp.β,Ultraspherical(1,domain(sp)))
     OffHilbert(us,z)*Conversion(sp,us)
 end
 

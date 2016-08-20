@@ -15,7 +15,6 @@ LegendreQ()=LegendreQ(Interval())
 JacobiQ(a,b,d::Domain)=JacobiQ(promote(a,b)...,d)
 JacobiQ(a,b,d)=JacobiQ(a,b,Domain(d))
 JacobiQ(a,b)=JacobiQ(a,b,Interval())
-#JacobiQ{m}(A::Ultraspherical{m})=JacobiQ(m-0.5,m-0.5,domain(A))
 
 
 Base.promote_rule{T,V,D}(::Type{JacobiQ{T,D}},::Type{JacobiQ{V,D}})=JacobiQ{promote_type(T,V),D}
