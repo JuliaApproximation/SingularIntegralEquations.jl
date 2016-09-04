@@ -95,9 +95,9 @@ println("Adaptive QR  forward error norm is: ",norm(⨍[G]*u1-f))
 
 @test norm(⨍[G]*u1-f) < 300eps()
 
-if VERSION ≥ v"0.5pre"
-    warn("Skipping test in 0.5 due to error in type inference due to #265")
-else
+# if VERSION ≥ v"0.5pre"
+#     warn("Skipping test in 0.5 due to error in type inference due to #265")
+# else
     hsp = Space(hdom)
 
     G1 = GreensFun((x,y)->1/2,CauchyWeight(hsp⊗hsp,0);method=:Cholesky)
@@ -109,4 +109,4 @@ else
     println("The hierarchical forward error norm is: ",norm(⨍[G]*u2-f))
 
     @test norm(⨍[G]*u2-f) < 10000eps()
-end
+#end
