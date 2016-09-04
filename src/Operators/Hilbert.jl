@@ -52,15 +52,17 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
 
         function rangespace{DD}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD}})
             @assert domainspace(H).α==domainspace(H).β==-0.5
-            Ultraspherical{H.order}(domain(H))
+            H.order==0?Chebyshev(domain(H)):Ultraspherical(H.order,domain(H))
         end
-        function rangespace{DD}(H::$ConcOp{JacobiWeight{Ultraspherical{1,DD},DD}})
+        function rangespace{DD}(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD},DD}})
+            @assert order(domainspace(H)) == 1
             @assert domainspace(H).α==domainspace(H).β==0.5
-            Ultraspherical{max(H.order-1,0)}(domain(H))
+            H.order==1?Chebyshev(domain(H)):Ultraspherical(H.order-1,domain(H))
         end
-        bandinds{λ,DD}(H::$ConcOp{JacobiWeight{Ultraspherical{λ,DD},DD}})=-λ,H.order-λ
-        bandinds{DD}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD}})=0,H.order
-        bandinds{DD}(H::$ConcOp{JacobiWeight{Ultraspherical{1,DD},DD}})=H.order > 0 ? (-1,H.order-1) : (-2,0)
+        # bandinds{λ,DD}(H::$ConcOp{JacobiWeight{Ultraspherical{λ,DD},DD}})=-λ,H.order-λ
+        bandinds{DD}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD}}) = 0,H.order
+        bandinds{DD}(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD},DD}}) =
+            H.order > 0 ? (-1,H.order-1) : (-2,0)
 
         choosedomainspace(H::$Op{UnsetSpace},sp::Ultraspherical)=ChebyshevWeight(ChebyshevDirichlet{1,1}(domain(sp)))
         choosedomainspace(H::$Op{UnsetSpace},sp::PiecewiseSpace)=PiecewiseSpace(map(s->choosedomainspace(H,s),sp.spaces))
@@ -70,14 +72,12 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
         # BlockOperator [1 Hilbert()] which allows for bounded solutions
         #TODO: Array values?
         choosedomainspace{T,V}(P::BlockOperator{$ConcOp{UnsetSpace,T,V}},
-                               sp::Ultraspherical)=TupleSpace(ConstantSpace(),
-                                                            JacobiWeight(0.5,0.5,
-                                                                         Ultraspherical{1}(domain(sp))))
+                               sp::Ultraspherical) =
+                TupleSpace(ConstantSpace(),JacobiWeight(0.5,0.5,Ultraspherical(1,domain(sp))))
 
         choosedomainspace{T,V,W}(P::BlockOperator{ReOperator{$ConcOp{UnsetSpace,T,V},W}},
-                               sp::Ultraspherical)=TupleSpace(ConstantSpace(),
-                                                            JacobiWeight(0.5,0.5,
-                                                                         Ultraspherical{1}(domain(sp))))
+                               sp::Ultraspherical) =
+                TupleSpace(ConstantSpace(),JacobiWeight(0.5,0.5,Ultraspherical(1,domain(sp))))
     end
 end
 
@@ -258,12 +258,12 @@ for (Op,Len) in ((:Hilbert,:complexlength),
                     d=domain(S)
                     C=(4./$Len(d))^(m-1)
                     $OpWrap(SpaceOperator(
-                        ToeplitzOperator([0.],[zeros(m);C]),S,Ultraspherical{m}(d)),m)
+                        ToeplitzOperator([0.],[zeros(m);C]),S,Ultraspherical(m,d)),m)
                 end
             elseif S.α==S.β==0.5
                 d=domain(S)
                 if m==1
-                    J=JacobiWeight(0.5,0.5,Ultraspherical{1}(d))
+                    J=JacobiWeight(0.5,0.5,Ultraspherical(1,d))
                     $OpWrap($Op(J,m)*Conversion(S,J),m)
                 else
                     J=JacobiWeight(-0.5,-0.5,Chebyshev(d))
@@ -289,11 +289,13 @@ for (Op,Len) in ((:Hilbert,:complexlength),
         end
 
         # we always have real for n==1
-        function $Op{DD<:Interval}(S::JacobiWeight{Ultraspherical{1,DD},DD},m)
+        function $Op{DD<:Interval}(S::JacobiWeight{Ultraspherical{Int,DD},DD},m)
+            @assert order(S.space) == 1
             if S.α==S.β==0.5
                 if m==1
+                    d=domain(S)
                     $OpWrap(SpaceOperator(
-                        ToeplitzOperator([-1.],[0.]),S,Ultraspherical{max(m-1,0)}(domain(S))),m)
+                        ToeplitzOperator([-1.],[0.]),S,m==1?Chebyshev(d):Ultraspherical(m-1,d)),m)
                 else
                     $ConcOp(sp,m)
                 end
@@ -301,7 +303,8 @@ for (Op,Len) in ((:Hilbert,:complexlength),
                 error(string($Op)*" not implemented for parameters $(S.α),$(S.β)")
             end
         end
-        function getindex{DD<:Interval,OT,T}(H::$ConcOp{JacobiWeight{Ultraspherical{1,DD},DD},OT,T},k::Integer,j::Integer)
+        function getindex{DD<:Interval,OT,T}(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD},DD},OT,T},k::Integer,j::Integer)
+            # order(domainspace(H))==1
             m=H.order
             d=domain(H)
             sp=domainspace(H)

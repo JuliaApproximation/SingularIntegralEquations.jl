@@ -123,7 +123,7 @@ m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
 Γ=Interval(-1.,-0.5)∪Interval(-0.3,1.)
 z=Fun(Γ)
 
-ds=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical{1}(d)),Γ.domains))
+ds=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical(1,d)),Γ.domains))
 
 
 u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
@@ -140,7 +140,7 @@ k=114;
 
 Γ=Interval(-1.,0.)∪Interval(0.5im,1.)
 z=Fun(Γ)
-ds=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical{1}(d)),Γ.domains))
+ds=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical(1,d)),Γ.domains))
 
 u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
 
@@ -160,8 +160,8 @@ k=114;
 Γ=Interval(-im,1.0-im)∪Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))
 z=Fun(Γ)
 
-ds=PiecewiseSpace([JacobiWeight(0.5,0.5,Ultraspherical{1}(Γ[1])),
-                       MappedSpace(Γ[2],JacobiWeight(0.5,0.5,Ultraspherical{1}()))])
+ds=PiecewiseSpace([JacobiWeight(0.5,0.5,Ultraspherical(1,Γ[1])),
+                       MappedSpace(Γ[2],JacobiWeight(0.5,0.5,Ultraspherical(1)))])
 
 
 m=80;x = linspace(-2.,2.,m);y = linspace(-3.,2.,m+1)
@@ -244,8 +244,8 @@ stieltjes{DD}(sp::FourierDirichlet{DD},cfs,z)=stieltjes(Fun(Fun(f,sp),Fourier),z
 
 
 S=FourierDirichlet(PeriodicLine()-1.0im)
-PS=PiecewiseSpace([S,JacobiWeight(0.5,0.5,Ultraspherical{1}(Interval(-0.5im,1.+1.1im))),
-                    JacobiWeight(0.5,0.5,Ultraspherical{1}(Interval(-0.5,-0.5+.5im)))])
+PS=PiecewiseSpace([S,JacobiWeight(0.5,0.5,Ultraspherical(1,Interval(-0.5im,1.+1.1im))),
+                    JacobiWeight(0.5,0.5,Ultraspherical(1,Interval(-0.5,-0.5+.5im)))])
 
 
 

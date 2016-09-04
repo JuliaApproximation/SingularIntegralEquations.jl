@@ -77,12 +77,13 @@ end
 
 for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
     @eval begin
-        function $Op{DD<:Interval}(ds::JacobiWeight{Ultraspherical{1,DD},DD},rs::Space,order::Int)
+        function $Op{DD<:Interval}(ds::JacobiWeight{Ultraspherical{Int,DD},DD},rs::Space,ord::Int)
+            @assert order(ds.space) == 1
             @assert ds.α==ds.β==0.5
             d = domain(ds)
-            C = (.5*$Len(d))^(1-order) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
+            C = (.5*$Len(d))^(1-ord) # probably this is right for all ords ≥ 2. Certainly so for 0,1.
 
-            if order == 0
+            if ord == 0
                 z=Fun(identity,rs)
                 x=mobius(ds,z)
                 y=intervaloffcircle(true,x)
@@ -99,7 +100,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
                     u+=1   # upper bandwidth
                     l=max(l,ncoefficients(ret[n])-n)
                 end
-            elseif order == 1
+            elseif ord == 1
                 y=Fun(z->intervaloffcircle(true,mobius(ds,z)),rs)
                 ret=Array(typeof(y),300)
                 ret[1]=-y
@@ -117,15 +118,15 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
             for k=1:n,j=1:ncoefficients(ret[k])
                 M[j,k]=C*ret[k].coefficients[j]
             end
-            $Op(M,ds,rs,order)
+            $Op(M,ds,rs,ord)
         end
 
-        function $Op{DD<:Interval}(ds::JacobiWeight{ChebyshevDirichlet{1,1,DD},DD},rs::PolynomialSpace,order::Int)
+        function $Op{DD<:Interval}(ds::JacobiWeight{ChebyshevDirichlet{1,1,DD},DD},rs::PolynomialSpace,ord::Int)
             @assert ds.α==ds.β==-0.5
             d = domain(ds)
-            C = (.5*$Len(d))^(1-order) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
+            C = (.5*$Len(d))^(1-ord) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
 
-            if order == 0
+            if ord == 0
                 z=Fun(identity,rs)
                 x=mobius(ds,z)
                 y=intervaloffcircle(true,x)
@@ -144,7 +145,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
                     u+=1   # upper bandwidth
                     l=max(l,ncoefficients(ret[n])-n)
                 end
-            elseif order == 1
+            elseif ord == 1
                 z=Fun(identity,rs)
                 x=mobius(ds,z)
                 y=intervaloffcircle(true,x)
@@ -166,15 +167,15 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
             for k=1:n,j=1:ncoefficients(ret[k])
                 M[j,k]=C*ret[k].coefficients[j]
             end
-            $Op(M,ds,rs,order)
+            $Op(M,ds,rs,ord)
         end
 
     end
 end
 
-function OffHilbert{D1<:Circle,D2<:Circle}(DS::Laurent{D1},RS::Laurent{D2},order::Int)
+function OffHilbert{D1<:Circle,D2<:Circle}(DS::Laurent{D1},RS::Laurent{D2},ord::Int)
     ds=domain(DS);rs=domain(RS)
-    @assert order==1
+    @assert ord==1
 
 
     # Correct for orrientation
@@ -206,10 +207,10 @@ function OffHilbert{D1<:Circle,D2<:Circle}(DS::Laurent{D1},RS::Laurent{D2},order
     OffHilbert(2im*M,DS,RS)
 end
 
-function OffHilbert{D1<:Circle,D2<:Circle}(DS::Fourier{D1},RS::Fourier{D2},order::Int)
+function OffHilbert{D1<:Circle,D2<:Circle}(DS::Fourier{D1},RS::Fourier{D2},ord::Int)
     LD=Laurent(domain(DS))
     LR=Laurent(domain(RS))
-    Conversion(LR,RS)*OffHilbert(LD,LR,order)*Conversion(DS,LD)
+    Conversion(LR,RS)*OffHilbert(LD,LR,ord)*Conversion(DS,LD)
 end
 
 
@@ -348,7 +349,7 @@ end
 #    S^+ + S^- = -2π*H
 #
 ############
-Stieltjes(d,r,order) = (order==0?π:-π)*OffHilbert(d,r,order)
+Stieltjes(d,r,ord) = (ord==0?π:-π)*OffHilbert(d,r,ord)
 Stieltjes(d,r) = (-π)*OffHilbert(d,r)
 
 
@@ -356,7 +357,7 @@ Stieltjes(d,r) = (-π)*OffHilbert(d,r)
 Cauchy(s::Bool,d)=(s?0.5:-0.5)*I +(-0.5im)*Hilbert(d)
 Cauchy(s::Int,d)=Cauchy(s==1,d)
 Cauchy(s::Union{Int,Bool})=Cauchy(s,UnsetSpace())
-Cauchy(ds,rs,order)=(1/(2*im))*OffHilbert(ds,rs,order)
+Cauchy(ds,rs,ord)=(1/(2*im))*OffHilbert(ds,rs,ord)
 Cauchy(ds,rs)=Cauchy(ds,rs,1)
 
 
@@ -390,7 +391,8 @@ HornerFunctional(y0,sp) =
     FiniteOperator(hornervector(y0).',sp,ConstantSpace())
 
 
-function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
+function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{Int,DD},DD},z::Number)
+    @assert order(sp.space) == 1
     if sp.α == sp.β == 0.5
         # this translates the following cauchy to a functional
         #    0.5im*hornersum(cfs,intervaloffcircle(true,mobius(u,z)))
@@ -410,8 +412,8 @@ function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{1,DD},DD},z::Number)
 end
 
 function OffHilbert{DD}(sp::JacobiWeight{Chebyshev{DD},DD},z::Number)
-    #try converting to Ultraspherical{1}
-    us=JacobiWeight(sp.α,sp.β,Ultraspherical{1}(domain(sp)))
+    #try converting to Ultraspherical(1)
+    us=JacobiWeight(sp.α,sp.β,Ultraspherical(1,domain(sp)))
     OffHilbert(us,z)*Conversion(sp,us)
 end
 

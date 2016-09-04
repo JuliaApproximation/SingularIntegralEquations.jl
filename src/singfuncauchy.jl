@@ -71,7 +71,7 @@ function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
     d=domain(sp)
 
     if sp.α == sp.β == .5
-        cfs = coefficients(u,sp.space,Ultraspherical{1}(d))
+        cfs = coefficients(u,sp.space,Ultraspherical(1,d))
         π*hornersum(cfs,intervaloffcircle(true,mobius(sp,z)))
     elseif sp.α == sp.β == -.5
         cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
@@ -111,7 +111,7 @@ function stieltjes{SS<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{SS,DD},u,x
     d=domain(sp)
 
     if sp.α == sp.β == .5
-        cfs=coefficients(u,sp.space,Ultraspherical{1}(d))
+        cfs=coefficients(u,sp.space,Ultraspherical(1,d))
         π*hornersum(cfs,intervaloncircle(!s,mobius(sp,x)))
     elseif sp.α == sp.β == -.5
         cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
@@ -154,7 +154,7 @@ function hilbert{DD<:Interval}(sp::JacobiWeight{Chebyshev{DD},DD},u)
 
     if sp.α == sp.β == .5
         # Corollary 5.7 of Olver&Trogdon
-        cfs=coefficients(u,sp.space,Ultraspherical{1})
+        cfs=coefficients(u,sp.space,Ultraspherical(1))
         Fun([0.;-cfs],d)
     elseif sp.α == sp.β == -.5
         # Corollary 5.11 of Olver&Trogdon
@@ -187,7 +187,7 @@ function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
     a,b=d.a,d.b
 
     if sp.α == sp.β == .5
-        cfs=coefficients(u,sp.space,Ultraspherical{1}(d))
+        cfs=coefficients(u,sp.space,Ultraspherical(1,d))
         z=mobius(sp,z)
         y = updownjoukowskyinverse(true,z)
         arclength(d)*realintegratejin(4/(b-a),cfs,y)/2
@@ -221,7 +221,7 @@ function stieltjesintegral{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,D
     a,b=d.a,d.b
 
     if sp.α == sp.β == .5
-        cfs=coefficients(u,sp.space,Ultraspherical{1}(d))
+        cfs=coefficients(u,sp.space,Ultraspherical(1,d))
         y=intervaloffcircle(true,mobius(sp,z))
         π*complexlength(d)*integratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
@@ -254,7 +254,7 @@ function stieltjesintegral{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,D
     a,b=d.a,d.b     # TODO: type not inferred right now
 
     if sp.α == sp.β == .5
-        cfs=coefficients(u,sp.space,Ultraspherical{1}(d))
+        cfs=coefficients(u,sp.space,Ultraspherical(1,d))
         y=intervaloncircle(!s,mobius(sp,z))
         π*complexlength(d)*integratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
