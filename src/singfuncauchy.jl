@@ -94,7 +94,7 @@ function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
             zero(z)
         end
     elseif isapproxinteger(sp.α) && isapproxinteger(sp.β)
-        stieltjes(coefficients(u,sp,sp.space),z)
+        stieltjes(sp.space,coefficients(u,sp,sp.space),z)
     else
         if d==Interval()
             S2=JacobiWeight(sp.α,sp.β,Jacobi(sp.β,sp.α))  # convert and then use recurrence
