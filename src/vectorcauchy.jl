@@ -16,7 +16,7 @@ for op in (:(stieltjes),:(cauchy),:(logkernel),:(stieltjesintegral),:(cauchyinte
         $op{F<:Fun}(v::Vector{F})=map($op,v)
         $op(v::Vector{Any},z)=mapreduce(f->$op(f,z),+,v)
         $op(S::PiecewiseSpace,v,z)=$op(pieces(Fun(v,S)),z)
-        $op{S<:PiecewiseSpace,T}(f::Fun{S,T}) = (v = $op(pieces(f)); Fun(vec(coefficients(v).'),ApproxFun.SumSpace(map(space,v))))
+        $op{S<:PiecewiseSpace,T}(f::Fun{S,T}) = (v = $op(pieces(f)); Fun(vec(coefficientmatrix(v).'),ApproxFun.SumSpace(map(space,v))))
         $op(S::PiecewiseSpace,v)=depiece($op(pieces(Fun(v,S))))
 
         $op{F<:Fun}(v::Vector{F},z,s::Bool)=mapreduce(f->(z in domain(f))?$op(f,z,s):$op(f,z),+,v)
