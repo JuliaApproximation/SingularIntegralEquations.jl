@@ -74,11 +74,11 @@ function sqrtatansqrt(x,s::Bool)
 end
 =#
 
-stieltjesmoment(S::WeightedJacobi,n::Int,z) = stieltjesjacobimoment(S.space.a,S.space.b,n,z)
-stieltjesmoment(S::WeightedJacobi,z) = stieltjesjacobimoment(S.space.a,S.space.b,z)
+stieltjesmoment{T,D}(S::WeightedJacobi{T,D},n::Int,z) = stieltjesjacobimoment(S.space.a,S.space.b,n,z)
+stieltjesmoment{T,D}(S::WeightedJacobi{T,D},z) = stieltjesjacobimoment(S.space.a,S.space.b,z)
 
-stieltjesmoment(S::WeightedJacobiQ,n::Int,z) = stieltjesjacobimoment(S.space.a,S.space.b,n,z)
-stieltjesmoment(S::WeightedJacobiQ,z) = stieltjesjacobimoment(S.space.a,S.space.b,z)
+stieltjesmoment{T,D}(S::WeightedJacobiQ{T,D},n::Int,z) = stieltjesjacobimoment(S.space.a,S.space.b,n,z)
+stieltjesmoment{T,D}(S::WeightedJacobiQ{T,D},z) = stieltjesjacobimoment(S.space.a,S.space.b,z)
 
 stieltjesmoment(S::Jacobi,n::Int,z) = stieltjesjacobimoment(S.a,S.b,n,z)
 stieltjesmoment(S::Jacobi,z) = stieltjesjacobimoment(S.a,S.b,z)

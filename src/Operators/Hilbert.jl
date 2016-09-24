@@ -84,7 +84,7 @@ end
 for TYP in (:SumSpace,:PiecewiseSpace,:TupleSpace),(Op,OpWrap) in ((:PseudoHilbert,:PseudoHilbertWrapper),
                           (:Hilbert,:HilbertWrapper),
                           (:SingularIntegral,:SingularIntegralWrapper))
-    @eval $Op(S::$TYP,k)=$OpWrap(DiagonalInterlaceOperator(map(s->$Op(s,k),S.spaces),$TYP),k)
+    @eval $Op(S::$TYP,k)=$OpWrap(InterlaceOperator(Diagonal([map(s->$Op(s,k),S.spaces)...]),$TYP),k)
 end
 
 # Length catch

@@ -1,3 +1,7 @@
 julia 0.4
+<<<<<<< HEAD
 ApproxFun 0.3.2
+=======
+ApproxFun 0.3.1
+>>>>>>> fb0249219ba0b875a28d683df2aa49799d6696f5
 Compat 0.8.4
