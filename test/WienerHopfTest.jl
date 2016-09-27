@@ -97,31 +97,9 @@ z=exp(0.1im)
 
 @test_approx_eq inv(Φmi)(z) inv(Φmi(z))
 
-using SO
-show(L)
 T=ToeplitzOperator(G)
 
 L  = ToeplitzOperator(inv(Φmi))
 U  = ToeplitzOperator(Φp)
 
-map(f->f.coefficients[1],mat(inv(Φmi)))
-
-inv(Φmi)
-
-Matrix((U*L)[1:10,1:10])|>chopm
-using SO
 @test norm((T-U*L)[1:10,1:10]) < 100eps()  # check the accuracy
-
-
-
-
-
-
-
-
-
-
-
-G=Fun(z->[-1 -3; -3 -1]/z +
-         [ 2  2;  1 -3] +
-         [ 2 -1;  1  2]*z,Circle())
