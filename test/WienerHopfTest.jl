@@ -27,13 +27,19 @@ G=Fun(z->[-1 -3; -3 -1]/z +
 
 C  = Cauchy(-1)
 
-A=(I+(I-G)*C)
 
+
+A=(I+(I-G)*C)
 
 F̃ = (G-I)[:,1]
 F=Fun((G-I)[:,1])
 
-@test Fun(F̃,space(F)) == F
+@test norm((C*F - [C*F[1];C*F[2]]).coefficients) == 0
+@test norm((C*G - [C*G[1] C*G[3];C*G[2] C*G[4]]).coefficients) == 0
+@test_approx_eq cauchy(F,exp(0.1im),-) (C*F)(exp(0.1im))
+@test_approx_eq cauchy(G,exp(0.1im),-) (C*G)(exp(0.1im))
+
+
 
 V1  = A\F
 Ṽ1 = A\F̃
@@ -54,22 +60,68 @@ QR=qrfact(A1)
 @test norm((A*V1-F).coefficients) < 100eps()
 
 @test norm((F-Fun((G-I)[:,1])).coefficients) == 0
+@test Fun(V1) == V1
 
-
-
+Ṽ = QR\(G-I)
 V  = (I+(I-G)*C)\(G-I)
 
-@test norm((V1-Fun(V[:,1])).coefficients) == 0
+@test_approx_eq map(f->f(exp(0.1im)),ApproxFun.mat(G-I)) (G-I)(exp(0.1im))
 
+@test (G-I)[:,1]==Fun((G-I)[:,1],rangespace(QR))
+@test (G-I)[:,1]==Fun(vec((G-I)[:,1]),rangespace(QR))
+
+@test norm((V-Ṽ).coefficients) == 0
+
+@test norm((V1-V[:,1]).coefficients) == 0
+
+V2  = A\(G-I)[:,2]
+@test norm((V2-V[:,2]).coefficients) == 0
+
+@test norm((A*V[:,1]-(G[:,1]-[1,0])).coefficients) < 100eps()
+
+z=exp(0.1im)
+@test_approx_eq V(z)+(I-G(z))*cauchy(V,z,-) G(z)-I
+
+@test_approx_eq cauchy(V[1,1],exp(0.1im),-) (C*V[1,1])(exp(0.1im))
+@test_approx_eq cauchy(V[2,1],exp(0.1im),-) (C*V[2,1])(exp(0.1im))
+@test_approx_eq cauchy(V[:,1],exp(0.1im),-) (C*V[:,1])(exp(0.1im))
+@test_approx_eq cauchy(V,exp(0.1im),-) (C*V)(exp(0.1im))
 
 Φmi = I+C*V
 Φp = V+Φmi
 
 
+@test_approx_eq Φmi(z) (I+cauchy(V,z,-))
+@test_approx_eq Φp(z) (I+cauchy(V,z,+))
+@test_approx_eq Φp(z)*inv(Φmi(z)) G(z)
+
+@test_approx_eq inv(Φmi)(z) inv(Φmi(z))
+
+using SO
+show(L)
 T=ToeplitzOperator(G)
 
 L  = ToeplitzOperator(inv(Φmi))
 U  = ToeplitzOperator(Φp)
 
+map(f->f.coefficients[1],mat(inv(Φmi)))
 
+inv(Φmi)
+
+Matrix((U*L)[1:10,1:10])|>chopm
+using SO
 @test norm((T-U*L)[1:10,1:10]) < 100eps()  # check the accuracy
+
+
+
+
+
+
+
+
+
+
+
+G=Fun(z->[-1 -3; -3 -1]/z +
+         [ 2  2;  1 -3] +
+         [ 2 -1;  1  2]*z,Circle())

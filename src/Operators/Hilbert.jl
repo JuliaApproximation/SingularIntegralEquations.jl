@@ -31,7 +31,7 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
 
         ## Modifiers for SumSpace, ArraySpace, and PiecewiseSpace
 
-        $Op(AS::ArraySpace,n::Int)=$OpWrap(DiagonalArrayOperator($Op(AS.space,n),size(AS)),n)
+        $Op(AS::ArraySpace,n::Int)=$OpWrap(diagonalarrayoperator($Op(AS.space,n),size(AS)),n)
         function $Op(S::PiecewiseSpace,n::Int)
             sp=vec(S)
             m=length(sp)
