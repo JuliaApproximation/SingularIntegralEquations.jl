@@ -64,8 +64,12 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
         bandinds{DD}(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD},DD}}) =
             H.order > 0 ? (-1,H.order-1) : (-2,0)
 
-        choosedomainspace(H::$Op{UnsetSpace},sp::Ultraspherical)=ChebyshevWeight(ChebyshevDirichlet{1,1}(domain(sp)))
-        choosedomainspace(H::$Op{UnsetSpace},sp::PiecewiseSpace)=PiecewiseSpace(map(s->choosedomainspace(H,s),sp.spaces))
+        choosedomainspace(H::$Op{UnsetSpace},sp::Ultraspherical) =
+            ChebyshevWeight(ChebyshevDirichlet{1,1}(domain(sp)))
+        choosedomainspace(H::$Op{UnsetSpace},sp::Chebyshev) =
+            ChebyshevWeight(ChebyshevDirichlet{1,1}(domain(sp)))
+        choosedomainspace(H::$Op{UnsetSpace},sp::PiecewiseSpace) =
+            PiecewiseSpace(map(s->choosedomainspace(H,s),sp.spaces))
 
 
 
@@ -84,7 +88,7 @@ end
 for TYP in (:SumSpace,:PiecewiseSpace,:TupleSpace),(Op,OpWrap) in ((:PseudoHilbert,:PseudoHilbertWrapper),
                           (:Hilbert,:HilbertWrapper),
                           (:SingularIntegral,:SingularIntegralWrapper))
-    @eval $Op(S::$TYP,k)=$OpWrap(InterlaceOperator(Diagonal([map(s->$Op(s,k),S.spaces)...]),$TYP),k)
+    @eval $Op(S::$TYP,k)=$OpWrap(DiagonalInterlaceOperator(map(s->$Op(s,k),S.spaces),$TYP),k)
 end
 
 # Length catch

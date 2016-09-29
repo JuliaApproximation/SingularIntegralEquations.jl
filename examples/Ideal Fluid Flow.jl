@@ -1,4 +1,4 @@
-using Plots,ApproxFun,SingularIntegralEquations;  gadfly()
+using Plots,ApproxFun,SingularIntegralEquations;  gr()
 
 ##
 #  Ideal fluid flow consists of level sets of the imagainary part of a function
@@ -12,37 +12,19 @@ using Plots,ApproxFun,SingularIntegralEquations;  gadfly()
 
 
 
-u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
+u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 
 m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
-c
-
-ui|>space
-Number(c)+hilbert(ui)(0.25+0.125im)
-
-imag(α*(0.25+0.125im))
-
-Hilbert()*ui
 x=Fun()
 f=Fun(exp)*sqrt(1-x^2)
-cauchy(f,.1+.000001im)
-2cauchy(f,.1,+)
-f(.1)-im*hilbert(f,.1)
+
 
 d=Circle()
 z=Fun(d)
 f=exp(real(z))
 f(exp(im*0.1))
-
-2imag(cauchy(f,exp(im*0.1),+))+real(hilbert(f,exp(im*0.1)))
-
-
-im*sum(f/z)
-linesum(f)
-
-∪
 
 k=50
     Γ=Interval(0.,1+0.5im)
@@ -50,7 +32,7 @@ k=50
     α=exp(-π*k/50im)
     c,ui=[1 Hilbert()]\imag(α*z)
     plot(Γ)
-    contour!(x,y,imag(u(xx,yy))).o
+    contour!(x,y,imag(u(xx,yy)))
 
 
 ##

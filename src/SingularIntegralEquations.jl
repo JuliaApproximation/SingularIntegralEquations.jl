@@ -27,7 +27,7 @@ import ApproxFun: bandinds,SpaceOperator,bilinearform,linebilinearform,dotu,
                   Fun, ProductFun, LowRankFun, mappoint, JacobiZ,
                   real, UnivariateSpace, RealUnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, BlockOperator,
                   ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, ZeroSpace,
-                  LowRankPertOperator, LaurentDirichlet, setcanonicaldomain,
+                  DiagonalInterlaceOperator, LowRankPertOperator, LaurentDirichlet, setcanonicaldomain,
                   IntervalCurve,PeriodicCurve, reverseorientation, op_eltype, @wrapper, mobius,
                   defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, refactorsvd!
 
