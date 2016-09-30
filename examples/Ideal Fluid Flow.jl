@@ -21,19 +21,17 @@ x=Fun()
 f=Fun(exp)*sqrt(1-x^2)
 
 
-d=Circle()
-z=Fun(d)
-f=exp(real(z))
-f(exp(im*0.1))
-
 k=50
     Γ=Interval(0.,1+0.5im)
     z=Fun(Γ)
     α=exp(-π*k/50im)
-    c,ui=[1 Hilbert()]\imag(α*z)
-    plot(Γ)
-    contour!(x,y,imag(u(xx,yy)))
+    S=JacobiWeight(-0.5,-0.5,Γ)
+    c,ui=[1 Hilbert(S)]\imag(α*z)
+plot(Γ)
+contour!(x,y,imag(u(xx,yy)))
 
+
+show(ApproxFun.interlace([1 Hilbert(S)]))
 
 ##
 # On an arc, the Hilbert transform no longer gives the imaginary part
