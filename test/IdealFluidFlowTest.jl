@@ -67,6 +67,15 @@ u=(x,y)->α*(x+im*y)+2pseudocauchy(ui,x+im*y)
 Γ=Circle()
 z=Fun(Fourier(Γ))
 
+
+
+Fun(z->z,Fourier(Circle(0.,1.1)))
+@which ApproxFun.identity_fun(Fourier(Γ))
+
+
+
+ApproxFun.choosedomainspace(Hilbert(),z)
+
 Ai=ApproxFun.interlace([0 DefiniteLineIntegral();
       1 real(Hilbert())])
 
