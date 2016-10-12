@@ -12,7 +12,7 @@ using Plots,ApproxFun,SingularIntegralEquations;  gr()
 
 
 
-u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
+
 
 m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
@@ -25,13 +25,13 @@ k=50
     Γ=Interval(0.,1+0.5im)
     z=Fun(Γ)
     α=exp(-π*k/50im)
-    S=JacobiWeight(-0.5,-0.5,Γ)
+    S=JacobiWeight(0.5,0.5,Γ)
     c,ui=[1 Hilbert(S)]\imag(α*z)
+
+u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)+Number(c)
 plot(Γ)
-contour!(x,y,imag(u(xx,yy)))
+    contour!(x,y,imag(u(xx,yy))';nlevels=50)
 
-
-show(ApproxFun.interlace([1 Hilbert(S)]))
 
 ##
 # On an arc, the Hilbert transform no longer gives the imaginary part
@@ -41,8 +41,6 @@ show(ApproxFun.interlace([1 Hilbert(S)]))
 ##
 
 
-u(x,y)=α*(x+im*y)+2pseudocauchy(ui,x+im*y)
-
 m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
@@ -50,9 +48,16 @@ k=227;
     Γ=0.5+exp(im*Interval(0.1,-42))
     z=Fun(Γ)
     α=exp(-k/50im)
-    c,ui=[1 PseudoHilbert()]\imag(α*z)
-    plot(Γ)
-    contour!(x,y,imag(u(xx,yy))).o
+    S=JacobiWeight(0.5,0.5,Γ)
+    c,ui=[1 PseudoHilbert(S)]\imag(α*z)
+
+
+u=(x,y)->α*(x+im*y)+2pseudocauchy(ui,x+im*y)
+plot(Γ)
+    contour!(x,y,imag(u(xx,yy))';nlevels=50)
+
+
+
 
 ##
 #  Circle
@@ -62,19 +67,21 @@ k=227;
 z=Fun(Fourier(Γ))
 
 
-u(x,y)=α*(x+im*y)+2cauchy(ui,x+im*y)
+u=(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 
 m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
 k=239;
     α=exp(-k/45im)
-    c,ui=[0 BasisFunctional(1);
-          1 real(Hilbert())]\[0.,imag(α*z)]
+    c,ui=[0 DefiniteLineIntegral();
+          1 real(Hilbert())]\[Fun(0.);imag(α*z)]
 
     plot(Γ)
-    contour!(x,y,imag(u(xx,yy))).o
+    contour!(x,y,imag(u(xx,yy))')
 
+
+show(DefiniteLineIntegral(Fourier(Γ)))
 ##
 # On a curve, the Hilbert transform may be complex, so we
 # take the real part
