@@ -68,14 +68,6 @@ u=(x,y)->α*(x+im*y)+2pseudocauchy(ui,x+im*y)
 z=Fun(Fourier(Γ))
 
 
-
-Fun(z->z,Fourier(Circle(0.,1.1)))
-@which ApproxFun.identity_fun(Fourier(Γ))
-
-
-
-ApproxFun.choosedomainspace(Hilbert(),z)
-
 Ai=ApproxFun.interlace([0 DefiniteLineIntegral();
       1 real(Hilbert())])
 
@@ -83,37 +75,85 @@ Ai=ApproxFun.interlace([0 DefiniteLineIntegral();
 S=ApproxFun.choosedomainspace(Ai,space([Fun(0.);z]))
 
 @test isa(S[1],ApproxFun.ConstantSpace)
-@test S[2] == Laurent(Γ)
+@test S[2] == Fourier(Γ)
 
 @test domainspace(ApproxFun.promotedomainspace(Ai,S))==S
 
-promotedomainspace(Ai.ops[2],S[1])
+
 A=ApproxFun.promotedomainspace(Ai,S)
 
-@test isa(A[2,2],Complex128)
+@test isa(A[2,2],Float64)
 
-
-A[1:10,1:10]
 
 k=239;
 α=exp(-k/45im)
 
-c,ui=[0 DefiniteLineIntegral(Fourier(Γ));
-      1 real(Hilbert(Fourier(Γ)))]\[Fun(0.);imag(α*z)]
-
-
-
-m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
-  xx,yy = x.+0.*y',0.*x.+y'
-
+c,ui=[0 DefiniteLineIntegral();
+      1 real(Hilbert())]\[Fun(0.);imag(α*z)]
 
 u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
-
-@show u(2.,1.1)
 @test_approx_eq u(2.,1.1)  2.426592437403252-0.8340542386599383im
-plot(Γ)
-  contour!(x,y,imag(u(xx,yy))';nlevels=100)
 
-plot(Γ)
 
-u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
+
+## Curve
+Γ=Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))
+    z=Fun(Γ)
+    α=im
+    S=JacobiWeight(0.5,0.5,Γ)
+    @time c,ui=[1 real(Hilbert(S))]\imag(α*z)
+
+u=(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
+
+@test_approx_eq u(0.1,0.2) (-1.1657816742288978-0.21306668168680534im)
+
+
+
+## 2 intervals
+Γ=Interval(-1.,-0.5)∪Interval(-0.3,1.)
+z=Fun(Γ)
+
+S=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical(1,d)),Γ))
+
+
+k=114;
+    α=exp(k/50*im)
+
+Ai=ApproxFun.interlace([ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(S)])
+
+
+@which ApproxFun.InterlaceOperator([ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(ds)])
+
+L=Ai
+
+L.rangeinterlacer[10]==(1,10)
+
+
+a,b,ui=[ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(S)]\imag(α*z)
+
+
+
+
+u=(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
+
+
+## 3 domains
+
+Γ=Interval(-im,1.0-im)∪Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))∪Circle(2.0,0.2)
+    z=Fun(Γ)
+
+S=PiecewiseSpace(map(d->isa(d,Circle)?Fourier(d):JacobiWeight(0.5,0.5,Ultraspherical(1,d)),Γ))
+
+m=80;x = linspace(-2.,2.,m);y = linspace(-3.,2.,m+1)
+        xx,yy = x.+0.*y',0.*x.+y'
+
+
+k=114;
+    α=exp(k/50*im)
+    a,b,c,ui=[Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),Γ) real(Hilbert(S))]\imag(α*z)
+
+
+
+Ai=ApproxFun.interlace([Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),Γ) real(Hilbert(S))])
+
+Ai[1:10,1:10]
