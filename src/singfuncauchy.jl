@@ -230,14 +230,14 @@ function stieltjesintegral{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,D
         y=intervaloffcircle(true,z)
 
         if length(cfs) ≥1
-            ret = -cfs[1]*π*complexlength(d)*(log(y)+log(4/(b-a)))/2
+            ret = -cfs[1]*π*complexlength(d)*(log(y)+log(4/abs(b-a)))/2
 
             if length(cfs) ≥2
                 ret += -π*complexlength(d)*cfs[2]*intervaloffcircle(true,z)/2
             end
 
             if length(cfs) ≥3
-                ret - π*complexlength(d)*integratejin(4/(b-a),view(cfs,3:length(cfs)),y)
+                ret - π*complexlength(d)*integratejin(4/abs(b-a),view(cfs,3:length(cfs)),y)
             else
                 ret
             end

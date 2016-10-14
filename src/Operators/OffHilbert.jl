@@ -112,6 +112,8 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
                     u+=1   # upper bandwidth
                     l=max(l,ncoefficients(ret[n])-n)
                 end
+            else
+                error("Not implemented for order=$ord")
             end
 
             M=bzeros(promote_type(typeof(C),eltype(y)),l+1,n,l,u)

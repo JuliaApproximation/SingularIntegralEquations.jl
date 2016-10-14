@@ -55,7 +55,7 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
             H.order==0?Chebyshev(domain(H)):Ultraspherical(H.order,domain(H))
         end
         function rangespace{DD}(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD},DD}})
-            @assert order(domainspace(H)) == 1
+            @assert order(domainspace(H).space) == 1
             @assert domainspace(H).α==domainspace(H).β==0.5
             H.order==1?Chebyshev(domain(H)):Ultraspherical(H.order-1,domain(H))
         end
@@ -301,7 +301,7 @@ for (Op,Len) in ((:Hilbert,:complexlength),
                     $OpWrap(SpaceOperator(
                         ToeplitzOperator([-1.],[0.]),S,m==1?Chebyshev(d):Ultraspherical(m-1,d)),m)
                 else
-                    $ConcOp(sp,m)
+                    $ConcOp(S,m)
                 end
             else
                 error(string($Op)*" not implemented for parameters $(S.α),$(S.β)")

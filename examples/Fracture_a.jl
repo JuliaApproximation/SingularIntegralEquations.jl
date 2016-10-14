@@ -20,6 +20,6 @@ f = -Fun(one)
 uSIE = [B;L]\[zeros(2);f]
 @time uSIE = [B;L]\[zeros(2);f]
 println("The rank of K is: ",rank(K))
-println("The length of uSIE is: ",length(uSIE))
+println("The length of uSIE is: ",ncoefficients(uSIE))
 println("The extrema of uSIE are: ",extrema(uSIE))
 println("The normalized Stress Intensify Factors are: ",(uSIE/(1-x^2))(-1),"  ",(uSIE/(1-x^2))(1))
