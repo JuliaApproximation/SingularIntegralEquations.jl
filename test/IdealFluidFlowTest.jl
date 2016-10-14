@@ -122,7 +122,7 @@ k=114;
 Ai=ApproxFun.interlace([ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(S)])
 
 
-@which ApproxFun.InterlaceOperator([ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(ds)])
+@which ApproxFun.InterlaceOperator([ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(S)])
 
 L=Ai
 
@@ -153,7 +153,7 @@ Ai=ApproxFun.interlace([Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),
 
 
 
-B=SpaceOperator(BasisFunctional(3),S,ConstantSpace())
+B=ApproxFun.SpaceOperator(ApproxFun.BasisFunctional(3),S,ApproxFun.ConstantSpace())
 k=114;
     α=exp(k/50*im)
     a,b,c,ui=[0                 0                 0                 B;
