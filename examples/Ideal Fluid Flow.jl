@@ -24,7 +24,7 @@ k=50
     S=JacobiWeight(0.5,0.5,Γ)
     c,ui=[1 Hilbert(S)]\imag(α*z)
 
-u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)+Number(c)
+u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 plot(Γ)
     contour!(x,y,imag(u(xx,yy))';nlevels=50)
 
@@ -120,6 +120,7 @@ plot(Γ)
     contour!(x,y,imag(u(xx,yy))';nlevels=100)
 
 
+
 Γ=Interval(-1.,0.)∪Interval(0.5im,1.)
 z=Fun(Γ)
 S=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical(1,d)),Γ))
@@ -142,6 +143,7 @@ plot(Γ)
     contour!(x,y,imag(u(xx,yy))';nlevels=100)
 
 
+# Interval and Curve
 
 
 Γ=Interval(-im,1.0-im)∪Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))
@@ -162,31 +164,27 @@ plot(Γ)
     contour!(x,y,imag(u(xx,yy))';nlevels=100)
 
 
+## Interval, Curve and Circle
 
 Γ=Interval(-im,1.0-im)∪Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))∪Circle(2.0,0.2)
     z=Fun(Γ)
 
 S=PiecewiseSpace(map(d->isa(d,Circle)?Fourier(d):JacobiWeight(0.5,0.5,Ultraspherical(1,d)),Γ))
 
-m=80;x = linspace(-2.,2.,m);y = linspace(-3.,2.,m+1)
-        xx,yy = x.+0.*y',0.*x.+y'
 
 
+# This is a temporary work around as DefiniteLineIntegral is not implemented for curves
+B=ApproxFun.SpaceOperator(ApproxFun.BasisFunctional(3),S,ApproxFun.ConstantSpace())
 k=114;
     α=exp(k/50*im)
-    a,b,c,ui=[map(d->Fun(ones(d),Γ),Γ)' real(Hilbert(S))]\imag(α*z)
+    a,b,c,ui=[0                 0                 0                 B;
+              Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),Γ) real(Hilbert(S))]\Any[0.;imag(α*z)]
 
 
+m=160;x = linspace(-4.,4.,m);y = linspace(-2.,2.,m+1)
+  xx,yy = x.+0.*y',0.*x.+y'
 
-
-Fun(ones(Γ[3]),Γ)
-
-map(d->Fun(ones(d),Γ),Γ)'
-
-[map(d->Fun(ones(d),Γ),Γ)' 1]
-
-Fun(ones(Γ[1]),Γ)
-
+u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 
 plot(Γ)
-contour!(x,y,imag(u(xx,yy))';nlevels=100)
+    contour!(x,y,imag(u(xx,yy))';nlevels=100)

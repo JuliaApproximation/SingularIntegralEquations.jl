@@ -144,16 +144,22 @@ u=(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 
 S=PiecewiseSpace(map(d->isa(d,Circle)?Fourier(d):JacobiWeight(0.5,0.5,Ultraspherical(1,d)),Γ))
 
-m=80;x = linspace(-2.,2.,m);y = linspace(-3.,2.,m+1)
-        xx,yy = x.+0.*y',0.*x.+y'
-
-
-k=114;
-    α=exp(k/50*im)
-    a,b,c,ui=[Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),Γ) real(Hilbert(S))]\imag(α*z)
-
-
 
 Ai=ApproxFun.interlace([Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),Γ) real(Hilbert(S))])
 
-Ai[1:10,1:10]
+@test ApproxFun.israggedbelow(Ai)
+@test ApproxFun.israggedbelow(Ai.ops[4])
+@test ApproxFun.israggedbelow(Ai.ops[4].op)
+
+
+
+B=SpaceOperator(BasisFunctional(3),S,ConstantSpace())
+k=114;
+    α=exp(k/50*im)
+    a,b,c,ui=[0                 0                 0                 B;
+              Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),Γ) real(Hilbert(S))]\Any[0.;imag(α*z)]
+
+
+u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
+
+@test_approx_eq u(1.1,0.2) (-0.8290718508107162+0.511097153754im)
