@@ -52,12 +52,12 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
 
         function rangespace{DD}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD}})
             @assert domainspace(H).α==domainspace(H).β==-0.5
-            H.order==0?Chebyshev(domain(H)):Ultraspherical(H.order,domain(H))
+            H.order==0 ? Chebyshev(domain(H)) : Ultraspherical(H.order,domain(H))
         end
         function rangespace{DD}(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD},DD}})
             @assert order(domainspace(H).space) == 1
             @assert domainspace(H).α==domainspace(H).β==0.5
-            H.order==1?Chebyshev(domain(H)):Ultraspherical(H.order-1,domain(H))
+            (H.order==1||H.order==0) ? Chebyshev(domain(H)) : Ultraspherical(H.order-1,domain(H))
         end
         # bandinds{λ,DD}(H::$ConcOp{JacobiWeight{Ultraspherical{λ,DD},DD}})=-λ,H.order-λ
         bandinds{DD}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD}}) = 0,H.order

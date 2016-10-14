@@ -30,7 +30,7 @@ dom = ∪(Interval,[-2.,1.],[-1.,2.])
 sp = Space(dom)
 cwsp,cwsp2 = CauchyWeight(sp⊗sp,0),CauchyWeight(sp⊗sp,2)
 ∂ui∂nΓ,⨍ = Fun(t->-im*k*d[2]*ui(real(t),imag(t)),sp),
-                DefiniteLineIntegral(PiecewiseSpace(map(d->JacobiWeight(.5,.5,Ultraspherical(1,d)),dom.domains)))#DefiniteLineIntegral(dom)
+                DefiniteLineIntegral(PiecewiseSpace(map(d->JacobiWeight(.5,.5,Ultraspherical(1,d)),dom.domains)))
 
 @time G = GreensFun(g1,cwsp2;method=:Cholesky) + GreensFun(g2,cwsp;method=:Cholesky) + GreensFun(g3,sp⊗sp;method=:Cholesky)
 
@@ -38,6 +38,3 @@ cwsp,cwsp2 = CauchyWeight(sp⊗sp,0),CauchyWeight(sp⊗sp,2)
 println("The length of u is: ",ncoefficients(u))
 us = (x,y) ->  linesum(g4,u,complex(x,y))+logkernel(g5,u,complex(x,y))+π*real(cauchy(g6,real(u),complex(x,y)))+π*im*real(cauchy(g6,imag(u),complex(x,y)))
 #dom += 0im
-
-
-DefiniteLineIntegral(domainspace(⨍))[G[1,1]]
