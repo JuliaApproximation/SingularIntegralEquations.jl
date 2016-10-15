@@ -19,7 +19,7 @@ ui = (x,y) -> exp(im*k*(d⋅(x,y)))
 # The Helmholtz Green's function, split into singular and nonsingular pieces.
 g1 = (x,y) ->  besselj0(k*abs(y-x))/2
 g2 = (x,y) ->  x == y ? -k^2/4 : -k*besselj1(k*abs(y-x))./abs(y-x)/2
-g3 = (x,y) ->  g3neumann(x,y) # In /Scatteraux.jl
+g3 = (x,y) ->  g3neumann(x,y,k) # In /Scatteraux.jl
 g4old = (x,y) ->  im*k/4*hankelh1(1,k*abs(y-x))./abs(y-x).*imag(y-x)
 g4 = (x,y) ->  im*k/4*besselj1(k*abs(y-x))./abs(y-x).*imag(y-x)  # For linesum
 g5 = (x,y) ->  -k/2*besselj1(k*abs(y-x))./abs(y-x).*imag(y-x)  # For logkernel

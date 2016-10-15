@@ -71,7 +71,7 @@ m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
 k=239;
     α=exp(-k/45im)
     c,ui=[0 DefiniteLineIntegral();
-          1 real(Hilbert())]\[Fun(0.);imag(α*z)]
+          1 real(Hilbert())]\Any[Fun(0.);imag(α*z)]
 
 plot(Γ)
     contour!(x,y,imag(u(xx,yy))';nlevels=50)
