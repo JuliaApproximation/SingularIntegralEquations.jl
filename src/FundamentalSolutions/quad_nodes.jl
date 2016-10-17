@@ -117,13 +117,13 @@ end
 function linspace!(ts::Vector, start::Real, stop::Real, n::Int)
     h = (stop-start)/(n-1)
     for i=1:n
-        ts[i] = start+i*h
+        ts[i] = start+(i-1)*h
     end
 end
 
 function linspace!(ts::Vector, start::Real, stop::Real, n1::Int, n::Int)
     h = (stop-start)/(n-1)
     for i=1:n
-        ts[i+n1] = start+i*h
+        ts[i+n1] = start+(i-1)*h
     end
 end
