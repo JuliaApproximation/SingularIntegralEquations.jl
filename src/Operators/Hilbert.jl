@@ -174,76 +174,62 @@ function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Fourier{DD},OT,T},k::Integ
     end
 end
 
-function addentries!{DD<:Circle}(H::ConcreteSingularIntegral{Hardy{true,DD}},A,kr::Range,::Colon)
+function getindex{DD<:Circle,OT,T}(H::ConcreteSingularIntegral{Hardy{true,DD},OT,T},k::Integer,j::Integer)
 ##TODO: Add scale for different radii.
     m=H.order
     d=domain(H)
     sp=domainspace(H)
 
     r = domain(H).radius
-    if m == 0
-        for k=kr
-            A[k,k] += k==1?2r*log(r):-r./(k-1)
-        end
-    elseif m == 1
-        for k=kr
-            A[k,k] += im
-        end
+    if m == 0 && k == j
+        k==1?T(2r*log(r)):T(-r./(k-1))
+    elseif m == 1 && k == j
+        T(im)
     else
-        for k=kr
-            A[k,k] += k==1?0.0:1.0im*(1.0im*(k-1))^(m-1)
+        if k == j
+            k==1?T(0.0):T(1.im*(1.im*(k-1))^(m-1))
+        else
+            zero(T)
         end
     end
-    A
 end
 
-function addentries!{DD<:Circle}(H::ConcreteSingularIntegral{Hardy{false,DD}},A,kr::Range,::Colon)
+function getindex{DD<:Circle,OT,T}(H::ConcreteSingularIntegral{Hardy{false,DD},OT,T},k::Integer,j::Integer)
 ##TODO: Add scale for different radii.
     m=H.order
     d=domain(H)
     sp=domainspace(H)
 
     r = domain(H).radius
-    if m== 1
-        for k=kr
-            A[k,k]-= im
-        end
+    if m == 1 && k == j
+        T(-im)
     else
-        for k=kr
-            A[k,k]-=1.0im*(1.0im*k/r)^(m-1)
+        if k == j
+            T(-1.im*(1.im*k/r)^(m-1))
+        else
+            zero(T)
         end
     end
-    A
 end
 
-function addentries!{DD<:Circle}(H::ConcreteSingularIntegral{Fourier{DD}},A,kr::Range,::Colon)
+function getindex{DD<:Circle,OT,T}(H::ConcreteSingularIntegral{Fourier{DD},OT,T},k::Integer,j::Integer)
     r = domain(H).radius
     if H.order == 0
-        for k=kr
-            if k==1
-                A[1,1]+=2r*log(r)
-            else
-                j=div(k,2)
-                A[k,k]+=-r/j
-            end
+        if k == j
+            k == 1 ? 2r*log(r) : -r/div(k,2)
         end
     elseif H.order == 1
-        for k=kr
-            if k==1
-                A[1,1]+=0
-            elseif iseven(k)
-                A[k,k+1]-=1
-            else   #isodd(k)
-                A[k,k-1]+=1
-            end
+        if k+1 == j
+            -one(T)
+        elseif k-1 == j
+            one(T)
+        else
+            zero(T)
         end
     else
-            error("Hilbert order $(H.order) not implemented for Fourier")
+        error("SingularIntegral order $(H.order) not implemented for Fourier")
     end
-
-    A
 end
-
 
 
 ## JacobiWeight
