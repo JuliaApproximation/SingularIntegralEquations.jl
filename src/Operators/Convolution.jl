@@ -72,3 +72,35 @@ function getindex{D,T1,T2}(C::ConcreteConvolution{Laurent{D},ConcreteDefiniteLin
         zero(T)
     end
 end
+
+function getindex{D,OT,T1,T2}(C::ConcreteConvolution{Laurent{D},ConcreteSingularIntegral{Laurent{D},OT,T1},T2},k::Integer,j::Integer)
+    T = promote_type(T1,T2)
+    c = C.G.coefficients
+    Op = C.op
+    N = ncoefficients(C.G)
+    ret = zero(T)
+    if k == j
+        if isodd(k)
+            for ℓ = 1:2:N
+                ret += c[ℓ]*Op[ℓ+k-1,ℓ+k-1]
+            end
+            for ℓ = 2:2:min(k-1,N)
+                ret += c[ℓ]*Op[k-ℓ,k-ℓ]
+            end
+            for ℓ = (k+1):2:N
+                ret += c[ℓ]*Op[ℓ-k+1,ℓ-k+1]
+            end
+        else
+            for ℓ = 2:2:N
+                ret += c[ℓ]*Op[ℓ+k,ℓ+k]
+            end
+            for ℓ = 1:2:min(k-1,N)
+                ret += c[ℓ]*Op[k-ℓ+1,k-ℓ+1]
+            end
+            for ℓ = (k+1):2:N
+                ret += c[ℓ]*Op[ℓ-k,ℓ-k]
+            end
+        end
+    end
+    ret
+end
