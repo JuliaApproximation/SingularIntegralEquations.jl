@@ -194,7 +194,7 @@ d2=Circle(c2,r2)
 # complex contour
 
 
-#Legendre uses FastGuassQuadrature
+#Legendre uses FastGaussQuadrature
 f=Fun(exp,Legendre())
 #@test_approx_eq cauchy(f,.1+0.000000000001im) cauchy(f,.1,+)
 #@test_approx_eq cauchy(f,.1-0.000000000001im) cauchy(f,.1,-)
