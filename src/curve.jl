@@ -1,6 +1,7 @@
 ## Interval map
 
-stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Number)=sum(stieltjes(setcanonicaldomain(S),f,complexroots(domain(S).curve-z)))
+stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Number) =
+    sum(stieltjes(setcanonicaldomain(S),f,complexroots(domain(S).curve-z)))
 
 function stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Number,s::Bool)
     #project
@@ -9,8 +10,10 @@ function stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Number,s::Bool)
     mapreduce(rt->in(rt,di)?stieltjes(S.space,f,rt,s):stieltjes(S.space,f,rt),+,rts)
 end
 
-stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Vector)=Complex128[stieltjes(S,f,z[k]) for k=1:size(z,1)]
-stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Matrix)=Complex128[stieltjes(S,f,z[k,j]) for k=1:size(z,1),j=1:size(z,2)]
+stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Vector) =
+    Complex128[stieltjes(S,f,z[k]) for k=1:size(z,1)]
+stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Matrix) =
+    Complex128[stieltjes(S,f,z[k,j]) for k=1:size(z,1),j=1:size(z,2)]
 
 ## hilbert on JacobiWeight space mapped by open curves
 

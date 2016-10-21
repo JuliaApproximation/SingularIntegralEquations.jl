@@ -21,7 +21,8 @@ function forwardsubstitution!(ret,B,n,μ1,μ2)
     ret
 end
 
-forwardsubstitution(R,n,μ1,μ2)=forwardsubstitution!(Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n),R,n,μ1,μ2)
+forwardsubstitution(R,n,μ1,μ2) =
+    forwardsubstitution!(Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n),R,n,μ1,μ2)
 
 stieltjesforward(sp::Space,n,z,s...)=forwardsubstitution(JacobiZ(sp,z),n,
                         stieltjesmoment(sp,0,z,s...),stieltjesmoment(sp,1,z,s...))
@@ -37,7 +38,8 @@ function stieltjesintervalrecurrence(S,f::AbstractVector,z)
         dotu(cfs,f)
     end
 end
-stieltjesintervalrecurrence(S,f::AbstractVector,z::AbstractArray) = reshape(promote_type(eltype(f),eltype(z))[ stieltjesintervalrecurrence(S,f,z[i]) for i in eachindex(z) ], size(z))
+stieltjesintervalrecurrence(S,f::AbstractVector,z::AbstractArray) =
+    reshape(promote_type(eltype(f),eltype(z))[ stieltjesintervalrecurrence(S,f,z[i]) for i in eachindex(z) ], size(z))
 
 
 function stieltjes{D<:Interval}(S::PolynomialSpace{D},f,z::Number)
@@ -55,6 +57,8 @@ function stieltjes{D<:Interval}(S::PolynomialSpace{D},f,z::Number,s::Bool)
    cfs=stieltjesforward(Legendre(),length(f),z,s)
    dotu(cfs,coefficients(f,S,Legendre()))
 end
+
+stieltjes{D<:Interval}(S::PolynomialSpace{D},f,z::AbstractArray) = map(x->stieltjes(S,f,x),z)
 
 
 # Sum over all inverses of fromcanonical, see [Olver,2014]

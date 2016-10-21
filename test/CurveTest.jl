@@ -88,3 +88,12 @@ w=1/(sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x)))
 @test_approx_eq linesum(w*log(abs(z-x)))/π logkernel(w,z)
 @test_approx_eq (SingularIntegral(0)*w)(fromcanonical(d,0.1)) logkernel(w,fromcanonical(d,0.1))
 @test_approx_eq (Hilbert()*w)(fromcanonical(d,0.1)) hilbert(w,fromcanonical(d,0.1))
+
+
+## Legendre singularities
+
+Γ=Curve(Fun(x->x^2+im*x))
+x=Fun(Γ)
+f=exp(x)
+
+@test_approx_eq cauchy(f,1.0) sum(f/(x-1.0))/(2π*im)

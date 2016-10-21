@@ -54,9 +54,9 @@ logkernel(f::Fun,z)=logkernel(space(f),coefficients(f),z)
 
 
 
-cauchy(f...)=stieltjes(f...)*(im/(2π))
-pseudocauchy(f...)=pseudostieltjes(f...)*(im/(2π))
-cauchyintegral(u...)=stieltjesintegral(u...)*(im/(2π))
+cauchy(f...) = stieltjes(f...)*(im/(2π))
+pseudocauchy(f...) = pseudostieltjes(f...)*(im/(2π))
+cauchyintegral(u...) = stieltjesintegral(u...)*(im/(2π))
 
 
 include("LinearAlgebra/LinearAlgebra.jl")
