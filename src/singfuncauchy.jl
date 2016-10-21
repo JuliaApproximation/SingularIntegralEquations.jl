@@ -182,6 +182,10 @@ realintegratejin(c,cfs,y)=.5*(-cfs[1]*(logabs(y)+logabs(c))+realdivkhornersum(cf
 # logkernel is the real part of stieljes normalized by π.
 #####
 
+
+
+logkernel{SS<:PolynomialSpace,DD<:Interval}(S::JacobiWeight{SS,DD},f,z::AbstractArray) = map(x->logkernel(S,f,x),z)
+
 function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
     d=domain(sp)
     a,b=d.a,d.b
@@ -211,8 +215,16 @@ function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
         else
             zero(z)
         end
+    elseif domain(sp)==Interval()
+        DS=WeightedJacobi(sp.α+1,sp.β+1)
+        D=Derivative(DS)[2:end,:]
+
+        f=Fun(Fun(u,sp),WeightedJacobi(sp.α,sp.β))  # convert to Legendre expansion
+        uu=D\(f|(2:∞))   # find integral, dropping first coefficient of f
+
+        (f.coefficients[1]*logjacobimoment(sp.α,sp.β,z) + real(stieltjes(uu,z)))/π
     else
-        error("logkernel not implemented for parameters "*string(sp.α)*","*string(sp.β))
+        error("other intervals not yet implemented")
     end
 end
 

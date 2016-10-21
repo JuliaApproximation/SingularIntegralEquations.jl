@@ -78,7 +78,7 @@ end
 
 
 
-function logkernel{D<:Interval}(S::PolynomialSpace{D},v,z::Number)
+function logkernel{DD<:Interval}(S::PolynomialSpace{DD},v,z::Number)
     if domain(S)==Interval()
         DS=JacobiWeight(1,1,Jacobi(1,1))
         D=Derivative(DS)[2:end,:]
@@ -86,28 +86,8 @@ function logkernel{D<:Interval}(S::PolynomialSpace{D},v,z::Number)
         f=Fun(Fun(v,S),Legendre())  # convert to Legendre expansion
         u=D\(f|(2:∞))   # find integral, dropping first coefficient of f
 
-        f.coefficients[1]*logabslegendremoment(z) + real(stieltjes(Fun(u,Legendre()),z))
+        (f.coefficients[1]*logabslegendremoment(z) + real(stieltjes(Fun(u,Legendre()),z)))/π
     else
         error("other intervals not yet implemented")
     end
 end
-
-
-
-function logkernel{SS<:PolynomialSpace,D<:Interval}(S::JacobiWeight{SS,D},v,z::Number)
-    if domain(S)==Interval()
-        DS=WeightedJacobi(S.α+1,S.β+1)
-        D=Derivative(DS)[2:end,:]
-
-        f=Fun(Fun(v,S),WeightedJacobi(S.α,S.β))  # convert to Legendre expansion
-        u=D\(f|(2:∞))   # find integral, dropping first coefficient of f
-
-        f.coefficients[1]*logjacobimoment(S.α,S.β,z) + real(stieltjes(u,z))
-    else
-        error("other intervals not yet implemented")
-    end
-end
-
-
-
-logkernel{D<:Interval}(S::PolynomialSpace{D},f,z::AbstractArray) = map(x->logkernel(S,f,x),z)

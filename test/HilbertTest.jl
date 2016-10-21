@@ -15,7 +15,8 @@ f=Fun(x->exp(x)*sqrt(x+2)*sqrt(-1-x),S)
 @test_approx_eq logkernel(f,-1.2) -0.05044654410790341  # Mathematica
 @test_approx_eq hilbert(f,-1.2) -0.057515957831535571  # Mathematica
 
-
+x=Fun(domain(S))
+@test_approx_eq sum(f*log(abs(x-2.0)))/π logkernel(f,2.0)
 
 x=Fun(S)
 
@@ -322,8 +323,11 @@ z=0.2+3im;@test_approx_eq (H*f)(z) logkernel(f,z)
 x=Fun()
 f=exp(x)
 @test isa(logkernel(f,2.0+im),Real)
-@test_approx_eq logkernel(f,2.0+im) sum(f*log(abs(2.0+im-x)))
+@test_approx_eq logkernel(f,2.0+im) sum(f*log(abs(2.0+im-x)))/π
 
 
 f=sqrt(1-x^2)*exp(x)
-@test_broken logkernel(f,2.0) ≈ sum(f*log(abs(2.0+im-x)))
+@test_approx_eq logkernel(f,2.0+im) sum(f*log(abs(2.0+im-x)))/π
+
+#f=(1-x)^0.1*exp(x)
+#@test_broken logkernel(f,2.0+im) ≈ sum(f*log(abs(2.0+im-x)))/π
