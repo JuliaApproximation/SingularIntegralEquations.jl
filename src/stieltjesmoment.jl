@@ -4,7 +4,7 @@
 ##
 
 
-cauchymoment(S...)=stieltjesmoment(S...)/(-2π*im)
+cauchymoment(S...) = stieltjesmoment(S...)/(-2π*im)
 
 
 #=

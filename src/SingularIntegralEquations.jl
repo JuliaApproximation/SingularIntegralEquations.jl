@@ -44,11 +44,11 @@ for OP in (:stieltjes,:stieltjesintegral,:pseudostieltjes)
     end
 end
 
-hilbert(f)=Hilbert()*f
-hilbert(S,f,z)=hilbert(Fun(f,S))(z)
-hilbert(f::Fun,z)=hilbert(space(f),coefficients(f),z)
+hilbert(f) = Hilbert()*f
+hilbert(S,f,z) = hilbert(Fun(f,S))(z)
+hilbert(f::Fun,z) = hilbert(space(f),coefficients(f),z)
 
-logkernel(f::Fun,z)=logkernel(space(f),coefficients(f),z)
+logkernel(f::Fun,z) = logkernel(space(f),coefficients(f),z)
 
 
 

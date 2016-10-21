@@ -315,3 +315,15 @@ H=Hilbert(S,0)
 ζ=Fun(d)
 f=real(ζ+1/(ζ-0.1))
 z=0.2+3im;@test_approx_eq (H*f)(z) logkernel(f,z)
+
+
+## LogKernel for Legendre
+
+x=Fun()
+f=exp(x)
+@test isa(logkernel(f,2.0+im),Real)
+@test_approx_eq logkernel(f,2.0+im) sum(f*log(abs(2.0+im-x)))
+
+
+f=sqrt(1-x^2)*exp(x)
+@test_broken logkernel(f,2.0) ≈ sum(f*log(abs(2.0+im-x)))
