@@ -222,7 +222,7 @@ function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
         f=Fun(Fun(u,sp),WeightedJacobi(sp.α,sp.β))  # convert to Legendre expansion
         uu=D\(f|(2:∞))   # find integral, dropping first coefficient of f
 
-        (f.coefficients[1]*logjacobimoment(sp.α,sp.β,z) + real(stieltjes(uu,z)))/π
+        (f.coefficients[1]*real(logjacobimoment(sp.β,sp.α,z)) + real(stieltjes(uu,z)))/π
     else
         error("other intervals not yet implemented")
     end
