@@ -60,7 +60,6 @@ function stieltjes{D<:Interval}(S::PolynomialSpace{D},f,z::Number,s::Bool)
    dotu(cfs,coefficients(f,S,Legendre()))
 end
 
-stieltjes{D<:Interval}(S::PolynomialSpace{D},f,z::AbstractArray) = map(x->stieltjes(S,f,x),z)
 
 
 # Sum over all inverses of fromcanonical, see [Olver,2014]
@@ -92,4 +91,9 @@ function logkernel{DD<:Interval}(S::PolynomialSpace{DD},v,z::Number)
     else
         error("other intervals not yet implemented")
     end
+end
+
+for FUNC in (:logkernel,:stieltjes)
+    @eval $FUNC{D<:Interval}(S::PolynomialSpace{D},f,z::AbstractArray) =
+        map(x->$FUNC(S,f,x),z)
 end

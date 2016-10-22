@@ -26,6 +26,12 @@ bandedoperatortest(Hilbert(space(w)))
 @test_approx_eq (Hilbert()*w)(fromcanonical(d,0.1)) hilbert(w,fromcanonical(d,0.1))
 
 
+f=real(exp(x))
+@test_approx_eq logkernel(f,2) linesum(f*log(abs(x-2.)))/π
+
+
+w=abs(first(d)-x)^0.1*abs(last(d)-x)^0.2
+@test_approx_eq logkernel(f*w,2+2im) linesum(f*w*log(abs(2+2im-x)))/π
 
 
 ## cubic
@@ -52,6 +58,14 @@ bandedoperatortest(Hilbert(space(w)))
 @test_approx_eq (SingularIntegral(0)*w)(fromcanonical(d,0.1)) logkernel(w,fromcanonical(d,0.1))
 @test_approx_eq (Hilbert()*w)(fromcanonical(d,0.1)) hilbert(w,fromcanonical(d,0.1))
 
+
+
+f=Fun([1.,2.,3.],d)
+@test_approx_eq logkernel(f,2) linesum(f*log(abs(x-2.)))/π
+
+
+w=abs(first(d)-x)^0.1*abs(last(d)-x)^0.2
+@test_approx_eq logkernel(f*w,2+2im) linesum(f*w*log(abs(2+2im-x)))/π
 
 
 ## quartic
