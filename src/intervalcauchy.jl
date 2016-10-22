@@ -3,8 +3,7 @@ import ApproxFun: dotu
 
 # This solves as a boundary value provblem
 
-stieltjesbackward(S::PolynomialSpace,z::Number) = JacobiZ(S,z)\[stieltjesmoment(S,0,z)]
-stieltjesbackward(S::JacobiWeight,z::Number) = JacobiZ(S.space,z)\[stieltjesmoment(S,0,z)]
+stieltjesbackward(S::Space,z::Number) = JacobiZ(S,z)\[stieltjesmoment(S,0,z)]
 
 # This solves via forward substitution
 function forwardsubstitution!(ret,B,n,μ1,μ2)
@@ -25,11 +24,9 @@ end
 forwardsubstitution(R,n,μ1,μ2) =
     forwardsubstitution!(Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n),R,n,μ1,μ2)
 
-stieltjesforward(sp::PolynomialSpace,n,z,s...)=forwardsubstitution(JacobiZ(sp,z),n,
-                        stieltjesmoment(sp,0,z,s...),stieltjesmoment(sp,1,z,s...))
-
-stieltjesforward(sp::Space,n,z,s...)=forwardsubstitution(JacobiZ(sp.space,z),n,
-                        stieltjesmoment(sp,0,z,s...),stieltjesmoment(sp,1,z,s...))
+stieltjesforward(sp::Space,n,z,s...) = forwardsubstitution(JacobiZ(sp,z),n,
+                                                            stieltjesmoment(sp,0,z,s...),
+                                                            stieltjesmoment(sp,1,z,s...))
 
 
 

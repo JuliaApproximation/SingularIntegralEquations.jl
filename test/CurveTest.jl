@@ -1,5 +1,5 @@
 using ApproxFun, SingularIntegralEquations, Base.Test
-
+    import ApproxFun: ∞, bandedoperatortest, functionaltest
 ## quadratic
 
 a=1+10*im;b=2-6*im
@@ -18,6 +18,10 @@ w=1/(sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x)))
 
 @test_approx_eq cauchy(w,2.) sum(w/(x-2.))/(2π*im)
 @test_approx_eq logkernel(w,2.) linesum(w*log(abs(x-2.)))/π
+
+bandedoperatortest(SingularIntegral(space(w),0))
+bandedoperatortest(Hilbert(space(w)))
+
 @test_approx_eq (SingularIntegral(0)*w)(fromcanonical(d,0.1)) logkernel(w,fromcanonical(d,0.1))
 @test_approx_eq (Hilbert()*w)(fromcanonical(d,0.1)) hilbert(w,fromcanonical(d,0.1))
 
@@ -40,6 +44,9 @@ w=sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x))
 
 w=1/(sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x)))
 
+bandedoperatortest(SingularIntegral(space(w),0))
+bandedoperatortest(Hilbert(space(w)))
+
 @test_approx_eq cauchy(w,2.) sum(w/(x-2.))/(2π*im)
 @test_approx_eq logkernel(w,2.) linesum(w*log(abs(x-2.)))/π
 @test_approx_eq (SingularIntegral(0)*w)(fromcanonical(d,0.1)) logkernel(w,fromcanonical(d,0.1))
@@ -60,8 +67,13 @@ w=sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x))
 @test_approx_eq logkernel(w,2.) linesum(w*log(abs(x-2.)))/π
 
 
+bandedoperatortest(SingularIntegral(space(w),0))
+bandedoperatortest(Hilbert(space(w)))
 
 w=1/(sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x)))
+
+bandedoperatortest(SingularIntegral(space(w),0))
+bandedoperatortest(Hilbert(space(w)))
 
 @test_approx_eq cauchy(w,2.) sum(w/(x-2.))/(2π*im)
 @test_approx_eq logkernel(w,2.) linesum(w*log(abs(x-2.)))/π
@@ -76,6 +88,8 @@ d=exp(im*Interval(0.1,0.2))
 x=Fun(d)
 w=sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x))
 
+bandedoperatortest(SingularIntegral(space(w),0))
+bandedoperatortest(Hilbert(space(w)))
 
 z=10.;
 @test_approx_eq sum(w/(x-z))/(2π*im) cauchy(w,z)
@@ -83,6 +97,10 @@ z=10.;
 @test_approx_eq linesum(w*log(abs(z-x)))/π logkernel(w,z)
 
 w=1/(sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x)))
+
+bandedoperatortest(SingularIntegral(space(w),0))
+bandedoperatortest(Hilbert(space(w)))
+
 @test_approx_eq sum(w/(x-z))/(2π*im) cauchy(w,z)
 @test_approx_eq sum(w*log(z-x))/(-2π*im) cauchyintegral(w,z)
 @test_approx_eq linesum(w*log(abs(z-x)))/π logkernel(w,z)
