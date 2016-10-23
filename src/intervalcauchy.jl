@@ -56,8 +56,8 @@ end
 function stieltjes{D<:Interval}(S::PolynomialSpace{D},f,z::Number,s::Bool)
     @assert domain(S)==Interval()
 
-   cfs=stieltjesforward(Legendre(),length(f),z,s)
-   dotu(cfs,coefficients(f,S,Legendre()))
+    cfs=stieltjesforward(Legendre(),length(f),z,s)
+    dotu(cfs,coefficients(f,S,Legendre()))
 end
 
 

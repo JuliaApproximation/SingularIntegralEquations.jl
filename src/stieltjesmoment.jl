@@ -74,19 +74,20 @@ function sqrtatansqrt(x,s::Bool)
 end
 =#
 
-stieltjesmoment{T,D}(S::WeightedJacobi{T,D},n::Int,z) = stieltjesjacobimoment(S.space.a,S.space.b,n,z)
-stieltjesmoment{T,D}(S::WeightedJacobi{T,D},z) = stieltjesjacobimoment(S.space.a,S.space.b,z)
+stieltjesmoment{T,D}(S::WeightedJacobi{T,D},n::Int,z,s...) = stieltjesjacobimoment(S.space.a,S.space.b,n,z,s...)
+stieltjesmoment{T,D}(S::WeightedJacobi{T,D},z,s...) = stieltjesjacobimoment(S.space.a,S.space.b,z,s...)
 
-stieltjesmoment{T,D}(S::WeightedJacobiQ{T,D},n::Int,z) = stieltjesjacobimoment(S.space.a,S.space.b,n,z)
-stieltjesmoment{T,D}(S::WeightedJacobiQ{T,D},z) = stieltjesjacobimoment(S.space.a,S.space.b,z)
+stieltjesmoment{T,D}(S::WeightedJacobiQ{T,D},n::Int,z,s...) = stieltjesjacobimoment(S.space.a,S.space.b,n,z,s...)
+stieltjesmoment{T,D}(S::WeightedJacobiQ{T,D},z,s...) = stieltjesjacobimoment(S.space.a,S.space.b,z,s...)
 
-stieltjesmoment(S::Jacobi,n::Int,z) = stieltjesjacobimoment(S.a,S.b,n,z)
-stieltjesmoment(S::Jacobi,z) = stieltjesjacobimoment(S.a,S.b,z)
-stieltjesmoment(S::JacobiQ,n::Int,z) = stieltjesjacobimoment(S.a,S.b,n,z)
-stieltjesmoment(S::JacobiQ,z) = stieltjesjacobimoment(S.a,S.b,z)
+stieltjesmoment(S::Jacobi,n::Int,z,s...) = stieltjesjacobimoment(S.a,S.b,n,z,s...)
+stieltjesmoment(S::Jacobi,z,s...) = stieltjesjacobimoment(S.a,S.b,z,s...)
+stieltjesmoment(S::JacobiQ,n::Int,z,s...) = stieltjesjacobimoment(S.a,S.b,n,z,s...)
+stieltjesmoment(S::JacobiQ,z,s...) = stieltjesjacobimoment(S.a,S.b,z,s...)
 
 normalization(n::Int,α::Real,β::Real) = 2^(α+β)*gamma(n+α+1)*gamma(n+β+1)/gamma(2n+α+β+2)
-stieltjesjacobimoment(α::Real,β::Real,n::Int,z) = (x = 2./(1-z);normalization(n,α,β)*(-x).^(n+1).*_₂F₁(n+1,n+α+1,2n+α+β+2,x))
+stieltjesjacobimoment(α::Real,β::Real,n::Int,z) =
+    (x = 2./(1-z);normalization(n,α,β)*(-x).^(n+1).*_₂F₁(n+1,n+α+1,2n+α+β+2,x))
 stieltjesjacobimoment(α::Real,β::Real,z) = stieltjesjacobimoment(α,β,0,z)
 
 
