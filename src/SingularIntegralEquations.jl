@@ -17,7 +17,7 @@ import BandedMatrices: bzeros
 import Compat: view
 
 import ApproxFun
-import ApproxFun: bandinds,SpaceOperator,bilinearform,linebilinearform,dotu,
+import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebilinearform,dotu,
                   plan_transform,plan_itransform,transform,itransform,transform!,itransform!,
                   rangespace, domainspace, promotespaces, InterlaceOperator, coefficientmatrix,
                   canonicalspace, domain, space, Space, promotedomainspace, promoterangespace, AnyDomain, CalculusOperator,

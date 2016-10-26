@@ -1,5 +1,5 @@
 using Base.Test, ApproxFun, SingularIntegralEquations
-    import ApproxFun: ∞, testbandedoperator, testfunctional
+    import ApproxFun: ∞, testbandedoperator, testfunctional, testbandedblockoperator, testraggedbelowoperator
     import SingularIntegralEquations: testsies
 
 ## Sqrt singularity
@@ -176,10 +176,22 @@ f=Fun(z->exp(exp(0.1im)*z+1/(z-1.)),Laurent(Circle(1.,0.5)))
 @test_approx_eq cauchy(f,0.5exp(0.2im)) -cauchy(reverseorientation(Fun(f,Fourier)),0.5exp(0.2im))
 
 
+testbandedoperator(Hilbert(Laurent(Circle())))
+testbandedoperator(Hilbert(Fourier(Circle())))
+
 Γ=Circle()∪Circle(0.5)
 f=depiece([Fun(z->z^(-1),Γ[1]),Fun(z->z,Γ[2])])
 A=I-(f-Fun(one,space(f)))*Cauchy(-1)
+
+S=ApproxFun.choosedomainspace(A,(f-Fun(one,space(f))))
+AS=ApproxFun.promotedomainspace(A,S)
+
+testraggedbelowoperator(AS)
+
+
+
 u=A\(f-Fun(one,space(f)))
+
 
 @test_approx_eq 1+cauchy(u,.1) 1
 @test_approx_eq 1+cauchy(u,.8) 1/0.8

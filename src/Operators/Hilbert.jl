@@ -178,9 +178,9 @@ function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Laurent{DD},OT,T},k::Integ
             end
         else
             if isodd(k)
-                im*(im*((k-1)÷2)/r)^(m-1)
+                T(im*(im*((k-1)÷2)/r)^(m-1))
             else
-                -im*(im*(k÷2)/r)^(m-1)
+                -T(im*(im*(k÷2)/r)^(m-1))
             end
         end
     else
