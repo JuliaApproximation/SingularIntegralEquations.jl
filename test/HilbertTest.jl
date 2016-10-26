@@ -1,6 +1,6 @@
 using Base.Test, ApproxFun, SingularIntegralEquations
-    import ApproxFun: ∞, bandedoperatortest, functionaltest
-
+    import ApproxFun: ∞, testbandedoperator, testfunctional
+    import SingularIntegralEquations: testsies
 
 ## Sqrt singularity
 
@@ -8,35 +8,20 @@ S=JacobiWeight(0.5,0.5,Ultraspherical(1,[-2.,-1.]))
 
 @test rangespace(SingularIntegral(S,0))==Chebyshev([-2.,-1.])
 
+testsies(S)
+
 f=Fun(x->exp(x)*sqrt(x+2)*sqrt(-1-x),S)
-
-bandedoperatortest(SingularIntegral(S,0))
-bandedoperatortest(SingularIntegral(S,1))
-
-@test_approx_eq (SingularIntegral(S,0)*f)(-1.2) logkernel(f,-1.2)
-@test_approx_eq (SingularIntegral(S,1)*f)(-1.2) hilbert(f,-1.2)
 @test_approx_eq logkernel(f,-1.2) -0.05044654410790341  # Mathematica
 @test_approx_eq hilbert(f,-1.2) -0.057515957831535571  # Mathematica
 
-x=Fun(domain(S))
-@test_approx_eq sum(f*log(abs(x-2.0)))/π logkernel(f,2.0)
-
-x=Fun(S)
 
 S=JacobiWeight(-0.5,-0.5,Chebyshev([-2.,-1.]))
 
-bandedoperatortest(SingularIntegral(S,0))
-bandedoperatortest(SingularIntegral(S,1))
-bandedoperatortest(Hilbert(S))
-
-
 @test rangespace(SingularIntegral(S,0))==Chebyshev([-2.,-1.])
 
+testsies(S)
+
 f=Fun(x->exp(x)/(sqrt(x+2)*sqrt(-1-x)),S)
-
-@test_approx_eq (SingularIntegral(S,0)*f)(-1.2) logkernel(f,-1.2)
-@test_approx_eq (SingularIntegral(S,1)*f)(-1.2) hilbert(f,-1.2)
-
 
 @test_approx_eq logkernel(f,-1.2) -0.39563660592242765  # Mathematica
 @test_approx_eq hilbert(f,-1.2) 0.26527878405434321204  # Mathematica
@@ -82,7 +67,7 @@ x = Fun(identity)
 w = 1/sqrt(1-x^2)
 H = Hilbert(space(w))
 
-bandedoperatortest(H[w])
+testbandedoperator(H[w])
 
 @test_approx_eq  (H[w]*exp(x))(.1) hilbert(w*exp(x))(.1)
 
@@ -91,7 +76,7 @@ x = Fun(identity)
 w = sqrt(1-x^2)
 H = Hilbert(space(w))
 
-bandedoperatortest(H[w])
+testbandedoperator(H[w])
 
 @test_approx_eq (H[w]*exp(x))(.1) hilbert(w*exp(x))(.1)
 
@@ -99,13 +84,15 @@ bandedoperatortest(H[w])
 println("Stieltjes test")
 
 ds1 = JacobiWeight(-.5,-.5,ApproxFun.ChebyshevDirichlet{1,1}())
+testsies(ds1)
+
 ds2 = JacobiWeight(-.5,-.5,Chebyshev())
 rs = Chebyshev([2.,4.+3im])
 f1 = Fun(x->exp(x)/sqrt(1-x^2),ds1)
 f2 = Fun(x->exp(x)/sqrt(1-x^2),ds2)
 S = Stieltjes(ds1,rs)
 
-bandedoperatortest(S)
+testbandedoperator(S)
 
 z = 3.+1.5im
 @test_approx_eq (S*f1)(z) stieltjes(f2,z) #val,err = quadgk(x->f1(x)./(z-x),-1.,1.)
@@ -120,7 +107,7 @@ f1 = Fun(x->exp(x)*sqrt(1-x^2),ds1)
 f2 = Fun(x->exp(x)*sqrt(1-x^2),ds2)
 S = Stieltjes(ds1,rs)
 
-bandedoperatortest(S)
+testbandedoperator(S)
 
 z = 3.
 @test_approx_eq (S*f1)(z) stieltjes(f2,z) #val,err = quadgk(x->f1(x)./(z-x),-1.,1.;reltol=eps())
@@ -136,7 +123,7 @@ f1 = Fun(x->exp(x)/sqrt(1-x^2),ds1)
 f2 = Fun(x->exp(x)/sqrt(1-x^2),ds2)
 S = Stieltjes(ds1,rs,0)
 
-bandedoperatortest(S)
+testbandedoperator(S)
 
 z = 3.
 @test_approx_eq (S*f1)(z) SingularIntegralEquations.stieltjesintegral(f2,z)
@@ -150,7 +137,7 @@ f1 = Fun(x->exp(x)*sqrt(1-x^2),ds1)
 f2 = Fun(x->exp(x)*sqrt(1-x^2),ds2)
 S = Stieltjes(ds1,rs,0)
 
-bandedoperatortest(S)
+testbandedoperator(S)
 
 z = 3.0
 @test_approx_eq (S*f1)(z) SingularIntegralEquations.stieltjesintegral(f2,z)
@@ -181,7 +168,7 @@ f=Fun(z->exp(exp(0.1im)*z+1/z),Laurent(Circle()))
 @test_approx_eq cauchy(f,0.5exp(0.2im)) -cauchy(reverseorientation(Fun(f,Fourier)),0.5exp(0.2im))
 @test_approx_eq cauchy(f,0.5exp(0.2im)) (OffHilbert(space(f),Laurent(Circle(0.5)))*f)(0.5exp(0.2im))/(2im)
 
-bandedoperatortest(OffHilbert(space(f),Laurent(Circle(0.5))))
+testbandedoperator(OffHilbert(space(f),Laurent(Circle(0.5))))
 
 f=Fun(z->exp(exp(0.1im)*z+1/(z-1.)),Laurent(Circle(1.,0.5)))
 @test_approx_eq cauchy(f,0.5exp(0.2im)) cauchy(Fun(f,Fourier),0.5exp(0.2im))
@@ -205,12 +192,12 @@ d2=Circle(c2,r2)
 z=Fun(identity,d2);
 C=Cauchy(Space(d1),Space(d2))
 
-bandedoperatortest(C)
+testbandedoperator(C)
 
 @test norm((C*Fun(exp,d1)-Fun(exp,d2)).coefficients)<100eps()
 
 C2=Cauchy(Space(d2),Space(d1))
-bandedoperatortest(C2)
+testbandedoperator(C2)
 
 @test norm((C2*Fun(z->exp(1/z)-1,d2)+Fun(z->exp(1/z)-1,d1)).coefficients)<100000eps()
 
@@ -220,7 +207,7 @@ d1=Circle(c1,r1)
 d2=Circle(c2,r2)
 @test norm((Cauchy(d1,d2)*Fun(z->exp(1/z)-1,d1)+Fun(z->exp(1/z)-1,d2)).coefficients)<2000eps()
 
-bandedoperatortest(Cauchy(d1,d2))
+testbandedoperator(Cauchy(d1,d2))
 
 # complex contour
 
@@ -242,6 +229,10 @@ println("Arc test")
 a=Arc(0.,1.,0.,π/2)
 ζ=Fun(identity,a)
 f=Fun(exp,a)*sqrt(abs((ζ-1)*(ζ-im)))
+
+#TODO: testsies(space(f))
+
+
 z=.1+.2im
 #@test_approx_eq cauchy(f,z) sum(f/(ζ-z))/(2π*im)
 z=exp(.1im)
@@ -255,7 +246,7 @@ z=.1+.2im
 x=Fun(identity)
 f=exp(x)*sqrt(1-x^2)
 
-functionaltest(Stieltjes(space(f),z))
+testfunctional(Stieltjes(space(f),z))
 
 @test_approx_eq Stieltjes(space(f),z)*f stieltjes(f,z)
 
@@ -266,4 +257,4 @@ H=Hilbert()
 z=exp(.1im)
 @test_approx_eq (H*f)(z) hilbert(f,z)
 
-bandedoperatortest(Hilbert(space(f)))
+testbandedoperator(Hilbert(space(f)))

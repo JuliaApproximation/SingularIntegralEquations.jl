@@ -32,6 +32,7 @@ import ApproxFun: bandinds,SpaceOperator,bilinearform,linebilinearform,dotu,
                   IntervalCurve,PeriodicCurve, reverseorientation, op_eltype, @wrapper, mobius,
                   defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, refactorsvd!
 
+import ApproxFun: testbandedoperator
 
 # we don't override for Bool and Function to make overriding below easier
 # TODO: change when cauchy(f,z,s) calls cauchy(f.coefficients,space(f),z,s)
@@ -89,5 +90,27 @@ if isdir(Pkg.dir("TikzGraphs"))
 end
 
 include("Extras/Extras.jl")
+
+
+using Base.Test
+
+function testsies(S::Space)
+    testbandedoperator(SingularIntegral(S,0))
+    testbandedoperator(SingularIntegral(S,1))
+    testbandedoperator(Hilbert(S))
+    p=ApproxFun.checkpoints(S)[1] # random point on contour
+    x=Fun(domain(S))
+    z=2.12312231+1.433453443534im # random point not on contour
+
+    for k=1:5
+        f=Fun([zeros(k-1);1],S)
+        @test_approx_eq (SingularIntegral(S,0)*f)(p) logkernel(f,p)
+        @test_approx_eq (Hilbert(S,1)*f)(p) hilbert(f,p)
+        @test abs(linesum(f*log(abs(x-z)))/π-logkernel(f,z)) ≤ 100eps()
+        @test abs(sum(f/(z-x))-stieltjes(f,z)) ≤ 100eps()
+        @test_approx_eq cauchy(f,p,+)-cauchy(f,p,-) f(p)
+        @test_approx_eq im*(cauchy(f,p,+)+cauchy(f,p,-)) hilbert(f,p)
+    end
+end
 
 end #module
