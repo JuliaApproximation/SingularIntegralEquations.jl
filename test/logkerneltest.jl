@@ -1,6 +1,24 @@
 using Base.Test, ApproxFun, SingularIntegralEquations
-    import ApproxFun: ∞
+    import ApproxFun: ∞, testbandedoperator, testfunctional, testbandedblockoperator, testraggedbelowoperator
+    import SingularIntegralEquations: testsies, testsieeval
 
+
+testsieeval(Jacobi(0,0))
+
+@which stieltjes(Jacobi(0,0),rand(5),0.1+0.2im)
+
+
+f=Fun(exp,Legendre())
+cauchy(f,0.1,true)-cauchy(f,0.1,false)
+
+
+
+cauchy(f,0.1,true)
+
+cauchy(f,0.1+0.00000001im)
+
+exp(0.1)
+(cauchy(Jacobi(0,0),a,0.1,true)-cauchy(Jacobi(0,0),a,0.1,false))
 
 
 a=1.0;b=2.0+im
@@ -54,6 +72,9 @@ z=0.2+3im;@test_approx_eq (H*f)(z) logkernel(f,z)
 
 x=Fun()
 f=exp(x)
+
+
+
 @test isa(logkernel(f,2.0+im),Real)
 @test_approx_eq logkernel(f,2.0+im) sum(f*log(abs(2.0+im-x)))/π
 
@@ -87,3 +108,16 @@ sp=space(f)
 f=(1-x)^(-0.1)*(1+x)^(-0.2)*exp(x)
 @test_approx_eq logkernel(f,2.0+im)  sum(f*log(abs(2.0+im-x))/π)
 @test isa(logkernel(f,2.0+im),Real)
+
+
+
+## Arc
+a=Arc(0.,1.,0.,π/2)
+ζ=Fun(identity,a)
+f=real(exp(ζ))
+@which stieltjes(ApproxFun.setcanonicaldomain(space(f)),f.coefficients,exp(0.1im))
+@which hilbert(space(f),f.coefficients,exp(0.1im))
+testsieeval(space(f))
+plot(a)
+
+cauchy(f,)

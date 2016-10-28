@@ -38,6 +38,9 @@ for Op in (:OffHilbert,:OffSingularIntegral)
         domainspace(C::$Op) = C.domainspace
         rangespace(C::$Op) = C.rangespace
         bandinds(C::$Op) = bandinds(C.data)
+        # divide size by blocklengths
+        blockbandinds(C::$Op) = ((size(C.data,1)-1)÷maximum(blocklengths(rangespace(C))),
+                                 (size(C.data,2)-1)÷maximum(blocklengths(domainspace(C))))
     end
 end
 

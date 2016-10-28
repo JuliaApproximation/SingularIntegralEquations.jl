@@ -17,7 +17,7 @@ import BandedMatrices: bzeros
 import Compat: view
 
 import ApproxFun
-import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebilinearform,dotu,
+import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebilinearform,dotu, blocklengths,
                   plan_transform,plan_itransform,transform,itransform,transform!,itransform!,
                   rangespace, domainspace, promotespaces, InterlaceOperator, coefficientmatrix,
                   canonicalspace, domain, space, Space, promotedomainspace, promoterangespace, AnyDomain, CalculusOperator,
@@ -94,7 +94,7 @@ include("Extras/Extras.jl")
 
 using Base.Test
 
-function testsies(S::Space)
+function testsieoperators(S::Space)
     testbandedoperator(SingularIntegral(S,0))
     testbandedoperator(SingularIntegral(S,1))
     testbandedoperator(Hilbert(S))
@@ -106,11 +106,27 @@ function testsies(S::Space)
         f=Fun([zeros(k-1);1],S)
         @test_approx_eq (SingularIntegral(S,0)*f)(p) logkernel(f,p)
         @test_approx_eq (Hilbert(S,1)*f)(p) hilbert(f,p)
+    end
+end
+
+
+function testsieeval(S::Space)
+    p=ApproxFun.checkpoints(S)[1] # random point on contour
+    x=Fun(domain(S))
+    z=2.12312231+1.433453443534im # random point not on contour
+
+    for k=1:5
+        f=Fun([zeros(k-1);1],S)
         @test abs(linesum(f*log(abs(x-z)))/π-logkernel(f,z)) ≤ 100eps()
         @test abs(sum(f/(z-x))-stieltjes(f,z)) ≤ 100eps()
         @test_approx_eq cauchy(f,p,+)-cauchy(f,p,-) f(p)
         @test_approx_eq im*(cauchy(f,p,+)+cauchy(f,p,-)) hilbert(f,p)
     end
+end
+
+function testsies(S::Space)
+    testsieoperators(S)
+    testsieeval(S)
 end
 
 end #module

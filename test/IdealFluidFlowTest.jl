@@ -1,5 +1,6 @@
 using Base.Test, ApproxFun, SingularIntegralEquations, Base.Test
-    import ApproxFun: choosedomainspace, promotedomainspace, ConstantSpace, interlace
+    import ApproxFun: choosedomainspace, promotedomainspace, ConstantSpace, interlace,
+                        testraggedbelowoperator, testbandedblockoperator, blocklengths
 
 k=50
 Γ=Interval(0.,1+0.5im)
@@ -72,17 +73,20 @@ Ai=ApproxFun.interlace([0 DefiniteLineIntegral();
       1 real(Hilbert())])
 
 
+
 S=ApproxFun.choosedomainspace(Ai,space([Fun(0.);z]))
 
 @test isa(S[1],ApproxFun.ConstantSpace)
 @test S[2] == Fourier(Γ)
 
-@test domainspace(ApproxFun.promotedomainspace(Ai,S))==S
+@test domainspace(ApproxFun.promotedomainspace(Ai,S)) == S
 
 
 A=ApproxFun.promotedomainspace(Ai,S)
 
-@test isa(A[2,2],Float64)
+
+@which A.ops[3][2]
+testraggedbelowoperator(A)
 
 
 k=239;
@@ -90,6 +94,7 @@ k=239;
 
 c,ui=[0 DefiniteLineIntegral();
       1 real(Hilbert())]\[Fun(0.);imag(α*z)]
+
 
 u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 @test_approx_eq u(2.,1.1)  2.426592437403252-0.8340542386599383im
@@ -110,7 +115,7 @@ u=(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 
 
 ## 2 intervals
-Γ=Interval(-1.,-0.5)∪Interval(-0.3,1.)
+Γ=Interval(-1.,-0.5) ∪ Interval(-0.3,1.)
 z=Fun(Γ)
 
 S=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical(1,d)),Γ))
@@ -120,14 +125,7 @@ k=114;
     α=exp(k/50*im)
 
 Ai=ApproxFun.interlace([ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(S)])
-
-
-@which ApproxFun.InterlaceOperator([ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(S)])
-
-L=Ai
-
-L.rangeinterlacer[10]==(1,10)
-
+testbandedblockoperator(Ai)
 
 a,b,ui=[ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(S)]\imag(α*z)
 
@@ -144,8 +142,11 @@ u=(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 
 S=PiecewiseSpace(map(d->isa(d,Circle)?Fourier(d):JacobiWeight(0.5,0.5,Ultraspherical(1,d)),Γ))
 
+H=Hilbert(S)
 
-Ai=ApproxFun.interlace([Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),Γ) real(Hilbert(S))])
+#  TODO: fix testraggedbelowoperator(H)
+
+Ai=ApproxFun.interlace([Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),Γ) real(H)])
 
 @test ApproxFun.israggedbelow(Ai)
 @test ApproxFun.israggedbelow(Ai.ops[4])
@@ -154,10 +155,16 @@ Ai=ApproxFun.interlace([Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),
 
 
 B=ApproxFun.SpaceOperator(ApproxFun.BasisFunctional(3),S,ApproxFun.ConstantSpace())
+
+Ai=ApproxFun.interlace([0                 0                 0                 B;
+          Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),Γ) real(H)])
+
+testraggedbelowoperator(Ai)
+
 k=114;
     α=exp(k/50*im)
     a,b,c,ui=[0                 0                 0                 B;
-              Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),Γ) real(Hilbert(S))]\Any[0.;imag(α*z)]
+              Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),Γ) real(H)]\Any[0.;imag(α*z)]
 
 
 u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
