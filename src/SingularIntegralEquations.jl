@@ -34,6 +34,24 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
 
 import ApproxFun: testbandedoperator
 
+"""
+`Directed` represents a number that is a limit from either left (s=true) or right (s=false)
+"""
+immutable Directed{s,T}
+    x::T
+end
+
+Base.convert{s}(::Type{Directed{s}},x) = Directed{s,eltype(x)}(x)
+*{s}(a::Directed{s},b::Number) = Directed{s}(a.x*b)
+*{s}(b::Number,a::Directed{s}) = a*b
+
+const ⁺ = Directed{true}(true)
+const ⁻ = Directed{false}(true)
+
+1⁺
+1⁻
+
+
 # we don't override for Bool and Function to make overriding below easier
 # TODO: change when cauchy(f,z,s) calls cauchy(f.coefficients,space(f),z,s)
 
