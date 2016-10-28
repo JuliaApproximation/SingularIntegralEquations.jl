@@ -1,4 +1,4 @@
-using Plots,ApproxFun,SingularIntegralEquations;  gr()
+using Plots,ApproxFun,SingularIntegralEquations;  pyplot()
 
 ##
 #  Ideal fluid flow consists of level sets of the imagainary part of a function
@@ -17,16 +17,32 @@ using Plots,ApproxFun,SingularIntegralEquations;  gr()
 m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
+<<<<<<< HEAD
+=======
+
+d=Circle()
+z=Fun(d)
+f=exp(real(z))
+f(exp(im*0.1))
+
+>>>>>>> 2297bc251a8a2f9f01355295f61b9fcb7ba10547
 k=50
     Γ=Interval(0.,1+0.5im)
     z=Fun(Γ)
     α=exp(-π*k/50im)
+<<<<<<< HEAD
     S=JacobiWeight(0.5,0.5,Γ)
     c,ui=[1 Hilbert(S)]\imag(α*z)
 
 u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 plot(Γ)
     contour!(x,y,imag(u(xx,yy))';nlevels=50)
+=======
+    S=JacobiWeight(0.5,0.5,Ultraspherical(1,Γ))
+    c,ui=[1 Hilbert(S)]\imag(α*z)
+plot(Γ)
+    contour!(x,y,imag(u(xx,yy))';nlevels=100,legend=false)
+>>>>>>> 2297bc251a8a2f9f01355295f61b9fcb7ba10547
 
 
 ##
@@ -37,6 +53,11 @@ plot(Γ)
 ##
 
 
+<<<<<<< HEAD
+=======
+u=(x,y)->α*(x+im*y)+2pseudocauchy(ui,x+im*y)
+
+>>>>>>> 2297bc251a8a2f9f01355295f61b9fcb7ba10547
 m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
@@ -44,6 +65,7 @@ k=227;
     Γ=0.5+exp(im*Interval(0.1,-42))
     z=Fun(Γ)
     α=exp(-k/50im)
+<<<<<<< HEAD
     S=JacobiWeight(0.5,0.5,Γ)
     c,ui=[1 PseudoHilbert(S)]\imag(α*z)
 
@@ -54,13 +76,19 @@ plot(Γ)
 
 
 
+=======
+    S=JacobiWeight(0.5,0.5,Ultraspherical(1,Γ))
+    c,ui=[1 PseudoHilbert(S)]\imag(α*z)
+    plot(Γ)
+    contour!(x,y,imag(u(xx,yy))';nlevels=100,legend=false)
+>>>>>>> 2297bc251a8a2f9f01355295f61b9fcb7ba10547
 
 ##
 #  Circle
 ##
 
 Γ=Circle()
-z=Fun(Fourier(Γ))
+z=Fun(Laurent(Γ))
 
 
 u=(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
@@ -78,6 +106,10 @@ plot(Γ)
 
 
 
+25
+
+DefiniteLineIntegral(space(z))[1]
+typeof(space(z))==Laurent{typeof(Γ)}
 ##
 # On a curve, the Hilbert transform may be complex, so we
 # take the real part
@@ -108,12 +140,43 @@ z=Fun(Γ)
 S=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical(1,d)),Γ))
 
 
+<<<<<<< HEAD
+=======
+u= (x,y) -> α*(x+im*y)+2cauchy(ui,x+im*y)
+
+>>>>>>> 2297bc251a8a2f9f01355295f61b9fcb7ba10547
 m=80;x = linspace(-2.,2.,m);y = linspace(-1.,1.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
 k=114;
     α=exp(k/50*im)
+<<<<<<< HEAD
     a,b,ui=[ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(S)]\imag(α*z)
+=======
+    a,b,ui=[ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(ds)]\imag(α*z)
+    plot(Γ)
+    contour!(x,y,imag(u(xx,yy)))
+
+
+import ApproxFun:colstop,interlace,bandwidth
+
+Ai=interlace([ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(ds)])
+Ai[1:100,1:100]
+
+
+@which colstop(Ai,1)
+
+bandwidth(Ai,1)
+Ai.bandinds
+
+colstop(Ai.ops[3],1)
+
+ApproxFun.isbanded
+ApproxFun.isbanded(ApproxFun.interlace([ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(ds)]))
+
+rangespace(Hilbert(ds))
+
+>>>>>>> 2297bc251a8a2f9f01355295f61b9fcb7ba10547
 
 u=(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 plot(Γ)
