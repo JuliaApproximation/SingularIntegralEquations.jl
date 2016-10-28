@@ -52,7 +52,7 @@ stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Matrix)=reshape(stieltjes(sp,f,vec(z)
 
 
 
-stieltjes{DD<:Circle}(sp::Fourier{DD},f,z,s...)=stieltjes(Laurent(domain(sp)),coefficients(f,sp,Laurent(domain(sp))),z,s...)
+stieltjes{DD<:Circle}(sp::Fourier{DD},f,z)=stieltjes(Laurent(domain(sp)),coefficients(f,sp,Laurent(domain(sp))),z)
 
 
 
@@ -67,16 +67,16 @@ hilbert{DD<:Circle}(sp::Laurent{DD},f,z)=(stieltjes(sp,f,z,true)+stieltjes(sp,f,
 ## stieltjesintegral and logkernel
 
 
-function stieltjesintegral{DD<:Circle}(sp::Laurent{DD},f,z::Number,s...)
+function stieltjesintegral{DD<:Circle}(sp::Laurent{DD},f,z::Number)
     d=domain(sp)
     @assert d==Circle()  #TODO: radius
     ζ=Fun(d)
-    r=stieltjes(integrate(f-f[2]/ζ),z,s...)
+    r=stieltjes(integrate(f-f[2]/ζ),z)
     abs(z)<1?r:r+2π*im*f[2]*log(z)
 end
 
 
-stieltjesintegral{DD<:Circle}(sp::Fourier{DD},f,z::Number,s...)=stieltjesintegral(Fun(Fun(f,sp),Laurent),z,s...)
+stieltjesintegral{DD<:Circle}(sp::Fourier{DD},f,z::Number)=stieltjesintegral(Fun(Fun(f,sp),Laurent),z)
 
 function logkernel{DD<:Circle}(sp::Fourier{DD},g,z::Number)
     d=domain(sp)

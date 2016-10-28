@@ -1,10 +1,10 @@
 # I think it makes more sense to let the array into the function.
 # That way the coefficient conversions happen once.
 #=
-function cauchy{S,T}(f::Fun{S,T},z::Array,s...)
+function cauchy{S,T}(f::Fun{S,T},z::Array)
     ret=Array(Complex{Float64},size(z)...)
     for k=1:size(z,1),j=1:size(z,2)
-        @inbounds ret[k,j]=cauchy(f,z[k,j],s...)
+        @inbounds ret[k,j]=cauchy(f,z[k,j])
     end
     ret
 end
@@ -30,7 +30,7 @@ hilbert(S::PiecewiseSpace,v,z)=hilbert(pieces(Fun(v,S)),z)
 
 
 
-function cauchy{S<:ArraySpace,T}(v::Fun{S,T},z::Number,s...)
+function cauchy{S<:ArraySpace,T}(v::Fun{S,T},z::Number)
     m=mat(v)
-    Complex{Float64}[cauchy(m[k,j],z,s...) for k=1:size(m,1),j=1:size(m,2)]
+    Complex{Float64}[cauchy(m[k,j],z) for k=1:size(m,1),j=1:size(m,2)]
 end

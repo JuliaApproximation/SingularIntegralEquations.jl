@@ -3,11 +3,11 @@
 ## Cauchy
 
 # pseudocauchy does not normalize at ∞
-pseudostieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z,s...) = stieltjes(setcanonicaldomain(S),f,mobius(S,z),s...)
+pseudostieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z) = stieltjes(setcanonicaldomain(S),f,mobius(S,z))
 pseudohilbert{LS,RR<:Arc}(S::Space{LS,RR},f,z) = hilbert(setdomain(S,Interval()),f,mobius(S,z))
 
 
-stieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z,s...) = stieltjes(setcanonicaldomain(S),f,mobius(S,z),s...)-stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
+stieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z) = stieltjes(setcanonicaldomain(S),f,mobius(S,z))-stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
 hilbert{LS,RR<:Arc}(S::Space{LS,RR},f,z) = hilbert(setcanonicaldomain(S),f,mobius(S,z))+(1/π)*stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
 
 

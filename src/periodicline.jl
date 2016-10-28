@@ -3,9 +3,9 @@
 ## stieltjes
 
 
-function stieltjes{L<:PeriodicLine,SS}(S::Space{SS,L},f,z::Number,s...)
+function stieltjes{L<:PeriodicLine,SS}(S::Space{SS,L},f,z::Number)
     S2=setdomain(S,Circle())
-    stieltjes(S2,f,mappoint(domain(S),Circle(),z),s...)+hilbert(S2,f,-1)*π
+    stieltjes(S2,f,mappoint(domain(S),Circle(),z))+hilbert(S2,f,-1)*π
 end
 
 

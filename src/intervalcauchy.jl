@@ -24,9 +24,9 @@ end
 forwardsubstitution(R,n,μ1,μ2) =
     forwardsubstitution!(Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n),R,n,μ1,μ2)
 
-stieltjesforward(sp::Space,n,z,s...) = forwardsubstitution(JacobiZ(sp,z),n,
-                                                            stieltjesmoment(sp,0,z,s...),
-                                                            stieltjesmoment(sp,1,z,s...))
+stieltjesforward(sp::Space,n,z) = forwardsubstitution(JacobiZ(sp,z),n,
+                                                            stieltjesmoment(sp,0,z),
+                                                            stieltjesmoment(sp,1,z))
 
 
 
@@ -63,13 +63,13 @@ end
 
 
 # Sum over all inverses of fromcanonical, see [Olver,2014]
-function stieltjes{SS,L<:Line}(S::Space{SS,L},f,z,s...)
+function stieltjes{SS,L<:Line}(S::Space{SS,L},f,z)
     if domain(S)==Line()
         # TODO: rename tocanonical
-        stieltjes(setcanonicaldomain(S),f,tocanonical(S,z),s...) +
+        stieltjes(setcanonicaldomain(S),f,tocanonical(S,z)) +
             stieltjes(setcanonicaldomain(S),f,(-1-sqrt(1+4z.^2))./(2z))
     else
-        stieltjes(setdomain(S,Line()),f,mappoint(domain(S),Line(),z),s...)
+        stieltjes(setdomain(S,Line()),f,mappoint(domain(S),Line(),z))
     end
 end
 

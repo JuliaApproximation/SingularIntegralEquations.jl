@@ -48,19 +48,16 @@ Base.convert{s}(::Type{Directed{s}},x) = Directed{s,eltype(x)}(x)
 const ⁺ = Directed{true}(true)
 const ⁻ = Directed{false}(true)
 
-1⁺
-1⁻
+
+
+
 
 
 # we don't override for Bool and Function to make overriding below easier
 # TODO: change when cauchy(f,z,s) calls cauchy(f.coefficients,space(f),z,s)
 
 for OP in (:stieltjes,:stieltjesintegral,:pseudostieltjes)
-    @eval begin
-        $OP(f::Fun)=$OP(space(f),coefficients(f))
-        $OP(f::Fun,z,s...)=$OP(space(f),coefficients(f),z,s...)
-        $OP(f::Fun,z,s::Function)=$OP(f,z,s==+)
-    end
+    @eval $OP(f::Fun)=$OP(space(f),coefficients(f))
 end
 
 hilbert(f) = Hilbert()*f
@@ -137,8 +134,8 @@ function testsieeval(S::Space)
         f=Fun([zeros(k-1);1],S)
         @test abs(linesum(f*log(abs(x-z)))/π-logkernel(f,z)) ≤ 100eps()
         @test abs(sum(f/(z-x))-stieltjes(f,z)) ≤ 100eps()
-        @test_approx_eq cauchy(f,p,+)-cauchy(f,p,-) f(p)
-        @test_approx_eq im*(cauchy(f,p,+)+cauchy(f,p,-)) hilbert(f,p)
+        @test_approx_eq cauchy(f,p⁺)-cauchy(f,p⁻) f(p)
+        @test_approx_eq im*(cauchy(f,p⁺)+cauchy(f,p⁻)) hilbert(f,p)
     end
 end
 

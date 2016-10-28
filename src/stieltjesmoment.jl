@@ -7,94 +7,28 @@
 cauchymoment(S...) = stieltjesmoment(S...)/(-2π*im)
 
 
-#=
-# gives \int_-1^1 x^(k-1)/(z-x) dx
-function stieltjeslegendremoment(k::Integer,z)
-    if k==1
-        return -(log(z-1)-log(z+1))
-    elseif k==2
-        return -(2-z*log(1+z)+z*log(z-1))
-    end
 
-    error("stieltjesmoment not implemented for "*string(S.a)*string(S.b))
-end
+stieltjesmoment{T,D}(S::WeightedJacobi{T,D},n::Int,z) = stieltjesjacobimoment(S.space.a,S.space.b,n,z)
+stieltjesmoment{T,D}(S::WeightedJacobi{T,D},z) = stieltjesjacobimoment(S.space.a,S.space.b,z)
 
-function stieltjeslegendremoment(k::Integer,z,s::Bool)
-    if k==1
-        return -(log(1-z)+(s?1:-1)*π*im-log(z+1))
-    elseif k==2
-        return -(2-z*log(1+z)+z*log(1-z) + (s?1:-1)*π*im*z)
-    end
+stieltjesmoment{T,D}(S::WeightedJacobiQ{T,D},n::Int,z) = stieltjesjacobimoment(S.space.a,S.space.b,n,z)
+stieltjesmoment{T,D}(S::WeightedJacobiQ{T,D},z) = stieltjesjacobimoment(S.space.a,S.space.b,z)
 
-    error("stieltjesmoment not implemented for "*string(S.a)*string(S.b))
-end
-
-
-stieltjesmoment(S::Chebyshev,k::Integer,z)=stieltjeslegendremoment(k,tocanonical(S,z))
-function stieltjesmoment(J::Jacobi,k::Integer,z)
-    if k==1
-        return stieltjeslegendremoment(k,z)
-    elseif k==2
-        if J.a==J.b
-            return (1+J.a)*stieltjeslegendremoment(k,z)
-        else
-            return (J.b-J.a)/2*stieltjeslegendremoment(1,z) + (2+J.a+J.b)/2*stieltjeslegendremoment(2,z)
-        end
-    end
-
-    error("Not implemented")
-end
-
-function stieltjesmoment(S::PolynomialSpace,k::Integer,z,s::Bool)
-    z=tocanonical(S,z)
-
-    if k==1
-        return -(log(1-z)+(s?1:-1)*π*im-log(z+1))
-    elseif k==2
-        return -(2-z*log(1+z)+z*log(1-z) + (s?1:-1)*π*im*z)
-    end
-
-    error("stieltjesmoment not implemented for "*string(S.a)*string(S.b))
-end
-
-
-# represents atan(sqrt(z))/sqrt(z)
-function sqrtatansqrt(x)
-    if  isreal(x) && x ≤ 0
-        y=sqrt(-x)
-        log((1+y)/(1-y))/(2y)
-    else
-        sqrt(1/x)*atan(sqrt(x))
-    end
-end
-
-function sqrtatansqrt(x,s::Bool)
-    y=sqrt(-x)
-    (log((1+y)/(y-1))-(s?1:-1)*π*im)/(2y)
-end
-=#
-
-stieltjesmoment{T,D}(S::WeightedJacobi{T,D},n::Int,z,s...) = stieltjesjacobimoment(S.space.a,S.space.b,n,z,s...)
-stieltjesmoment{T,D}(S::WeightedJacobi{T,D},z,s...) = stieltjesjacobimoment(S.space.a,S.space.b,z,s...)
-
-stieltjesmoment{T,D}(S::WeightedJacobiQ{T,D},n::Int,z,s...) = stieltjesjacobimoment(S.space.a,S.space.b,n,z,s...)
-stieltjesmoment{T,D}(S::WeightedJacobiQ{T,D},z,s...) = stieltjesjacobimoment(S.space.a,S.space.b,z,s...)
-
-stieltjesmoment(S::Jacobi,n::Int,z,s...) = stieltjesjacobimoment(S.a,S.b,n,z,s...)
-stieltjesmoment(S::Jacobi,z,s...) = stieltjesjacobimoment(S.a,S.b,z,s...)
-stieltjesmoment(S::JacobiQ,n::Int,z,s...) = stieltjesjacobimoment(S.a,S.b,n,z,s...)
-stieltjesmoment(S::JacobiQ,z,s...) = stieltjesjacobimoment(S.a,S.b,z,s...)
+stieltjesmoment(S::Jacobi,n::Int,z) = stieltjesjacobimoment(S.a,S.b,n,z)
+stieltjesmoment(S::Jacobi,z) = stieltjesjacobimoment(S.a,S.b,z)
+stieltjesmoment(S::JacobiQ,n::Int,z) = stieltjesjacobimoment(S.a,S.b,n,z)
+stieltjesmoment(S::JacobiQ,z) = stieltjesjacobimoment(S.a,S.b,z)
 
 normalization(n::Int,α::Real,β::Real) = 2^(α+β)*gamma(n+α+1)*gamma(n+β+1)/gamma(2n+α+β+2)
-stieltjesjacobimoment(α::Real,β::Real,n::Int,z,s...) =
-    (x = 2./(1-z);normalization(n,α,β)*(-x).^(n+1).*_₂F₁(n+1,n+α+1,2n+α+β+2,x,s...))
+stieltjesjacobimoment(α::Real,β::Real,n::Int,z) =
+    (x = 2./(1-z);normalization(n,α,β)*(-x).^(n+1).*_₂F₁(n+1,n+α+1,2n+α+β+2,x))
 stieltjesjacobimoment(α::Real,β::Real,z) = stieltjesjacobimoment(α,β,0,z)
 
 
-function logjacobimoment(α::Real,β::Real,n::Int,z,s...)
+function logjacobimoment(α::Real,β::Real,n::Int,z)
     x = 2./(1-z)
     if n == 0
-        2normalization(0,α,β)*(log(z-1)-dualpart(_₂F₁(dual(zero(α)+eps(α+β),one(β)),α+1,α+β+2,x,s...)))
+        2normalization(0,α,β)*(log(z-1)-dualpart(_₂F₁(dual(zero(α)+eps(α+β),one(β)),α+1,α+β+2,x)))
         # For testing purposes only, should be equivalent to above within radius of convergence
         #2normalization(0,α,β)*(log(z-1)-(α+1)/(α+β+2)*x.*_₃F₂(α+2,α+β+3,x))
     else
@@ -166,20 +100,20 @@ function stieltjesjacobimoment(α,β,k::Integer,z,s::Bool)
 end
 
 
-stieltjesmoment{DD}(S::JacobiWeight{Chebyshev{DD},DD},k::Integer,z,s...)=stieltjesjacobimoment(S.α,S.β,k,tocanonical(S,z),s...)
+stieltjesmoment{DD}(S::JacobiWeight{Chebyshev{DD},DD},k::Integer,z)=stieltjesjacobimoment(S.α,S.β,k,tocanonical(S,z))
 
 
-function stieltjesmoment{T,DD}(S::JacobiWeight{Jacobi{T,DD},DD},k::Integer,z,s...)
+function stieltjesmoment{T,DD}(S::JacobiWeight{Jacobi{T,DD},DD},k::Integer,z)
     z=tocanonical(S,z)
     J=S.space
 
     if k==1
-        return stieltjesjacobimoment(S.α,S.β,k,z,s...)
+        return stieltjesjacobimoment(S.α,S.β,k,z)
     elseif k==2
         if J.a==J.b
-            return (1+J.a)*stieltjesjacobimoment(S.α,S.β,k,z,s...)
+            return (1+J.a)*stieltjesjacobimoment(S.α,S.β,k,z)
         else
-            return (J.a-J.b)/2*stieltjesjacobimoment(S.α,S.β,1,z,s...) + (2+J.a+J.b)/2*stieltjesjacobimoment(S.α,S.β,2,z,s...)
+            return (J.a-J.b)/2*stieltjesjacobimoment(S.α,S.β,1,z) + (2+J.a+J.b)/2*stieltjesjacobimoment(S.α,S.β,2,z)
         end
     end
     error("stieltjesmoment not implemented for JacobiWeight "*string(S.α)*string(S.β))

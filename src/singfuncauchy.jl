@@ -59,10 +59,10 @@ realdivkhornersum{S<:Real}(cfs::AbstractVector{S},y,ys,s) = real(divkhornersum(c
 realdivkhornersum{S<:Complex}(cfs::AbstractVector{S},y,ys,s) = complex(real(divkhornersum(real(cfs),y,ys,s)),real(divkhornersum(imag(cfs),y,ys,s)))
 
 
-function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,zv::Array,s...)
+function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,zv::Array)
     ret=similar(zv,Complex128)
     for k=1:length(zv)
-        @inbounds ret[k]=stieltjes(sp,u,zv[k],s...)
+        @inbounds ret[k]=stieltjes(sp,u,zv[k])
     end
     ret
 end
