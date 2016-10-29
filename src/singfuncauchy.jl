@@ -1,11 +1,25 @@
 ## SingFun stieltjes
 
 export logabs
-logabs(x) = log(abs2(x))/2
+logabs(z) = log(abs2(z))/2
+sqrtabs(z) = sqrt(abs(z))
 
 # sqrtx2 is analytic continuation of sqrt(z^2-1)
+sqrtx2(z::Directed) = sqrt(z-1)*sqrt(z.x+1)
 sqrtx2(z::Number) = sqrt(z-1)*sqrt(z+1)
 sqrtx2(x::Real) = sign(x)*sqrt(x^2-1)
+
+# these mimc logabs.  They are useful because they are continuous functions
+# and are used in logkernel for evaluating on the branch cut
+# sqrtx2im is omitted as it's discontinuous on the branch cut
+sqrtx2abs(z) = sqrtabs(z-1)*sqrtabs(z+1)
+sqrtx2real(z) = sqrtx2abs(z)*cos((angle(z-1)+angle(z+1))/2)
+#  real(z̄*sqrt(z-1)*sqrt(z+1))
+# sqrtx2abs(z)*abs(z)*cos(angle(z-1)+angle(z+1))/2-angle(z))
+
+x̄sqrtx2real(z) = sqrtx2abs(z)*abs(z)*cos((angle(z-1)+angle(z+1))/2-angle(z))
+
+
 @vectorize_1arg Number sqrtx2
 function sqrtx2(f::Fun)
     B = Evaluation(first(domain(f)))
@@ -18,11 +32,21 @@ end
 #
 # it is more accurate near infinity to do 1/J_- than z - sqrtx2(z) as it avoids round off
 joukowskyinverse(::Type{Val{true}},z) = 1./joukowskyinverse(Val{false},reverseorientation(z))
-joukowskyinverse(::Type{Val{false}},z) = z+sqrtx2(z)
+joukowskyinverse(::Type{Val{false}},z) = value(z)+sqrtx2(z)
+
+joukowskyinverseabs(::Type{Val{true}},z) = 1./joukowskyinverseabs(Val{false},reverseorientation(z))
+joukowskyinverseabs(::Type{Val{false}},z) = sqrt(abs2(z)+2x̄sqrtx2real(z)+sqrtx2abs(z)^2)
+
+
+joukowskyinversereal(::Type{Val{true}},z) =
+    joukowskyinversereal(Val{false},z)/joukowskyinverseabs(Val{false},z)^2
+joukowskyinversereal(::Type{Val{false}},z) = real(z)+sqrtx2real(z)
+
+
 
 
 function hornersum{S<:Number,V<:Number}(cfs::AbstractVector{S},y::V)
-    N,P = length(cfs),promote_type(S,V)
+    N,P = length(cfs),Base.promote_op(*,S,V)
     ret = N > 0 ? convert(P,cfs[N]) : zero(P)
     for k=N-1:-1:1
         ret = muladd(y,ret,cfs[k])
@@ -42,13 +66,16 @@ function divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVec
     y*ys*ret
 end
 
-divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractVector{T},ys::AbstractVector{U},s::V) =
+divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractVector{T},
+                                                       ys::AbstractVector{U},s::V) =
     promote_type(S,T,U,V)[divkhornersum(cfs,y[k],ys[k],s) for k=1:length(y)]
-divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractArray{T,2},ys::AbstractArray{U,2},s::V) =
+divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractArray{T,2},
+                                                       ys::AbstractArray{U,2},s::V) =
     promote_type(S,T,U,V)[divkhornersum(cfs,y[k,j],ys[k,j],s) for k=1:size(y,1),j=1:size(y,2)]
 
 realdivkhornersum{S<:Real}(cfs::AbstractVector{S},y,ys,s) = real(divkhornersum(cfs,y,ys,s))
-realdivkhornersum{S<:Complex}(cfs::AbstractVector{S},y,ys,s) = complex(real(divkhornersum(real(cfs),y,ys,s)),real(divkhornersum(imag(cfs),y,ys,s)))
+realdivkhornersum{S<:Complex}(cfs::AbstractVector{S},y,ys,s) = complex(real(divkhornersum(real(cfs),y,ys,s)),
+                                                                       real(divkhornersum(imag(cfs),y,ys,s)))
 
 
 function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,zv::Array)
@@ -64,14 +91,14 @@ function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
 
     if sp.α == sp.β == .5
         cfs = coefficients(u,sp.space,Ultraspherical(1,d))
-        π*hornersum(cfs,intervaloffcircle(true,mobius(sp,z)))
+        π*hornersum(cfs,joukowskyinverse(Val{true},mobius(sp,z)))
     elseif sp.α == sp.β == -.5
         cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
         z=mobius(sp,z)
 
         sx2z=sqrtx2(z)
         sx2zi=1./sx2z
-        Jm=1./(z+sx2z)  # intervaloffcircle(true,z)
+        Jm=1./(z+sx2z)  # joukowskyinverse(true,z)
 
 
         if length(cfs) ≥1
@@ -130,8 +157,10 @@ end
 
 
 
-integratejin(c,cfs,y)=.5*(-cfs[1]*(log(y)+log(c))+divkhornersum(cfs,y,y,1)-divkhornersum(view(cfs,2:length(cfs)),y,zero(y)+1,0))
-realintegratejin(c,cfs,y)=.5*(-cfs[1]*(logabs(y)+logabs(c))+realdivkhornersum(cfs,y,y,1)-realdivkhornersum(view(cfs,2:length(cfs)),y,zero(y)+1,0))
+integratejin(c,cfs,y) =
+    0.5*(-cfs[1]*(log(y)+log(c))+divkhornersum(cfs,y,y,1)-divkhornersum(view(cfs,2:length(cfs)),y,zero(y)+1,0))
+realintegratejin(c,cfs,y) =
+    0.5*(-cfs[1]*(logabs(y)+logabs(c))+realdivkhornersum(cfs,y,y,1)-realdivkhornersum(view(cfs,2:length(cfs)),y,zero(y)+1,0))
 
 #########
 # stieltjesintegral is an indefinite integral of stieltjes
@@ -150,18 +179,20 @@ function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
     if sp.α == sp.β == .5
         cfs=coefficients(u,sp.space,Ultraspherical(1,d))
         z=mobius(sp,z)
-        y = joukowskyinverse(Val{true},z)
+        x,r = joukowskyinversereal(Val{true},z),joukowskyinverseabs(Val{true},z)
+        y = r*exp(im*acos(x/r))  # dummy variable, choice of ± in arg doesn't matter
         arclength(d)*realintegratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
         cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
         z=mobius(sp,z)
-        y = joukowskyinverse(Val{true},z)
+        x,r = joukowskyinversereal(Val{true},z),joukowskyinverseabss(Val{true},z)
+        y = r*exp(im*acos(x/r))
 
         if length(cfs) ≥1
-            ret = -cfs[1]*arclength(d)*(logabs(y)+logabs(4/(b-a)))/2
+            ret = -cfs[1]*arclength(d)*(log(r)+logabs(4/(b-a)))/2
 
             if length(cfs) ≥2
-                ret += -arclength(d)*cfs[2]*real(y)/2
+                ret += -arclength(d)*cfs[2]*x/2
             end
 
             if length(cfs) ≥3

@@ -41,9 +41,14 @@ Therefore not requiring tolerances.  This will naturally give the analytic conti
 """
 immutable Directed{s,T} <: Number
     x::T
+    Directed(x::T) = new(x)
+    Directed(x::Number) = new(T(x))
 end
 
-Base.convert{s}(::Type{Directed{s}},x) = Directed{s,eltype(x)}(x)
+
+(::Type{Directed{s}}){s}(x) = Directed{s,eltype(x)}(x)
+
+Base.convert{s,T}(::Type{Directed{s,T}},x::T) = Directed{s,T}(x)
 
 const ⁺ = Directed{true}(true)
 const ⁻ = Directed{false}(true)
@@ -52,12 +57,21 @@ orientationsign(::Type{Directed{true}}) = 1
 orientationsign(::Type{Directed{false}}) = -1
 orientation{s}(::Type{Directed{s}}) = s
 orientation{s}(::Directed{s}) = s
-reverseorientation{s}(x::Directed{s}) = Directed{!s}(x)
+value(x::Directed) = x.x
+value(x::Number) = x
+reverseorientation{s}(x::Directed{s}) = Directed{!s}(x.x)
 reverseorientation(x::Number) = x
 
 
-*{s}(a::Directed{s},b::Number) = Directed{s}(a.x*b)
-*{s}(b::Number,a::Directed{s}) = a*b
+for OP in (:*,:+,:-,:/)
+    @eval begin
+        $OP{s}(a::Directed{s}) = Directed{s}($OP(a.x))
+        $OP{s}(a::Directed{s},b::Directed{s}) = Directed{s}($OP(a.x,b.x))
+        $OP{s}(a::Directed{s},b::Number) = Directed{s}($OP(a.x,b))
+        $OP{s}(a::Number,b::Directed{s}) = Directed{s}($OP(a,b.x))
+    end
+end
+
 
 # branchcuts of log, sqrt, etc. are oriented from (0,-∞)
 Base.log(x::Directed{true}) = log(-x.x) - π*im
@@ -72,7 +86,8 @@ Base.sqrt(x::Directed{false}) = sqrt(-x.x)
 
 
 for OP in (:stieltjes,:stieltjesintegral,:pseudostieltjes)
-    @eval $OP(f::Fun)=$OP(space(f),coefficients(f))
+    @eval $OP(f::Fun) = $OP(space(f),coefficients(f))
+    @eval $OP(f::Fun,z) = $OP(space(f),coefficients(f),z)
 end
 
 hilbert(f) = Hilbert()*f
@@ -149,8 +164,8 @@ function testsieeval(S::Space)
         f=Fun([zeros(k-1);1],S)
         @test abs(linesum(f*log(abs(x-z)))/π-logkernel(f,z)) ≤ 100eps()
         @test abs(sum(f/(z-x))-stieltjes(f,z)) ≤ 100eps()
-        @test_approx_eq cauchy(f,p⁺)-cauchy(f,p⁻) f(p)
-        @test_approx_eq im*(cauchy(f,p⁺)+cauchy(f,p⁻)) hilbert(f,p)
+        @test_approx_eq cauchy(f,p*⁺)-cauchy(f,p*⁻) f(p)
+        @test_approx_eq im*(cauchy(f,p*⁺)+cauchy(f,p*⁻)) hilbert(f,p)
     end
 end
 

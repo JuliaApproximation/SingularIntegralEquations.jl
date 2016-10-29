@@ -1,12 +1,13 @@
 using Base.Test, ApproxFun, SingularIntegralEquations
     import ApproxFun: ∞, testbandedoperator, testfunctional, testbandedblockoperator, testraggedbelowoperator
-    import SingularIntegralEquations: testsies
+    import SingularIntegralEquations: testsies, ⁺, mobius, joukowskyinverse, sqrtx2, Directed
+
 
 ## Sqrt singularity
 
-S=JacobiWeight(0.5,0.5,Ultraspherical(1,[-2.,-1.]))
+Directed{true,Float64}(1.0)
 
-@test rangespace(SingularIntegral(S,0))==Chebyshev([-2.,-1.])
+S=JacobiWeight(0.5,0.5,Ultraspherical(1,[-2.,-1.]))
 
 testsies(S)
 
