@@ -1,14 +1,14 @@
 using Base.Test, ApproxFun, SingularIntegralEquations
     import ApproxFun: ∞, testbandedoperator, testfunctional, testbandedblockoperator, testraggedbelowoperator
-    import SingularIntegralEquations: testsies, ⁺, mobius, joukowskyinverse, sqrtx2, Directed
+    import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, sqrtx2, Directed
 
 
 ## Sqrt singularity
 
-Directed{true,Float64}(1.0)
+S=JacobiWeight(0.5,0.5,Ultraspherical(1))
+testsies(S)
 
 S=JacobiWeight(0.5,0.5,Ultraspherical(1,[-2.,-1.]))
-
 testsies(S)
 
 f=Fun(x->exp(x)*sqrt(x+2)*sqrt(-1-x),S)

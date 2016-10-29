@@ -48,7 +48,10 @@ end
 
 (::Type{Directed{s}}){s}(x) = Directed{s,eltype(x)}(x)
 
+Base.convert{s,T}(::Type{Directed{s,T}},x::Directed{s}) = Directed{s,T}(T(x.x))
 Base.convert{s,T}(::Type{Directed{s,T}},x::T) = Directed{s,T}(x)
+Base.convert{s,T}(::Type{Directed{s,T}},x::Real) = Directed{s,T}(T(x))
+Base.convert{s,T}(::Type{Directed{s,T}},x::Complex) = Directed{s,T}(T(x))
 
 const ⁺ = Directed{true}(true)
 const ⁻ = Directed{false}(true)
@@ -72,13 +75,17 @@ for OP in (:*,:+,:-,:/)
     end
 end
 
+for OP in (:(Base.isfinite),:(Base.isinf))
+    @eval $OP(a::Directed) = $OP(a.x)
+end
+
 
 # branchcuts of log, sqrt, etc. are oriented from (0,-∞)
 Base.log(x::Directed{true}) = log(-x.x) - π*im
 Base.log(x::Directed{false}) = log(-x.x) + π*im
 Base.log1p(x::Directed) = log(1+x)
-Base.sqrt(x::Directed{true}) = -sqrt(-x.x)
-Base.sqrt(x::Directed{false}) = sqrt(-x.x)
+Base.sqrt(x::Directed{true}) = -im*sqrt(-x.x)
+Base.sqrt(x::Directed{false}) = im*sqrt(-x.x)
 ^(x::Directed{true},a::Number) = exp(-a*π*im)*(-x.x)^a
 ^(x::Directed{false},a::Number) = exp(a*π*im)*(-x.x)^a
 
@@ -155,23 +162,27 @@ function testsieoperators(S::Space)
 end
 
 
-function testsieeval(S::Space)
+function testsieeval(S::Space;posdirection=im)
     p=ApproxFun.checkpoints(S)[1] # random point on contour
     x=Fun(domain(S))
     z=2.12312231+1.433453443534im # random point not on contour
 
     for k=1:5
         f=Fun([zeros(k-1);1],S)
-        @test abs(linesum(f*log(abs(x-z)))/π-logkernel(f,z)) ≤ 100eps()
         @test abs(sum(f/(z-x))-stieltjes(f,z)) ≤ 100eps()
+        @test_approx_eq stieltjes(f,p*⁺) stieltjes(f,p+eps()*posdirection)
+        @test_approx_eq stieltjes(f,p*⁻) stieltjes(f,p-eps()*posdirection)
         @test_approx_eq cauchy(f,p*⁺)-cauchy(f,p*⁻) f(p)
         @test_approx_eq im*(cauchy(f,p*⁺)+cauchy(f,p*⁻)) hilbert(f,p)
+
+        @test abs(linesum(f*log(abs(x-z)))/π-logkernel(f,z)) ≤ 100eps()
+        @test_approx_eq logkernel(f,p) logkernel(f,p+eps()*posdirection)
     end
 end
 
-function testsies(S::Space)
+function testsies(S::Space;posdirection=im)
     testsieoperators(S)
-    testsieeval(S)
+    testsieeval(S;posdirection=posdirection)
 end
 
 end #module

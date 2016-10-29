@@ -5,7 +5,9 @@ logabs(z) = log(abs2(z))/2
 sqrtabs(z) = sqrt(abs(z))
 
 # sqrtx2 is analytic continuation of sqrt(z^2-1)
-sqrtx2(z::Directed) = sqrt(z-1)*sqrt(z.x+1)
+# with the oriented branch cut [-1,1]
+# we need to reverseorientation, as sqrt has branch cut [0,∞)
+sqrtx2(z::Directed) = sqrt(reverseorientation(z)-1)*sqrt(z.x+1)
 sqrtx2(z::Number) = sqrt(z-1)*sqrt(z+1)
 sqrtx2(x::Real) = sign(x)*sqrt(x^2-1)
 
@@ -31,10 +33,10 @@ end
 # the first maps the slit plane to the inner circle, the second to the outer circle
 #
 # it is more accurate near infinity to do 1/J_- than z - sqrtx2(z) as it avoids round off
-joukowskyinverse(::Type{Val{true}},z) = 1./joukowskyinverse(Val{false},reverseorientation(z))
+joukowskyinverse(::Type{Val{true}},z) = 1./joukowskyinverse(Val{false},z)
 joukowskyinverse(::Type{Val{false}},z) = value(z)+sqrtx2(z)
 
-joukowskyinverseabs(::Type{Val{true}},z) = 1./joukowskyinverseabs(Val{false},reverseorientation(z))
+joukowskyinverseabs(::Type{Val{true}},z) = 1./joukowskyinverseabs(Val{false},z)
 joukowskyinverseabs(::Type{Val{false}},z) = sqrt(abs2(z)+2x̄sqrtx2real(z)+sqrtx2abs(z)^2)
 
 
@@ -98,19 +100,19 @@ function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
 
         sx2z=sqrtx2(z)
         sx2zi=1./sx2z
-        Jm=1./(z+sx2z)  # joukowskyinverse(true,z)
+        Jm=1./(value(z)+sx2z)  # joukowskyinverse(true,z)
 
 
         if length(cfs) ≥1
             ret = π*cfs[1]*sx2zi
 
             if length(cfs) ≥2
-                ret += cfs[2]*π*(z.*sx2zi-1)
+                ret += cfs[2]*π*(value(z).*sx2zi-1)
             end
 
             ret - 2π*hornersum(cfs[3:end],Jm)
         else
-            zero(z)
+            zero(value(z))
         end
     elseif isapproxinteger(sp.α) && isapproxinteger(sp.β)
         stieltjes(sp.space,coefficients(u,sp,sp.space),z)
@@ -185,7 +187,7 @@ function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
     elseif  sp.α == sp.β == -.5
         cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
         z=mobius(sp,z)
-        x,r = joukowskyinversereal(Val{true},z),joukowskyinverseabss(Val{true},z)
+        x,r = joukowskyinversereal(Val{true},z),joukowskyinverseabs(Val{true},z)
         y = r*exp(im*acos(x/r))
 
         if length(cfs) ≥1
