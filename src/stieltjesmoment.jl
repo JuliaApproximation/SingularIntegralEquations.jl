@@ -74,31 +74,6 @@ end
 
 
 
-function stieltjesjacobimoment(α,β,k::Integer,z,s::Bool)
-    if α == β == 0
-        return stieltjeslegendremoment(k,z,s)
-    elseif isapprox(α,0) && isapprox(β,0.5)
-        if k==1
-            return -2*sqrt(2)*(sqrtatansqrt(2/(z-1))-1,!s)
-        elseif k==2
-            return 2*sqrt(2)*(1/3*(3z-2)-z*sqrtatansqrt(2/(z-1),!s))
-        end
-    elseif isapprox(α,0) && isapprox(β,-0.5)
-        if k==1
-            return 2im*(s?-1:1)*sqrt(1/(1-z))*atan((s?-1:1)*im*sqrt(2/(1-z)))
-        elseif k==2 && real(z)<0
-            return z/sqrt(1-z)*(logabs((1+1/sqrt(1-z))*(1-sqrt(2)/sqrt(1-z))/((1-1/sqrt(1-z))*(1+sqrt(2)/sqrt(1-z))))-π*im*(s?1:-1))-
-                            2*sqrt(2)-2z/sqrt(1-z)*asinh(sqrt(-1/z))
-        elseif k==2
-            return z/sqrt(1-z)*log((1+1/sqrt(1-z))*(1-sqrt(2)/sqrt(1-z))/((1-1/sqrt(1-z))*(1+sqrt(2)/sqrt(1-z))))-
-                             2*sqrt(2)-2z/sqrt(1-z)*asinh(im*(s?1:-1)*sqrt(1/z))
-        end
-    elseif !isapprox(α,0) && isapprox(β,0.)
-        return (-1)^k*stieltjesjacobimoment(β,α,k,-z,!s)
-    end
-    error("stieltjesmoment not implemented for JacobiWeight "*string(α)*string(β))
-end
-
 
 stieltjesmoment{DD}(S::JacobiWeight{Chebyshev{DD},DD},k::Integer,z)=stieltjesjacobimoment(S.α,S.β,k,tocanonical(S,z))
 

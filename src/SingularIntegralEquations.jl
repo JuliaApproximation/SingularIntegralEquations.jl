@@ -36,25 +36,40 @@ import ApproxFun: testbandedoperator
 
 """
 `Directed` represents a number that is a limit from either left (s=true) or right (s=false)
+For functions with branch cuts, it is assumed that the value is on the branch cut,
+Therefore not requiring tolerances.  This will naturally give the analytic continuation.
 """
-immutable Directed{s,T}
+immutable Directed{s,T} <: Number
     x::T
 end
 
 Base.convert{s}(::Type{Directed{s}},x) = Directed{s,eltype(x)}(x)
-*{s}(a::Directed{s},b::Number) = Directed{s}(a.x*b)
-*{s}(b::Number,a::Directed{s}) = a*b
 
 const ⁺ = Directed{true}(true)
 const ⁻ = Directed{false}(true)
 
+orientationsign(::Type{Directed{true}}) = 1
+orientationsign(::Type{Directed{false}}) = -1
+orientation{s}(::Type{Directed{s}}) = s
+orientation{s}(::Directed{s}) = s
+reverseorientation{s}(x::Directed{s}) = Directed{!s}(x)
+reverseorientation(x::Number) = x
+
+
+*{s}(a::Directed{s},b::Number) = Directed{s}(a.x*b)
+*{s}(b::Number,a::Directed{s}) = a*b
+
+# branchcuts of log, sqrt, etc. are oriented from (0,-∞)
+Base.log(x::Directed{true}) = log(-x.x) - π*im
+Base.log(x::Directed{false}) = log(-x.x) + π*im
+Base.log1p(x::Directed) = log(1+x)
+Base.sqrt(x::Directed{true}) = -sqrt(-x.x)
+Base.sqrt(x::Directed{false}) = sqrt(-x.x)
+^(x::Directed{true},a::Number) = exp(-a*π*im)*(-x.x)^a
+^(x::Directed{false},a::Number) = exp(a*π*im)*(-x.x)^a
 
 
 
-
-
-# we don't override for Bool and Function to make overriding below easier
-# TODO: change when cauchy(f,z,s) calls cauchy(f.coefficients,space(f),z,s)
 
 for OP in (:stieltjes,:stieltjesintegral,:pseudostieltjes)
     @eval $OP(f::Fun)=$OP(space(f),coefficients(f))

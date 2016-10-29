@@ -28,14 +28,6 @@ function cauchycircleS(cfs::AbstractVector,z::Number,s::Bool)
 end
 
 
-function stieltjes{DD<:Circle}(sp::Laurent{DD},f::AbstractVector,z,s::Bool)
-    d=domain(sp)
-    if !d.orientation
-        return -stieltjes(reverseorientation(Fun(f,sp)),z,!s)
-    end
-    @assert in(z,d)
-    -2π*im*cauchycircleS(f,mappoint(d,Circle(),z),s)
-end
 function stieltjes{DD<:Circle}(sp::Laurent{DD},f::AbstractVector,z::Number)
     d=domain(sp)
     if !d.orientation
@@ -46,8 +38,18 @@ function stieltjes{DD<:Circle}(sp::Laurent{DD},f::AbstractVector,z::Number)
     -2π*im*cauchycircleS(f,z,abs(z) < 1)
 end
 
-stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Vector)=[stieltjes(sp,f,zk) for zk in z]
-stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Matrix)=reshape(stieltjes(sp,f,vec(z)),size(z,1),size(z,2))
+function stieltjes{DD<:Circle,s}(sp::Laurent{DD},f::AbstractVector,z::Directed{s})
+    d=domain(sp)
+    if !d.orientation
+        return -stieltjes(reverseorientation(Fun(f,sp)),reverseorientation(z))
+    end
+
+    z=mappoint(d,Circle(),z)
+    -2π*im*cauchycircleS(f,z,orientation(z))
+end
+
+stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Vector) = [stieltjes(sp,f,zk) for zk in z]
+stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Matrix) = reshape(stieltjes(sp,f,vec(z)),size(z,1),size(z,2))
 
 
 

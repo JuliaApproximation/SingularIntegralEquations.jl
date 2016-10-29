@@ -13,21 +13,13 @@ function sqrtx2(f::Fun)
     linsolve([B,A],[sqrtx2(first(f))];tolerance=ncoefficients(f)*10E-15)
 end
 
-# intervaloffcircle maps the slit plane to the interior(true)/exterior(false) disk
-# intervaloncircle maps the interval to the upper(true)/lower(false) half circle
+# these are two inverses of the joukowsky map
+# the first maps the slit plane to the inner circle, the second to the outer circle
+#
+# it is more accurate near infinity to do 1/J_- than z - sqrtx2(z) as it avoids round off
+joukowskyinverse(::Type{Val{true}},z) = 1./joukowskyinverse(Val{false},reverseorientation(z))
+joukowskyinverse(::Type{Val{false}},z) = z+sqrtx2(z)
 
-# it is more accurate near infinity to do 1/J_- as it avoids round off
-intervaloffcircle(s::Bool,z)=s?1./intervaloffcircle(false,z):(z+sqrtx2(z))
-intervaloncircle(s::Bool,x)=x+1.0im*(s?1:-1).*sqrt(1-x).*sqrt(x+1)
-
-intervaloffcircle(s::Int,x)=intervaloffcircle(s==1,x)
-intervaloncircle(s::Int,x)=intervaloncircle(s==1,x)
-
-#TODO: These aren't quite typed correctly but the trouble comes from anticipating the unifying type without checking every element.
-
-updownjoukowskyinverse{T<:Number}(s::Bool,x::T) = in(x,Interval(-one(T),one(T))) ? intervaloncircle(s,x) : intervaloffcircle(s,x)
-updownjoukowskyinverse{T<:Number}(s::Bool,x::Vector{T}) = Complex{real(T)}[updownjoukowskyinverse(s,xk) for xk in x]
-updownjoukowskyinverse{T<:Number}(s::Bool,x::Array{T,2}) = Complex{real(T)}[updownjoukowskyinverse(s,x[k,j]) for k=1:size(x,1),j=1:size(x,2)]
 
 function hornersum{S<:Number,V<:Number}(cfs::AbstractVector{S},y::V)
     N,P = length(cfs),promote_type(S,V)
@@ -107,41 +99,6 @@ function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
 end
 
 
-function stieltjes{SS<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{SS,DD},u,x::Number,s::Bool)
-    d=domain(sp)
-
-    if sp.α == sp.β == .5
-        cfs=coefficients(u,sp.space,Ultraspherical(1,d))
-        π*hornersum(cfs,intervaloncircle(!s,mobius(sp,x)))
-    elseif sp.α == sp.β == -.5
-        cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
-        x=mobius(sp,x)
-
-        if length(cfs) ≥1
-            ret = -π*im*cfs[1]*(s?1:-1)/sqrt(1-x^2)
-
-            if length(cfs) ≥2
-                ret += cfs[2]*(-π*im*(s?1:-1)*x/sqrt(1-x^2)-π)
-            end
-
-            ret - 2π*hornersum(cfs[3:end],intervaloncircle(!s,x))
-        else
-            0.0+0.0im
-        end
-    else
-        if d==Interval()
-            S=JacobiWeight(sp.α,sp.β,Jacobi(sp.β,sp.α))
-            cfs=coefficients(u,sp,S)
-            cf=stieltjesforward(S,length(cfs),x,s)
-            dotu(cf,cfs)
-        else
-            @assert isa(d,Interval)
-            stieltjes(setdomain(sp,Interval()),u,mobius(sp,x),s)
-        end
-    end
-end
-
-
 
 ##
 #  hilbert on JacobiWeight space
@@ -193,12 +150,12 @@ function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
     if sp.α == sp.β == .5
         cfs=coefficients(u,sp.space,Ultraspherical(1,d))
         z=mobius(sp,z)
-        y = updownjoukowskyinverse(true,z)
+        y = joukowskyinverse(Val{true},z)
         arclength(d)*realintegratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
         cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
         z=mobius(sp,z)
-        y = updownjoukowskyinverse(true,z)
+        y = joukowskyinverse(Val{true},z)
 
         if length(cfs) ≥1
             ret = -cfs[1]*arclength(d)*(logabs(y)+logabs(4/(b-a)))/2
@@ -234,55 +191,22 @@ function stieltjesintegral{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,D
 
     if sp.α == sp.β == .5
         cfs=coefficients(u,sp.space,Ultraspherical(1,d))
-        y=intervaloffcircle(true,mobius(sp,z))
+        y=joukowskyinverse(Val{true},mobius(sp,z))
         π*complexlength(d)*integratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
         cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
         z=mobius(sp,z)
-        y=intervaloffcircle(true,z)
+        y=joukowskyinverse(Val{true},z)
 
         if length(cfs) ≥1
             ret = -cfs[1]*π*complexlength(d)*(log(y)+log(4/abs(b-a)))/2
 
             if length(cfs) ≥2
-                ret += -π*complexlength(d)*cfs[2]*intervaloffcircle(true,z)/2
+                ret += -π*complexlength(d)*cfs[2]*jouksyinverse(Val{true},z)/2
             end
 
             if length(cfs) ≥3
                 ret - π*complexlength(d)*integratejin(4/abs(b-a),view(cfs,3:length(cfs)),y)
-            else
-                ret
-            end
-        else
-            zero(z)
-        end
-    else
-        error("stieltjes integral not implemented for parameters "*string(sp.α)*","*string(sp.β))
-    end
-end
-
-function stieltjesintegral{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z,s::Bool)
-    d=domain(u)
-    a,b=d.a,d.b     # TODO: type not inferred right now
-
-    if sp.α == sp.β == .5
-        cfs=coefficients(u,sp.space,Ultraspherical(1,d))
-        y=intervaloncircle(!s,mobius(sp,z))
-        π*complexlength(d)*integratejin(4/(b-a),cfs,y)/2
-    elseif  sp.α == sp.β == -.5
-        cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
-        z=mobius(sp,z)
-        y=intervaloncircle(!s,z)
-
-        if length(cfs) ≥1
-            ret = -cfs[1]*π*complexlength(d)*(log(y)+log(4/(b-a)))/2
-
-            if length(cfs) ≥2
-                ret += -π*complexlength(d)*cfs[2]*intervaloncircle(!s,z)/2
-            end
-
-            if length(cfs) ≥3
-                ret - π*complexlength(d)*integratejin(4/(b-a),view(cfs,3:length(cfs)),y)
             else
                 ret
             end
