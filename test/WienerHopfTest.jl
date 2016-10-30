@@ -95,11 +95,12 @@ z=exp(0.1im)
 @test_approx_eq Φp(z) (I+cauchy(V,z*⁺))
 @test_approx_eq Φp(z)*inv(Φmi(z)) G(z)
 
-@test_approx_eq inv(Φmi)(z) inv(Φmi(z))
+Φm=inv.(Φmi)
+@test_approx_eq Φm(z) inv(Φmi(z))
 
 T=ToeplitzOperator(G)
 
-L  = ToeplitzOperator(inv(Φmi))
+L  = ToeplitzOperator(Φm)
 U  = ToeplitzOperator(Φp)
 
 @test norm((T-U*L)[1:10,1:10]) < 100eps()  # check the accuracy
