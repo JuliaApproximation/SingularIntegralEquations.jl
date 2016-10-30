@@ -1,5 +1,5 @@
 using ApproxFun, SingularIntegralEquations, Base.Test
-
+    import SingularIntegralEquations: ⁻, ⁺
 
 # Scalar case
 
@@ -36,8 +36,8 @@ F=Fun((G-I)[:,1])
 
 @test norm((C*F - [C*F[1];C*F[2]]).coefficients) == 0
 @test norm((C*G - [C*G[1] C*G[3];C*G[2] C*G[4]]).coefficients) == 0
-@test_approx_eq cauchy(F,exp(0.1im),-) (C*F)(exp(0.1im))
-@test_approx_eq cauchy(G,exp(0.1im),-) (C*G)(exp(0.1im))
+@test_approx_eq cauchy(F,exp(0.1im)⁻) (C*F)(exp(0.1im))
+@test_approx_eq cauchy(G,exp(0.1im)⁻) (C*G)(exp(0.1im))
 
 
 
@@ -80,26 +80,27 @@ V2  = A\(G-I)[:,2]
 @test norm((A*V[:,1]-(G[:,1]-[1,0])).coefficients) < 100eps()
 
 z=exp(0.1im)
-@test_approx_eq V(z)+(I-G(z))*cauchy(V,z,-) G(z)-I
+@test_approx_eq V(z)+(I-G(z))*cauchy(V,z*⁻) G(z)-I
 
-@test_approx_eq cauchy(V[1,1],exp(0.1im),-) (C*V[1,1])(exp(0.1im))
-@test_approx_eq cauchy(V[2,1],exp(0.1im),-) (C*V[2,1])(exp(0.1im))
-@test_approx_eq cauchy(V[:,1],exp(0.1im),-) (C*V[:,1])(exp(0.1im))
-@test_approx_eq cauchy(V,exp(0.1im),-) (C*V)(exp(0.1im))
+@test_approx_eq cauchy(V[1,1],exp(0.1im)⁻) (C*V[1,1])(exp(0.1im))
+@test_approx_eq cauchy(V[2,1],exp(0.1im)⁻) (C*V[2,1])(exp(0.1im))
+@test_approx_eq cauchy(V[:,1],exp(0.1im)⁻) (C*V[:,1])(exp(0.1im))
+@test_approx_eq cauchy(V,exp(0.1im)⁻) (C*V)(exp(0.1im))
 
 Φmi = I+C*V
 Φp = V+Φmi
 
 
-@test_approx_eq Φmi(z) (I+cauchy(V,z,-))
-@test_approx_eq Φp(z) (I+cauchy(V,z,+))
+@test_approx_eq Φmi(z) (I+cauchy(V,z*⁻))
+@test_approx_eq Φp(z) (I+cauchy(V,z*⁺))
 @test_approx_eq Φp(z)*inv(Φmi(z)) G(z)
 
-@test_approx_eq inv(Φmi)(z) inv(Φmi(z))
+Φm=inv.(Φmi)
+@test_approx_eq Φm(z) inv(Φmi(z))
 
 T=ToeplitzOperator(G)
 
-L  = ToeplitzOperator(inv(Φmi))
+L  = ToeplitzOperator(Φm)
 U  = ToeplitzOperator(Φp)
 
 @test norm((T-U*L)[1:10,1:10]) < 100eps()  # check the accuracy

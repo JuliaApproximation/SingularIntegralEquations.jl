@@ -1,13 +1,14 @@
 using Base.Test, ApproxFun, SingularIntegralEquations
     import ApproxFun: ∞, testbandedoperator, testfunctional, testbandedblockoperator, testraggedbelowoperator
-    import SingularIntegralEquations: testsies
+    import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, sqrtx2, Directed
+
 
 ## Sqrt singularity
 
+S=JacobiWeight(0.5,0.5,Ultraspherical(1))
+testsies(S)
+
 S=JacobiWeight(0.5,0.5,Ultraspherical(1,[-2.,-1.]))
-
-@test rangespace(SingularIntegral(S,0))==Chebyshev([-2.,-1.])
-
 testsies(S)
 
 f=Fun(x->exp(x)*sqrt(x+2)*sqrt(-1-x),S)
@@ -226,9 +227,7 @@ testbandedoperator(Cauchy(d1,d2))
 
 #Legendre uses FastGaussQuadrature
 f=Fun(exp,Legendre())
-#@test_approx_eq cauchy(f,.1+0.000000000001im) cauchy(f,.1,+)
-#@test_approx_eq cauchy(f,.1-0.000000000001im) cauchy(f,.1,-)
-#@test_approx_eq (cauchy(f,.1,+)-cauchy(f,.1,-)) exp(.1)
+
 
 ω=2.
 d=Interval(0.5im,30.0im/ω)
@@ -248,7 +247,7 @@ f=Fun(exp,a)*sqrt(abs((ζ-1)*(ζ-im)))
 z=.1+.2im
 #@test_approx_eq cauchy(f,z) sum(f/(ζ-z))/(2π*im)
 z=exp(.1im)
-@test_approx_eq hilbert(f,z) im*(cauchy(f,z,+)+cauchy(f,z,-))
+@test_approx_eq hilbert(f,z) im*(cauchy(f,z*⁺)+cauchy(f,z*⁻))
 
 
 

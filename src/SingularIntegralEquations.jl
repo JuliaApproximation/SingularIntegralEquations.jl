@@ -34,15 +34,77 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
 
 import ApproxFun: testbandedoperator
 
-# we don't override for Bool and Function to make overriding below easier
-# TODO: change when cauchy(f,z,s) calls cauchy(f.coefficients,space(f),z,s)
+import DualNumbers: value
+
+"""
+`Directed` represents a number that is a limit from either left (s=true) or right (s=false)
+For functions with branch cuts, it is assumed that the value is on the branch cut,
+Therefore not requiring tolerances.  This will naturally give the analytic continuation.
+"""
+immutable Directed{s,T} <: Number
+    x::T
+    Directed(x::T) = new(x)
+    Directed(x::Number) = new(T(x))
+end
+
+
+(::Type{Directed{s}}){s}(x) = Directed{s,eltype(x)}(x)
+
+Base.convert{s,T}(::Type{Directed{s,T}},x::Directed{s}) = Directed{s,T}(T(x.x))
+Base.convert{s,T}(::Type{Directed{s,T}},x::T) = Directed{s,T}(x)
+Base.convert{s,T}(::Type{Directed{s,T}},x::Real) = Directed{s,T}(T(x))
+Base.convert{s,T}(::Type{Directed{s,T}},x::Complex) = Directed{s,T}(T(x))
+
+const ⁺ = Directed{true}(true)
+const ⁻ = Directed{false}(true)
+
+orientationsign(::Type{Directed{true}}) = 1
+orientationsign(::Type{Directed{false}}) = -1
+orientation{s}(::Type{Directed{s}}) = s
+orientation{s}(::Directed{s}) = s
+
+
+value(x::Directed) = x.x
+value(x::Number) = x
+value(x::Fun) = x
+reverseorientation{s}(x::Directed{s}) = Directed{!s}(x.x)
+reverseorientation(x::Number) = x
+
+
+for OP in (:*,:+,:-,:/)
+    @eval begin
+        $OP{s}(a::Directed{s}) = Directed{s}($OP(a.x))
+        $OP{s}(a::Directed{s},b::Directed{s}) = Directed{s}($OP(a.x,b.x))
+        $OP{s}(a::Directed{s},b::Number) = Directed{s}($OP(a.x,b))
+        $OP{s}(a::Number,b::Directed{s}) = Directed{s}($OP(a,b.x))
+    end
+end
+
+real{s,T}(::Type{Directed{s,T}}) = real(T)
+
+# abs, real and imag delete orientation.
+for OP in (:(Base.isfinite),:(Base.isinf),:(Base.abs),:(Base.real),:(Base.imag),:(Base.angle))
+    @eval $OP(a::Directed) = $OP(a.x)
+end
+
+
+# branchcuts of log, sqrt, etc. are oriented from (0,-∞)
+Base.log(x::Directed{true}) = log(-x.x) - π*im
+Base.log(x::Directed{false}) = log(-x.x) + π*im
+Base.log1p(x::Directed) = log(1+x)
+Base.sqrt(x::Directed{true}) = -im*sqrt(-x.x)
+Base.sqrt(x::Directed{false}) = im*sqrt(-x.x)
+^(x::Directed{true},a::Integer) = x.x^a
+^(x::Directed{false},a::Integer) = x.x^a
+^(x::Directed{true},a::Number) = exp(-a*π*im)*(-x.x)^a
+^(x::Directed{false},a::Number) = exp(a*π*im)*(-x.x)^a
+
+
+
 
 for OP in (:stieltjes,:stieltjesintegral,:pseudostieltjes)
-    @eval begin
-        $OP(f::Fun)=$OP(space(f),coefficients(f))
-        $OP(f::Fun,z,s...)=$OP(space(f),coefficients(f),z,s...)
-        $OP(f::Fun,z,s::Function)=$OP(f,z,s==+)
-    end
+    @eval $OP(f::Fun) = $OP(space(f),coefficients(f))
+    @eval $OP(f::Fun,z) = $OP(space(f),coefficients(f),z)
 end
 
 hilbert(f) = Hilbert()*f
@@ -110,23 +172,27 @@ function testsieoperators(S::Space)
 end
 
 
-function testsieeval(S::Space)
+function testsieeval(S::Space;posdirection=im)
     p=ApproxFun.checkpoints(S)[1] # random point on contour
     x=Fun(domain(S))
     z=2.12312231+1.433453443534im # random point not on contour
 
     for k=1:5
         f=Fun([zeros(k-1);1],S)
-        @test abs(linesum(f*log(abs(x-z)))/π-logkernel(f,z)) ≤ 100eps()
         @test abs(sum(f/(z-x))-stieltjes(f,z)) ≤ 100eps()
-        @test_approx_eq cauchy(f,p,+)-cauchy(f,p,-) f(p)
-        @test_approx_eq im*(cauchy(f,p,+)+cauchy(f,p,-)) hilbert(f,p)
+        @test_approx_eq stieltjes(f,p*⁺) stieltjes(f,p+eps()*posdirection)
+        @test_approx_eq stieltjes(f,p*⁻) stieltjes(f,p-eps()*posdirection)
+        @test_approx_eq cauchy(f,p*⁺)-cauchy(f,p*⁻) f(p)
+        @test_approx_eq im*(cauchy(f,p*⁺)+cauchy(f,p*⁻)) hilbert(f,p)
+
+        @test abs(linesum(f*log(abs(x-z)))/π-logkernel(f,z)) ≤ 100eps()
+        @test_approx_eq logkernel(f,p) logkernel(f,p+eps()*posdirection)
     end
 end
 
-function testsies(S::Space)
+function testsies(S::Space;posdirection=im)
     testsieoperators(S)
-    testsieeval(S)
+    testsieeval(S;posdirection=posdirection)
 end
 
 end #module
