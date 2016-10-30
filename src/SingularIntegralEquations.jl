@@ -62,6 +62,8 @@ orientationsign(::Type{Directed{true}}) = 1
 orientationsign(::Type{Directed{false}}) = -1
 orientation{s}(::Type{Directed{s}}) = s
 orientation{s}(::Directed{s}) = s
+
+
 value(x::Directed) = x.x
 value(x::Number) = x
 value(x::Fun) = x

@@ -1,23 +1,9 @@
 using Base.Test, ApproxFun, SingularIntegralEquations
     import ApproxFun: ∞, testbandedoperator, testfunctional, testbandedblockoperator, testraggedbelowoperator, JacobiZ
-    import SingularIntegralEquations: testsies, testsieeval, stieltjesmoment, Directed, _₂F₁, ⁺, value
+    import SingularIntegralEquations: testsies, testsieeval, stieltjesmoment, Directed, _₂F₁, ⁺, ⁻, value
 
 
 testsieeval(Jacobi(0,0))
-
-
-f=Fun(exp,Legendre())
-cauchy(f,0.1,true)-cauchy(f,0.1,false)
-
-
-
-cauchy(f,0.1,true)
-
-cauchy(f,0.1+0.00000001im)
-
-exp(0.1)
-(cauchy(Jacobi(0,0),a,0.1,true)-cauchy(Jacobi(0,0),a,0.1,false))
-
 
 a=1.0;b=2.0+im
 d=Interval(a,b)
@@ -116,6 +102,3 @@ f=real(exp(ζ))
 @which stieltjes(ApproxFun.setcanonicaldomain(space(f)),f.coefficients,exp(0.1im))
 @which hilbert(space(f),f.coefficients,exp(0.1im))
 testsieeval(space(f))
-plot(a)
-
-cauchy(f,)
