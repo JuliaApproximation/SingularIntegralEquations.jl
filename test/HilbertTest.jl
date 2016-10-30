@@ -249,7 +249,7 @@ f=Fun(exp,a)*sqrt(abs((ζ-1)*(ζ-im)))
 z=.1+.2im
 #@test_approx_eq cauchy(f,z) sum(f/(ζ-z))/(2π*im)
 z=exp(.1im)
-@test_approx_eq hilbert(f,z) im*(cauchy(f,z,+)+cauchy(f,z,-))
+@test_approx_eq hilbert(f,z) im*(cauchy(f,z*⁺)+cauchy(f,z*⁻))
 
 
 

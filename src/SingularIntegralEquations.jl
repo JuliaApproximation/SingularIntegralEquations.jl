@@ -62,6 +62,7 @@ orientation{s}(::Type{Directed{s}}) = s
 orientation{s}(::Directed{s}) = s
 value(x::Directed) = x.x
 value(x::Number) = x
+value(x::Fun) = x
 reverseorientation{s}(x::Directed{s}) = Directed{!s}(x.x)
 reverseorientation(x::Number) = x
 
@@ -75,7 +76,8 @@ for OP in (:*,:+,:-,:/)
     end
 end
 
-for OP in (:(Base.isfinite),:(Base.isinf))
+# abs, real and imag delete orientation.
+for OP in (:(Base.isfinite),:(Base.isinf),:(Base.abs),:(Base.real),:(Base.imag))
     @eval $OP(a::Directed) = $OP(a.x)
 end
 

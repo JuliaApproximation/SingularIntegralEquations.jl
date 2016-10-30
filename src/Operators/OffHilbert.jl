@@ -89,7 +89,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
             if ord == 0
                 z=Fun(identity,rs)
                 x=mobius(ds,z)
-                y=intervaloffcircle(true,x)
+                y=joukowskyinverse(Val{true},x)
                 yk,ykp1=y,y*y
                 ret=Array(typeof(y),300)
                 ret[1]=-.5logabs(2y)+.25real(ykp1)
@@ -104,7 +104,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
                     l=max(l,ncoefficients(ret[n])-n)
                 end
             elseif ord == 1
-                y=Fun(z->intervaloffcircle(true,mobius(ds,z)),rs)
+                y=Fun(z->joukowskyinverse(Val{true},mobius(ds,z)),rs)
                 ret=Array(typeof(y),300)
                 ret[1]=-y
                 n,l,u = 1,ncoefficients(ret[1])-1,0
@@ -134,7 +134,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
             if ord == 0
                 z=Fun(identity,rs)
                 x=mobius(ds,z)
-                y=intervaloffcircle(true,x)
+                y=joukowskyinverse(Val{true},x)
                 yk,ykp1=y,y*y
                 ret=Array(typeof(y),300)
                 ret[1]=-logabs(2y/C)
@@ -153,7 +153,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
             elseif ord == 1
                 z=Fun(identity,rs)
                 x=mobius(ds,z)
-                y=intervaloffcircle(true,x)
+                y=joukowskyinverse(Val{true},x)
                 ret=Array(typeof(y),300)
                 ret[1]=-1/sqrtx2(x)
                 ret[2]=x*ret[1]+1
@@ -400,9 +400,9 @@ function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{Int,DD},DD},z::Number)
     @assert order(sp.space) == 1
     if sp.α == sp.β == 0.5
         # this translates the following cauchy to a functional
-        #    0.5im*hornersum(cfs,intervaloffcircle(true,mobius(u,z)))
+        #    0.5im*hornersum(cfs,joukowskyinverse(Val{true},mobius(u,z)))
         # which consists of multiplying by 2*im
-        -HornerFunctional(intervaloffcircle(true,mobius(sp,z)),sp)
+        -HornerFunctional(joukowskyinverse(Val{true},mobius(sp,z)),sp)
     else
         # calculate directly
         r=Array(eltype(z),0)

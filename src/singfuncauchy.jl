@@ -235,7 +235,7 @@ function stieltjesintegral{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,D
             ret = -cfs[1]*π*complexlength(d)*(log(y)+log(4/abs(b-a)))/2
 
             if length(cfs) ≥2
-                ret += -π*complexlength(d)*cfs[2]*jouksyinverse(Val{true},z)/2
+                ret += -π*complexlength(d)*cfs[2]*joukowskyinverse(Val{true},z)/2
             end
 
             if length(cfs) ≥3

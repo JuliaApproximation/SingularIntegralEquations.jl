@@ -45,7 +45,7 @@ function stieltjes{DD<:Circle,s}(sp::Laurent{DD},f::AbstractVector,z::Directed{s
     end
 
     z=mappoint(d,Circle(),z)
-    -2π*im*cauchycircleS(f,z,orientation(z))
+    -2π*im*cauchycircleS(f,value(z),orientation(z))
 end
 
 stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Vector) = [stieltjes(sp,f,zk) for zk in z]
@@ -54,12 +54,13 @@ stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Matrix) = reshape(stieltjes(sp,f,vec(
 
 
 
-stieltjes{DD<:Circle}(sp::Fourier{DD},f,z)=stieltjes(Laurent(domain(sp)),coefficients(f,sp,Laurent(domain(sp))),z)
+stieltjes{DD<:Circle}(sp::Fourier{DD},f,z) = stieltjes(Laurent(domain(sp)),coefficients(f,sp,Laurent(domain(sp))),z)
 
 
 
 # we implement cauchy ±1 as canonical
-hilbert{DD<:Circle}(sp::Laurent{DD},f,z)=(stieltjes(sp,f,z,true)+stieltjes(sp,f,z,false))/(-2π)
+# TODO: reimplement directly
+hilbert{DD<:Circle}(sp::Laurent{DD},f,z) = (stieltjes(sp,f,z*⁺)+stieltjes(sp,f,z*⁻))/(-2π)
 
 
 
