@@ -97,8 +97,4 @@ f=(1-x)^(-0.1)*(1+x)^(-0.2)*exp(x)
 
 ## Arc
 a=Arc(0.,1.,0.,π/2)
-ζ=Fun(identity,a)
-f=real(exp(ζ))
-@which stieltjes(ApproxFun.setcanonicaldomain(space(f)),f.coefficients,exp(0.1im))
-@which hilbert(space(f),f.coefficients,exp(0.1im))
-testsieeval(space(f))
+testsieeval(Legendre(a);posdirection=(-1-im))
