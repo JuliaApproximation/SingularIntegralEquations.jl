@@ -1,10 +1,5 @@
 import ApproxFun: dotu
 
-
-# This solves as a boundary value provblem
-
-stieltjesbackward(S::Space,z::Number) = JacobiZ(S,z)\[stieltjesmoment(S,0,z)]
-
 # This solves via forward substitution
 function forwardsubstitution!(ret,B,n,μ1,μ2)
     if n≥1
@@ -24,10 +19,19 @@ end
 forwardsubstitution(R,n,μ1,μ2) =
     forwardsubstitution!(Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n),R,n,μ1,μ2)
 
-stieltjesforward(sp::Space,n,z) = forwardsubstitution(JacobiZ(sp,z),n,
+
+
+# This solves as a boundary value provblem
+stieltjesbackward(S::Space,z::Number) = JacobiZ(S,z)\[stieltjesmoment(S,0,z)]
+
+
+stieltjesforward(sp::Space,n,z) = forwardsubstitution(JacobiZ(sp,value(z)),n,
                                                             stieltjesmoment(sp,0,z),
                                                             stieltjesmoment(sp,1,z))
 
+hilbertforward(sp::Space,n,z) = forwardsubstitution(JacobiZ(sp,z),n,
+                                                            hilbertmoment(sp,0,z),
+                                                            hilbertmoment(sp,1,z))
 
 
 function stieltjesintervalrecurrence(S,f::AbstractVector,z)
@@ -40,6 +44,7 @@ function stieltjesintervalrecurrence(S,f::AbstractVector,z)
         dotu(cfs,f)
     end
 end
+
 stieltjesintervalrecurrence(S,f::AbstractVector,z::AbstractArray) =
     reshape(promote_type(eltype(f),eltype(z))[ stieltjesintervalrecurrence(S,f,z[i]) for i in eachindex(z) ], size(z))
 
@@ -50,6 +55,15 @@ function stieltjes{D<:Interval}(S::PolynomialSpace{D},f,z::Number)
         stieltjesintervalrecurrence(Legendre(),coefficients(f,S,Legendre()),z)
     else
         stieltjes(setdomain(S,Interval()),f,mobius(S,z))
+    end
+end
+
+function hilbert{D<:Interval}(S::PolynomialSpace{D},f,z::Number)
+    if domain(S)==Interval()
+        cfs = hilbertforward(S,length(f),z)
+        dotu(cfs,f)
+    else
+        hilbert(setdomain(S,Interval()),f,mobius(S,z))
     end
 end
 
@@ -81,7 +95,7 @@ function logkernel{DD<:Interval}(S::PolynomialSpace{DD},v,z::Number)
         f=Fun(Fun(v,S),Legendre())  # convert to Legendre expansion
         u=D\(f|(2:∞))   # find integral, dropping first coefficient of f
 
-        (f.coefficients[1]*logabslegendremoment(z) + real(stieltjes(Fun(u,Legendre()),z)))/π
+        (f.coefficients[1]*logabslegendremoment(z) + real(stieltjes(Fun(u,Legendre()),z+0im)))/π
     else
         error("other intervals not yet implemented")
     end

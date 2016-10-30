@@ -34,6 +34,8 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
 
 import ApproxFun: testbandedoperator
 
+import DualNumbers: value
+
 """
 `Directed` represents a number that is a limit from either left (s=true) or right (s=false)
 For functions with branch cuts, it is assumed that the value is on the branch cut,
@@ -76,8 +78,10 @@ for OP in (:*,:+,:-,:/)
     end
 end
 
+real{s,T}(::Type{Directed{s,T}}) = real(T)
+
 # abs, real and imag delete orientation.
-for OP in (:(Base.isfinite),:(Base.isinf),:(Base.abs),:(Base.real),:(Base.imag))
+for OP in (:(Base.isfinite),:(Base.isinf),:(Base.abs),:(Base.real),:(Base.imag),:(Base.angle))
     @eval $OP(a::Directed) = $OP(a.x)
 end
 
@@ -88,6 +92,8 @@ Base.log(x::Directed{false}) = log(-x.x) + π*im
 Base.log1p(x::Directed) = log(1+x)
 Base.sqrt(x::Directed{true}) = -im*sqrt(-x.x)
 Base.sqrt(x::Directed{false}) = im*sqrt(-x.x)
+^(x::Directed{true},a::Integer) = x.x^a
+^(x::Directed{false},a::Integer) = x.x^a
 ^(x::Directed{true},a::Number) = exp(-a*π*im)*(-x.x)^a
 ^(x::Directed{false},a::Number) = exp(a*π*im)*(-x.x)^a
 

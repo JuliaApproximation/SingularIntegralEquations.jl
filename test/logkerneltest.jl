@@ -1,11 +1,9 @@
 using Base.Test, ApproxFun, SingularIntegralEquations
-    import ApproxFun: ∞, testbandedoperator, testfunctional, testbandedblockoperator, testraggedbelowoperator
-    import SingularIntegralEquations: testsies, testsieeval
+    import ApproxFun: ∞, testbandedoperator, testfunctional, testbandedblockoperator, testraggedbelowoperator, JacobiZ
+    import SingularIntegralEquations: testsies, testsieeval, stieltjesmoment, Directed, _₂F₁, ⁺, value
 
 
 testsieeval(Jacobi(0,0))
-
-@which stieltjes(Jacobi(0,0),rand(5),0.1+0.2im)
 
 
 f=Fun(exp,Legendre())

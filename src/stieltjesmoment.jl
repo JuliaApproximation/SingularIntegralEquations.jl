@@ -43,7 +43,8 @@ logjacobimoment(α::Real,β::Real,z) = logjacobimoment(α,β,0,z)
 stieltjeslegendremoment(n::Int,z) = stieltjesjacobimoment(zero(real(eltype(z))),zero(real(eltype(z))),n,z)
 stieltjeslegendremoment(z) = stieltjeslegendremoment(0,z)
 
-logabslegendremoment(z) = real(z*log((z+1)/(z-1))+log(z^2-1)-2)
+logabslegendremoment(z) = real(z)*logabs((z+1)/(z-1))-imag(z)*angle((z+1)/(z-1))+logabs(z^2-1)-2
+                        # real(z*log((z+1)/(z-1)))+logabs(z^2-1)-2
 @vectorize_1arg Number logabslegendremoment
 
 #=
@@ -96,22 +97,4 @@ end
 =#
 
 
-function hilbertmoment(S::JacobiWeight,k::Integer,x)
-    x=tocanonical(S,x)
-
-    if S.α == 0 && S.β == 0.5
-        if k==1
-            if isapprox(x,1.0)
-                return 2*sqrt(2)/π
-            else
-                y=sqrt(-2/(x-1))
-                return (2*sqrt(2)-sqrt(2)*(log((1+y)/(y-1))/y))/π
-            end
-        elseif k==2
-
-        end
-    elseif S.α == 0.5 && S.β == 0.
-
-    end
-    (stieltjesmoment(true,S,k,x)+stieltjesmoment(false,S,k,x))/(2π)::Float64
-end
+hilbertmoment(S::Space,k::Integer,x) = -real(stieltjesmoment(S,k,x*⁺)+stieltjesmoment(S,k,x*⁻))/(2π)
