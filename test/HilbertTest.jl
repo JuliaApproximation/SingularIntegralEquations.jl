@@ -1,29 +1,25 @@
 using Base.Test, ApproxFun, SingularIntegralEquations
-    import ApproxFun: ∞, testbandedoperator, testfunctional, testbandedblockoperator, testraggedbelowoperator
+    import ApproxFun: ∞, testbandedoperator, testfunctional, testbandedblockoperator, testraggedbelowoperator,
+                        setcanonicaldomain
     import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, sqrtx2, Directed
 
 
 ## Sqrt singularity
 
-S=JacobiWeight(0.5,0.5,Ultraspherical(1))
-testsies(S)
+for d in (Interval(),Interval(-2,-1),Interval(im,1))
+    testsies(d)
+end
+
 
 S=JacobiWeight(0.5,0.5,Ultraspherical(1,[-2.,-1.]))
-testsies(S)
-
 f=Fun(x->exp(x)*sqrt(x+2)*sqrt(-1-x),S)
 @test_approx_eq logkernel(f,-1.2) -0.05044654410790341  # Mathematica
 @test_approx_eq hilbert(f,-1.2) -0.057515957831535571  # Mathematica
 
 
 S=JacobiWeight(-0.5,-0.5,Chebyshev([-2.,-1.]))
-
 @test rangespace(SingularIntegral(S,0))==Chebyshev([-2.,-1.])
-
-testsies(S)
-
 f=Fun(x->exp(x)/(sqrt(x+2)*sqrt(-1-x)),S)
-
 @test_approx_eq logkernel(f,-1.2) -0.39563660592242765  # Mathematica
 @test_approx_eq hilbert(f,-1.2) 0.26527878405434321204  # Mathematica
 
@@ -84,9 +80,7 @@ testbandedoperator(H[w])
 
 println("Stieltjes test")
 
-ds1 = JacobiWeight(-.5,-.5,ApproxFun.ChebyshevDirichlet{1,1}())
-testsies(ds1)
-
+ds1 = JacobiWeight(-0.5,-0.5,ApproxFun.ChebyshevDirichlet{1,1}())
 ds2 = JacobiWeight(-.5,-.5,Chebyshev())
 rs = Chebyshev([2.,4.+3im])
 f1 = Fun(x->exp(x)/sqrt(1-x^2),ds1)
@@ -149,12 +143,12 @@ println("Cauchy test")
 
 
 f2=Fun(sech,PeriodicLine())
-@test_approx_eq cauchy(f2,1.+im) (0.23294739894134472 + 0.10998776661109881im )
-@test_approx_eq cauchy(f2,1.-im) (-0.23294739894134472 + 0.10998776661109881im )
+@test_approx_eq cauchy(f2,1+im) (0.23294739894134472 + 0.10998776661109881im )
+@test_approx_eq cauchy(f2,1-im) (-0.23294739894134472 + 0.10998776661109881im )
 
 
 f=Fun(sech,Line())
-@test_approx_eq cauchy(f,1.+im) cauchy(f2,1.+im)
+@test_approx_eq cauchy(f,1+im) cauchy(f2,1+im)
 
 
 f=Fun(z->exp(exp(0.1im)*z+1/z),Laurent(Circle()))
@@ -232,7 +226,7 @@ f=Fun(exp,Legendre())
 ω=2.
 d=Interval(0.5im,30.0im/ω)
 x=Fun(identity,Legendre(d))
-@test_approx_eq cauchy(exp(im*ω*x),1.+im) (-0.025430235512791915911 + 0.0016246822285867573678im)
+@test_approx_eq cauchy(exp(im*ω*x),1+im) (-0.025430235512791915911 + 0.0016246822285867573678im)
 
 
 println("Arc test")
@@ -241,11 +235,7 @@ a=Arc(0.,1.,0.,π/2)
 ζ=Fun(identity,a)
 f=Fun(exp,a)*sqrt(abs((ζ-1)*(ζ-im)))
 
-#TODO: testsies(space(f))
 
-
-z=.1+.2im
-#@test_approx_eq cauchy(f,z) sum(f/(ζ-z))/(2π*im)
 z=exp(.1im)
 @test_approx_eq hilbert(f,z) im*(cauchy(f,z*⁺)+cauchy(f,z*⁻))
 

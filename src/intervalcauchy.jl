@@ -88,7 +88,7 @@ end
 
 
 function logkernel{DD<:Interval}(S::PolynomialSpace{DD},v,z::Number)
-    if domain(S)==Interval()
+    if domain(S) == Interval()
         DS=JacobiWeight(1,1,Jacobi(1,1))
         D=Derivative(DS)[2:end,:]
 
@@ -97,7 +97,8 @@ function logkernel{DD<:Interval}(S::PolynomialSpace{DD},v,z::Number)
 
         (f.coefficients[1]*logabslegendremoment(z) + real(stieltjes(Fun(u,Legendre()),z+0im)))/π
     else
-        error("other intervals not yet implemented")
+        Mp=abs(fromcanonicalD(S,0))
+        Mp*logkernel(setcanonicaldomain(S),v,mobius(S,z))+linesum(Fun(v,S))*log(Mp)/π
     end
 end
 

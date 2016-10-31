@@ -195,4 +195,11 @@ function testsies(S::Space;posdirection=im)
     testsieeval(S;posdirection=posdirection)
 end
 
+function testsies(d::IntervalDomain;posdirection=im)
+    testsies(JacobiWeight(-0.5,-0.5,Chebyshev(d)))
+    testsies(JacobiWeight(0.5,0.5,Ultraspherical(1,d)))
+    testsies(JacobiWeight(-0.5,-0.5,ChebyshevDirichlet{1,1}(d)))
+    testsieeval(Legendre(d);posdirection=posdirection)
+end
+
 end #module
