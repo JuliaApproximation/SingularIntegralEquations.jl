@@ -67,8 +67,8 @@ function getindex{F<:BivariateFun}(⨍::DefiniteLineIntegral,B::Matrix{F})
     end
     ops=promotespaces(ret)
     InterlaceOperator(ops,
-                      PiecewiseSpace(map(domainspace,ret[1,:])),
-                      PiecewiseSpace(map(rangespace,ret[:,1])))
+                      PiecewiseSpace(map(domainspace,ops[1,:])),
+                      PiecewiseSpace(map(rangespace,ops[:,1])))
 end
 
 # Algebra with BivariateFun's
