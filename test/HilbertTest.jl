@@ -181,8 +181,8 @@ A=I-(f-Fun(one,space(f)))*Cauchy(-1)
 S=ApproxFun.choosedomainspace(A,(f-Fun(one,space(f))))
 AS=ApproxFun.promotedomainspace(A,S)
 
-testraggedbelowoperator(AS)
 
+testbandedblockoperator(AS)
 
 
 u=A\(f-Fun(one,space(f)))

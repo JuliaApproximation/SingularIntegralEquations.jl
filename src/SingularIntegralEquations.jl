@@ -28,7 +28,7 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
                   Fun, ProductFun, LowRankFun, mappoint, JacobiZ,
                   real, UnivariateSpace, RealUnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, BlockOperator,
                   ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, ZeroSpace,
-                  LowRankPertOperator, LaurentDirichlet, setcanonicaldomain,
+                  LowRankPertOperator, LaurentDirichlet, setcanonicaldomain, SubSpace,
                   IntervalCurve,PeriodicCurve, reverseorientation, op_eltype, @wrapper, mobius,
                   defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, refactorsvd!
 
@@ -120,6 +120,11 @@ logkernel(f::Fun,z) = logkernel(space(f),coefficients(f),z)
 cauchy(f...) = stieltjes(f...)*(im/(2π))
 pseudocauchy(f...) = pseudostieltjes(f...)*(im/(2π))
 cauchyintegral(u...) = stieltjesintegral(u...)*(im/(2π))
+
+
+# Modifier spaces
+
+stieltjes(sp::SubSpace,v,z) = stieltjes(sp.space,coefficients(v,sp,sp.space),z)
 
 
 include("LinearAlgebra/LinearAlgebra.jl")
