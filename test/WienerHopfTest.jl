@@ -34,6 +34,10 @@ A=(I+(I-G)*C)
 F̃ = (G-I)[:,1]
 F=Fun((G-I)[:,1])
 
+C2=ApproxFun.promotedomainspace(C.ops[2],space(F))
+
+ApproxFun.testbandedblockoperator(C2)
+
 @test norm((C*F - [C*F[1];C*F[2]]).coefficients) == 0
 @test norm((C*G - [C*G[1] C*G[3];C*G[2] C*G[4]]).coefficients) == 0
 @test_approx_eq cauchy(F,exp(0.1im)⁻) (C*F)(exp(0.1im))
