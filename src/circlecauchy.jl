@@ -31,7 +31,7 @@ end
 function stieltjes{DD<:Circle}(sp::Laurent{DD},f::AbstractVector,z::Number)
     d=domain(sp)
     if !d.orientation
-        return -stieltjes(reverseorientation(Fun(f,sp)),z)
+        return -stieltjes(reverseorientation(Fun(sp,f)),z)
     end
 
     z=mappoint(d,Circle(),z)
@@ -41,7 +41,7 @@ end
 function stieltjes{DD<:Circle,s}(sp::Laurent{DD},f::AbstractVector,z::Directed{s})
     d=domain(sp)
     if !d.orientation
-        return -stieltjes(reverseorientation(Fun(f,sp)),reverseorientation(z))
+        return -stieltjes(reverseorientation(Fun(sp,f)),reverseorientation(z))
     end
 
     z=mappoint(d,Circle(),z)
@@ -79,7 +79,7 @@ function stieltjesintegral{DD<:Circle}(sp::Laurent{DD},f,z::Number)
 end
 
 
-stieltjesintegral{DD<:Circle}(sp::Fourier{DD},f,z::Number)=stieltjesintegral(Fun(Fun(f,sp),Laurent),z)
+stieltjesintegral{DD<:Circle}(sp::Fourier{DD},f,z::Number)=stieltjesintegral(Fun(Fun(sp,f),Laurent),z)
 
 function logkernel{DD<:Circle}(sp::Fourier{DD},g,z::Number)
     d=domain(sp)
@@ -112,4 +112,4 @@ end
 logkernel{DD<:Circle}(sp::Fourier{DD},g,z::Vector) = promote_type(eltype(g),eltype(z))[logkernel(sp,g,zk) for zk in z]
 logkernel{DD<:Circle}(sp::Fourier{DD},g,z::Matrix) = reshape(promote_type(eltype(g),eltype(z))[logkernel(sp,g,zk) for zk in z],size(z))
 
-logkernel{DD<:Circle}(sp::Laurent{DD},g,z)=logkernel(Fun(Fun(g,sp),Fourier),z)
+logkernel{DD<:Circle}(sp::Laurent{DD},g,z) = logkernel(Fun(Fun(sp,g),Fourier),z)
