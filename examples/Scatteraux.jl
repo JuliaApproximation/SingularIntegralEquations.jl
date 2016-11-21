@@ -1,6 +1,8 @@
-Base.⋅(d,z) = d[1]*z[1]+d[2]*z[2]
+import Base.⋅
 
-function g3neumann(x,y)
+⋅(d,z) = d[1]*z[1]+d[2]*z[2]
+
+function g3neumann(x,y,k)
   z = k*abs(y-x)
   if z < 1/16
       C,z2 = 2log(2)-2γ,z*z

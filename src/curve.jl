@@ -1,16 +1,19 @@
 ## Interval map
 
-stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Number)=sum(stieltjes(setcanonicaldomain(S),f,complexroots(domain(S).curve-z)))
+stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Number) =
+    sum(stieltjes(setcanonicaldomain(S),f,complexroots(domain(S).curve-z)))
 
-function stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Number,s::Bool)
+function stieltjes{s,C<:Curve,SS}(S::Space{SS,C},f,z::Directed{s})
     #project
-    rts=complexroots(domain(S).curve-z)
+    rts=complexroots(domain(S).curve-z.x)
     di=domain(S.space)
-    mapreduce(rt->in(rt,di)?stieltjes(S.space,f,rt,s):stieltjes(S.space,f,rt),+,rts)
+    mapreduce(rt->in(rt,di)?stieltjes(S.space,f,Directed{s}(rt)):stieltjes(S.space,f,rt),+,rts)
 end
 
-stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Vector)=Complex128[stieltjes(S,f,z[k]) for k=1:size(z,1)]
-stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Matrix)=Complex128[stieltjes(S,f,z[k,j]) for k=1:size(z,1),j=1:size(z,2)]
+stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Vector) =
+    Complex128[stieltjes(S,f,z[k]) for k=1:size(z,1)]
+stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Matrix) =
+    Complex128[stieltjes(S,f,z[k,j]) for k=1:size(z,1),j=1:size(z,2)]
 
 ## hilbert on JacobiWeight space mapped by open curves
 
@@ -68,16 +71,16 @@ function stieltjes{C<:PeriodicCurve}(S::Laurent{C},f,z::Number)
             div(ncoefficients(domain(S).curve),2)*stieltjes(setdomain(S,Circle()),f,0.)
 end
 
-function stieltjes{C<:PeriodicCurve}(S::Laurent{C},f,z::Number,s::Bool)
+function stieltjes{s,C<:PeriodicCurve}(S::Laurent{C},f,z::Directed{s})
     c=domain(S)  # the curve that f lives on
     @assert domain(c.curve)==Circle()
-    rts=complexroots(c.curve-z)
+    rts=complexroots(c.curve-z.x)
 
     csp=setdomain(S,Circle())
     ret=-div(ncoefficients(domain(S).curve),2)*stieltjes(csp,f,0.)
 
     for k=2:length(rts)
-        ret+=in(rts[k],Circle())?stieltjes(csp,f,rts[k]):stieltjes(csp,f,rts[k],s)
+        ret+=in(rts[k],Circle())?stieltjes(csp,f,Directed{s}(rts[k])):stieltjes(csp,f,rts[k])
     end
     ret
 end

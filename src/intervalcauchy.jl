@@ -1,10 +1,5 @@
 import ApproxFun: dotu
 
-
-# This solves as a boundary value provblem
-
-stieltjesbackward(S::Space,z::Number) = JacobiZ(S,z)\[stieltjesmoment(S,0,z)]
-
 # This solves via forward substitution
 function forwardsubstitution!(ret,B,n,μ1,μ2)
     if n≥1
@@ -21,10 +16,22 @@ function forwardsubstitution!(ret,B,n,μ1,μ2)
     ret
 end
 
-forwardsubstitution(R,n,μ1,μ2)=forwardsubstitution!(Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n),R,n,μ1,μ2)
+forwardsubstitution(R,n,μ1,μ2) =
+    forwardsubstitution!(Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n),R,n,μ1,μ2)
 
-stieltjesforward(sp::Space,n,z,s...)=forwardsubstitution(JacobiZ(sp,z),n,
-                        stieltjesmoment(sp,0,z,s...),stieltjesmoment(sp,1,z,s...))
+
+
+# This solves as a boundary value provblem
+stieltjesbackward(S::Space,z::Number) = JacobiZ(S,z)\[stieltjesmoment(S,0,z)]
+
+
+stieltjesforward(sp::Space,n,z) = forwardsubstitution(JacobiZ(sp,value(z)),n,
+                                                            stieltjesmoment(sp,0,z),
+                                                            stieltjesmoment(sp,1,z))
+
+hilbertforward(sp::Space,n,z) = forwardsubstitution(JacobiZ(sp,z),n,
+                                                            hilbertmoment(sp,0,z),
+                                                            hilbertmoment(sp,1,z))
 
 
 function stieltjesintervalrecurrence(S,f::AbstractVector,z)
@@ -37,7 +44,9 @@ function stieltjesintervalrecurrence(S,f::AbstractVector,z)
         dotu(cfs,f)
     end
 end
-stieltjesintervalrecurrence(S,f::AbstractVector,z::AbstractArray) = reshape(promote_type(eltype(f),eltype(z))[ stieltjesintervalrecurrence(S,f,z[i]) for i in eachindex(z) ], size(z))
+
+stieltjesintervalrecurrence(S,f::AbstractVector,z::AbstractArray) =
+    reshape(promote_type(eltype(f),eltype(z))[ stieltjesintervalrecurrence(S,f,z[i]) for i in eachindex(z) ], size(z))
 
 
 function stieltjes{D<:Interval}(S::PolynomialSpace{D},f,z::Number)
@@ -49,21 +58,51 @@ function stieltjes{D<:Interval}(S::PolynomialSpace{D},f,z::Number)
     end
 end
 
-function stieltjes{D<:Interval}(S::PolynomialSpace{D},f,z::Number,s::Bool)
-    @assert domain(S)==Interval()
-
-   cfs=stieltjesforward(Legendre(),length(f),z,s)
-   dotu(cfs,coefficients(f,S,Legendre()))
+function hilbert{D<:Interval}(S::PolynomialSpace{D},f,z::Number)
+    if domain(S)==Interval()
+        cfs = hilbertforward(S,length(f),z)
+        dotu(cfs,f)
+    else
+        hilbert(setdomain(S,Interval()),f,mobius(S,z))
+    end
 end
 
 
+
+
 # Sum over all inverses of fromcanonical, see [Olver,2014]
-function stieltjes{SS,L<:Line}(S::Space{SS,L},f,z,s...)
+function stieltjes{SS,L<:Line}(S::Space{SS,L},f,z)
     if domain(S)==Line()
         # TODO: rename tocanonical
-        stieltjes(setcanonicaldomain(S),f,tocanonical(S,z),s...) +
+        stieltjes(setcanonicaldomain(S),f,tocanonical(S,z)) +
             stieltjes(setcanonicaldomain(S),f,(-1-sqrt(1+4z.^2))./(2z))
     else
-        stieltjes(setdomain(S,Line()),f,mappoint(domain(S),Line(),z),s...)
+        stieltjes(setdomain(S,Line()),f,mappoint(domain(S),Line(),z))
     end
+end
+
+
+
+## log kernel
+
+
+
+function logkernel{DD<:Interval}(S::PolynomialSpace{DD},v,z::Number)
+    if domain(S) == Interval()
+        DS=JacobiWeight(1,1,Jacobi(1,1))
+        D=Derivative(DS)[2:end,:]
+
+        f=Fun(Fun(v,S),Legendre())  # convert to Legendre expansion
+        u=D\(f|(2:∞))   # find integral, dropping first coefficient of f
+
+        (f.coefficients[1]*logabslegendremoment(z) + real(stieltjes(Fun(u,Legendre()),z+0im)))/π
+    else
+        Mp=abs(fromcanonicalD(S,0))
+        Mp*logkernel(setcanonicaldomain(S),v,mobius(S,z))+linesum(Fun(v,S))*log(Mp)/π
+    end
+end
+
+for FUNC in (:logkernel,:stieltjes)
+    @eval $FUNC{D<:Interval}(S::PolynomialSpace{D},f,z::AbstractArray) =
+        map(x->$FUNC(S,f,x),z)
 end

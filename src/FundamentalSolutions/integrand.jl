@@ -6,7 +6,7 @@ function integrand!(u::Vector{Complex{Float64}}, ux::Vector{Complex{Float64}}, u
     @simd for i=1:n
         # Precalculations
         @inbounds es = exp(s[i])
-        ies = 1.0/es
+        ies = inv(es)
         @inbounds u[i] = cis(a * ies + b * es - es * es * es / 12.0)
 
         if derivs

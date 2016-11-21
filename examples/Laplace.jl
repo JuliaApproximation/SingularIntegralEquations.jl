@@ -10,8 +10,8 @@
 using ApproxFun, SingularIntegralEquations
 
 z_s = 2.0
-ui(x,y) = logabs(complex(x,y)-z_s)
-g1(x,y) = 1/2
+ui = (x,y) -> logabs(complex(x,y)-z_s)
+g1 = (x,y) -> 1/2
 
 # Set the domains.
 N = 10
@@ -31,9 +31,8 @@ uiΓ,⨍ = Fun(t->ui(real(t),imag(t))+0im,sp),DefiniteLineIntegral(dom)
 
 @time φ0,∂u∂n=[0 ⨍;1 ⨍[G]]\Any[0.,uiΓ]
 
-println("The length of ∂u∂n is: ",length(∂u∂n))
+println("The length of ∂u∂n is: ",ncoefficients(∂u∂n))
 
-us(x,y) = -logkernel(∂u∂n,complex(x,y))/2
-ut(x,y) = ui(x,y) + us(x,y)
+us = (x,y) -> -logkernel(∂u∂n,complex(x,y))/2
+ut = (x,y) -> ui(x,y) + us(x,y)
 println("This is the approximate gradient: ",((ut(1e-5,0.)-ut(-1e-5,0.))/2e-5))
-

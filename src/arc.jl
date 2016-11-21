@@ -3,12 +3,12 @@
 ## Cauchy
 
 # pseudocauchy does not normalize at ∞
-pseudostieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z,s...)=stieltjes(setcanonicaldomain(S),f,mobius(S,z),s...)
-pseudohilbert{LS,RR<:Arc}(S::Space{LS,RR},f,z)=hilbert(setdomain(S,Interval()),f,mobius(S,z))
+pseudostieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z) = stieltjes(setcanonicaldomain(S),f,mobius(S,z))
+pseudohilbert{LS,RR<:Arc}(S::Space{LS,RR},f,z) = hilbert(setdomain(S,Interval()),f,mobius(S,z))
 
 
-stieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z,s...)=stieltjes(setcanonicaldomain(S),f,mobius(S,z),s...)-stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
-hilbert{LS,RR<:Arc}(S::Space{LS,RR},f,z)=hilbert(setcanonicaldomain(S),f,mobius(S,z))+(1/π)*stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
+stieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z) = stieltjes(setcanonicaldomain(S),f,mobius(S,z))-stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
+hilbert{LS,RR<:Arc}(S::Space{LS,RR},f,z) = hilbert(setcanonicaldomain(S),f,mobius(S,z))+(1/π)*stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
 
 
 
@@ -58,24 +58,29 @@ end
 
 
 function SingularIntegral{JW,RR<:Arc}(S::JacobiWeight{JW,RR},k::Integer)
-    @assert k==0
-    tol=1E-15
-    # the mapped logkernel
     d=domain(S)
-    csp=setcanonicaldomain(S)
-    Σ=SingularIntegral(csp,0)
-    M=Multiplication(abs(fromcanonicalD(d,Fun(identity,csp))),csp)
+    if k==0
+        tol=1E-15
+        # the mapped logkernel
+        csp=setcanonicaldomain(S)
+        Σ=SingularIntegral(csp,0)
+        M=Multiplication(abs(fromcanonicalD(d,Fun(identity,csp))),csp)
 
-    z∞=mobius(d,Inf)
-    cnst=Array(Float64,0)
-    for k=1:10000
-        push!(cnst,logkernel(Fun([zeros(k-1);1.],csp),z∞))
-        if k≥3&&norm(cnst[end-2:end])<tol
-            break
+        z∞=mobius(d,Inf)
+        cnst=Array(Float64,0)
+        for k=1:10000
+            push!(cnst,logkernel(Fun([zeros(k-1);1.],csp),z∞))
+            if k≥3&&norm(cnst[end-2:end])<tol
+                break
+            end
         end
-    end
-    L∞=FiniteOperator(cnst.',csp,ConstantSpace())
+        L∞=FiniteOperator(cnst.',csp,ConstantSpace())
 
-    x=Fun(identity,S)
-    SpaceOperator((Σ-L∞)*M,S,setdomain(rangespace(Σ),d))+(log(abs(x-fromcanonical(d,Inf)))/π)*DefiniteLineIntegral(S)
+        x=Fun(identity,S)
+        SpaceOperator((Σ-L∞)*M,S,setdomain(rangespace(Σ),d))+(log(abs(x-fromcanonical(d,Inf)))/π)*DefiniteLineIntegral(S)
+    else
+        # multiply by abs(M')/M' to change to dz to ds
+        Mp=fromcanonicalD(d)
+        Hilbert(S,k)[setdomain(abs(Mp)/Mp,d)]
+    end
 end

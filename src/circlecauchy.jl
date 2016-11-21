@@ -28,14 +28,6 @@ function cauchycircleS(cfs::AbstractVector,z::Number,s::Bool)
 end
 
 
-function stieltjes{DD<:Circle}(sp::Laurent{DD},f::AbstractVector,z,s::Bool)
-    d=domain(sp)
-    if !d.orientation
-        return -stieltjes(reverseorientation(Fun(f,sp)),z,!s)
-    end
-    @assert in(z,d)
-    -2π*im*cauchycircleS(f,mappoint(d,Circle(),z),s)
-end
 function stieltjes{DD<:Circle}(sp::Laurent{DD},f::AbstractVector,z::Number)
     d=domain(sp)
     if !d.orientation
@@ -46,18 +38,29 @@ function stieltjes{DD<:Circle}(sp::Laurent{DD},f::AbstractVector,z::Number)
     -2π*im*cauchycircleS(f,z,abs(z) < 1)
 end
 
-stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Vector)=[stieltjes(sp,f,zk) for zk in z]
-stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Matrix)=reshape(stieltjes(sp,f,vec(z)),size(z,1),size(z,2))
+function stieltjes{DD<:Circle,s}(sp::Laurent{DD},f::AbstractVector,z::Directed{s})
+    d=domain(sp)
+    if !d.orientation
+        return -stieltjes(reverseorientation(Fun(f,sp)),reverseorientation(z))
+    end
+
+    z=mappoint(d,Circle(),z)
+    -2π*im*cauchycircleS(f,value(z),orientation(z))
+end
+
+stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Vector) = [stieltjes(sp,f,zk) for zk in z]
+stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Matrix) = reshape(stieltjes(sp,f,vec(z)),size(z,1),size(z,2))
 
 
 
 
-stieltjes{DD<:Circle}(sp::Fourier{DD},f,z,s...)=stieltjes(Laurent(domain(sp)),coefficients(f,sp,Laurent(domain(sp))),z,s...)
+stieltjes{DD<:Circle}(sp::Fourier{DD},f,z) = stieltjes(Laurent(domain(sp)),coefficients(f,sp,Laurent(domain(sp))),z)
 
 
 
 # we implement cauchy ±1 as canonical
-hilbert{DD<:Circle}(sp::Laurent{DD},f,z)=(stieltjes(sp,f,z,true)+stieltjes(sp,f,z,false))/(-2π)
+# TODO: reimplement directly
+hilbert{DD<:Circle}(sp::Laurent{DD},f,z) = (stieltjes(sp,f,z*⁺)+stieltjes(sp,f,z*⁻))/(-2π)
 
 
 
@@ -67,16 +70,16 @@ hilbert{DD<:Circle}(sp::Laurent{DD},f,z)=(stieltjes(sp,f,z,true)+stieltjes(sp,f,
 ## stieltjesintegral and logkernel
 
 
-function stieltjesintegral{DD<:Circle}(sp::Laurent{DD},f,z::Number,s...)
+function stieltjesintegral{DD<:Circle}(sp::Laurent{DD},f,z::Number)
     d=domain(sp)
     @assert d==Circle()  #TODO: radius
     ζ=Fun(d)
-    r=stieltjes(integrate(f-f[2]/ζ),z,s...)
+    r=stieltjes(integrate(f-f[2]/ζ),z)
     abs(z)<1?r:r+2π*im*f[2]*log(z)
 end
 
 
-stieltjesintegral{DD<:Circle}(sp::Fourier{DD},f,z::Number,s...)=stieltjesintegral(Fun(Fun(f,sp),Laurent),z,s...)
+stieltjesintegral{DD<:Circle}(sp::Fourier{DD},f,z::Number)=stieltjesintegral(Fun(Fun(f,sp),Laurent),z)
 
 function logkernel{DD<:Circle}(sp::Fourier{DD},g,z::Number)
     d=domain(sp)

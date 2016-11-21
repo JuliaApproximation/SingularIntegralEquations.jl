@@ -31,7 +31,7 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
 
         ## Modifiers for SumSpace, ArraySpace, and PiecewiseSpace
 
-        $Op(AS::ArraySpace,n::Int)=$OpWrap(DiagonalArrayOperator($Op(AS.space,n),size(AS)),n)
+        $Op(AS::ArraySpace,n::Int)=$OpWrap(diagonalarrayoperator($Op(AS.space,n),size(AS)),n)
         function $Op(S::PiecewiseSpace,n::Int)
             sp=vec(S)
             m=length(sp)
@@ -46,18 +46,22 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
         domainspace{s,DD}(H::$ConcOp{Hardy{s,DD}})=H.space
         rangespace{s,DD}(H::$ConcOp{Hardy{s,DD}})=H.space
 
+        bandinds{DD}(::$ConcOp{Laurent{DD}})=0,0
+        domainspace{DD}(H::$ConcOp{Laurent{DD}})=H.space
+        rangespace{DD}(H::$ConcOp{Laurent{DD}})=H.space
+
         bandinds{DD}(H::$ConcOp{Fourier{DD}})=-H.order,H.order
         domainspace{DD}(H::$ConcOp{Fourier{DD}})=H.space
         rangespace{DD}(H::$ConcOp{Fourier{DD}})=H.space
 
         function rangespace{DD}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD}})
             @assert domainspace(H).α==domainspace(H).β==-0.5
-            H.order==0?Chebyshev(domain(H)):Ultraspherical(H.order,domain(H))
+            H.order==0 ? Chebyshev(domain(H)) : Ultraspherical(H.order,domain(H))
         end
         function rangespace{DD}(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD},DD}})
-            @assert order(domainspace(H)) == 1
+            @assert order(domainspace(H).space) == 1
             @assert domainspace(H).α==domainspace(H).β==0.5
-            H.order==1?Chebyshev(domain(H)):Ultraspherical(H.order-1,domain(H))
+            (H.order==1||H.order==0) ? Chebyshev(domain(H)) : Ultraspherical(H.order-1,domain(H))
         end
         # bandinds{λ,DD}(H::$ConcOp{JacobiWeight{Ultraspherical{λ,DD},DD}})=-λ,H.order-λ
         bandinds{DD}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD}}) = 0,H.order
@@ -88,7 +92,7 @@ end
 for TYP in (:SumSpace,:PiecewiseSpace,:TupleSpace),(Op,OpWrap) in ((:PseudoHilbert,:PseudoHilbertWrapper),
                           (:Hilbert,:HilbertWrapper),
                           (:SingularIntegral,:SingularIntegralWrapper))
-    @eval $Op(S::$TYP,k)=$OpWrap(DiagonalInterlaceOperator(map(s->$Op(s,k),S.spaces),$TYP),k)
+    @eval $Op(S::$TYP,k)=$OpWrap(InterlaceOperator(Diagonal([map(s->$Op(s,k),S.spaces)...]),$TYP),k)
 end
 
 # Length catch
@@ -117,20 +121,28 @@ end
 
 ## Circle
 
-Hilbert{s,DD<:Circle}(S::Hardy{s,DD},m::Integer) = m==1?
-    HilbertWrapper(SpaceOperator(ConstantOperator((s?1:-1)*im),S,S),m):
+Hilbert{s,DD<:Circle}(S::Hardy{s,DD},m::Integer) = ConcreteHilbert(S,m)
+Hilbert{DD<:Circle}(S::Laurent{DD},m::Integer) = ConcreteHilbert(S,m)
+SingularIntegral{s,DD<:Circle}(S::Hardy{s,DD},m::Integer) = ConcreteSingularIntegral(S,m)
+SingularIntegral{DD<:Circle}(S::Laurent{DD},m::Integer) = ConcreteSingularIntegral(S,m)
+
+function Hilbert{DD<:Circle}(S::Fourier{DD},m::Integer)
+    @assert m==0 || m==1
     ConcreteHilbert(S,m)
-
-
+end
 
 function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Hardy{true,DD},OT,T},k::Integer,j::Integer)
     ##TODO: Add scale for different radii.
-    m=H.order
-    @assert m ≠ 1
-    if k==j && m==0
-        k==1?-T(2log(2)):one(T)/(k-1)
-    elseif k==j && k ≠ 1
-        k==im*(one(T)*im*(k-1))^(m-1)
+    m = H.order
+    d = domain(H)
+    r = d.radius
+
+    if k == j
+        if m==0
+            k == 1 ? -T(2r*log(r)) : T(r/(k-1))
+        else
+            im*(im*(k-1)/r)^(m-1)
+        end
     else
         zero(T)
     end
@@ -138,28 +150,53 @@ end
 
 function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Hardy{false,DD},OT,T},k::Integer,j::Integer)
     ##TODO: Add scale for different radii.
-    m=H.order
-    @assert m ≠ 1
-    if k==j
-        -im*(one(T)*im*k)^(m-1)
+    m = H.order
+    d = domain(H)
+    r = d.radius
+
+    if k == j
+        -im*(im*k/r)^(m-1)
     else
         zero(T)
     end
 end
 
-function Hilbert{DD<:Circle}(S::Fourier{DD},m::Integer)
-    @assert m==0 || m==1
-    ConcreteHilbert(S,m)
+function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Laurent{DD},OT,T},k::Integer,j::Integer)
+    ##TODO: Add scale for different radii.
+    m = H.order
+    d = domain(H)
+    r = d.radius
+
+    if k == j
+        if m == 0
+            if k == 1
+                -T(2r*log(r))
+            elseif isodd(k)
+                T(r/((k-1)÷2))
+            else
+                T(-r/(k÷2))
+            end
+        else
+            if isodd(k)
+                T(im*(im*((k-1)÷2)/r)^(m-1))
+            else
+                -T(im*(im*(k÷2)/r)^(m-1))
+            end
+        end
+    else
+        zero(T)
+    end
 end
 
-
 function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Fourier{DD},OT,T},k::Integer,j::Integer)
+    m = H.order
     d = domain(H)
     r = d.radius
     o = d.orientation
-    if H.order == 0 && k==j
+
+    if m == 0 && k==j
         T(k==1?2r*log(r):(-r/(k÷2)))
-    elseif H.order == 1
+    elseif m == 1
         if k==j==1
             T(o?im:-im)
         elseif iseven(k) && j==k+1
@@ -174,76 +211,82 @@ function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Fourier{DD},OT,T},k::Integ
     end
 end
 
-function addentries!{DD<:Circle}(H::ConcreteSingularIntegral{Hardy{true,DD}},A,kr::Range,::Colon)
+function getindex{DD<:Circle,OT,T}(H::ConcreteSingularIntegral{Hardy{true,DD},OT,T},k::Integer,j::Integer)
 ##TODO: Add scale for different radii.
-    m=H.order
-    d=domain(H)
-    sp=domainspace(H)
+    m = H.order
+    d = domain(H)
+    r = d.radius
 
-    r = domain(H).radius
+    if k == j
+        if m == 0
+            k == 1 ? T(2r*log(r)) : T(-r/(k-1))
+        else
+            k == 1 ? zero(T) : im*(im*(k-1)/r)^(m-1)
+        end
+    else
+        zero(T)
+    end
+end
+
+function getindex{DD<:Circle,OT,T}(H::ConcreteSingularIntegral{Hardy{false,DD},OT,T},k::Integer,j::Integer)
+##TODO: Add scale for different radii.
+    m = H.order
+    d = domain(H)
+    r = d.radius
+
+    if k == j
+        -im*(im*k/r)^(m-1)
+    else
+        zero(T)
+    end
+end
+
+function getindex{DD<:Circle,OT,T}(H::ConcreteSingularIntegral{Laurent{DD},OT,T},k::Integer,j::Integer)
+    ##TODO: Add scale for different radii.
+    m = H.order
+    d = domain(H)
+    r = d.radius
+
+    if k == j
+        if m == 0
+            if k == 1
+                T(2r*log(r))
+            else
+                T(-r/(k÷2))
+            end
+        else
+            if isodd(k)
+                k == 1 ? zero(T) : im*(im*((k-1)÷2)/r)^(m-1)
+            else
+                -im*(im*(k÷2)/r)^(m-1)
+            end
+        end
+    else
+        zero(T)
+    end
+end
+
+function getindex{DD<:Circle,OT,T}(H::ConcreteSingularIntegral{Fourier{DD},OT,T},k::Integer,j::Integer)
+    m = H.order
+    d = domain(H)
+    r = d.radius
+
     if m == 0
-        for k=kr
-            A[k,k] += k==1?2r*log(r):-r./(k-1)
+        if k == j
+            k == 1 ? T(2r*log(r)) : T(-r/(k÷2))
         end
     elseif m == 1
-        for k=kr
-            A[k,k] += im
+        if k+1 == j
+            -one(T)
+        elseif k-1 == j
+            one(T)
+        else
+            zero(T)
         end
     else
-        for k=kr
-            A[k,k] += k==1?0.0:1.0im*(1.0im*(k-1))^(m-1)
-        end
+        error("SingularIntegral order $(H.order) not implemented for Fourier")
     end
-    A
 end
-
-function addentries!{DD<:Circle}(H::ConcreteSingularIntegral{Hardy{false,DD}},A,kr::Range,::Colon)
-##TODO: Add scale for different radii.
-    m=H.order
-    d=domain(H)
-    sp=domainspace(H)
-
-    r = domain(H).radius
-    if m== 1
-        for k=kr
-            A[k,k]-= im
-        end
-    else
-        for k=kr
-            A[k,k]-=1.0im*(1.0im*k/r)^(m-1)
-        end
-    end
-    A
-end
-
-function addentries!{DD<:Circle}(H::ConcreteSingularIntegral{Fourier{DD}},A,kr::Range,::Colon)
-    r = domain(H).radius
-    if H.order == 0
-        for k=kr
-            if k==1
-                A[1,1]+=2r*log(r)
-            else
-                j=div(k,2)
-                A[k,k]+=-r/j
-            end
-        end
-    elseif H.order == 1
-        for k=kr
-            if k==1
-                A[1,1]+=0
-            elseif iseven(k)
-                A[k,k+1]-=1
-            else   #isodd(k)
-                A[k,k-1]+=1
-            end
-        end
-    else
-            error("Hilbert order $(H.order) not implemented for Fourier")
-    end
-
-    A
-end
-
 
 
 ## JacobiWeight
@@ -299,9 +342,9 @@ for (Op,Len) in ((:Hilbert,:complexlength),
                 if m==1
                     d=domain(S)
                     $OpWrap(SpaceOperator(
-                        ToeplitzOperator([-1.],[0.]),S,m==1?Chebyshev(d):Ultraspherical(m-1,d)),m)
+                        ToeplitzOperator([-1.0],[0.]),S,m==1?Chebyshev(d):Ultraspherical(m-1,d)),m)
                 else
-                    $ConcOp(sp,m)
+                    $ConcOp(S,m)
                 end
             else
                 error(string($Op)*" not implemented for parameters $(S.α),$(S.β)")

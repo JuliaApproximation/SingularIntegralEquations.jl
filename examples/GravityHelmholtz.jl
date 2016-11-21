@@ -12,11 +12,11 @@ include("Scatteraux.jl")
 
 E = 20.
 ω = 2π
-ui(x,y) = lhelmfs(complex(x,y),-5.0im,E)
+ui = (x,y) ->  lhelmfs(complex(x,y),-5.0im,E)
 
 # The gravity Helmholtz Green's function.
-g3(x,y) = lhelmfs(x,y,E)
-r(x,y) = lhelm_riemann(x,y,E)
+g3 = (x,y) ->  lhelmfs(x,y,E)
+r = (x,y) ->  lhelm_riemann(x,y,E)
 
 
 dom = ∪(Interval,[-10.0-3.0im,5.0,-2+5im],[-5.0+0.0im,10.0-3im,2+5im])
@@ -27,5 +27,5 @@ uiΓ,⨍ = Fun(t->ui(real(t),imag(t)),sp),DefiniteLineIntegral(dom)
 @time G = GreensFun(g3,cwsp;method=:unsplit)
 
 @time ∂u∂n = ⨍[G]\uiΓ
-println("The length of ∂u∂n is: ",length(∂u∂n))
-us(x,y) = -linesum(g3,∂u∂n,complex(x,y))
+println("The length of ∂u∂n is: ",ncoefficients(∂u∂n))
+us = (x,y) ->  -linesum(g3,∂u∂n,complex(x,y))

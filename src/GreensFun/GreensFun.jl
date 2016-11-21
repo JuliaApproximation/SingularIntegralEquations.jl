@@ -15,16 +15,23 @@ export GreensFun
 immutable GreensFun{K<:BivariateFun,T} <: BivariateFun{T}
     kernels::Vector{K}
     function GreensFun(Kernels::Vector{K})
-        @assert all(map(domain,Kernels).==domain(Kernels[1]))
-        if any(K->K<:GreensFun,map(typeof,Kernels))
-            return GreensFun(vcat(map(kernels,Kernels)...))
+        if all(map(domain,Kernels).==domain(Kernels[1]))
+            if any(K->K<:GreensFun,map(typeof,Kernels))
+                return GreensFun(vcat(map(kernels,Kernels)...))
+            end
+            new(Kernels)
+        else
+            error("Cannot create GreensFun: all kernel domains must equal $(domain(Kernels[1]))")
         end
-        new(Kernels)
     end
 end
-GreensFun{K<:BivariateFun}(kernels::Vector{K}) = GreensFun{eltype(kernels),mapreduce(eltype,promote_type,kernels)}(kernels)
+GreensFun{K<:MultivariateFun}(kernels::Vector{K}) =
+    GreensFun{eltype(kernels),mapreduce(eltype,promote_type,kernels)}(kernels)
 
-GreensFun{K<:BivariateFun}(F::K) = GreensFun(K[F])
+GreensFun{K<:MultivariateFun}(F::K) = GreensFun(K[F])
+
+Base.convert{K<:BivariateFun,T}(::Type{GreensFun{K,T}},A::GreensFun{K,T}) = A
+Base.convert{K<:BivariateFun,T}(::Type{GreensFun{K,T}},A::GreensFun) = error("Cannot convert GreensFun")
 
 Base.length(G::GreensFun) = length(G.kernels)
 Base.transpose(G::GreensFun) = GreensFun(mapreduce(transpose,+,G.kernels))
@@ -44,7 +51,7 @@ LowRankIntegralOperator{L<:LowRankFun}(G::GreensFun{L}) = LowRankIntegralOperato
 
 Base.promote_rule{K,T,K1,T1}(::Type{GreensFun{K,T}},::Type{GreensFun{K1,T1}}) = GreensFun{promote_type(K,K1),promote_type(T,T1)}
 
-defaultgetindex(⨍::Operator,G::GreensFun) = mapreduce(f->getindex(⨍,f),+,G.kernels)
+defaultgetindex(⨍::Operator,G::GreensFun) = mapreduce(f->⨍[f],+,G.kernels)
 
 function getindex{F<:BivariateFun}(⨍::DefiniteLineIntegral,B::Matrix{F})
     m,n = size(B)
@@ -60,8 +67,8 @@ function getindex{F<:BivariateFun}(⨍::DefiniteLineIntegral,B::Matrix{F})
     end
     ops=promotespaces(ret)
     InterlaceOperator(ops,
-                      PiecewiseSpace(map(domainspace,ret[1,:])),
-                      PiecewiseSpace(map(rangespace,ret[:,1])))
+                      PiecewiseSpace(map(domainspace,ops[1,:])),
+                      PiecewiseSpace(map(rangespace,ops[:,1])))
 end
 
 # Algebra with BivariateFun's
@@ -72,6 +79,11 @@ end
 -(G::GreensFun,B::BivariateFun) = GreensFun([G.kernels;-kernels(B)])
 +(B::BivariateFun,G::GreensFun) = GreensFun([kernels(B);G.kernels])
 -(B::BivariateFun,G::GreensFun) = GreensFun([kernels(B);-G.kernels])
+
+# work around 0.4 bug
+if VERSION < v"0.5"
+    +(A::GreensFun,B::GreensFun,C::GreensFun) = A+(B+C)
+end
 
 # Custom operations on Arrays required to infer type of resulting Array{GreensFun}
 
