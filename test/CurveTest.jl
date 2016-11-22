@@ -60,7 +60,7 @@ testbandedoperator(Hilbert(space(w)))
 
 
 
-f=Fun([1.,2.,3.],d)
+f=Fun(d,[1.,2.,3.])
 @test_approx_eq logkernel(f,2) linesum(f*log(abs(x-2.)))/π
 
 

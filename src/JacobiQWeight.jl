@@ -34,18 +34,18 @@ spacescompatible(A::JacobiQWeight,B::JacobiQWeight)=A.α==B.α && A.β == B.β &
 #spacescompatible{D<:IntervalDomain}(B::RealUnivariateSpace{D},A::JacobiQWeight)=spacescompatible(A,JacobiQWeight(0,0,B))
 
 transformtimes{JW1<:JacobiQWeight,JW2<:JacobiQWeight}(f::Fun{JW1},g::Fun{JW2})=
-            Fun(coefficients(transformtimes(Fun(f.coefficients,f.space.space),
-                                            Fun(g.coefficients,g.space.space))),
-                             JacobiQWeight(f.space.α+g.space.α,f.space.β+g.space.β,f.space.space))
-transformtimes{JW<:JacobiQWeight}(f::Fun{JW},g::Fun) = Fun(coefficients(transformtimes(Fun(f.coefficients,f.space.space),g)),f.space)
-transformtimes{JW<:JacobiQWeight}(f::Fun,g::Fun{JW}) = Fun(coefficients(transformtimes(Fun(g.coefficients,g.space.space),f)),g.space)
+            Fun(JacobiQWeight(f.space.α+g.space.α,f.space.β+g.space.β,f.space.space),
+                coefficients(transformtimes(Fun(f.space.space,f.coefficients),
+                                            Fun(g.space.space,g.coefficients))))
+transformtimes{JW<:JacobiQWeight}(f::Fun{JW},g::Fun) = Fun(f.space,coefficients(transformtimes(Fun(f.space.space,f.coefficients),g)))
+transformtimes{JW<:JacobiQWeight}(f::Fun,g::Fun{JW}) = Fun(g.space,coefficients(transformtimes(Fun(g.space.space,g.coefficients),f)))
 
 ##  α and β are opposite the convention for JacobiQ polynomials
 # Here, α is the left algebraic singularity and β is the right algebraic singularity.
 
 
 jacobiQweight(α,β,x)=(x+1).^α.*(x-1).^β
-jacobiQweight(α,β,d::Domain)=Fun([1.],JacobiQWeight(α,β,ConstantSpace(d)))
+jacobiQweight(α,β,d::Domain)=Fun(JacobiQWeight(α,β,ConstantSpace(d)),[1.])
 jacobiQweight(α,β)=jacobiQweight(α,β,Interval())
 
 weight(sp::JacobiQWeight,x)=jacobiQweight(sp.α,sp.β,tocanonical(sp,x))

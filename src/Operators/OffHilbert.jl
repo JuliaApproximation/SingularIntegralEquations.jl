@@ -51,9 +51,9 @@ function OffHilbert(ds::Space,rs::Space,order::Int)
     vv=Array(Vector{Complex128},0)
     m=100
     for k=1:2:1000
-        b=Fun([zeros(k-1);1.],ds)
+        b=Fun(ds,[zeros(k-1);1.])
         v1=Fun(x->-stieltjes(b,x)/π,rs,m)
-        b=Fun([zeros(k);1.],ds)
+        b=Fun(ds,[zeros(k);1.])
         v2=Fun(x->-stieltjes(b,x)/π,rs,m)
         if abs(v1.coefficients[end-1])>100tol || abs(v1.coefficients[end])>100tol ||
             abs(v2.coefficients[end-1])>100tol || abs(v2.coefficients[end])>100tol
@@ -227,7 +227,7 @@ function exterior_cauchy(b::Circle,a::Circle)
     c=b.center
     r=b.radius
 
-    S=Fun([0.0,0,1],a)  # Shift to use bandedness
+    S=Fun(a,[0.0,0,1])  # Shift to use bandedness
     ret=Array(Fun{Laurent{typeof(a)},Complex{Float64}},300)
     ret[1]=Fun(z->(r/(z-c)),a)
     n=1
@@ -407,7 +407,7 @@ function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{Int,DD},DD},z::Number)
         # calculate directly
         r=Array(eltype(z),0)
         for k=1:10000
-            push!(r,-stieltjes(Fun([zeros(k-1);1.],sp),z)/π)
+            push!(r,-stieltjes(Fun(sp,[zeros(k-1);1.]),z)/π)
             if abs(last(r)) < eps()
                 break
             end

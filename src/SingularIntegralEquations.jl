@@ -108,7 +108,7 @@ for OP in (:stieltjes,:stieltjesintegral,:pseudostieltjes)
 end
 
 hilbert(f) = Hilbert()*f
-hilbert(S,f,z) = hilbert(Fun(f,S))(z)
+hilbert(S,f,z) = hilbert(Fun(S,f))(z)
 hilbert(f::Fun,z) = hilbert(space(f),coefficients(f),z)
 
 logkernel(f::Fun,z) = logkernel(space(f),coefficients(f),z)
@@ -170,7 +170,7 @@ function testsieoperators(S::Space)
     z=2.12312231+1.433453443534im # random point not on contour
 
     for k=1:5
-        f=Fun([zeros(k-1);1],S)
+        f=Fun(S,[zeros(k-1);1])
         @test_approx_eq (SingularIntegral(S,0)*f)(p) logkernel(f,p)
         @test_approx_eq (Hilbert(S,1)*f)(p) hilbert(f,p)
     end
@@ -183,7 +183,7 @@ function testsieeval(S::Space;posdirection=im)
     z=2.12312231+1.433453443534im # random point not on contour
 
     for k=1:5
-        f=Fun([zeros(k-1);1],S)
+        f=Fun(S,[zeros(k-1);1])
         @test abs(sum(f/(z-x))-stieltjes(f,z)) ≤ 100eps()
         @test_approx_eq stieltjes(f,p*⁺) stieltjes(f,p+eps()*posdirection)
         @test_approx_eq stieltjes(f,p*⁻) stieltjes(f,p-eps()*posdirection)

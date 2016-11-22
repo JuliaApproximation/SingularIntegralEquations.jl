@@ -45,18 +45,18 @@ end
 
 function stieltjes{T,D}(f::Fun{Jacobi{T,D}})
     g = Fun(f,Legendre(domain(f)))
-    Fun(2coefficients(g),LegendreQ(domain(f)))
+    Fun(LegendreQ(domain(f)),2coefficients(g))
 end
 function stieltjes{D}(f::Fun{Chebyshev{D}})
     g = Fun(f,Legendre(domain(f)))
-    Fun(2coefficients(g),LegendreQ(domain(f)))
+    Fun(LegendreQ(domain(f)),2coefficients(g))
 end
 
 function stieltjes{S,D}(f::Fun{JacobiWeight{S,D}})
     # Jacobi parameters need to transform to:
     α,β = f.space.α,f.space.β
     g = Fun(f,WeightedJacobi(α,β,domain(f)))
-    Fun(2coefficients(g),WeightedJacobiQ(α,β,domain(f)))
+    Fun(WeightedJacobiQ(α,β,domain(f)),2coefficients(g))
 end
 
 evaluate{T,D<:Interval}(f::AbstractVector,S::JacobiQ{T,D},x) = stieltjesintervalrecurrence(S,f,tocanonical(S,x))./2jacobiQweight(S.b,S.a,tocanonical(S,x))

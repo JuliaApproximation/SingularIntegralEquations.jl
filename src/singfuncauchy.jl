@@ -141,14 +141,14 @@ function hilbert{DD<:Interval}(sp::JacobiWeight{Chebyshev{DD},DD},u)
     if sp.α == sp.β == .5
         # Corollary 5.7 of Olver&Trogdon
         cfs=coefficients(u,sp.space,Ultraspherical(1))
-        Fun([0.;-cfs],d)
+        Fun(d,[0.;-cfs])
     elseif sp.α == sp.β == -.5
         # Corollary 5.11 of Olver&Trogdon
         cfs= coefficients(u,sp.space,ChebyshevDirichlet{1,1})
         if length(cfs)≥2
-            Fun([cfs[2];2cfs[3:end]],d)
+            Fun(d,[cfs[2];2cfs[3:end]])
         else
-            Fun(zeros(eltype(cfs),1),d)
+            Fun(d,zeros(eltype(cfs),1))
         end
     else
         error("hilbert only implemented for Chebyshev weights")
@@ -209,7 +209,7 @@ function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
         DS=WeightedJacobi(sp.α+1,sp.β+1)
         D=Derivative(DS)[2:end,:]
 
-        f=Fun(Fun(u,sp),WeightedJacobi(sp.α,sp.β))  # convert to Legendre expansion
+        f=Fun(Fun(sp,u),WeightedJacobi(sp.α,sp.β))  # convert to Legendre expansion
         uu=D\(f|(2:∞))   # find integral, dropping first coefficient of f
 
         (f.coefficients[1]*real(logjacobimoment(sp.β,sp.α,z)) + real(stieltjes(uu,z)))/π

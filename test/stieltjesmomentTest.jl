@@ -17,11 +17,11 @@ for z in [1.+1.0im,0.1+0.1im]
     end
 
     for a in -0.5:0.5:0.5, b in -0.5:0.5:0.5
-        f = Fun(c,WeightedJacobi(a,b))
+        f = Fun(WeightedJacobi(a,b),c)
         @test_approx_eq stieltjes(f)(z) sum(f/(z-x))
     end
 
-    f = Fun(c,WeightedJacobi(0.123,0.456))
+    f = Fun(WeightedJacobi(0.123,0.456),c)
     @test_approx_eq stieltjes(f)(z) sum(f/(z-x))
 
     f = Fun(identity,[-1.,0.,1.])
