@@ -26,7 +26,7 @@ x̄sqrtx2real(z) = sqrtx2abs(z)*abs(z)*cos((angle(z-1)+angle(z+1))/2-angle(z))
 function sqrtx2(f::Fun)
     B = Evaluation(first(domain(f)))
     A = Derivative()-f*differentiate(f)/(f^2-1)
-    linsolve([B,A],[sqrtx2(first(f))];tolerance=ncoefficients(f)*10E-15)
+    linsolve([B,A],[sqrtx2(first(f)),0];tolerance=ncoefficients(f)*10E-15)
 end
 
 # these are two inverses of the joukowsky map

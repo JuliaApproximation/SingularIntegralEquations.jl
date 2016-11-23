@@ -54,7 +54,7 @@ B=ldirichlet(d)
 
 for a in [sqrt(sqrt(5)-2)/2,1.,10.]
     L=H[w]+1/a/sqrt(1+a^2)*x
-    u=[B,L]\[1.]
+    u=[B,L]\[1.,0]
     usol = (1+a^2)/(x^2+a^2)
     @test norm(u-usol) <= eps(1000/a)
 end
