@@ -11,14 +11,14 @@ for d in (Interval(),Interval(-2,-1),Interval(im,1))
 end
 
 
-S=JacobiWeight(0.5,0.5,Ultraspherical(1,[-2.,-1.]))
+S=JacobiWeight(0.5,0.5,Ultraspherical(1,-2 .. -1))
 f=Fun(x->exp(x)*sqrt(x+2)*sqrt(-1-x),S)
 @test_approx_eq logkernel(f,-1.2) -0.05044654410790341  # Mathematica
 @test_approx_eq hilbert(f,-1.2) -0.057515957831535571  # Mathematica
 
 
-S=JacobiWeight(-0.5,-0.5,Chebyshev([-2.,-1.]))
-@test rangespace(SingularIntegral(S,0))==Chebyshev([-2.,-1.])
+S=JacobiWeight(-0.5,-0.5,Chebyshev(-2 .. -1))
+@test rangespace(SingularIntegral(S,0))==Chebyshev(-2 .. -1)
 f=Fun(x->exp(x)/(sqrt(x+2)*sqrt(-1-x)),S)
 @test_approx_eq logkernel(f,-1.2) -0.39563660592242765  # Mathematica
 @test_approx_eq hilbert(f,-1.2) 0.26527878405434321204  # Mathematica
@@ -30,7 +30,7 @@ f=(exp(x)/(sqrt(1-x)*sqrt(x+1)))
 @test_approx_eq (Hilbert(0)*f)(.1) (-0.8545003781055088)
 @test_approx_eq (Hilbert()*f)(.1) 1.1404096104609646386
 
-x=Fun(identity,[-1,2])
+x=Fun(identity,-1..2)
 f=(exp(x)/(sqrt(2-x)*sqrt(x+1)))
 @test_approx_eq (Hilbert(f|>space,0)*f)(.1) 0.49127801561694168644
 @test_approx_eq (Hilbert(0)*f)(.1) 0.49127801561694168644
@@ -42,7 +42,7 @@ x=Fun(identity)
 f=(exp(x)*(sqrt(1-x)*sqrt(x+1)))
 @test_approx_eq (Hilbert()*f)(.1) 0.43723982258866913063
 
-x=Fun(identity,[-1,2])
+x=Fun(identity,-1..2)
 f=(exp(x)*(sqrt(2-x)*sqrt(x+1)))
 @test_approx_eq (Hilbert()*f)(.1) 2.1380903070701673244
 
@@ -82,7 +82,7 @@ println("Stieltjes test")
 
 ds1 = JacobiWeight(-0.5,-0.5,ApproxFun.ChebyshevDirichlet{1,1}())
 ds2 = JacobiWeight(-.5,-.5,Chebyshev())
-rs = Chebyshev([2.,4.+3im])
+rs = Chebyshev(2..4+3im)
 f1 = Fun(x->exp(x)/sqrt(1-x^2),ds1)
 f2 = Fun(x->exp(x)/sqrt(1-x^2),ds2)
 S = Stieltjes(ds1,rs)
@@ -97,7 +97,7 @@ z = 3.+1.5im
 
 ds1 = JacobiWeight(.5,.5,Ultraspherical(1))
 ds2 = JacobiWeight(.5,.5,Chebyshev())
-rs = Chebyshev([2.,4.])
+rs = Chebyshev(2..4)
 f1 = Fun(x->exp(x)*sqrt(1-x^2),ds1)
 f2 = Fun(x->exp(x)*sqrt(1-x^2),ds2)
 S = Stieltjes(ds1,rs)
@@ -113,7 +113,7 @@ println("Stieltjes integral test")
 
 ds1 = JacobiWeight(-.5,-.5,ApproxFun.ChebyshevDirichlet{1,1}())
 ds2 = JacobiWeight(-.5,-.5,Chebyshev())
-rs = Chebyshev([2.,4.])
+rs = Chebyshev(2..4)
 f1 = Fun(x->exp(x)/sqrt(1-x^2),ds1)
 f2 = Fun(x->exp(x)/sqrt(1-x^2),ds2)
 S = Stieltjes(ds1,rs,0)
@@ -127,7 +127,7 @@ z = 3.
 
 ds1 = JacobiWeight(.5,.5,Ultraspherical(1))
 ds2 = JacobiWeight(.5,.5,Chebyshev())
-rs = Chebyshev([2.0,4.0])
+rs = Chebyshev(2.0..4.0)
 f1 = Fun(x->exp(x)*sqrt(1-x^2),ds1)
 f2 = Fun(x->exp(x)*sqrt(1-x^2),ds2)
 S = Stieltjes(ds1,rs,0)

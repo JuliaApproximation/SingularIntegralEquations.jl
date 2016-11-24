@@ -27,10 +27,10 @@ z=Fun(d)
 f=real(exp(z)/(sqrt(z-a)*sqrt(b-z)))
 S=JacobiWeight(-0.5,-0.5,ChebyshevDirichlet{1,1}(d))
 # TODO: move to testsies
-H=OffSingularIntegral(S,Chebyshev([3,4]),0)
+H=OffSingularIntegral(S,Chebyshev(3..4),0)
 @test_approx_eq (H*f)(3.5) logkernel(f,3.5)
 
-H=OffSingularIntegral(S,Chebyshev([3,4.0+im]),0)
+H=OffSingularIntegral(S,Chebyshev(3..4.0+im),0)
 @test_approx_eq (H*f)(3.5+0.5im) logkernel(f,3.5+0.5im)
 
 
