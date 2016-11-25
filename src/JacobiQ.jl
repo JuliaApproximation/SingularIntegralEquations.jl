@@ -54,13 +54,15 @@ end
 
 function stieltjes{S,D}(f::Fun{JacobiWeight{S,D}})
     # Jacobi parameters need to transform to:
-    α,β = f.space.α,f.space.β
+    α,β = f.space.β,f.space.α
     g = Fun(f,WeightedJacobi(α,β,domain(f)))
     Fun(WeightedJacobiQ(α,β,domain(f)),2coefficients(g))
 end
 
-evaluate{T,D<:Interval}(f::AbstractVector,S::JacobiQ{T,D},x) = stieltjesintervalrecurrence(S,f,tocanonical(S,x))./2jacobiQweight(S.b,S.a,tocanonical(S,x))
+evaluate{T,D<:Interval}(f::AbstractVector,S::JacobiQ{T,D},x) =
+    stieltjesintervalrecurrence(S,f,tocanonical(S,x))./2jacobiQweight(S.b,S.a,tocanonical(S,x))
 function evaluate{T,D<:Curve}(f::AbstractVector,S::JacobiQ{T,D},z::Number)
     sum(evaluate(f,setcanonicaldomain(S),complexroots(domain(S).curve-z)))
 end
-evaluate{T,D<:Curve}(f::AbstractVector,S::JacobiQ{T,D},z::AbstractArray) = reshape(promote_type(eltype(f),T,eltype(z))[ evaluate(f,S,z[i]) for i in eachindex(z) ], size(z))
+evaluate{T,D<:Curve}(f::AbstractVector,S::JacobiQ{T,D},z::AbstractArray) =
+    reshape(promote_type(eltype(f),T,eltype(z))[ evaluate(f,S,z[i]) for i in eachindex(z) ], size(z))

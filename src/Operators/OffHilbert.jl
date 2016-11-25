@@ -418,7 +418,7 @@ end
 
 function OffHilbert{DD}(sp::JacobiWeight{Chebyshev{DD},DD},z::Number)
     #try converting to Ultraspherical(1)
-    us=JacobiWeight(sp.α,sp.β,Ultraspherical(1,domain(sp)))
+    us=JacobiWeight(sp.β,sp.α,Ultraspherical(1,domain(sp)))
     OffHilbert(us,z)*Conversion(sp,us)
 end
 
@@ -433,7 +433,7 @@ function OffHilbert{DD}(sp::JacobiWeight{ChebyshevDirichlet{1,1,DD},DD},z::Numbe
         FiniteOperator([-sx2zi;1-sx2zi;2*hornervector(z-sx2z)].',sp,ConstantSpace())
     else
         # try converting to Canonical
-        us=JacobiWeight(sp.α,sp.β,Chebyshev(domain(sp)))
+        us=JacobiWeight(sp.β,sp.α,Chebyshev(domain(sp)))
         OffHilbert(us,z)*Conversion(sp,us)
     end
 end

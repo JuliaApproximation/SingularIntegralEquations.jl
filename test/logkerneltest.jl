@@ -69,7 +69,7 @@ f=sqrt(1-x^2)*exp(x)
 x=Fun()
 f=(1-x)^0.1
 sp=space(f)
-@test_approx_eq logjacobimoment(sp.β,sp.α,2.0) sum((1-x)^sp.β*(1+x)^sp.α*log(abs(2.0-x)))
+@test_approx_eq logjacobimoment(sp.α,sp.β,2.0) sum((1-x)^sp.α*(1+x)^sp.β*log(abs(2.0-x)))
 
 @test_approx_eq logkernel(f,2.0) sum(f*log(abs(2.0-x))/π)
 
@@ -85,7 +85,7 @@ f=(1-x)^0.1*exp(x)
 
 f=(1-x^2)^0.1*exp(x)
 sp=space(f)
-@test_approx_eq logjacobimoment(sp.β,sp.α,2.0)  sum((1-x^2)^0.1*log(abs(2.0-x)))
+@test_approx_eq logjacobimoment(sp.α,sp.β,2.0)  sum((1-x^2)^0.1*log(abs(2.0-x)))
 @test_approx_eq logkernel(f,2.0+im)  sum(f*log(abs(2.0+im-x))/π)
 
 

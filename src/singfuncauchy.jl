@@ -118,7 +118,7 @@ function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
         stieltjes(sp.space,coefficients(u,sp,sp.space),z)
     else
         if d==Interval()
-            S2=JacobiWeight(sp.α,sp.β,Jacobi(sp.β,sp.α))  # convert and then use recurrence
+            S2=JacobiWeight(sp.β,sp.α,Jacobi(sp.β,sp.α))  # convert and then use recurrence
             stieltjesintervalrecurrence(S2,coefficients(u,sp,S2),z)
         else
             # project to interval
@@ -206,13 +206,13 @@ function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
             zero(z)
         end
     elseif domain(sp)==Interval()
-        DS=WeightedJacobi(sp.α+1,sp.β+1)
+        DS=WeightedJacobi(sp.β+1,sp.α+1)
         D=Derivative(DS)[2:end,:]
 
-        f=Fun(Fun(sp,u),WeightedJacobi(sp.α,sp.β))  # convert to Legendre expansion
+        f=Fun(Fun(sp,u),WeightedJacobi(sp.β,sp.α))  # convert to Legendre expansion
         uu=D\(f|(2:∞))   # find integral, dropping first coefficient of f
 
-        (f.coefficients[1]*real(logjacobimoment(sp.β,sp.α,z)) + real(stieltjes(uu,z)))/π
+        (f.coefficients[1]*real(logjacobimoment(sp.α,sp.β,z)) + real(stieltjes(uu,z)))/π
     else
         error("other intervals not yet implemented")
     end
@@ -247,6 +247,6 @@ function stieltjesintegral{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,D
             zero(z)
         end
     else
-        error("stieltjes integral not implemented for parameters "*string(sp.α)*","*string(sp.β))
+        error("stieltjes integral not implemented for parameters β="*string(sp.β)*", α="*string(sp.α))
     end
 end

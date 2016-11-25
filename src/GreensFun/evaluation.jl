@@ -63,7 +63,7 @@ for Func in (:(Base.sum),:linesum,:logkernel,:cauchy)
         $Func{F<:Fun}(G::Function,u::Vector{F},z)=mapreduce(u->$Func(G,u,z),+,u)
         $Func(G::Function,sp::PiecewiseSpace,u,z)=$Func(G,vec(Fun(sp,u)),z)
         $Func(G::Function,u::Fun,z)=$Func(G,space(u),coefficients(u),z)
-        $Func{PS<:PolynomialSpace}(G::Function,sp::JacobiWeight{PS},f,z)=$Func(G,Fun(Fun(sp,f),JacobiWeight(sp.α,sp.β,Chebyshev(domain(sp)))),z)
+        $Func{PS<:PolynomialSpace}(G::Function,sp::JacobiWeight{PS},f,z)=$Func(G,Fun(Fun(sp,f),JacobiWeight(sp.β,sp.α,Chebyshev(domain(sp)))),z)
     end
 end
 
