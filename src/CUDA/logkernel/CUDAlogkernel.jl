@@ -59,7 +59,7 @@ end
 
 println("The logkernel results are: \n",ret)
 
-sp = JacobiWeight(-.5,-.5,ChebyshevDirichlet{1,1}(Interval(a,b)))
+sp = JacobiWeight(-.5,-.5,ChebyshevDirichlet{1,1}(Segment(a,b)))
 f = Fun(sp,u)
 
 println("The error is: ",norm(@time logkernel(f,complex(x,y))-ret))

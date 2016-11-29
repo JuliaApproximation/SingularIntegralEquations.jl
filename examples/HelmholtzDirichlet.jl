@@ -23,12 +23,12 @@ g2 = (x,y) ->  x == y ? -(log(k/2)+γ)/2/π + im/4 : im/4*hankelh1(0,k*abs(y-x))
 
 # A variety of domains.
 
-#dom = Circle(0.0,1/π)∪Interval(-1.0im,1.0)
-#dom = ∪(Interval,[-2.5-.5im,-1.5+.5im,-.5-.5im,.5+.5im,1.5-.5im],[-1.5-.5im,-.5+.5im,.5-.5im,1.5+.5im,2.5-.5im])
-#dom = ∪(Interval,[-1.0-0.4im,0.1+0.4im,-0.9-0.5im],[-0.1+0.4im,1.0-0.4im,0.9-0.5im])
-#dom = ∪(Interval,[-1.0-0.4im,-0.5-0.4im,0.1+0.4im,0.2+0.0im,-1.4-0.75im],[-0.1+0.4im,-0.2+0.0im,1.0-0.4im,0.5-0.4im,1.4-0.75im])
-#dom = ∪(Circle,[0.,-1.0im],[0.5,0.25])∪∪(Interval,[-1.5,0.5-1.0im,-0.5+1.0im],[-0.5-1.0im,1.5,0.5+1.0im])
-dom = Interval()
+#dom = Circle(0.0,1/π)∪Segment(-1.0im,1.0)
+#dom = ∪(Segment,[-2.5-.5im,-1.5+.5im,-.5-.5im,.5+.5im,1.5-.5im],[-1.5-.5im,-.5+.5im,.5-.5im,1.5+.5im,2.5-.5im])
+#dom = ∪(Segment,[-1.0-0.4im,0.1+0.4im,-0.9-0.5im],[-0.1+0.4im,1.0-0.4im,0.9-0.5im])
+#dom = ∪(Segment,[-1.0-0.4im,-0.5-0.4im,0.1+0.4im,0.2+0.0im,-1.4-0.75im],[-0.1+0.4im,-0.2+0.0im,1.0-0.4im,0.5-0.4im,1.4-0.75im])
+#dom = ∪(Circle,[0.,-1.0im],[0.5,0.25])∪∪(Segment,[-1.5,0.5-1.0im,-0.5+1.0im],[-0.5-1.0im,1.5,0.5+1.0im])
+dom = Segment()
 
 sp = Space(dom)
 cwsp = CauchyWeight(sp⊗sp,0)

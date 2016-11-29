@@ -80,7 +80,7 @@ realdivkhornersum{S<:Complex}(cfs::AbstractVector{S},y,ys,s) = complex(real(divk
                                                                        real(divkhornersum(imag(cfs),y,ys,s)))
 
 
-function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,zv::Array)
+function stieltjes{S<:PolynomialSpace,DD<:Segment}(sp::JacobiWeight{S,DD},u,zv::Array)
     ret=similar(zv,Complex128)
     for k=1:length(zv)
         @inbounds ret[k]=stieltjes(sp,u,zv[k])
@@ -88,7 +88,7 @@ function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,zv:
     ret
 end
 
-function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
+function stieltjes{S<:PolynomialSpace,DD<:Segment}(sp::JacobiWeight{S,DD},u,z)
     d=domain(sp)
 
     if sp.α == sp.β == .5
@@ -117,12 +117,12 @@ function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
     elseif isapproxinteger(sp.α) && isapproxinteger(sp.β)
         stieltjes(sp.space,coefficients(u,sp,sp.space),z)
     else
-        if d==Interval()
+        if d==Segment()
             S2=JacobiWeight(sp.β,sp.α,Jacobi(sp.β,sp.α))  # convert and then use recurrence
             stieltjesintervalrecurrence(S2,coefficients(u,sp,S2),z)
         else
             # project to interval
-            stieltjes(setdomain(sp,Interval()),u,mobius(sp,z))
+            stieltjes(setdomain(sp,Segment()),u,mobius(sp,z))
         end
     end
 end
@@ -135,7 +135,7 @@ end
 #  hilbert(f,z)=im*(cauchy(true,f,z)+cauchy(false,f,z))
 ##
 
-function hilbert{DD<:Interval}(sp::JacobiWeight{Chebyshev{DD},DD},u)
+function hilbert{DD<:Segment}(sp::JacobiWeight{Chebyshev{DD},DD},u)
     d=domain(u)
 
     if sp.α == sp.β == .5
@@ -172,9 +172,9 @@ realintegratejin(c,cfs,y) =
 
 
 
-logkernel{SS<:PolynomialSpace,DD<:Interval}(S::JacobiWeight{SS,DD},f,z::AbstractArray) = map(x->logkernel(S,f,x),z)
+logkernel{SS<:PolynomialSpace,DD<:Segment}(S::JacobiWeight{SS,DD},f,z::AbstractArray) = map(x->logkernel(S,f,x),z)
 
-function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
+function logkernel{S<:PolynomialSpace,DD<:Segment}(sp::JacobiWeight{S,DD},u,z)
     d=domain(sp)
     a,b=d.a,d.b
 
@@ -205,7 +205,7 @@ function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
         else
             zero(z)
         end
-    elseif domain(sp)==Interval()
+    elseif domain(sp)==Segment()
         DS=WeightedJacobi(sp.β+1,sp.α+1)
         D=Derivative(DS)[2:end,:]
 
@@ -218,7 +218,7 @@ function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
     end
 end
 
-function stieltjesintegral{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
+function stieltjesintegral{S<:PolynomialSpace,DD<:Segment}(sp::JacobiWeight{S,DD},u,z)
     d=domain(sp)
     a,b=d.a,d.b
 

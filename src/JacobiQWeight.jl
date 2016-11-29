@@ -46,7 +46,7 @@ transformtimes{JW<:JacobiQWeight}(f::Fun,g::Fun{JW}) = Fun(g.space,coefficients(
 
 jacobiQweight(α,β,x)=(x+1).^α.*(x-1).^β
 jacobiQweight(α,β,d::Domain)=Fun(JacobiQWeight(α,β,ConstantSpace(d)),[1.])
-jacobiQweight(α,β)=jacobiQweight(α,β,Interval())
+jacobiQweight(α,β)=jacobiQweight(α,β,Segment())
 
 weight(sp::JacobiQWeight,x)=jacobiQweight(sp.α,sp.β,tocanonical(sp,x))
 dimension(sp::JacobiQWeight)=dimension(sp.space)

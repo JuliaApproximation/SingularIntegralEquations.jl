@@ -5,7 +5,7 @@
 using ApproxFun, SingularIntegralEquations
 include("Fractureaux.jl")
 
-d = Interval(-1.,1.)
+d = Segment(-1.,1.)
 sp = Space(d)
 wsp = JacobiWeight(-.5,-.5,sp)
 ⨍ = DefiniteLineIntegral(wsp)

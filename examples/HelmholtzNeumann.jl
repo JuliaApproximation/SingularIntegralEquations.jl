@@ -26,7 +26,7 @@ g5 = (x,y) ->  -k/2*besselj1(k*abs(y-x))./abs(y-x).*imag(y-x)  # For logkernel
 g6 = (x,y) ->  k/2*abs(y-x).*(bessely1(k*abs(y-x)) - 2besselj1(k*abs(y-x)).*logabs(y-x)/π) # For Re{Cauchy}
 
 
-dom = ∪(Interval,[-2.,1.],[-1.,2.])
+dom = ∪(Segment,[-2.,1.],[-1.,2.])
 sp = Space(dom)
 cwsp,cwsp2 = CauchyWeight(sp⊗sp,0),CauchyWeight(sp⊗sp,2)
 ∂ui∂nΓ,⨍ = Fun(t->-im*k*d[2]*ui(real(t),imag(t)),sp),

@@ -6,7 +6,7 @@ using Base.Test, ApproxFun, SingularIntegralEquations
 testsieeval(Jacobi(0,0))
 
 a=1.0;b=2.0+im
-d=Interval(a,b)
+d=Segment(a,b)
 z=Fun(d)
 f=real(exp(z)/(sqrt(z-a)*sqrt(b-z)))
 S=space(f)
@@ -14,7 +14,7 @@ testsies(S)
 
 
 a=1.0;b=2.0+im
-d=Interval(a,b)
+d=Segment(a,b)
 z=Fun(d)
 f=real(exp(z)*(sqrt(z-a)*sqrt(b-z)))
 S=space(f)
@@ -22,7 +22,7 @@ testsies(S)
 
 
 a=1.0;b=2.0+im
-d=Interval(a,b)
+d=Segment(a,b)
 z=Fun(d)
 f=real(exp(z)/(sqrt(z-a)*sqrt(b-z)))
 S=JacobiWeight(-0.5,-0.5,ChebyshevDirichlet{1,1}(d))

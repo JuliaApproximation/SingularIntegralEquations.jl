@@ -98,7 +98,7 @@ testbandedoperator(Hilbert(space(w)))
 
 ## Arc
 
-d=exp(im*Interval(0.1,0.2))
+d=exp(im*Segment(0.1,0.2))
 x=Fun(d)
 w=sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x))
 

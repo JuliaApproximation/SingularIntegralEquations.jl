@@ -51,7 +51,7 @@ r = 5e-2
 cr = exp(im*2π*[-0.5:N-1.5]/N)
 crl = (1-2im*r)cr
 crr = (1+2im*r)cr
-dom = ∪(Interval,crl[1:2:end],crr[1:2:end]) ∪ ∪(Circle,cr[2:2:end],ones(length(cr[2:2:end]))r)∪Circle(0.,0.5)
+dom = ∪(Segment,crl[1:2:end],crr[1:2:end]) ∪ ∪(Circle,cr[2:2:end],ones(length(cr[2:2:end]))r)∪Circle(0.,0.5)
 function ui(x,y)
     c = 2exp(im*2π*(0.)/N)
     val = hankelh1(0,k*abs(complex(x,y)-c))
@@ -66,5 +66,5 @@ end
 #=
 # This is the random screen in Figure 6.3 of Slevinsky & Olver 2015. Solve time on the order of ~70 seconds.
 ccr = [-3.0,-2.4710248798864565,-1.7779535080542614,-0.999257770563108,-0.9160576190726175,-0.5056650643725802,0.7258681480228484,1.2291671942613505,1.3417993440008456,1.485081132919861,1.7601585357456848,2.9542404467603642,3.0]
-dom = ∪(Interval,(ccr+(3-ccr[end-1])/2)[1:2:end-1],(ccr+(3-ccr[end-1])/2)[2:2:end])
+dom = ∪(Segment,(ccr+(3-ccr[end-1])/2)[1:2:end-1],(ccr+(3-ccr[end-1])/2)[2:2:end])
 =#

@@ -6,7 +6,7 @@ using Base.Test, ApproxFun, SingularIntegralEquations
 
 ## Sqrt singularity
 
-for d in (Interval(),Interval(-2,-1),Interval(im,1))
+for d in (Segment(),Segment(-2,-1),Segment(im,1))
     testsies(d)
 end
 
@@ -224,7 +224,7 @@ f=Fun(exp,Legendre())
 
 
 ω=2.
-d=Interval(0.5im,30.0im/ω)
+d=Segment(0.5im,30.0im/ω)
 x=Fun(identity,Legendre(d))
 @test_approx_eq cauchy(exp(im*ω*x),1+im) (-0.025430235512791915911 + 0.0016246822285867573678im)
 

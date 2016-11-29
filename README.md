@@ -16,7 +16,7 @@ g2(x,y) = x == y ? -(log(k/2)+γ)/2/π + im/4 : im/4*hankelh1(0,k*abs(y-x)) - g1
 
 ui(x,y) = exp(im*k*(x-y)/sqrt(2))    # Incident plane wave at 45°
 
-dom = Interval()                     # Set the domain
+dom = Segment()                     # Set the domain
 sp = Space(dom)                      # Canonical space on the domain
 ⨍ = DefiniteLineIntegral(dom)        # Line integration functional
 uiΓ = Fun(t->ui(real(t),imag(t)),sp) # Incident wave on Γ
@@ -53,7 +53,7 @@ ui(x,y) = logabs(complex(x,y)-2)     # Single source at (2,0) of strength 2π
 N,r = 10,1e-1
 cr = exp(im*2π*(0:N-1)/N)
 crl,crr = (1-2im*r)cr,(1+2im*r)cr
-dom = ∪(Interval,crl,crr)            # Set the shielding domain
+dom = ∪(Segment,crl,crr)            # Set the shielding domain
 
 sp = Space(dom)                      # Canonical space on the domain
 ⨍ = DefiniteLineIntegral(dom)        # Line integration functional
