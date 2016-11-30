@@ -26,7 +26,7 @@ AiS=promotedomainspace(Ai,S)
 
 domainspace(Ai)
 S=JacobiWeight(0.5,0.5,Ultraspherical(1,Γ))
-c,ui=[1 Hilbert(S)]\imag(α*z)
+@time c,ui=[1 Hilbert(S)]\imag(α*z)
 
 u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 
@@ -56,7 +56,7 @@ k=227;
 z=Fun(Γ)
 α=exp(-k/50im)
 S=JacobiWeight(0.5,0.5,Γ)
-c,ui=[1 PseudoHilbert(S)]\imag(α*z)
+@time c,ui=[1 PseudoHilbert(S)]\imag(α*z)
 
 
 u=(x,y)->α*(x+im*y)+2pseudocauchy(ui,x+im*y)
@@ -125,48 +125,11 @@ k=114;
     α=exp(k/50*im)
 
 Ai=ApproxFun.interlace([ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(S)])
-testbandedblockoperator(Ai)
+@time testbandedblockoperator(Ai)
 
-a,b,ui=[ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(S)]\imag(α*z)
+@time a,b,ui=[ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(S)]\imag(α*z)
 
 
 
 
 u=(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
-
-
-## 3 domains
-
-Γ=Segment(-im,1.0-im)∪Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))∪Circle(2.0,0.2)
-    z=Fun(Γ)
-
-S=PiecewiseSpace(map(d->isa(d,Circle)?Fourier(d):JacobiWeight(0.5,0.5,Ultraspherical(1,d)),Γ))
-
-H=Hilbert(S)
-
-#  TODO: fix testraggedbelowoperator(H)
-
-Ai=ApproxFun.interlace([Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),Γ) real(H)])
-
-@test ApproxFun.israggedbelow(Ai)
-@test ApproxFun.israggedbelow(Ai.ops[4])
-@test ApproxFun.israggedbelow(Ai.ops[4].op)
-
-
-
-B=ApproxFun.SpaceOperator(ApproxFun.BasisFunctional(3),S,ApproxFun.ConstantSpace())
-
-Ai=ApproxFun.interlace([0                 0                 0                 B;
-          Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),Γ) real(H)])
-
-testraggedbelowoperator(Ai)
-
-k=114;
-    α=exp(k/50*im)
-    a,b,c,ui=[0                 0                 0                 B;
-              Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),Γ) real(H)]\Any[0.;imag(α*z)]
-
-
-u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
-
-@test_approx_eq u(1.1,0.2) (-0.8290718508107162+0.511097153754im)

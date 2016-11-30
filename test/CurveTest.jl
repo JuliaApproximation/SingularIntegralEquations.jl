@@ -113,7 +113,6 @@ z=10.;
 w=1/(sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x)))
 
 testbandedoperator(SingularIntegral(space(w),0))
-testbandedoperator(Hilbert(space(w)))
 
 @test_approx_eq sum(w/(x-z))/(2π*im) cauchy(w,z)
 @test_approx_eq sum(w*log(z-x))/(-2π*im) cauchyintegral(w,z)
