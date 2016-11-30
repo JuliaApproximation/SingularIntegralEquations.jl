@@ -44,11 +44,11 @@ G = convolutionProductFun(f2,Laurent(),Laurent())
 
 f2 = Fun(θ->π+e*exp(im*θ)+sqrt(2)*exp(im*2θ)+catalan*exp(im*3θ)+γ*exp(im*4θ),Taylor(PeriodicInterval()))
 G = convolutionProductFun(f2,Laurent(),Laurent())
-@test norm(f2(.456-.123)-G(.123,.456))≤10eps()
+@test norm(f2(.456-.123)-G(.123,.456))≤100eps()
 
 f2 = Fun(θ->e*exp(-im*θ)+sqrt(2)*exp(-im*2θ)+catalan*exp(-im*3θ)+γ*exp(-im*4θ),Hardy{false}(PeriodicInterval()))
 G = convolutionProductFun(f2,Laurent(),Laurent())
-@test norm(f2(.456-.123)-G(.123,.456))≤10eps()
+@test norm(f2(.456-.123)-G(.123,.456))≤100eps()
 
 println("Timing tests: ")
 
