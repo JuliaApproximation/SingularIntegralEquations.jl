@@ -27,7 +27,7 @@ f(exp(im*0.1))
 
 >>>>>>> 2297bc251a8a2f9f01355295f61b9fcb7ba10547
 k=50
-    Γ=Interval(0.,1+0.5im)
+    Γ=Segment(0.,1+0.5im)
     z=Fun(Γ)
     α=exp(-π*k/50im)
 <<<<<<< HEAD
@@ -62,7 +62,7 @@ m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     xx,yy = x.+0.*y',0.*x.+y'
 
 k=227;
-    Γ=0.5+exp(im*Interval(0.1,-42))
+    Γ=0.5+exp(im*Segment(0.1,-42))
     z=Fun(Γ)
     α=exp(-k/50im)
 <<<<<<< HEAD
@@ -134,7 +134,7 @@ plot(Γ)
 #  Two intervals requires explicitely stating the space (for now)
 ##
 
-Γ=Interval(-1.,-0.5)∪Interval(-0.3,1.)
+Γ=Segment(-1.,-0.5)∪Segment(-0.3,1.)
 z=Fun(Γ)
 
 S=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical(1,d)),Γ))
@@ -184,7 +184,7 @@ plot(Γ)
 
 
 
-Γ=Interval(-1.,0.)∪Interval(0.5im,1.)
+Γ=Segment(-1.,0.)∪Segment(0.5im,1.)
 z=Fun(Γ)
 S=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical(1,d)),Γ))
 
@@ -206,10 +206,10 @@ plot(Γ)
     contour!(x,y,imag(u(xx,yy))';nlevels=100)
 
 
-# Interval and Curve
+# Segment and Curve
 
 
-Γ=Interval(-im,1.0-im)∪Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))
+Γ=Segment(-im,1.0-im)∪Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))
 z=Fun(Γ)
 
 S=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical(1,d)),Γ))
@@ -227,9 +227,9 @@ plot(Γ)
     contour!(x,y,imag(u(xx,yy))';nlevels=100)
 
 
-## Interval, Curve and Circle
+## Segment, Curve and Circle
 
-Γ=Interval(-im,1.0-im)∪Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))∪Circle(2.0,0.2)
+Γ=Segment(-im,1.0-im)∪Curve(Fun(x->exp(0.8im)*(x+x^2-1+im*(x-4x^3+x^4)/6)))∪Circle(2.0,0.2)
     z=Fun(Γ)
 
 S=PiecewiseSpace(map(d->isa(d,Circle)?Fourier(d):JacobiWeight(0.5,0.5,Ultraspherical(1,d)),Γ))

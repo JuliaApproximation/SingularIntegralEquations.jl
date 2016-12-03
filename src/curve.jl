@@ -1,4 +1,4 @@
-## Interval map
+## Segment map
 
 stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Number) =
     sum(stieltjes(setcanonicaldomain(S),f,complexroots(domain(S).curve-z)))
@@ -36,9 +36,9 @@ function stieltjesintegral{CC<:Chebyshev,S,T}(sp::Space{S,IntervalCurve{CC,T}},w
     d=domain(sp)
     # leading order coefficient
     b=d.curve.coefficients[end]*2^(max(ncoefficients(d.curve)-2,0))
-    g=Fun(w,setcanonicaldomain(sp))
+    g=Fun(setcanonicaldomain(sp),w)
     g=g*fromcanonicalD(d)
-    sum(stieltjesintegral(g,complexroots(d.curve-z)))+sum(Fun(w,sp))*log(b)
+    sum(stieltjesintegral(g,complexroots(d.curve-z)))+sum(Fun(sp,w))*log(b)
 end
 
 
@@ -46,9 +46,9 @@ function logkernel{CC<:Chebyshev,S,T}(sp::Space{S,IntervalCurve{CC,T}},w,z)
     d=domain(sp)
     # leading order coefficient
     b=d.curve.coefficients[end]*2^(max(ncoefficients(d.curve)-2,0))
-    g=Fun(w,setcanonicaldomain(sp))
+    g=Fun(setcanonicaldomain(sp),w)
     g=g*abs(fromcanonicalD(d))
-    sum(logkernel(g,complexroots(d.curve-z)))+linesum(Fun(w,sp))*log(abs(b))/π
+    sum(logkernel(g,complexroots(d.curve-z)))+linesum(Fun(sp,w))*log(abs(b))/π
 end
 
 
@@ -115,14 +115,14 @@ function Hilbert{C<:IntervalCurve,SS}(S::JacobiWeight{SS,C},k::Int)
     d=domain(S)
 
     # find the number of coefficients needed to resolve the first column
-    m=ncoefficients(Fun(x->sum(stieltjes(Fun([1.0],csp),filter(y->!in(y,Interval()),complexroots(d.curve-fromcanonical(d,x))))/π),rs))
+    m=ncoefficients(Fun(x->sum(stieltjes(Fun(csp,[1.0]),filter(y->!in(y,Segment()),complexroots(d.curve-fromcanonical(d,x))))/π),rs))
     #precompute the roots
-    rts=Vector{Complex128}[filter(y->!in(y,Interval()),complexroots(d.curve-x)) for x in fromcanonical(d,points(rs,m))]
+    rts=Vector{Complex128}[filter(y->!in(y,Segment()),complexroots(d.curve-x)) for x in fromcanonical(d,points(rs,m))]
 
     # generate cols until smaller than tol
     cols=Array(Vector{Complex128},0)
     for k=1:10000
-        push!(cols,transform(rs,Complex128[-sum(stieltjes(Fun([zeros(k-1);1.0],csp),rt)/π) for rt in rts]))
+        push!(cols,transform(rs,Complex128[-sum(stieltjes(Fun(csp,[zeros(k-1);1.0]),rt)/π) for rt in rts]))
         if norm(last(cols))<tol
             break
         end
@@ -151,14 +151,14 @@ function SingularIntegral{CC<:Chebyshev,TTT,TT}(S::JacobiWeight{TTT,IntervalCurv
 
 
     # find the number of coefficients needed to resolve the first column
-    m=ncoefficients(Fun(x->sum(logkernel(Fun([1.0],csp),filter(y->!in(y,Interval()),complexroots(d.curve-fromcanonical(d,x))))),rs))
+    m=ncoefficients(Fun(x->sum(logkernel(Fun(csp,[1.0]),filter(y->!in(y,Segment()),complexroots(d.curve-fromcanonical(d,x))))),rs))
     #precompute the roots
-    rts=Vector{Complex128}[filter(y->!in(y,Interval()),complexroots(d.curve-x)) for x in fromcanonical(d,points(rs,m))]
+    rts=Vector{Complex128}[filter(y->!in(y,Segment()),complexroots(d.curve-x)) for x in fromcanonical(d,points(rs,m))]
 
     # generate cols until smaller than tol
     cols=Array(Vector{Float64},0)
     for k=1:10000
-        push!(cols,transform(rs,Float64[sum(logkernel(Fun([zeros(k-1);1.0],csp),rt)) for rt in rts]))
+        push!(cols,transform(rs,Float64[sum(logkernel(Fun(csp,[zeros(k-1);1.0]),rt)) for rt in rts]))
         if norm(last(cols))<tol
             break
         end

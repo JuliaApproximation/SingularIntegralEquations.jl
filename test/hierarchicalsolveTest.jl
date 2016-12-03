@@ -46,7 +46,7 @@ H+H-(H-H)
 
 i = 2
 
-dom = cantor(Interval(),i)
+dom = cantor(Segment(),i)
 ⨍ = DefiniteLineIntegral(dom)
 f = Fun(x->logabs(x-5im),dom)
 sp = Space(dom)
@@ -80,7 +80,7 @@ println("The hierarchical forward error norm is: ",norm(⨍[G]*u2-f))
 
 # Test three domains
 
-dom = Interval(-2.0,-1.0+0im)∪Interval(1.0,2.0+0im)∪Interval(-0.5-2im,0.5-2im)
+dom = Segment(-2.0,-1.0+0im)∪Segment(1.0,2.0+0im)∪Segment(-0.5-2im,0.5-2im)
 hdom = clustertree(dom)
 dom = UnionDomain(SingularIntegralEquations.collectdata(hdom))
 ⨍ = DefiniteLineIntegral(dom)

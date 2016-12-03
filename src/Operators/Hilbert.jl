@@ -297,7 +297,7 @@ for (Op,Len) in ((:Hilbert,:complexlength),
     OpWrap=parse(string(Op)*"Wrapper")
 
     @eval begin
-        function $Op{DD<:Interval}(S::JacobiWeight{Chebyshev{DD},DD},m::Int)
+        function $Op{DD<:Segment}(S::JacobiWeight{Chebyshev{DD},DD},m::Int)
             if S.α==S.β==-0.5
                 if m==0
                     $ConcOp(S,m)
@@ -321,7 +321,7 @@ for (Op,Len) in ((:Hilbert,:complexlength),
             end
         end
 
-        function getindex{DD<:Interval,OT,T}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD},OT,T},k::Integer,j::Integer)
+        function getindex{DD<:Segment,OT,T}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD},OT,T},k::Integer,j::Integer)
             sp=domainspace(H)
             @assert H.order == 0
             @assert sp.α==sp.β==-0.5
@@ -336,7 +336,7 @@ for (Op,Len) in ((:Hilbert,:complexlength),
         end
 
         # we always have real for n==1
-        function $Op{DD<:Interval}(S::JacobiWeight{Ultraspherical{Int,DD},DD},m)
+        function $Op{DD<:Segment}(S::JacobiWeight{Ultraspherical{Int,DD},DD},m)
             @assert order(S.space) == 1
             if S.α==S.β==0.5
                 if m==1
@@ -350,7 +350,7 @@ for (Op,Len) in ((:Hilbert,:complexlength),
                 error(string($Op)*" not implemented for parameters $(S.α),$(S.β)")
             end
         end
-        function getindex{DD<:Interval,OT,T}(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD},DD},OT,T},k::Integer,j::Integer)
+        function getindex{DD<:Segment,OT,T}(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD},DD},OT,T},k::Integer,j::Integer)
             # order(domainspace(H))==1
             m=H.order
             d=domain(H)

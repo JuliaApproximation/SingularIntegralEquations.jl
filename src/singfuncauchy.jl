@@ -26,7 +26,7 @@ x̄sqrtx2real(z) = sqrtx2abs(z)*abs(z)*cos((angle(z-1)+angle(z+1))/2-angle(z))
 function sqrtx2(f::Fun)
     B = Evaluation(first(domain(f)))
     A = Derivative()-f*differentiate(f)/(f^2-1)
-    linsolve([B,A],[sqrtx2(first(f))];tolerance=ncoefficients(f)*10E-15)
+    \([B,A],[sqrtx2(first(f)),0];tolerance=ncoefficients(f)*10E-15)
 end
 
 # these are two inverses of the joukowsky map
@@ -80,7 +80,7 @@ realdivkhornersum{S<:Complex}(cfs::AbstractVector{S},y,ys,s) = complex(real(divk
                                                                        real(divkhornersum(imag(cfs),y,ys,s)))
 
 
-function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,zv::Array)
+function stieltjes{S<:PolynomialSpace,DD<:Segment}(sp::JacobiWeight{S,DD},u,zv::Array)
     ret=similar(zv,Complex128)
     for k=1:length(zv)
         @inbounds ret[k]=stieltjes(sp,u,zv[k])
@@ -88,7 +88,7 @@ function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,zv:
     ret
 end
 
-function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
+function stieltjes{S<:PolynomialSpace,DD<:Segment}(sp::JacobiWeight{S,DD},u,z)
     d=domain(sp)
 
     if sp.α == sp.β == .5
@@ -117,12 +117,12 @@ function stieltjes{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
     elseif isapproxinteger(sp.α) && isapproxinteger(sp.β)
         stieltjes(sp.space,coefficients(u,sp,sp.space),z)
     else
-        if d==Interval()
-            S2=JacobiWeight(sp.α,sp.β,Jacobi(sp.β,sp.α))  # convert and then use recurrence
+        if d==Segment()
+            S2=JacobiWeight(sp.β,sp.α,Jacobi(sp.β,sp.α))  # convert and then use recurrence
             stieltjesintervalrecurrence(S2,coefficients(u,sp,S2),z)
         else
             # project to interval
-            stieltjes(setdomain(sp,Interval()),u,mobius(sp,z))
+            stieltjes(setdomain(sp,Segment()),u,mobius(sp,z))
         end
     end
 end
@@ -135,20 +135,20 @@ end
 #  hilbert(f,z)=im*(cauchy(true,f,z)+cauchy(false,f,z))
 ##
 
-function hilbert{DD<:Interval}(sp::JacobiWeight{Chebyshev{DD},DD},u)
+function hilbert{DD<:Segment}(sp::JacobiWeight{Chebyshev{DD},DD},u)
     d=domain(u)
 
     if sp.α == sp.β == .5
         # Corollary 5.7 of Olver&Trogdon
         cfs=coefficients(u,sp.space,Ultraspherical(1))
-        Fun([0.;-cfs],d)
+        Fun(d,[0.;-cfs])
     elseif sp.α == sp.β == -.5
         # Corollary 5.11 of Olver&Trogdon
         cfs= coefficients(u,sp.space,ChebyshevDirichlet{1,1})
         if length(cfs)≥2
-            Fun([cfs[2];2cfs[3:end]],d)
+            Fun(d,[cfs[2];2cfs[3:end]])
         else
-            Fun(zeros(eltype(cfs),1),d)
+            Fun(d,zeros(eltype(cfs),1))
         end
     else
         error("hilbert only implemented for Chebyshev weights")
@@ -172,9 +172,9 @@ realintegratejin(c,cfs,y) =
 
 
 
-logkernel{SS<:PolynomialSpace,DD<:Interval}(S::JacobiWeight{SS,DD},f,z::AbstractArray) = map(x->logkernel(S,f,x),z)
+logkernel{SS<:PolynomialSpace,DD<:Segment}(S::JacobiWeight{SS,DD},f,z::AbstractArray) = map(x->logkernel(S,f,x),z)
 
-function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
+function logkernel{S<:PolynomialSpace,DD<:Segment}(sp::JacobiWeight{S,DD},u,z)
     d=domain(sp)
     a,b=d.a,d.b
 
@@ -205,20 +205,20 @@ function logkernel{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
         else
             zero(z)
         end
-    elseif domain(sp)==Interval()
-        DS=WeightedJacobi(sp.α+1,sp.β+1)
+    elseif domain(sp)==Segment()
+        DS=WeightedJacobi(sp.β+1,sp.α+1)
         D=Derivative(DS)[2:end,:]
 
-        f=Fun(Fun(u,sp),WeightedJacobi(sp.α,sp.β))  # convert to Legendre expansion
+        f=Fun(Fun(sp,u),WeightedJacobi(sp.β,sp.α))  # convert to Legendre expansion
         uu=D\(f|(2:∞))   # find integral, dropping first coefficient of f
 
-        (f.coefficients[1]*real(logjacobimoment(sp.β,sp.α,z)) + real(stieltjes(uu,z)))/π
+        (f.coefficients[1]*real(logjacobimoment(sp.α,sp.β,z)) + real(stieltjes(uu,z)))/π
     else
         error("other intervals not yet implemented")
     end
 end
 
-function stieltjesintegral{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,DD},u,z)
+function stieltjesintegral{S<:PolynomialSpace,DD<:Segment}(sp::JacobiWeight{S,DD},u,z)
     d=domain(sp)
     a,b=d.a,d.b
 
@@ -247,6 +247,6 @@ function stieltjesintegral{S<:PolynomialSpace,DD<:Interval}(sp::JacobiWeight{S,D
             zero(z)
         end
     else
-        error("stieltjes integral not implemented for parameters "*string(sp.α)*","*string(sp.β))
+        error("stieltjes integral not implemented for parameters β="*string(sp.β)*", α="*string(sp.α))
     end
 end

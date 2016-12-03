@@ -76,7 +76,7 @@ end
 
 
 
-stieltjesmoment{DD}(S::JacobiWeight{Chebyshev{DD},DD},k::Integer,z)=stieltjesjacobimoment(S.α,S.β,k,mobius(S,z))
+stieltjesmoment{DD}(S::JacobiWeight{Chebyshev{DD},DD},k::Integer,z)=stieltjesjacobimoment(S.β,S.α,k,mobius(S,z))
 
 
 function stieltjesmoment{T,DD}(S::JacobiWeight{Jacobi{T,DD},DD},k::Integer,z)
@@ -84,7 +84,7 @@ function stieltjesmoment{T,DD}(S::JacobiWeight{Jacobi{T,DD},DD},k::Integer,z)
     J=S.space
 
     if k==1
-        return stieltjesjacobimoment(S.α,S.β,k,z)
+        return stieltjesjacobimoment(S.β,S.α,k,z)
     elseif k==2
         if J.a==J.b
             return (1+J.a)*stieltjesjacobimoment(S.α,S.β,k,z)

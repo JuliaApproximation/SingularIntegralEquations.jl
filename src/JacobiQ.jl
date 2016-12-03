@@ -11,10 +11,10 @@ immutable JacobiQ{T,D<:Domain} <: RealUnivariateSpace{D}
     domain::D
 end
 LegendreQ(domain)=JacobiQ(0.,0.,domain)
-LegendreQ()=LegendreQ(Interval())
+LegendreQ()=LegendreQ(Segment())
 JacobiQ(a,b,d::Domain)=JacobiQ(promote(a,b)...,d)
 JacobiQ(a,b,d)=JacobiQ(a,b,Domain(d))
-JacobiQ(a,b)=JacobiQ(a,b,Interval())
+JacobiQ(a,b)=JacobiQ(a,b,Segment())
 
 
 Base.promote_rule{T,V,D}(::Type{JacobiQ{T,D}},::Type{JacobiQ{V,D}})=JacobiQ{promote_type(T,V),D}
@@ -45,22 +45,24 @@ end
 
 function stieltjes{T,D}(f::Fun{Jacobi{T,D}})
     g = Fun(f,Legendre(domain(f)))
-    Fun(2coefficients(g),LegendreQ(domain(f)))
+    Fun(LegendreQ(domain(f)),2coefficients(g))
 end
 function stieltjes{D}(f::Fun{Chebyshev{D}})
     g = Fun(f,Legendre(domain(f)))
-    Fun(2coefficients(g),LegendreQ(domain(f)))
+    Fun(LegendreQ(domain(f)),2coefficients(g))
 end
 
 function stieltjes{S,D}(f::Fun{JacobiWeight{S,D}})
     # Jacobi parameters need to transform to:
-    α,β = f.space.α,f.space.β
+    α,β = f.space.β,f.space.α
     g = Fun(f,WeightedJacobi(α,β,domain(f)))
-    Fun(2coefficients(g),WeightedJacobiQ(α,β,domain(f)))
+    Fun(WeightedJacobiQ(α,β,domain(f)),2coefficients(g))
 end
 
-evaluate{T,D<:Interval}(f::AbstractVector,S::JacobiQ{T,D},x) = stieltjesintervalrecurrence(S,f,tocanonical(S,x))./2jacobiQweight(S.b,S.a,tocanonical(S,x))
+evaluate{T,D<:Segment}(f::AbstractVector,S::JacobiQ{T,D},x) =
+    stieltjesintervalrecurrence(S,f,tocanonical(S,x))./2jacobiQweight(S.b,S.a,tocanonical(S,x))
 function evaluate{T,D<:Curve}(f::AbstractVector,S::JacobiQ{T,D},z::Number)
     sum(evaluate(f,setcanonicaldomain(S),complexroots(domain(S).curve-z)))
 end
-evaluate{T,D<:Curve}(f::AbstractVector,S::JacobiQ{T,D},z::AbstractArray) = reshape(promote_type(eltype(f),T,eltype(z))[ evaluate(f,S,z[i]) for i in eachindex(z) ], size(z))
+evaluate{T,D<:Curve}(f::AbstractVector,S::JacobiQ{T,D},z::AbstractArray) =
+    reshape(promote_type(eltype(f),T,eltype(z))[ evaluate(f,S,z[i]) for i in eachindex(z) ], size(z))

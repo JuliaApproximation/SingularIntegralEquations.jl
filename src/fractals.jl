@@ -15,7 +15,7 @@ for set in (:cantor,:thincantor,:thinnercantor,:thinnestcantor)
             if n == 0
                 return d
             else
-                C = $set(Interval{T}(),n,α)
+                C = $set(Segment{T}(),n,α)
                 return UnionDomain(map(d->Arc(c,r,(d.a+1/2α)π,(d.b+1/2α)π),C[1:div(length(C),2)])) ∪ UnionDomain(map(d->Arc(c,r,(d.a-1/2α)π,(d.b-1/2α)π),C[div(length(C),2)+1:length(C)]))
             end
         end
@@ -25,12 +25,12 @@ end
 
 # α is width, n is number of levels
 
-function cantor{T}(d::Interval{T},n::Int,α::Number)
+function cantor{T}(d::Segment{T},n::Int,α::Number)
     a,b = d.a,d.b
     if n == 0
         return d
     else
-        C = Interval{T}(zero(T),one(T))
+        C = Segment{T}(zero(T),one(T))
         for k=n:-1:1
             C = C/α ∪ (α-1+C)/α
         end
@@ -40,12 +40,12 @@ end
 
 # Thin Cantor set removes the middle n/(n+2)th at the nth level
 
-function thincantor{T}(d::Interval{T},n::Int,α::Number)
+function thincantor{T}(d::Segment{T},n::Int,α::Number)
     a,b = d.a,d.b
     if n == 0
         return d
     else
-        C = Interval{T}(zero(T),one(T))
+        C = Segment{T}(zero(T),one(T))
         for k=n:-1:1
             C = C/(α+k-1) ∪ (α+k-2+C)/(α+k-1)
         end
@@ -53,12 +53,12 @@ function thincantor{T}(d::Interval{T},n::Int,α::Number)
     end
 end
 
-function thinnercantor{T}(d::Interval{T},n::Int,α::Number)
+function thinnercantor{T}(d::Segment{T},n::Int,α::Number)
     a,b = d.a,d.b
     if n == 0
         return d
     else
-        C = Interval{T}(zero(T),one(T))
+        C = Segment{T}(zero(T),one(T))
         for k=n:-1:1
             C = C/α^k ∪ (α^k-1+C)/α^k
         end
@@ -66,12 +66,12 @@ function thinnercantor{T}(d::Interval{T},n::Int,α::Number)
     end
 end
 
-function thinnestcantor{T}(d::Interval{T},n::Int,α::Number)
+function thinnestcantor{T}(d::Segment{T},n::Int,α::Number)
     a,b = d.a,d.b
     if n == 0
         return d
     else
-        C = Interval{T}(zero(T),one(T))
+        C = Segment{T}(zero(T),one(T))
         for k=n:-1:1
             C = C/α^(2^(k-1)) ∪ (α^(2^(k-1))-1+C)/α^(2^(k-1))
         end
@@ -81,12 +81,12 @@ end
 
 smithvolterracantor{T}(d::Domain{T},n::Int) = smithvolterracantor(d,n,one(T)/4,one(T)/4)
 
-function smithvolterracantor{T}(d::Interval{T},n::Int,α::Number,β::Number)
+function smithvolterracantor{T}(d::Segment{T},n::Int,α::Number,β::Number)
     a,b = d.a,d.b
     if n == 0
         return d
     else
-        C = Interval{T}(zero(T),one(T))
+        C = Segment{T}(zero(T),one(T))
         ln = (one(T)-β*(one(T)-(2α)^n)/(one(T)-2α))/2^n
         lnm1 = (2ln+β*α^(n-1))
         for k=n:-1:1

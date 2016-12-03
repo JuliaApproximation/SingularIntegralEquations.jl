@@ -51,9 +51,9 @@ function OffHilbert(ds::Space,rs::Space,order::Int)
     vv=Array(Vector{Complex128},0)
     m=100
     for k=1:2:1000
-        b=Fun([zeros(k-1);1.],ds)
+        b=Fun(ds,[zeros(k-1);1.])
         v1=Fun(x->-stieltjes(b,x)/π,rs,m)
-        b=Fun([zeros(k);1.],ds)
+        b=Fun(ds,[zeros(k);1.])
         v2=Fun(x->-stieltjes(b,x)/π,rs,m)
         if abs(v1.coefficients[end-1])>100tol || abs(v1.coefficients[end])>100tol ||
             abs(v2.coefficients[end-1])>100tol || abs(v2.coefficients[end])>100tol
@@ -80,7 +80,7 @@ end
 
 for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
     @eval begin
-        function $Op{DD<:Interval}(ds::JacobiWeight{Ultraspherical{Int,DD},DD},rs::Space,ord::Int)
+        function $Op{DD<:Segment}(ds::JacobiWeight{Ultraspherical{Int,DD},DD},rs::Space,ord::Int)
             @assert order(ds.space) == 1
             @assert ds.α==ds.β==0.5
             d = domain(ds)
@@ -126,7 +126,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
             $Op(M,ds,rs,ord)
         end
 
-        function $Op{DD<:Interval}(ds::JacobiWeight{ChebyshevDirichlet{1,1,DD},DD},rs::PolynomialSpace,ord::Int)
+        function $Op{DD<:Segment}(ds::JacobiWeight{ChebyshevDirichlet{1,1,DD},DD},rs::PolynomialSpace,ord::Int)
             @assert ds.α==ds.β==-0.5
             d = domain(ds)
             C = (.5*$Len(d))^(1-ord) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
@@ -227,7 +227,7 @@ function exterior_cauchy(b::Circle,a::Circle)
     c=b.center
     r=b.radius
 
-    S=Fun([0.0,0,1],a)  # Shift to use bandedness
+    S=Fun(a,[0.0,0,1])  # Shift to use bandedness
     ret=Array(Fun{Laurent{typeof(a)},Complex{Float64}},300)
     ret[1]=Fun(z->(r/(z-c)),a)
     n=1
@@ -407,7 +407,7 @@ function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{Int,DD},DD},z::Number)
         # calculate directly
         r=Array(eltype(z),0)
         for k=1:10000
-            push!(r,-stieltjes(Fun([zeros(k-1);1.],sp),z)/π)
+            push!(r,-stieltjes(Fun(sp,[zeros(k-1);1.]),z)/π)
             if abs(last(r)) < eps()
                 break
             end
@@ -418,7 +418,7 @@ end
 
 function OffHilbert{DD}(sp::JacobiWeight{Chebyshev{DD},DD},z::Number)
     #try converting to Ultraspherical(1)
-    us=JacobiWeight(sp.α,sp.β,Ultraspherical(1,domain(sp)))
+    us=JacobiWeight(sp.β,sp.α,Ultraspherical(1,domain(sp)))
     OffHilbert(us,z)*Conversion(sp,us)
 end
 
@@ -433,7 +433,7 @@ function OffHilbert{DD}(sp::JacobiWeight{ChebyshevDirichlet{1,1,DD},DD},z::Numbe
         FiniteOperator([-sx2zi;1-sx2zi;2*hornervector(z-sx2z)].',sp,ConstantSpace())
     else
         # try converting to Canonical
-        us=JacobiWeight(sp.α,sp.β,Chebyshev(domain(sp)))
+        us=JacobiWeight(sp.β,sp.α,Chebyshev(domain(sp)))
         OffHilbert(us,z)*Conversion(sp,us)
     end
 end

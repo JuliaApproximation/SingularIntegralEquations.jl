@@ -3,7 +3,7 @@ using Base.Test, ApproxFun, SingularIntegralEquations, Base.Test
                         testraggedbelowoperator, testbandedblockoperator, blocklengths
 
 k=50
-Γ=Interval(0.,1+0.5im)
+Γ=Segment(0.,1+0.5im)
 z=Fun(Γ)
 α=exp(-π*k/50im)
 
@@ -16,8 +16,8 @@ Ai=ApproxFun.interlace([1 Hilbert()])
 
 S=choosedomainspace(Ai,space(z))
 @test isa(S,ApproxFun.TupleSpace{Tuple{ApproxFun.ConstantSpace{ApproxFun.AnyDomain},
-            ApproxFun.JacobiWeight{ApproxFun.ChebyshevDirichlet{1,1,ApproxFun.Interval{Complex{Float64}}},
-                                                                    ApproxFun.Interval{Complex{Float64}}}}})
+            ApproxFun.JacobiWeight{ApproxFun.ChebyshevDirichlet{1,1,ApproxFun.Segment{Complex{Float64}}},
+                                                                    ApproxFun.Segment{Complex{Float64}}}}})
 
 
 
@@ -34,7 +34,7 @@ u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 
 
 k=227;
-Γ=0.5+exp(im*Interval(0.1,-42))
+Γ=0.5+exp(im*Segment(0.1,-42))
 z=Fun(Γ)
 α=exp(-k/50im)
 
@@ -52,7 +52,7 @@ AiS=promotedomainspace(Ai,S)
 
 
 k=227;
-Γ=0.5+exp(im*Interval(0.1,-42))
+Γ=0.5+exp(im*Segment(0.1,-42))
 z=Fun(Γ)
 α=exp(-k/50im)
 S=JacobiWeight(0.5,0.5,Γ)
@@ -115,7 +115,7 @@ u=(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 
 
 ## 2 intervals
-Γ=Interval(-1.,-0.5) ∪ Interval(-0.3,1.)
+Γ=Segment(-1.,-0.5) ∪ Segment(-0.3,1.)
 z=Fun(Γ)
 
 S=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical(1,d)),Γ))

@@ -4,7 +4,7 @@
 
 # pseudocauchy does not normalize at ∞
 pseudostieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z) = stieltjes(setcanonicaldomain(S),f,mobius(S,z))
-pseudohilbert{LS,RR<:Arc}(S::Space{LS,RR},f,z) = hilbert(setdomain(S,Interval()),f,mobius(S,z))
+pseudohilbert{LS,RR<:Arc}(S::Space{LS,RR},f,z) = hilbert(setdomain(S,Segment()),f,mobius(S,z))
 
 
 stieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z) = stieltjes(setcanonicaldomain(S),f,mobius(S,z))-stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
@@ -34,26 +34,26 @@ end
 ## stieltjesintegral
 
 function stieltjesintegral{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
-    g=Fun(w,setcanonicaldomain(sp))*fromcanonicalD(sp)
+    g=Fun(setcanonicaldomain(sp),w)*fromcanonicalD(sp)
     stieltjesintegral(g,mobius(sp,z))-
         stieltjesintegral(g,mobius(sp,Inf))+
-        sum(Fun(w,sp))*log(z-fromcanonical(sp,Inf))
+        sum(Fun(sp,w))*log(z-fromcanonical(sp,Inf))
 end
 
 
 function linesumstieltjesintegral{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
-    g=Fun(w,setcanonicaldomain(sp))*abs(fromcanonicalD(sp))
+    g=Fun(setcanonicaldomain(sp),w)*abs(fromcanonicalD(sp))
     stieltjesintegral(g,mobius(sp,z))-
         stieltjesintegral(g,mobius(sp,Inf))+
-        linesum(Fun(w,sp))*log(z-fromcanonical(sp,Inf))
+        linesum(Fun(sp,w))*log(z-fromcanonical(sp,Inf))
 end
 
 
 function logkernel{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
-    g=Fun(w,setcanonicaldomain(sp))*abs(fromcanonicalD(sp))
+    g=Fun(setcanonicaldomain(sp),w)*abs(fromcanonicalD(sp))
     logkernel(g,mobius(sp,z))-
         logkernel(g,mobius(sp,Inf))+
-        linesum(Fun(w,sp))*log(abs(z-fromcanonical(sp,Inf)))/π
+        linesum(Fun(sp,w))*log(abs(z-fromcanonical(sp,Inf)))/π
 end
 
 
@@ -69,7 +69,7 @@ function SingularIntegral{JW,RR<:Arc}(S::JacobiWeight{JW,RR},k::Integer)
         z∞=mobius(d,Inf)
         cnst=Array(Float64,0)
         for k=1:10000
-            push!(cnst,logkernel(Fun([zeros(k-1);1.],csp),z∞))
+            push!(cnst,logkernel(Fun(csp,[zeros(k-1);1.]),z∞))
             if k≥3&&norm(cnst[end-2:end])<tol
                 break
             end

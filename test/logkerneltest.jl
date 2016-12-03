@@ -6,7 +6,7 @@ using Base.Test, ApproxFun, SingularIntegralEquations
 testsieeval(Jacobi(0,0))
 
 a=1.0;b=2.0+im
-d=Interval(a,b)
+d=Segment(a,b)
 z=Fun(d)
 f=real(exp(z)/(sqrt(z-a)*sqrt(b-z)))
 S=space(f)
@@ -14,7 +14,7 @@ testsies(S)
 
 
 a=1.0;b=2.0+im
-d=Interval(a,b)
+d=Segment(a,b)
 z=Fun(d)
 f=real(exp(z)*(sqrt(z-a)*sqrt(b-z)))
 S=space(f)
@@ -22,15 +22,15 @@ testsies(S)
 
 
 a=1.0;b=2.0+im
-d=Interval(a,b)
+d=Segment(a,b)
 z=Fun(d)
 f=real(exp(z)/(sqrt(z-a)*sqrt(b-z)))
 S=JacobiWeight(-0.5,-0.5,ChebyshevDirichlet{1,1}(d))
 # TODO: move to testsies
-H=OffSingularIntegral(S,Chebyshev([3,4]),0)
+H=OffSingularIntegral(S,Chebyshev(3..4),0)
 @test_approx_eq (H*f)(3.5) logkernel(f,3.5)
 
-H=OffSingularIntegral(S,Chebyshev([3,4.0+im]),0)
+H=OffSingularIntegral(S,Chebyshev(3..4.0+im),0)
 @test_approx_eq (H*f)(3.5+0.5im) logkernel(f,3.5+0.5im)
 
 
@@ -69,7 +69,7 @@ f=sqrt(1-x^2)*exp(x)
 x=Fun()
 f=(1-x)^0.1
 sp=space(f)
-@test_approx_eq logjacobimoment(sp.β,sp.α,2.0) sum((1-x)^sp.β*(1+x)^sp.α*log(abs(2.0-x)))
+@test_approx_eq logjacobimoment(sp.α,sp.β,2.0) sum((1-x)^sp.α*(1+x)^sp.β*log(abs(2.0-x)))
 
 @test_approx_eq logkernel(f,2.0) sum(f*log(abs(2.0-x))/π)
 
@@ -85,7 +85,7 @@ f=(1-x)^0.1*exp(x)
 
 f=(1-x^2)^0.1*exp(x)
 sp=space(f)
-@test_approx_eq logjacobimoment(sp.β,sp.α,2.0)  sum((1-x^2)^0.1*log(abs(2.0-x)))
+@test_approx_eq logjacobimoment(sp.α,sp.β,2.0)  sum((1-x^2)^0.1*log(abs(2.0-x)))
 @test_approx_eq logkernel(f,2.0+im)  sum(f*log(abs(2.0+im-x))/π)
 
 

@@ -1,7 +1,7 @@
 export convolutionProductFun
 
 #
-# A ProductFun constructor for bivariate functions on Intervals
+# A ProductFun constructor for bivariate functions on Segments
 # defined as the distance of their arguments.
 #
 
@@ -9,7 +9,7 @@ function convolutionProductFun{U<:UnivariateSpace,V<:UnivariateSpace}(f::Functio
     du,dv = domain(u),domain(v)
     ext = extrema(du,dv)
     if ext[1] == 0
-        ff = Fun(z->f(0,z),Chebyshev(Interval(-ext[2]/2,ext[2]/2)))
+        ff = Fun(z->f(0,z),Chebyshev(Segment(-ext[2]/2,ext[2]/2)))
         fd,T = ff(0),eltype(ff)
         c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(T))
         N = length(c)
@@ -17,7 +17,7 @@ function convolutionProductFun{U<:UnivariateSpace,V<:UnivariateSpace}(f::Functio
         N2 = isa(dv,PeriodicDomain) ? 2N : N
         return ProductFun((x,y)->x==y?fd:f(x,y),u⊗v,N1,N2;tol=tol)
     else
-        ff = Fun(z->f(0,z),Chebyshev(Interval(ext...)))
+        ff = Fun(z->f(0,z),Chebyshev(Segment(ext...)))
         c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(eltype(ff)))
         N = length(c)
         N1 = isa(du,PeriodicDomain) ? 2N : N

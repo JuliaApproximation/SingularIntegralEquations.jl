@@ -1,6 +1,8 @@
+using ApproxFun, SingularIntegralEquations, Base.Test
+
 a=2.0
-xp=Fun(identity,[a,1.])
-xm=Fun(identity,[-a,-1.])
+xp=Fun(identity,a..1)
+xm=Fun(identity,-a .. -1)
 up=2.0im./(sqrt(1+xp).*sqrt(a+xp).*sqrt(xp-1.).*sqrt(a-xp))
 um=2.0im./(sqrt(-1-xm).*sqrt(a+xm).*sqrt(1.-xm).*sqrt(a-xm))
 
@@ -10,13 +12,13 @@ um=2.0im./(sqrt(-1-xm).*sqrt(a+xm).*sqrt(1.-xm).*sqrt(a-xm))
 
 
 function ellipticintegral(a)
-    xp=Fun(identity,[a,1.])
-    xm=Fun(identity,[-a,-1.])
+    xp=Fun(identity,a..1)
+    xm=Fun(identity,-a .. -1)
     up=2.0im./(sqrt(1+xp).*sqrt(a+xp).*sqrt(xp-1.).*sqrt(a-xp))
     um=2.0im./(sqrt(-1-xm).*sqrt(a+xm).*sqrt(1.-xm).*sqrt(a-xm))
     z->-cauchyintegral(up,z)-cauchyintegral(um,z)
 end
 
 
-z=Fun([0.,0.5])
+z=Fun(0..0.5)
 @test_approx_eq ellipticintegral(2.0)(0.5) sum(1/(sqrt(1-z^2)*sqrt(2.0^2-z^2)))

@@ -49,21 +49,21 @@ stieltjesintervalrecurrence(S,f::AbstractVector,z::AbstractArray) =
     reshape(promote_type(eltype(f),eltype(z))[ stieltjesintervalrecurrence(S,f,z[i]) for i in eachindex(z) ], size(z))
 
 
-function stieltjes{D<:Interval}(S::PolynomialSpace{D},f,z::Number)
-    if domain(S)==Interval()
+function stieltjes{D<:Segment}(S::PolynomialSpace{D},f,z::Number)
+    if domain(S)==Segment()
         #TODO: check tolerance
         stieltjesintervalrecurrence(Legendre(),coefficients(f,S,Legendre()),z)
     else
-        stieltjes(setdomain(S,Interval()),f,mobius(S,z))
+        stieltjes(setdomain(S,Segment()),f,mobius(S,z))
     end
 end
 
-function hilbert{D<:Interval}(S::PolynomialSpace{D},f,z::Number)
-    if domain(S)==Interval()
+function hilbert{D<:Segment}(S::PolynomialSpace{D},f,z::Number)
+    if domain(S)==Segment()
         cfs = hilbertforward(S,length(f),z)
         dotu(cfs,f)
     else
-        hilbert(setdomain(S,Interval()),f,mobius(S,z))
+        hilbert(setdomain(S,Segment()),f,mobius(S,z))
     end
 end
 
@@ -87,22 +87,22 @@ end
 
 
 
-function logkernel{DD<:Interval}(S::PolynomialSpace{DD},v,z::Number)
-    if domain(S) == Interval()
+function logkernel{DD<:Segment}(S::PolynomialSpace{DD},v,z::Number)
+    if domain(S) == Segment()
         DS=JacobiWeight(1,1,Jacobi(1,1))
         D=Derivative(DS)[2:end,:]
 
-        f=Fun(Fun(v,S),Legendre())  # convert to Legendre expansion
+        f=Fun(Fun(S,v),Legendre())  # convert to Legendre expansion
         u=D\(f|(2:∞))   # find integral, dropping first coefficient of f
 
         (f.coefficients[1]*logabslegendremoment(z) + real(stieltjes(Fun(u,Legendre()),z+0im)))/π
     else
         Mp=abs(fromcanonicalD(S,0))
-        Mp*logkernel(setcanonicaldomain(S),v,mobius(S,z))+linesum(Fun(v,S))*log(Mp)/π
+        Mp*logkernel(setcanonicaldomain(S),v,mobius(S,z))+linesum(Fun(S,v))*log(Mp)/π
     end
 end
 
 for FUNC in (:logkernel,:stieltjes)
-    @eval $FUNC{D<:Interval}(S::PolynomialSpace{D},f,z::AbstractArray) =
+    @eval $FUNC{D<:Segment}(S::PolynomialSpace{D},f,z::AbstractArray) =
         map(x->$FUNC(S,f,x),z)
 end
