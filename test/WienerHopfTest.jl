@@ -31,8 +31,8 @@ C  = Cauchy(-1)
 
 A=(I+(I-G)*C)
 
-F̃ = (G-I)[:,1]
-F=Fun((G-I)[:,1])
+F=(G-I)[:,1]
+F̃ = vec(F)
 
 C2=ApproxFun.promotedomainspace(C.ops[2],space(F))
 
@@ -45,7 +45,7 @@ ApproxFun.testbandedblockoperator(C2)
 
 
 
-V1  = A\F
+V1 = A\F
 Ṽ1 = A\F̃
 
 
@@ -68,6 +68,7 @@ QR=qrfact(A1)
 
 Ṽ = QR\(G-I)
 V  = (I+(I-G)*C)\(G-I)
+
 
 @test_approx_eq map(f->f(exp(0.1im)),ApproxFun.mat(G-I)) (G-I)(exp(0.1im))
 
