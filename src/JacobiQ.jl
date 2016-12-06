@@ -22,8 +22,8 @@ Base.convert{T,V,D}(::Type{JacobiQ{T,D}},J::JacobiQ{V,D})=JacobiQ{T,D}(J.a,J.b,J
 
 typealias WeightedJacobiQ{T,D} JacobiQWeight{JacobiQ{T,D},D}
 
-@compat (::Type{WeightedJacobiQ})(α,β,d::Domain)=JacobiQWeight(α,β,JacobiQ(β,α,d))
-@compat (::Type{WeightedJacobiQ})(α,β)=JacobiQWeight(α,β,JacobiQ(β,α))
+(::Type{WeightedJacobiQ})(α,β,d::Domain)=JacobiQWeight(α,β,JacobiQ(β,α,d))
+(::Type{WeightedJacobiQ})(α,β)=JacobiQWeight(α,β,JacobiQ(β,α))
 
 spacescompatible(a::JacobiQ,b::JacobiQ)=a.a==b.a && a.b==b.b
 
