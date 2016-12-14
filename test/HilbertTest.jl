@@ -1,5 +1,5 @@
 using Base.Test, ApproxFun, SingularIntegralEquations
-    import ApproxFun: ∞, testbandedoperator, testfunctional, testbandedblockoperator, testraggedbelowoperator,
+    import ApproxFun: ∞, testbandedoperator, testfunctional, testblockbandedoperator, testraggedbelowoperator,
                         setcanonicaldomain
     import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, sqrtx2, Directed
 
@@ -182,7 +182,7 @@ S=ApproxFun.choosedomainspace(A,(f-Fun(one,space(f))))
 AS=ApproxFun.promotedomainspace(A,S)
 
 
-testbandedblockoperator(AS)
+testblockbandedoperator(AS)
 
 
 u=A\(f-Fun(one,space(f)))

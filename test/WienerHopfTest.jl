@@ -36,7 +36,7 @@ F̃ = vec(F)
 
 C2=ApproxFun.promotedomainspace(C.ops[2],space(F))
 
-ApproxFun.testbandedblockoperator(C2)
+ApproxFun.testblockbandedoperator(C2)
 
 @test norm((C*F - [C*F[1];C*F[2]]).coefficients) == 0
 @test norm((C*G - [C*G[1] C*G[3];C*G[2] C*G[4]]).coefficients) == 0

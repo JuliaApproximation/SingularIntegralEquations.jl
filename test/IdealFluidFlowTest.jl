@@ -1,6 +1,6 @@
 using Base.Test, ApproxFun, SingularIntegralEquations, Base.Test
     import ApproxFun: choosedomainspace, promotedomainspace, ConstantSpace, interlace,
-                        testraggedbelowoperator, testbandedblockoperator, blocklengths
+                        testraggedbelowoperator, testblockbandedoperator, blocklengths
 
 k=50
 Γ=Segment(0.,1+0.5im)
@@ -125,11 +125,7 @@ k=114;
     α=exp(k/50*im)
 
 Ai=ApproxFun.interlace([ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(S)])
-@time testbandedblockoperator(Ai)
+testblockbandedoperator(Ai)
+
 
 @time a,b,ui=[ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(S)]\imag(α*z)
-
-
-
-
-u=(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)

@@ -30,7 +30,8 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
                   ConstantSpace,ReOperator,DirectSumSpace,TupleSpace, ZeroSpace,
                   LowRankPertOperator, LaurentDirichlet, setcanonicaldomain, SubSpace,
                   IntervalCurve,PeriodicCurve, reverseorientation, op_eltype, @wrapper, mobius,
-                  defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, refactorsvd!
+                  defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, refactorsvd!, SubOperator,
+                  Block, BlockBandedMatrix, BandedBlockBandedMatrix
 
 import ApproxFun: testbandedoperator
 
