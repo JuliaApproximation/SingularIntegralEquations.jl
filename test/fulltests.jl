@@ -1,3 +1,5 @@
+using ApproxFun, SingularIntegralEquations, Base.Test
+    import ApproxFun: testbandedoperator, testraggedbelowoperator, testblockbandedoperator
 
 include("runtests.jl")
 
@@ -33,7 +35,8 @@ B=ApproxFun.SpaceOperator(ApproxFun.BasisFunctional(3),S,ApproxFun.ConstantSpace
 Ai=ApproxFun.interlace([0                 0                 0                 B;
           Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),Γ) real(H)])
 
-@time testraggedbelowoperator(Ai)
+@time testblockbandedoperator(Ai)
+
 
 k=114;
     α=exp(k/50*im)
@@ -45,6 +48,6 @@ u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 
 @test_approx_eq u(1.1,0.2) (-0.8290718508107162+0.511097153754im)
 
-
+println("Example Tests")
 
 include("ExamplesTest.jl")
