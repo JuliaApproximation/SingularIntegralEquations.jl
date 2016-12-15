@@ -3,6 +3,8 @@ using ApproxFun, SingularIntegralEquations, Base.Test
 
 include("runtests.jl")
 
+
+println("Full tests")
 ## Memory CurveTests
 
 d=exp(im*Interval(0.1,0.2))
