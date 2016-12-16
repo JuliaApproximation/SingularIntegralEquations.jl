@@ -34,7 +34,7 @@ end
 #
 # it is more accurate near infinity to do 1/J_- than z - sqrtx2(z) as it avoids round off
 joukowskyinverse(::Type{Val{true}},z) = 1./joukowskyinverse(Val{false},z)
-joukowskyinverse(::Type{Val{false}},z) = value(z)+sqrtx2(z)
+joukowskyinverse(::Type{Val{false}},z) = undirected(z)+sqrtx2(z)
 
 joukowskyinverseabs(::Type{Val{true}},z) = 1./joukowskyinverseabs(Val{false},z)
 joukowskyinverseabs(::Type{Val{false}},z) = sqrt(abs2(z)+2x̄sqrtx2real(z)+sqrtx2abs(z)^2)
@@ -100,19 +100,19 @@ function stieltjes{S<:PolynomialSpace,DD<:Segment}(sp::JacobiWeight{S,DD},u,z)
 
         sx2z=sqrtx2(z)
         sx2zi=1./sx2z
-        Jm=1./(value(z)+sx2z)  # joukowskyinverse(true,z)
+        Jm=1./(undirected(z)+sx2z)  # joukowskyinverse(true,z)
 
 
         if length(cfs) ≥1
             ret = π*cfs[1]*sx2zi
 
             if length(cfs) ≥2
-                ret += cfs[2]*π*(value(z).*sx2zi-1)
+                ret += cfs[2]*π*(undirected(z).*sx2zi-1)
             end
 
             ret - 2π*hornersum(cfs[3:end],Jm)
         else
-            zero(value(z))
+            zero(undirected(z))
         end
     elseif isapproxinteger(sp.α) && isapproxinteger(sp.β)
         stieltjes(sp.space,coefficients(u,sp,sp.space),z)

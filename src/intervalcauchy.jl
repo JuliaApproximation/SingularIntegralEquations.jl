@@ -25,7 +25,7 @@ forwardsubstitution(R,n,μ1,μ2) =
 stieltjesbackward(S::Space,z::Number) = JacobiZ(S,z)\[stieltjesmoment(S,0,z)]
 
 
-stieltjesforward(sp::Space,n,z) = forwardsubstitution(JacobiZ(sp,value(z)),n,
+stieltjesforward(sp::Space,n,z) = forwardsubstitution(JacobiZ(sp,undirected(z)),n,
                                                             stieltjesmoment(sp,0,z),
                                                             stieltjesmoment(sp,1,z))
 

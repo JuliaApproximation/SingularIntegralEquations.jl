@@ -45,7 +45,7 @@ function stieltjes{DD<:Circle,s}(sp::Laurent{DD},f::AbstractVector,z::Directed{s
     end
 
     z=mappoint(d,Circle(),z)
-    -2π*im*cauchycircleS(f,value(z),orientation(z))
+    -2π*im*cauchycircleS(f,undirected(z),orientation(z))
 end
 
 stieltjes{DD<:Circle}(sp::Laurent{DD},f,z::Vector) = [stieltjes(sp,f,zk) for zk in z]

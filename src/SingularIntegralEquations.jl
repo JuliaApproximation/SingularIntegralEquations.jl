@@ -35,8 +35,6 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
 
 import ApproxFun: testbandedoperator
 
-import DualNumbers: value
-
 """
 `Directed` represents a number that is a limit from either left (s=true) or right (s=false)
 For functions with branch cuts, it is assumed that the value is on the branch cut,
@@ -64,10 +62,10 @@ orientationsign(::Type{Directed{false}}) = -1
 orientation{s}(::Type{Directed{s}}) = s
 orientation{s}(::Directed{s}) = s
 
-
-value(x::Directed) = x.x
-value(x::Number) = x
-value(x::Fun) = x
+# removes direction from a number
+undirected(x::Directed) = x.x
+undirected(x::Number) = x
+undirected(x::Fun) = x
 reverseorientation{s}(x::Directed{s}) = Directed{!s}(x.x)
 reverseorientation(x::Number) = x
 
