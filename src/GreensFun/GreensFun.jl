@@ -53,22 +53,25 @@ Base.promote_rule{K,T,K1,T1}(::Type{GreensFun{K,T}},::Type{GreensFun{K1,T1}}) = 
 
 defaultgetindex(⨍::Operator,G::GreensFun) = mapreduce(f->⨍[f],+,G.kernels)
 
-function getindex{F<:BivariateFun}(⨍::DefiniteLineIntegral,B::Matrix{F})
-    m,n = size(B)
-    wsp = domainspace(⨍)
-    @assert m == length(wsp.spaces)
-    ⨍j = DefiniteLineIntegral(wsp[1])
-    ret = Array(Operator{promote_type(eltype(⨍j),map(eltype,B)...)},m,n)
-    for j=1:n
-        ⨍j = DefiniteLineIntegral(wsp[j])
-        for i=1:m
-            ret[i,j] = ⨍j[B[i,j]]
+# avoid ambiguity
+for TYP in (:(ApproxFun.DefiniteLineIntegralWrapper),:DefiniteLineIntegral)
+    @eval function getindex{F<:BivariateFun}(⨍::$TYP,B::Matrix{F})
+        m,n = size(B)
+        wsp = domainspace(⨍)
+        @assert m == length(wsp.spaces)
+        ⨍j = DefiniteLineIntegral(wsp[1])
+        ret = Array(Operator{promote_type(eltype(⨍j),map(eltype,B)...)},m,n)
+        for j=1:n
+            ⨍j = DefiniteLineIntegral(wsp[j])
+            for i=1:m
+                ret[i,j] = ⨍j[B[i,j]]
+            end
         end
+        ops=promotespaces(ret)
+        InterlaceOperator(ops,
+                          PiecewiseSpace(map(domainspace,ops[1,:])),
+                          PiecewiseSpace(map(rangespace,ops[:,1])))
     end
-    ops=promotespaces(ret)
-    InterlaceOperator(ops,
-                      PiecewiseSpace(map(domainspace,ops[1,:])),
-                      PiecewiseSpace(map(rangespace,ops[:,1])))
 end
 
 # Algebra with BivariateFun's
@@ -279,20 +282,22 @@ function domain{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G})
     (m1∪m2)*(n1∪n2)
 end
 
-function Base.getindex{G<:GreensFun,L<:LowRankFun,T}(⨍::DefiniteLineIntegral,H::HierarchicalMatrix{G,GreensFun{L,T}})
-    H11,H22 = diagonaldata(H)
-    wsp = domainspace(⨍)
-    if length(domain(H11)[2]) ≥ 2
-        ⨍1 = DefiniteLineIntegral(PiecewiseSpace(wsp[1:length(domain(H11)[2])]))
-    else
-        ⨍1 = DefiniteLineIntegral(wsp[1])
+for TYP in (:(ApproxFun.DefiniteLineIntegralWrapper),:DefiniteLineIntegral)
+    @eval function Base.getindex{G<:GreensFun,L<:LowRankFun,T}(⨍::$TYP,H::HierarchicalMatrix{G,GreensFun{L,T}})
+        H11,H22 = diagonaldata(H)
+        wsp = domainspace(⨍)
+        if length(domain(H11)[2]) ≥ 2
+            ⨍1 = DefiniteLineIntegral(PiecewiseSpace(wsp[1:length(domain(H11)[2])]))
+        else
+            ⨍1 = DefiniteLineIntegral(wsp[1])
+        end
+        if length(domain(H22)[2]) ≥ 2
+            ⨍2 = DefiniteLineIntegral(PiecewiseSpace(wsp[end-length(domain(H22)[2])+1:end]))
+        else
+            ⨍2 = DefiniteLineIntegral(wsp[end])
+        end
+        HierarchicalOperator((qrfact(⨍1[H11]),qrfact(⨍2[H22])),map(LowRankIntegralOperator,offdiagonaldata(H)))
     end
-    if length(domain(H22)[2]) ≥ 2
-        ⨍2 = DefiniteLineIntegral(PiecewiseSpace(wsp[end-length(domain(H22)[2])+1:end]))
-    else
-        ⨍2 = DefiniteLineIntegral(wsp[end])
-    end
-    HierarchicalOperator((qrfact(⨍1[H11]),qrfact(⨍2[H22])),map(LowRankIntegralOperator,offdiagonaldata(H)))
 end
 
 Base.qrfact(H::HierarchicalOperator) = H # trivial no-op for now.
