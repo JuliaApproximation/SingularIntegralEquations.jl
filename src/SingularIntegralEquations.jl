@@ -5,7 +5,7 @@ module SingularIntegralEquations
 
 export cauchy, cauchyintegral, stieltjes, logkernel,
        stieltjesintegral, hilbert, pseudohilbert, pseudocauchy,
-       stieltjesjacobimoment, logjacobimoment
+       stieltjesjacobimoment, logjacobimoment, singularintegral
 
 
 import Base: values,getindex,setindex!,*,.*,+,.+,-,.-,==,<,<=,>,
@@ -120,6 +120,22 @@ cauchy(f...) = stieltjes(f...)*(im/(2π))
 pseudocauchy(f...) = pseudostieltjes(f...)*(im/(2π))
 cauchyintegral(u...) = stieltjesintegral(u...)*(im/(2π))
 
+function singularintegral(k::Integer,s::Space,f,z)
+    k == 0 && return logkernel(s,f,z)
+    k == 1 && isreal(domain(s)) && return stieltjes(s,f,z)/π
+    error("Not implemented")
+end
+
+
+function csingularintegral(k::Integer,s::Space,f,z)
+    k == 0 && error("Not defined")
+    k == 1 && return stieltjes(s,f,z)/π
+    return epsilon(csingularintegral(k-1,s,f,dual(z,1)))
+end
+
+
+singularintegral(k::Integer,f::Fun,z) = singularintegral(k,space(f),coefficients(f),z)
+csingularintegral(k::Integer,f::Fun,z) = csingularintegral(k,space(f),coefficients(f),z)
 
 # Modifier spaces
 

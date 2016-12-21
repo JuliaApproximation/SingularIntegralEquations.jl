@@ -121,15 +121,21 @@ end
 
 ## Circle
 
-Hilbert{s,DD<:Circle}(S::Hardy{s,DD},m::Integer) = ConcreteHilbert(S,m)
-Hilbert{DD<:Circle}(S::Laurent{DD},m::Integer) = ConcreteHilbert(S,m)
-SingularIntegral{s,DD<:Circle}(S::Hardy{s,DD},m::Integer) = ConcreteSingularIntegral(S,m)
-SingularIntegral{DD<:Circle}(S::Laurent{DD},m::Integer) = ConcreteSingularIntegral(S,m)
 
-function Hilbert{DD<:Circle}(S::Fourier{DD},m::Integer)
-    @assert m==0 || m==1
-    ConcreteHilbert(S,m)
+for Typ in (:Hilbert,:SingularIntegral)
+    ConcTyp = parse("Concrete"*string(Typ))
+    WrapTyp = parse(string(Typ)*"Wrapper")
+    @eval begin
+        $Typ{s,DD<:Circle}(S::Hardy{s,DD},m::Integer) =
+            m ≤ 1 ? $ConcTyp(S,m) : $WrapTyp(Derivative(m-1)*Hilbert(S),m)
+        $Typ{DD<:Circle}(S::Laurent{DD},m::Integer) =
+            m ≤ 1 ? $ConcTyp(S,m) : $WrapTyp(Derivative(m-1)*Hilbert(S),m)
+        $Typ{DD<:Circle}(S::Fourier{DD},m::Integer) =
+            m ≤ 1 ? $ConcTyp(S,m) : $WrapTyp(Derivative(m-1)*Hilbert(S),m)
+    end
 end
+
+
 
 function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Hardy{true,DD},OT,T},k::Integer,j::Integer)
     ##TODO: Add scale for different radii.
