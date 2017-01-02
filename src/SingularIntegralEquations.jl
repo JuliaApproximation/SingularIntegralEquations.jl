@@ -35,6 +35,8 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
 
 import ApproxFun: testbandedoperator
 
+import DualNumbers: dual
+
 """
 `Directed` represents a number that is a limit from either left (s=true) or right (s=false)
 For functions with branch cuts, it is assumed that the value is on the branch cut,
@@ -98,6 +100,8 @@ Base.sqrt(x::Directed{false}) = im*sqrt(-x.x)
 ^(x::Directed{true},a::Number) = exp(-a*π*im)*(-x.x)^a
 ^(x::Directed{false},a::Number) = exp(a*π*im)*(-x.x)^a
 
+
+dual{s}(a::Directed{s},b) = Directed{s}(dual(undirected(a),b))
 
 
 
