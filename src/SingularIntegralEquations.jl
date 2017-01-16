@@ -1,7 +1,7 @@
 
 __precompile__()
 module SingularIntegralEquations
-    using Base, Compat, BandedMatrices, ApproxFun, DualNumbers
+    using Base, Compat, BandedMatrices, ApproxFun, DualNumbers, RecipesBase
 
 export cauchy, cauchyintegral, stieltjes, logkernel,
        stieltjesintegral, hilbert, pseudohilbert, pseudocauchy,
