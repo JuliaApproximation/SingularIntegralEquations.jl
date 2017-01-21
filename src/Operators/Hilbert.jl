@@ -30,8 +30,6 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
         $Op(d::PeriodicDomain)=$Op(Laurent(d))
 
         ## Modifiers for SumSpace, ArraySpace, and PiecewiseSpace
-
-        $Op(AS::ArraySpace,n::Int)=$OpWrap(diagonalarrayoperator($Op(AS.space,n),size(AS)),n)
         function $Op(S::PiecewiseSpace,n::Int)
             sp=vec(S)
             m=length(sp)
@@ -81,18 +79,28 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
         #TODO: Array values?
         choosedomainspace{T,V}(P::BlockOperator{$ConcOp{UnsetSpace,T,V}},
                                sp::Ultraspherical) =
-                TupleSpace(ConstantSpace(),JacobiWeight(0.5,0.5,Ultraspherical(1,domain(sp))))
+                ArraySpace([ConstantSpace(),JacobiWeight(0.5,0.5,Ultraspherical(1,domain(sp)))])
 
         choosedomainspace{T,V,W}(P::BlockOperator{ReOperator{$ConcOp{UnsetSpace,T,V},W}},
                                sp::Ultraspherical) =
-                TupleSpace(ConstantSpace(),JacobiWeight(0.5,0.5,Ultraspherical(1,domain(sp))))
+                ArraySpace([ConstantSpace(),JacobiWeight(0.5,0.5,Ultraspherical(1,domain(sp)))])
     end
 end
 
-for TYP in (:SumSpace,:PiecewiseSpace,:TupleSpace),(Op,OpWrap) in ((:PseudoHilbert,:PseudoHilbertWrapper),
+for TYP in (:SumSpace,:PiecewiseSpace),(Op,OpWrap) in ((:PseudoHilbert,:PseudoHilbertWrapper),
                           (:Hilbert,:HilbertWrapper),
                           (:SingularIntegral,:SingularIntegralWrapper))
-    @eval $Op(S::$TYP,k)=$OpWrap(InterlaceOperator(Diagonal([map(s->$Op(s,k),S.spaces)...]),$TYP),k)
+    @eval $Op(S::$TYP,k) = $OpWrap(InterlaceOperator(Diagonal([map(s->$Op(s,k),S.spaces)...]),$TYP),k)
+end
+
+
+for (Op,OpWrap) in ((:PseudoHilbert,:PseudoHilbertWrapper),
+                          (:Hilbert,:HilbertWrapper),
+                          (:SingularIntegral,:SingularIntegralWrapper))
+    @eval function $Op(S::ArraySpace,k)
+        ops = map(s->$Op(s,k),vec(S.spaces))
+        $OpWrap(InterlaceOperator(Diagonal(ops),S,ArraySpace(reshape(map(rangespace,ops),size(S)))),k)
+    end
 end
 
 # Length catch
