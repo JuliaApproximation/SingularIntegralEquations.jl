@@ -15,10 +15,9 @@ Ai=ApproxFun.interlace([1 Hilbert()])
 
 
 S=choosedomainspace(Ai,space(z))
-@test isa(S[1],ApproxFun.ConstantSpace)
-@test isa(S[2],ApproxFun.JacobiWeight{ApproxFun.ChebyshevDirichlet{1,1,ApproxFun.Segment{Complex{Float64}}},
-                                                        ApproxFun.Segment{Complex{Float64}}})
-
+@test isa(S,ApproxFun.TupleSpace{Tuple{ApproxFun.ConstantSpace{ApproxFun.AnyDomain},
+            ApproxFun.JacobiWeight{ApproxFun.ChebyshevDirichlet{1,1,ApproxFun.Segment{Complex{Float64}}},
+                                                                    ApproxFun.Segment{Complex{Float64}}}}})
 
 
 
@@ -42,10 +41,9 @@ z=Fun(Γ)
 Ai=ApproxFun.interlace([1 PseudoHilbert()])
 
 @test isa(ApproxFun.choosedomainspace(Ai.ops[1],space(z)),ApproxFun.ConstantSpace)
-@test isa(ApproxFun.choosedomainspace(Ai,space(z))[1],ApproxFun.ConstantSpace)
-@test isa(ApproxFun.choosedomainspace(Ai,space(z))[2],
+@test isa(ApproxFun.choosedomainspace(Ai,space(z)),ApproxFun.TupleSpace{Tuple{ApproxFun.ConstantSpace{ApproxFun.AnyDomain},
             ApproxFun.JacobiWeight{ApproxFun.ChebyshevDirichlet{1,1,ApproxFun.Arc{Float64,Float64,Complex{Float64}}},
-                                                                    ApproxFun.Arc{Float64,Float64,Complex{Float64}}})
+                                                                    ApproxFun.Arc{Float64,Float64,Complex{Float64}}}}})
 
 
 S=choosedomainspace(Ai,space(z))
