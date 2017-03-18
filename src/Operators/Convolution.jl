@@ -9,7 +9,7 @@ export Convolution
 # where G is supplied as a Fun.
 #############
 
-abstract Convolution{S,BT,T} <: Operator{T}
+@compat abstract type Convolution{S,BT,T} <: Operator{T} end
 
 immutable ConcreteConvolution{S<:Space,BT,T} <: Convolution{S,BT,T}
     op::BT

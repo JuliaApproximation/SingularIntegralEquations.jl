@@ -25,7 +25,7 @@ blockrank(A)=rank(A)
 # top right, then followed recursively by top left and bottom right.
 ##
 
-typealias AbstractHierarchicalMatrix{S,V,T,HS,HV} AbstractHierarchicalArray{Tuple{S,V},T,Tuple{HS,HV},2}
+AbstractHierarchicalMatrix{S,V,T,HS,HV} = AbstractHierarchicalArray{Tuple{S,V},T,Tuple{HS,HV},2}
 
 type HierarchicalMatrix{S,V,T,HS,HV} <: AbstractHierarchicalMatrix{S,V,T,HS,HV}
     diagonaldata::HS
@@ -35,7 +35,7 @@ type HierarchicalMatrix{S,V,T,HS,HV} <: AbstractHierarchicalMatrix{S,V,T,HS,HV}
     factorization::PivotLDU{T,Matrix{T}} # Cache of factorization of A for pivot computation
     factored::Bool
 
-    function HierarchicalMatrix(diagonaldata::HS,offdiagonaldata::HV)
+    function HierarchicalMatrix{S,V,T,HS,HV}(diagonaldata::HS,offdiagonaldata::HV) where {S,V,T,HS,HV}
         H = new()
         H.diagonaldata = diagonaldata
         H.offdiagonaldata = offdiagonaldata

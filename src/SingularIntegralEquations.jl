@@ -44,8 +44,8 @@ Therefore not requiring tolerances.  This will naturally give the analytic conti
 """
 immutable Directed{s,T} <: Number
     x::T
-    Directed(x::T) = new(x)
-    Directed(x::Number) = new(T(x))
+    Directed{s,T}(x::T) where {s,T} = new(x)
+    Directed{s,T}(x::Number) where {s,T} = new(T(x))
 end
 
 
@@ -190,8 +190,8 @@ function testsieoperators(S::Space)
 
     for k=1:5
         f=Fun(S,[zeros(k-1);1])
-        @test_approx_eq (SingularIntegral(S,0)*f)(p) logkernel(f,p)
-        @test_approx_eq (Hilbert(S,1)*f)(p) hilbert(f,p)
+        @test (SingularIntegral(S,0)*f)(p) ≈ logkernel(f,p)
+        @test (Hilbert(S,1)*f)(p) ≈ hilbert(f,p)
     end
 end
 
@@ -204,13 +204,13 @@ function testsieeval(S::Space;posdirection=im)
     for k=1:5
         f=Fun(S,[zeros(k-1);1])
         @test abs(sum(f/(z-x))-stieltjes(f,z)) ≤ 100eps()
-        @test_approx_eq stieltjes(f,p*⁺) stieltjes(f,p+eps()*posdirection)
-        @test_approx_eq stieltjes(f,p*⁻) stieltjes(f,p-eps()*posdirection)
-        @test_approx_eq cauchy(f,p*⁺)-cauchy(f,p*⁻) f(p)
-        @test_approx_eq im*(cauchy(f,p*⁺)+cauchy(f,p*⁻)) hilbert(f,p)
+        @test stieltjes(f,p*⁺) ≈ stieltjes(f,p+eps()*posdirection)
+        @test stieltjes(f,p*⁻) ≈ stieltjes(f,p-eps()*posdirection)
+        @test cauchy(f,p*⁺)-cauchy(f,p*⁻) ≈ f(p)
+        @test im*(cauchy(f,p*⁺)+cauchy(f,p*⁻)) ≈ hilbert(f,p)
 
         @test abs(linesum(f*log(abs(x-z)))/π-logkernel(f,z)) ≤ 100eps()
-        @test_approx_eq logkernel(f,p) logkernel(f,p+eps()*posdirection)
+        @test logkernel(f,p) ≈ logkernel(f,p+eps()*posdirection)
     end
 end
 

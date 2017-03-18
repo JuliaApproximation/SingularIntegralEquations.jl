@@ -4,18 +4,19 @@
 # Represent a binary hierarchical Domain, Space, and Fun
 ##
 
-for (HDSF,DSF) in ((:HierarchicalDomain,:(ApproxFun.UnivariateDomain)),(:HierarchicalSpace,:(ApproxFun.UnivariateSpace)))
-    @eval begin
-        type $HDSF{S,T,HS} <: $DSF{T}
-            data::HS
-            $HDSF(data::HS) = new(data)
-        end
-    end
+type HierarchicalDomain{S,T,HS} <: ApproxFun.UnivariateDomain{T}
+    data::HS
+    HierarchicalDomain{S,T,HS}(data::HS) where{S,T,HS} = new(data)
+end
+
+type HierarchicalSpace{S,T,HS,D} <: ApproxFun.UnivariateSpace{T,D}
+    data::HS
+    HierarchicalSpace{S,T,HS,D}(data::HS) where{S,T,HS,D} = new(data)
 end
 
 type HierarchicalFun{S,T,HS}
     data::HS
-    HierarchicalFun(data::HS) = new(data)
+    HierarchicalFun{S,T,HS}(data::HS) where {S,T,HS} = new(data)
 end
 
 
@@ -60,7 +61,7 @@ for HDSF in (:HierarchicalDomain,:HierarchicalSpace,:HierarchicalFun)
 
         collectdata{S,T}(H::$HDSF{S,T,NTuple{2,S}}) = collect(data(H))
         collectdata{S,T,HS}(H::$HDSF{S,T,Tuple{S,$HDSF{S,T,HS}}}) = vcat(H.data[1],collectdata(H.data[2]))
-        collectdata{S,T,HS}(H::$HDSF{S,T,Tuple{$HDSF{S,T,HS},S}}) = vcat(collectdata(H.data[1]),H.data[2])
+        #collectdata{S,T,HS}(H::$HDSF{S,T,Tuple{$HDSF{S,T,HS},S}}) = vcat(collectdata(H.data[1]),H.data[2])
         function collectdata{S}(H::$HDSF{S})
             ret = S[]
             append!(ret,mapreduce(collectdata,vcat,data(H)))

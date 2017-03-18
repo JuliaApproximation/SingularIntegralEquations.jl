@@ -4,7 +4,7 @@ immutable LowRankIntegralOperator{S<:Space,M<:Space,T} <: AbstractLowRankOperato
     U::Vector{Fun{S,T}}
     V::Vector{Fun{M,T}}
 
-    function LowRankIntegralOperator(U::Vector{Fun{S,T}},V::Vector{Fun{M,T}})
+    function LowRankIntegralOperator{S,M,T}(U::Vector{Fun{S,T}},V::Vector{Fun{M,T}}) where {S,M,T}
         @assert length(U) == length(V)
         @assert length(U) > 0
         ds=space(first(V))

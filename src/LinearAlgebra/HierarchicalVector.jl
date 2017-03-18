@@ -7,13 +7,13 @@ nlevels(A)=0
 # Represent a binary hierarchical vector
 ##
 
-abstract AbstractHierarchicalArray{SV,T,HS,N} <: AbstractArray{T,N}
+@compat abstract type AbstractHierarchicalArray{SV,T,HS,N} <: AbstractArray{T,N} end
 
-typealias AbstractHierarchicalVector{S,T,HS} AbstractHierarchicalArray{S,T,HS,1}
+AbstractHierarchicalVector{S,T,HS} = AbstractHierarchicalArray{S,T,HS,1}
 
 type HierarchicalVector{S,T,HS} <: AbstractHierarchicalVector{S,T,HS}
     data::HS
-    HierarchicalVector(data::HS) = new(data)
+    HierarchicalVector{S,T,HS}(data::HS) where {S,T,HS} = new(data)
 end
 
 HierarchicalVector{S1,S2}(data::Tuple{S1,S2}) = HierarchicalVector{promote_type(S1,S2),promote_type(eltype(S1),eltype(S2)),Tuple{S1,S2}}(data)
@@ -56,7 +56,7 @@ end
 
 collectdata{S,T}(H::HierarchicalVector{S,T,NTuple{2,S}}) = collect(data(H))
 collectdata{S,T,HS}(H::HierarchicalVector{S,T,Tuple{S,HierarchicalVector{S,T,HS}}}) = vcat(H.data[1],collectdata(H.data[2]))
-collectdata{S,T,HS}(H::HierarchicalVector{S,T,Tuple{HierarchicalVector{S,T,HS},S}}) = vcat(collectdata(H.data[1]),H.data[2])
+#collectdata{S,T,HS}(H::HierarchicalVector{S,T,Tuple{HierarchicalVector{S,T,HS},S}}) = vcat(collectdata(H.data[1]),H.data[2])
 function collectdata{S}(H::HierarchicalVector{S})
     ret = S[]
     append!(ret,mapreduce(collectdata,vcat,data(H)))

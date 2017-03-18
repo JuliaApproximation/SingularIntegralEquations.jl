@@ -45,7 +45,6 @@ stieltjeslegendremoment(z) = stieltjeslegendremoment(0,z)
 
 logabslegendremoment(z) = real(z)*logabs((z+1)/(z-1))-imag(z)*angle((z+1)/(z-1))+logabs(z^2-1)-2
                         # real(z*log((z+1)/(z-1)))+logabs(z^2-1)-2
-@vectorize_1arg Number logabslegendremoment
 
 #=
 #TODO: this is for x^k but we probably want P_k

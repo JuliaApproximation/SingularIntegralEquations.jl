@@ -14,9 +14,9 @@ export GreensFun
 
 immutable GreensFun{K<:BivariateFun,T} <: BivariateFun{T}
     kernels::Vector{K}
-    function GreensFun(Kernels::Vector{K})
-        if all(map(domain,Kernels).==domain(Kernels[1]))
-            if any(K->K<:GreensFun,map(typeof,Kernels))
+    function GreensFun{K,T}(Kernels::Vector{K}) where {K,T}
+        if greensfun_checkdomains(Kernels)
+            if greensfun_checkgreensfun(Kernels)
                 return GreensFun(vcat(map(kernels,Kernels)...))
             end
             new(Kernels)
@@ -25,6 +25,24 @@ immutable GreensFun{K<:BivariateFun,T} <: BivariateFun{T}
         end
     end
 end
+
+function greensfun_checkdomains{K}(Kernels::Vector{K})
+    d = domain(Kernels[1])
+    ret = true
+    for i in 2:length(Kernels)
+        ret *= (domain(Kernels[i]) == d)
+    end
+    ret
+end
+
+function greensfun_checkgreensfun{K}(Kernels::Vector{K})
+    ret = true
+    for i in 1:length(Kernels)
+        ret *= !(typeof(Kernels[i]) <: GreensFun)
+    end
+    !ret
+end
+
 GreensFun{K<:MultivariateFun}(kernels::Vector{K}) =
     GreensFun{eltype(kernels),mapreduce(eltype,promote_type,kernels)}(kernels)
 

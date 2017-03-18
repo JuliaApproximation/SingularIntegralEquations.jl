@@ -1,8 +1,8 @@
 ## SingFun stieltjes
 
 export logabs
-logabs(z) = log(abs2(z))/2
-sqrtabs(z) = sqrt(abs(z))
+logabs(z) = log.(abs2.(z))/2
+sqrtabs(z) = sqrt.(abs.(z))
 
 # sqrtx2 is analytic continuation of sqrt(z^2-1)
 # with the oriented branch cut [-1,1]
