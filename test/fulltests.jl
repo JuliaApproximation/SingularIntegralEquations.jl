@@ -48,7 +48,7 @@ k=114;
 
 u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 
-@test_approx_eq u(1.1,0.2) (-0.8290718508107162+0.511097153754im)
+@test u(1.1,0.2) ≈ (-0.8290718508107162+0.511097153754im)
 
 println("Example Tests")
 

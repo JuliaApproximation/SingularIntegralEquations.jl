@@ -31,7 +31,7 @@ S=JacobiWeight(0.5,0.5,Ultraspherical(1,Γ))
 
 u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 
-@test_approx_eq u(0.1,0.2) 0.039532462109794025-0.3188804984805561im # empirical
+@test u(0.1,0.2) ≈ 0.039532462109794025-0.3188804984805561im # empirical
 
 
 k=227;
@@ -63,7 +63,7 @@ S=JacobiWeight(0.5,0.5,Γ)
 
 u=(x,y)->α*(x+im*y)+2pseudocauchy(ui,x+im*y)
 
-@test_approx_eq u(0.1,0.2) 0.6063720775017964 - 0.6382733554119975im # empirical
+@test u(0.1,0.2) ≈ 0.6063720775017964 - 0.6382733554119975im # empirical
 
 
 
@@ -99,7 +99,7 @@ c,ui=[0 DefiniteLineIntegral();
 
 
 u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
-@test_approx_eq u(2.,1.1)  2.426592437403252-0.8340542386599383im
+@test u(2.,1.1) ≈ 2.426592437403252-0.8340542386599383im
 
 
 
@@ -112,7 +112,7 @@ u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 
 u=(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 
-@test_approx_eq u(0.1,0.2) (-1.1657816742288978-0.21306668168680534im)
+@test u(0.1,0.2) ≈ (-1.1657816742288978-0.21306668168680534im)
 
 
 

@@ -209,7 +209,7 @@ function testsieeval(S::Space;posdirection=im)
         @test cauchy(f,p*⁺)-cauchy(f,p*⁻) ≈ f(p)
         @test im*(cauchy(f,p*⁺)+cauchy(f,p*⁻)) ≈ hilbert(f,p)
 
-        @test abs(linesum(f*log(abs(x-z)))/π-logkernel(f,z)) ≤ 100eps()
+        @test abs(linesum(f*logabs(x-z))/π-logkernel(f,z)) ≤ 100eps()
         @test logkernel(f,p) ≈ logkernel(f,p+eps()*posdirection)
     end
 end

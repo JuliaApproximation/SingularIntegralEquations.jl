@@ -78,7 +78,7 @@ for TYP in (:(ApproxFun.DefiniteLineIntegralWrapper),:DefiniteLineIntegral)
         wsp = domainspace(⨍)
         @assert m == length(wsp.spaces)
         ⨍j = DefiniteLineIntegral(wsp[1])
-        ret = Array(Operator{promote_type(eltype(⨍j),map(eltype,B)...)},m,n)
+        ret = Array{Operator{promote_type(eltype(⨍j),map(eltype,B)...)}}(m,n)
         for j=1:n
             ⨍j = DefiniteLineIntegral(wsp[j])
             for i=1:m
@@ -186,7 +186,7 @@ end
 function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...)
     M,N = length(ss[1]),length(ss[2])
     @assert M == N
-    G = Array(GreensFun,N,N)
+    G = Array{GreensFun}(N,N)
     if method == :standard
         for i=1:N,j=1:N
             G[i,j] = GreensFun(f,ss[i,j];method=method,kwds...)
@@ -199,7 +199,7 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::Ab
             G[i,j] = transpose(G[j,i])
         end
     elseif method == :unsplit
-        maxF = Array(Number,N)
+        maxF = Array{Number}(N)
         for i=1:N
           G[i,i] = GreensFun(f,ss[i,i];method=method,kwds...)
           maxF[i] = one(real(mapreduce(eltype,promote_type,G[i,i].kernels)))/2π
@@ -223,7 +223,7 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,ss::Ab
                 end
             end
         elseif tolerance == :absolute
-            maxF = Array(Number,N)
+            maxF = Array{Number}(N)
             for i=1:N
                 F,maxF[i] = LowRankFun(f,ss[i,i];method=method,retmax=true,kwds...)
                 G[i,i] = GreensFun(F)
@@ -242,9 +242,9 @@ end
 function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::Function,g::Function,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:unsplit,tolerance::Symbol=:absolute,kwds...)
     M,N = length(ss[1]),length(ss[2])
     @assert M == N
-    G = Array(GreensFun,N,N)
+    G = Array{GreensFun}(N,N)
     if method == :unsplit
-        maxF = Array(Number,N)
+        maxF = Array{Number}(N)
         for i=1:N
             G[i,i] = GreensFun(f,g,ss[i,i];method=method,kwds...)
             maxF[i] = one(real(mapreduce(eltype,promote_type,G[i,i].kernels)))/2π

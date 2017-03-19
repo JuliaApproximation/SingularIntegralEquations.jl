@@ -24,10 +24,10 @@ for Op in (:OffHilbert,:OffSingularIntegral)
         getindex(C::$Op,k::Integer,j::Integer) =
             k ≤ size(C.data,1) && j ≤ size(C.data,2) ? C.data[k,j] : zero(eltype(C))
 
-        Base.convert{BT<:Operator}(::Type{BT},OH::$Op) =
+        Base.convert{T}(::Type{Operator{T}},OH::$Op) =
             $Op{typeof(OH.domainspace),
                 typeof(OH.rangespace),
-                eltype(BT)}(OH.data,OH.domainspace,OH.rangespace,OH.order)
+                T}(OH.data,OH.domainspace,OH.rangespace,OH.order)
 
         $Op(ds::Space,rs::Space) = $Op(ds,rs,1)
         $Op(data::BandedMatrix,ds::Space,rs::Space) = $Op(data,ds,rs,1)
@@ -48,7 +48,7 @@ function OffHilbert(ds::Space,rs::Space,order::Int)
     @assert order==1
     tol=1E-13
 
-    vv=Array(Vector{Complex128},0)
+    vv=Array{Vector{Complex128}}(0)
     m=100
     for k=1:2:1000
         b=Fun(ds,[zeros(k-1);1.])
@@ -91,7 +91,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
                 x=mobius(ds,z)
                 y=joukowskyinverse(Val{true},x)
                 yk,ykp1=y,y*y
-                ret=Array(typeof(y),300)
+                ret=Array{typeof(y)}(300)
                 ret[1]=-.5logabs(2y)+.25real(ykp1)
                 n,l,u = 1,ncoefficients(ret[1])-1,0
                 while norm(ret[n].coefficients)>100eps()
@@ -105,7 +105,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
                 end
             elseif ord == 1
                 y=Fun(z->joukowskyinverse(Val{true},mobius(ds,z)),rs)
-                ret=Array(typeof(y),300)
+                ret=Array{typeof(y)}(300)
                 ret[1]=-y
                 n,l,u = 1,ncoefficients(ret[1])-1,0
                 while norm(ret[n].coefficients)>100eps()
@@ -136,7 +136,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
                 x=mobius(ds,z)
                 y=joukowskyinverse(Val{true},x)
                 yk,ykp1=y,y*y
-                ret=Array(typeof(y),300)
+                ret=Array{typeof(y)}(300)
                 ret[1]=-logabs(2y/C)
                 ret[2]=-real(yk)
                 ret[3]=chop!(-ret[1]-.5real(ykp1),100eps())
@@ -154,7 +154,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
                 z=Fun(identity,rs)
                 x=mobius(ds,z)
                 y=joukowskyinverse(Val{true},x)
-                ret=Array(typeof(y),300)
+                ret=Array{typeof(y)}(300)
                 ret[1]=-1/sqrtx2(x)
                 ret[2]=x*ret[1]+1
                 ret[3]=2y
@@ -228,7 +228,7 @@ function exterior_cauchy(b::Circle,a::Circle)
     r=b.radius
 
     S=Fun(a,[0.0,0,1])  # Shift to use bandedness
-    ret=Array(Fun{Laurent{typeof(a)},Complex{Float64}},300)
+    ret=Array{Fun{Laurent{typeof(a)},Complex{Float64}}}(300)
     ret[1]=Fun(z->(r/(z-c)),a)
     n=1
     m=ncoefficients(ret[1])-2
@@ -254,7 +254,7 @@ end
 function interior_cauchy(a::Circle,b::Circle)
     z=mappoint(a,Circle(),Fun(b))
 
-    ret=Array(Fun{Laurent{typeof(b)},Complex{Float64}},300)
+    ret=Array{Fun{Laurent{typeof(b)},Complex{Float64}}}(300)
     ret[1]=ones(b)
     n=1
     m=0
@@ -292,7 +292,7 @@ function disjoint_cauchy(a::Circle,b::Circle)
 
     f=Fun(z->r/(z-c),b)
 
-    ret=Array(Fun{Laurent{typeof(b)},Complex{Float64}},300)
+    ret=Array{Fun{Laurent{typeof(b)},Complex{Float64}}}(300)
     ret[1]=f
     n=1
 
@@ -374,7 +374,7 @@ Cauchy(ds,rs)=Cauchy(ds,rs,1)
 
 
 function hornervector(y0)
-    r=Array(typeof(y0),200)
+    r=Array{typeof(y0)}(200)
     r[1]=y0
     k=1
     tol=eps()
@@ -405,7 +405,7 @@ function OffHilbert{DD}(sp::JacobiWeight{Ultraspherical{Int,DD},DD},z::Number)
         -HornerFunctional(joukowskyinverse(Val{true},mobius(sp,z)),sp)
     else
         # calculate directly
-        r=Array(eltype(z),0)
+        r=Array{eltype(z)}(0)
         for k=1:10000
             push!(r,-stieltjes(Fun(sp,[zeros(k-1);1.]),z)/π)
             if abs(last(r)) < eps()

@@ -44,8 +44,8 @@ ApproxFun.testblockbandedoperator(C2)
 
 @test norm((C*F - [C*F[1];C*F[2]]).coefficients) == 0
 @test norm((C*G - [C*G[1] C*G[3];C*G[2] C*G[4]]).coefficients) == 0
-@test_approx_eq cauchy(F,exp(0.1im)⁻) (C*F)(exp(0.1im))
-@test_approx_eq cauchy(G,exp(0.1im)⁻) (C*G)(exp(0.1im))
+@test cauchy(F,exp(0.1im)⁻) ≈ (C*F)(exp(0.1im))
+@test cauchy(G,exp(0.1im)⁻) ≈ (C*G)(exp(0.1im))
 
 
 
@@ -74,7 +74,7 @@ Ṽ = QR\(G-I)
 V  = (I+(I-G)*C)\(G-I)
 
 
-@test_approx_eq map(f->f(exp(0.1im)),ApproxFun.mat(G-I)) (G-I)(exp(0.1im))
+@test map(f->f(exp(0.1im)),ApproxFun.mat(G-I)) ≈ (G-I)(exp(0.1im))
 
 @test (G-I)[:,1]==Fun((G-I)[:,1],rangespace(QR))
 @test (G-I)[:,1]==Fun(vec((G-I)[:,1]),rangespace(QR))
@@ -89,23 +89,23 @@ V2  = A\(G-I)[:,2]
 @test norm((A*V[:,1]-(G[:,1]-[1,0])).coefficients) < 100eps()
 
 z=exp(0.1im)
-@test_approx_eq V(z)+(I-G(z))*cauchy(V,z*⁻) G(z)-I
+@test V(z)+(I-G(z))*cauchy(V,z*⁻) ≈ G(z)-I
 
-@test_approx_eq cauchy(V[1,1],exp(0.1im)⁻) (C*V[1,1])(exp(0.1im))
-@test_approx_eq cauchy(V[2,1],exp(0.1im)⁻) (C*V[2,1])(exp(0.1im))
-@test_approx_eq cauchy(V[:,1],exp(0.1im)⁻) (C*V[:,1])(exp(0.1im))
-@test_approx_eq cauchy(V,exp(0.1im)⁻) (C*V)(exp(0.1im))
+@test cauchy(V[1,1],exp(0.1im)⁻) ≈ (C*V[1,1])(exp(0.1im))
+@test cauchy(V[2,1],exp(0.1im)⁻) ≈ (C*V[2,1])(exp(0.1im))
+@test cauchy(V[:,1],exp(0.1im)⁻) ≈ (C*V[:,1])(exp(0.1im))
+@test cauchy(V,exp(0.1im)⁻) ≈ (C*V)(exp(0.1im))
 
 Φmi = I+C*V
 Φp = V+Φmi
 
 
-@test_approx_eq Φmi(z) (I+cauchy(V,z*⁻))
-@test_approx_eq Φp(z) (I+cauchy(V,z*⁺))
-@test_approx_eq Φp(z)*inv(Φmi(z)) G(z)
+@test Φmi(z) ≈ (I+cauchy(V,z*⁻))
+@test Φp(z) ≈ (I+cauchy(V,z*⁺))
+@test Φp(z)*inv(Φmi(z)) ≈ G(z)
 
 Φm=inv.(Φmi)
-@test_approx_eq Φm(z) inv(Φmi(z))
+@test Φm(z) ≈ inv(Φmi(z))
 
 T=ToeplitzOperator(G)
 

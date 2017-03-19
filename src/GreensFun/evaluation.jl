@@ -5,10 +5,10 @@ for (Func,Len) in ((:(Base.sum),:complexlength),(:linesum,:arclength))
             d,α,β,n=domain(u),u.space.α,u.space.β,2ncoefficients(u)
             vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(d,n)
             if α == β == -0.5
-                return 0.5*$Len(d)*map(z->mean(G(z,t).*vals),z)*π
+                return 0.5*$Len(d)*map(z->mean(G.(z,t).*vals),z)*π
             else
                 sp,p = space(u),plan_chebyshevtransform(complex(vals))
-                map(z->$Func(Fun(sp,chebyshevtransform(G(z,t).*vals,p))),z)
+                map(z->$Func(Fun(sp,p*(G.(z,t).*vals))),z)
             end
         end
     end
@@ -18,14 +18,14 @@ function logkernel{CC<:Chebyshev,DD}(G::Function,u::Fun{JacobiWeight{CC,DD}},z)
     sp,n=space(u),2ncoefficients(u)
     vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(sp,n)
     p = plan_chebyshevtransform(complex(vals))
-    return map(z->logkernel(Fun(sp,chebyshevtransform(G(z,t).*vals,p)),z),z)
+    return map(z->logkernel(Fun(sp,p*(G.(z,t).*vals)),z),z)
 end
 
 function cauchy{CC<:Chebyshev,DD}(G::Function,u::Fun{JacobiWeight{CC,DD}},z)
     sp,n=space(u),2ncoefficients(u)
     vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(sp,n)
     p = plan_chebyshevtransform(vals)#complex(vals))
-    return map(z->cauchy(Fun(sp,chebyshevtransform(G(z,t).*vals,p)),z),z)
+    return map(z->cauchy(Fun(sp,p*(G.(z,t).*vals)),z),z)
 end
 
 for TYP in (:Fourier,:Laurent)
@@ -34,16 +34,16 @@ for TYP in (:Fourier,:Laurent)
             d,n=domain(u),2ncoefficients(u)
             vals,t = values(pad(u,n)),points(d,n)
             if isa(d,Circle)
-              return map(z->mean(G(z,t).*vals.*t),z)*2π*im
+              return map(z->mean(G.(z,t).*vals.*t),z)*2π*im
             else
-              return map(z->mean(G(z,t).*vals),z)*arclength(d)
+              return map(z->mean(G.(z,t).*vals),z)*arclength(d)
             end
         end
 
         function linesum{DD}(G::Function,u::Fun{$TYP{DD}},z)
             d,n=domain(u),2ncoefficients(u)
             vals,t = values(pad(u,n)),points(d,n)
-            map(z->mean(G(z,t).*vals),z)*arclength(d)
+            map(z->mean(G.(z,t).*vals),z)*arclength(d)
         end
     end
 end
@@ -54,7 +54,7 @@ function logkernel{DD}(G::Function,sp::Fourier{DD},u,z)
     n=2length(u)
     vals,t = values(pad(Fun(sp,u),n)),points(sp,n)
     p = plan_transform(sp,vals)
-    return map(z->logkernel(sp,transform(sp,G(z,t).*vals,p),z),z)
+    return map(z->logkernel(sp,transform(sp,G.(z,t).*vals,p),z),z)
 end
 logkernel{DD}(G::Function,sp::Laurent{DD},u,z)=logkernel(G,Fun(Fun(sp,u),Fourier),z)
 
@@ -71,12 +71,12 @@ function logkernel{LS,RR<:Arc}(G::Function,sp::Space{LS,RR},u,z)
     n=2length(u)
     vals,t = itransform(sp,pad(u,n)),points(sp,n)
     p = plan_transform(sp,complex(vals))
-    return map(z->logkernel(sp,transform(sp,G(z,t).*vals,p),z),z)
+    return map(z->logkernel(sp,transform(sp,G.(z,t).*vals,p),z),z)
 end
 
 function linesum{LS,RR<:Arc}(G::Function,sp::Space{LS,RR},u,z)
     n=2length(u)
     vals,t = itransform(sp,pad(u,n)),points(sp,n)
     p = plan_transform(sp,complex(vals))
-    return map(z->linesum(sp,transform(sp,G(z,t).*vals,p),z),z)
+    return map(z->linesum(sp,transform(sp,G.(z,t).*vals,p),z),z)
 end

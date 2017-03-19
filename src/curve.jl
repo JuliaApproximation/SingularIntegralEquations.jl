@@ -48,7 +48,7 @@ function logkernel{CC<:Chebyshev,S,T}(sp::Space{S,IntervalCurve{CC,T}},w,z)
     b=d.curve.coefficients[end]*2^(max(ncoefficients(d.curve)-2,0))
     g=Fun(setcanonicaldomain(sp),w)
     g=g*abs(fromcanonicalD(d))
-    sum(logkernel(g,complexroots(d.curve-z)))+linesum(Fun(sp,w))*log(abs(b))/π
+    sum(logkernel(g,complexroots(d.curve-z)))+linesum(Fun(sp,w))*logabs(b)/π
 end
 
 
@@ -120,7 +120,7 @@ function Hilbert{C<:IntervalCurve,SS}(S::JacobiWeight{SS,C},k::Int)
     rts=Vector{Complex128}[filter(y->!in(y,Segment()),complexroots(d.curve-x)) for x in fromcanonical(d,points(rs,m))]
 
     # generate cols until smaller than tol
-    cols=Array(Vector{Complex128},0)
+    cols=Array{Vector{Complex128}}(0)
     for k=1:10000
         push!(cols,transform(rs,Complex128[-sum(stieltjes(Fun(csp,[zeros(k-1);1.0]),rt)/π) for rt in rts]))
         if norm(last(cols))<tol
@@ -156,7 +156,7 @@ function SingularIntegral{CC<:Chebyshev,TTT,TT}(S::JacobiWeight{TTT,IntervalCurv
     rts=Vector{Complex128}[filter(y->!in(y,Segment()),complexroots(d.curve-x)) for x in fromcanonical(d,points(rs,m))]
 
     # generate cols until smaller than tol
-    cols=Array(Vector{Float64},0)
+    cols=Array{Vector{Float64}}(0)
     for k=1:10000
         push!(cols,transform(rs,Float64[sum(logkernel(Fun(csp,[zeros(k-1);1.0]),rt)) for rt in rts]))
         if norm(last(cols))<tol
@@ -165,7 +165,7 @@ function SingularIntegral{CC<:Chebyshev,TTT,TT}(S::JacobiWeight{TTT,IntervalCurv
     end
 
     K=hcat(cols...)
-    A=Σ+SpaceOperator(FiniteOperator(K),csp,rs)+(log(abs(b))/π)*DefiniteLineIntegral(csp)
+    A=Σ+SpaceOperator(FiniteOperator(K),csp,rs)+(logabs(b)/π)*DefiniteLineIntegral(csp)
 
     # Multiply by |r'(t)| to get arclength
     M=Multiplication(abs(fromcanonicalD(d,Fun(identity,csp))),csp)

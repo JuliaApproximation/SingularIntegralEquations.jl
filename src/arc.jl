@@ -53,7 +53,7 @@ function logkernel{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
     g=Fun(setcanonicaldomain(sp),w)*abs(fromcanonicalD(sp))
     logkernel(g,mobius(sp,z))-
         logkernel(g,mobius(sp,Inf))+
-        linesum(Fun(sp,w))*log(abs(z-fromcanonical(sp,Inf)))/π
+        linesum(Fun(sp,w))*logabs(z-fromcanonical(sp,Inf))/π
 end
 
 
@@ -67,7 +67,7 @@ function SingularIntegral{JW,RR<:Arc}(S::JacobiWeight{JW,RR},k::Integer)
         M=Multiplication(abs(fromcanonicalD(d,Fun(identity,csp))),csp)
 
         z∞=mobius(d,Inf)
-        cnst=Array(Float64,0)
+        cnst=Array{Float64}(0)
         for k=1:10000
             push!(cnst,logkernel(Fun(csp,[zeros(k-1);1.]),z∞))
             if k≥3&&norm(cnst[end-2:end])<tol
@@ -77,7 +77,7 @@ function SingularIntegral{JW,RR<:Arc}(S::JacobiWeight{JW,RR},k::Integer)
         L∞=FiniteOperator(cnst.',csp,ConstantSpace())
 
         x=Fun(identity,S)
-        SpaceOperator((Σ-L∞)*M,S,setdomain(rangespace(Σ),d))+(log(abs(x-fromcanonical(d,Inf)))/π)*DefiniteLineIntegral(S)
+        SpaceOperator((Σ-L∞)*M,S,setdomain(rangespace(Σ),d))+(logabs(x-fromcanonical(d,Inf))/π)*DefiniteLineIntegral(S)
     else
         # multiply by abs(M')/M' to change to dz to ds
         Mp=fromcanonicalD(d)

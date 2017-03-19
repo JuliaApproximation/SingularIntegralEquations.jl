@@ -17,7 +17,7 @@ function forwardsubstitution!(ret,B,n,μ1,μ2)
 end
 
 forwardsubstitution(R,n,μ1,μ2) =
-    forwardsubstitution!(Array(promote_type(eltype(R),typeof(μ1),typeof(μ2)),n),R,n,μ1,μ2)
+    forwardsubstitution!(Array{promote_type(eltype(R),typeof(μ1),typeof(μ2))}(n),R,n,μ1,μ2)
 
 
 
