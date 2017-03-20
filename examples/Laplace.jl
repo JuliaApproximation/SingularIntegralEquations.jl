@@ -16,7 +16,7 @@ g1 = (x,y) -> 1/2
 # Set the domains.
 N = 10
 r = 1e-1
-cr = exp(im*2π*(0:N-1)/N)
+cr = exp.(im*2π*(0:N-1)/N)
 crl = (1-2im*r)cr
 crr = (1+2im*r)cr
 dom = ∪(Segment.(crl,crr)) # All infinitesimal plates
