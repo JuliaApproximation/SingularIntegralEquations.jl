@@ -51,7 +51,7 @@ dom = cantor(Segment(),i)
 f = Fun(x->logabs(x-5im),dom)
 sp = Space(dom)
 
-G = GreensFun((x,y)->1/2,CauchyWeight(sp⊗sp,0);method=:Cholesky)
+G = GreensFun((x,y)->0.5,CauchyWeight(sp⊗sp,0);method=:Cholesky)
 
 @time u1 = ⨍[G]\transpose(f)
 println("Adaptive QR  forward error norm is: ",norm(⨍[G]*u1-f))
@@ -61,7 +61,7 @@ println("Adaptive QR  forward error norm is: ",norm(⨍[G]*u1-f))
 hdom = clustertree(dom)
 hsp = Space(hdom)
 
-G1 = GreensFun((x,y)->1/2,CauchyWeight(hsp⊗hsp,0);method=:Cholesky)
+G1 = GreensFun((x,y)->0.5,CauchyWeight(hsp⊗hsp,0);method=:Cholesky)
 H = ⨍[G1]
 
 @time u2 = H\f
@@ -70,7 +70,7 @@ H = ⨍[G1]
 @test condest(H) ≤ 20.0
 
 import ApproxFun: ∞
-@test blockrank(H) == Number[∞ 8 9 9; 8 ∞ 9 9; 9 9 ∞ 8; 9 9 8 ∞]
+@test blockrank(H) == [∞ 8 9 9; 8 ∞ 9 9; 9 9 ∞ 8; 9 9 8 ∞]
 
 println("The hierarchical forward error norm is: ",norm(⨍[G]*u2-f))
 
@@ -87,7 +87,7 @@ dom = UnionDomain(SingularIntegralEquations.collectdata(hdom))
 f = Fun(x->logabs(x-5im),dom)
 sp = Space(dom)
 
-G = GreensFun((x,y)->1/2,CauchyWeight(sp⊗sp,0);method=:Cholesky)
+G = GreensFun((x,y)->0.5,CauchyWeight(sp⊗sp,0);method=:Cholesky)
 
 @time u1 = ⨍[G]\transpose(f)
 
@@ -100,7 +100,7 @@ println("Adaptive QR  forward error norm is: ",norm(⨍[G]*u1-f))
 # else
     hsp = Space(hdom)
 
-    G1 = GreensFun((x,y)->1/2,CauchyWeight(hsp⊗hsp,0);method=:Cholesky)
+    G1 = GreensFun((x,y)->0.5,CauchyWeight(hsp⊗hsp,0);method=:Cholesky)
     H = ⨍[G1]
 
     @time u2 = H\f

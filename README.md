@@ -60,7 +60,7 @@ sp = Space(dom)                      # Canonical space on the domain
 uiΓ = Fun(t->ui(real(t),imag(t)),sp) # Action of source on shields
 
 # Instantiate the fundamental solution
-G = GreensFun((x,y)->1/2,CauchyWeight(sp⊗sp,0))
+G = GreensFun((x,y)->0.5,CauchyWeight(sp⊗sp,0))
 
 # The first column augments the system for global unknown constant charge φ0
 # The first row ensure constant charge φ0 on all plates
