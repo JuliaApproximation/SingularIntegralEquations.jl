@@ -83,11 +83,10 @@ if VERSION < v"0.5.0-dev+4340" # hack for now
 else
     function Base.show{F<:GreensFun,L<:LowRankFun,T}(io::IO, ::MIME"text/plain", H::HierarchicalMatrix{F,GreensFun{L,T}})
         print(io,"$(nlevels(H))-level HierarchicalMatrix of GreensFun's with blockwise ranks:\n")
-        show(io,blockrank(H))
+        Base.print_matrix(io,blockrank(H),"["," ","]")
     end
     function Base.show{U<:Operator,V<:AbstractLowRankOperator}(io::IO, ::MIME"text/plain", H::HierarchicalOperator{U,V})
         print(io,"$(nlevels(H))-level HierarchicalOperator with blockwise ranks:\n")
-        # TODO: Reenable for 0.5
-        # Base.print_matrix(io,blockrank(H),(s = Base.tty_size(); (s[1]-4, s[2])),"["," ","]")
+        Base.print_matrix(io,blockrank(H),"["," ","]")
     end
 end
