@@ -14,12 +14,12 @@ export GreensFun
 
 immutable GreensFun{K<:BivariateFun,T} <: BivariateFun{T}
     kernels::Vector{K}
-    function GreensFun{K,T}(Kernels::Vector{K}) where {K,T}
+    function (::Type{GreensFun{K,T}}){K,T}(Kernels::Vector{K})
         if greensfun_checkdomains(Kernels)
             if greensfun_checkgreensfun(Kernels)
                 return GreensFun(vcat(map(kernels,Kernels)...))
             end
-            new(Kernels)
+            new{K,T}(Kernels)
         else
             error("Cannot create GreensFun: all kernel domains must equal $(domain(Kernels[1]))")
         end

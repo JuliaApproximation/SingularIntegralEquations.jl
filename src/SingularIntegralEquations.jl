@@ -14,8 +14,6 @@ import Base: values,getindex,setindex!,*,.*,+,.+,-,.-,==,<,<=,>,
 
 import BandedMatrices: bzeros
 
-import Compat: view
-
 import ApproxFun
 import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebilinearform,dotu, blocklengths,
                   plan_transform,plan_itransform,transform,itransform,transform!,itransform!,
@@ -44,8 +42,8 @@ Therefore not requiring tolerances.  This will naturally give the analytic conti
 """
 immutable Directed{s,T} <: Number
     x::T
-    Directed{s,T}(x::T) where {s,T} = new(x)
-    Directed{s,T}(x::Number) where {s,T} = new(T(x))
+    (::Type{Directed{s,T}}){s,T}(x::T) = new{s,T}(x)
+    (::Type{Directed{s,T}}){s,T}(x::Number) = new{s,T}(T(x))
 end
 
 

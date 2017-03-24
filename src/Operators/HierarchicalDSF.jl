@@ -6,17 +6,17 @@
 
 type HierarchicalDomain{S,T,HS} <: ApproxFun.UnivariateDomain{T}
     data::HS
-    HierarchicalDomain{S,T,HS}(data::HS) where{S,T,HS} = new(data)
+    (::Type{HierarchicalDomain{S,T,HS}}){S,T,HS}(data::HS) = new{S,T,HS}(data)
 end
 
 type HierarchicalSpace{S,T,HS,D} <: ApproxFun.UnivariateSpace{T,D}
     data::HS
-    HierarchicalSpace{S,T,HS,D}(data::HS) where{S,T,HS,D} = new(data)
+    (::Type{HierarchicalSpace{S,T,HS,D}}){S,T,HS,D}(data::HS) = new{S,T,HS,D}(data)
 end
 
 type HierarchicalFun{S,T,HS}
     data::HS
-    HierarchicalFun{S,T,HS}(data::HS) where {S,T,HS} = new(data)
+    (::Type{HierarchicalFun{S,T,HS}}){S,T,HS}(data::HS) = new{S,T,HS}(data)
 end
 
 

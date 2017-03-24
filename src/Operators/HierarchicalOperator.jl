@@ -29,8 +29,8 @@ type HierarchicalOperator{S,V,T,HS,HV} <: Operator{T}
     factorization::PivotLDU{T,Matrix{T}} # Cache of factorization of A for pivot computation
     factored::Bool
 
-    function HierarchicalOperator{S,V,T,HS,HV}(diagonaldata::HS,offdiagonaldata::HV) where {S,V,T,HS,HV}
-        H = new()
+    function (::Type{HierarchicalOperator{S,V,T,HS,HV}}){S,V,T,HS,HV}(diagonaldata::HS,offdiagonaldata::HV)
+        H = new{S,V,T,HS,HV}()
         H.diagonaldata = diagonaldata
         H.offdiagonaldata = offdiagonaldata
 

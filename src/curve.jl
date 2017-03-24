@@ -117,7 +117,7 @@ function Hilbert{C<:IntervalCurve,SS}(S::JacobiWeight{SS,C},k::Int)
     # find the number of coefficients needed to resolve the first column
     m=ncoefficients(Fun(x->sum(stieltjes(Fun(csp,[1.0]),filter(y->!in(y,Segment()),complexroots(d.curve-fromcanonical(d,x))))/π),rs))
     #precompute the roots
-    rts=Vector{Complex128}[filter(y->!in(y,Segment()),complexroots(d.curve-x)) for x in fromcanonical(d,points(rs,m))]
+    rts=Vector{Complex128}[filter(y->!in(y,Segment()),complexroots(d.curve-x)) for x in fromcanonical.(d,points(rs,m))]
 
     # generate cols until smaller than tol
     cols=Array{Vector{Complex128}}(0)
@@ -153,7 +153,7 @@ function SingularIntegral{CC<:Chebyshev,TTT,TT}(S::JacobiWeight{TTT,IntervalCurv
     # find the number of coefficients needed to resolve the first column
     m=ncoefficients(Fun(x->sum(logkernel(Fun(csp,[1.0]),filter(y->!in(y,Segment()),complexroots(d.curve-fromcanonical(d,x))))),rs))
     #precompute the roots
-    rts=Vector{Complex128}[filter(y->!in(y,Segment()),complexroots(d.curve-x)) for x in fromcanonical(d,points(rs,m))]
+    rts=Vector{Complex128}[filter(y->!in(y,Segment()),complexroots(d.curve-x)) for x in fromcanonical.(d,points(rs,m))]
 
     # generate cols until smaller than tol
     cols=Array{Vector{Float64}}(0)

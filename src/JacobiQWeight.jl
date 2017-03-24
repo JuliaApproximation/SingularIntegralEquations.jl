@@ -12,11 +12,11 @@ immutable JacobiQWeight{S,DD} <: WeightSpace{S,RealBasis,DD,1}
     α::Float64
     β::Float64
     space::S
-    function JacobiQWeight{S,DD}(α::Float64,β::Float64,space::S) where {S,DD}
+    function (::Type{JacobiQWeight{S,DD}}){S,DD}(α::Float64,β::Float64,space::S)
         if isa(space,JacobiQWeight)
             JacobiQWeight(α+space.α,β+space.β,space.space)
         else
-            new(α,β,space)
+            new{S,DD}(α,β,space)
         end
     end
 end

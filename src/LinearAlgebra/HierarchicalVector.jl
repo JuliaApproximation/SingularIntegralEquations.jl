@@ -9,11 +9,11 @@ nlevels(A)=0
 
 @compat abstract type AbstractHierarchicalArray{SV,T,HS,N} <: AbstractArray{T,N} end
 
-AbstractHierarchicalVector{S,T,HS} = AbstractHierarchicalArray{S,T,HS,1}
+@compat const AbstractHierarchicalVector{S,T,HS} = AbstractHierarchicalArray{S,T,HS,1}
 
 type HierarchicalVector{S,T,HS} <: AbstractHierarchicalVector{S,T,HS}
     data::HS
-    HierarchicalVector{S,T,HS}(data::HS) where {S,T,HS} = new(data)
+    (::Type{HierarchicalVector{S,T,HS}}){S,T,HS}(data::HS) = new{S,T,HS}(data)
 end
 
 HierarchicalVector{S1,S2}(data::Tuple{S1,S2}) = HierarchicalVector{promote_type(S1,S2),promote_type(eltype(S1),eltype(S2)),Tuple{S1,S2}}(data)
