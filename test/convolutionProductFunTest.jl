@@ -2,13 +2,13 @@ using ApproxFun, SingularIntegralEquations, Base.Test
 
 println("Chebyshev addition test")
 
-d = Interval(-1.,1.)
+d = Segment(-1.,1.)
 fK(x,y) = exp(abs2(y-x))
 FLR = LowRankFun(fK,Chebyshev(d),Chebyshev(d))
 FPF = ProductFun(fK,Chebyshev(d),Chebyshev(d))
 G = convolutionProductFun(fK,Chebyshev(d),Chebyshev(d))
-G1 = convolutionProductFun(fK,Ultraspherical{1}(d),Chebyshev(d))
-G2 = convolutionProductFun(fK,Ultraspherical{1}(d),ChebyshevDirichlet{1,1}(d))
+G1 = convolutionProductFun(fK,Ultraspherical(1,d),Chebyshev(d))
+G2 = convolutionProductFun(fK,Ultraspherical(1,d),ChebyshevDirichlet{1,1}(d))
 
 
 @test norm(pad(coefficients(FLR),size(coefficients(G),1),size(coefficients(G),2))-coefficients(G))<100000eps()
@@ -44,22 +44,21 @@ G = convolutionProductFun(f2,Laurent(),Laurent())
 
 f2 = Fun(θ->π+e*exp(im*θ)+sqrt(2)*exp(im*2θ)+catalan*exp(im*3θ)+γ*exp(im*4θ),Taylor(PeriodicInterval()))
 G = convolutionProductFun(f2,Laurent(),Laurent())
-@test norm(f2(.456-.123)-G(.123,.456))≤2eps()
+@test norm(f2(.456-.123)-G(.123,.456))≤100eps()
 
 f2 = Fun(θ->e*exp(-im*θ)+sqrt(2)*exp(-im*2θ)+catalan*exp(-im*3θ)+γ*exp(-im*4θ),Hardy{false}(PeriodicInterval()))
 G = convolutionProductFun(f2,Laurent(),Laurent())
-@test norm(f2(.456-.123)-G(.123,.456))≤10eps()
+@test norm(f2(.456-.123)-G(.123,.456))≤100eps()
 
 println("Timing tests: ")
 
-@osx_only gc_enable(false)
 
-d = Interval(-2.5,-.5)
-fK(x,y) = besselj0(100(y-x))
-convolutionProductFun(fK,Chebyshev(d),Chebyshev(d))
-@time G = convolutionProductFun(fK,Chebyshev(d),Chebyshev(d))
-convolutionProductFun(fK,Ultraspherical{1}(d),ChebyshevDirichlet{1,1}(d))
-@time G = convolutionProductFun(fK,Ultraspherical{1}(d),ChebyshevDirichlet{1,1}(d))
+d = Segment(-2.5,-.5)
+fK2(x,y) = besselj0(100(y-x))
+convolutionProductFun(fK2,Chebyshev(d),Chebyshev(d))
+@time G = convolutionProductFun(fK2,Chebyshev(d),Chebyshev(d))
+convolutionProductFun(fK2,Ultraspherical(1,d),ChebyshevDirichlet{1,1}(d))
+@time G = convolutionProductFun(fK2,Ultraspherical(1,d),ChebyshevDirichlet{1,1}(d))
 println("Chebyshev addition: Time should be ~0.01 seconds.")
 
 f2 = Fun(θ->besselj0(500*abs(2sin(θ/2))),CosSpace())
@@ -71,5 +70,3 @@ f2 = Fun(θ->besselj0(500*abs(2sin(θ/2))),Laurent())
 convolutionProductFun(f2,Laurent(),Laurent())
 @time G = convolutionProductFun(f2,Laurent(),Laurent())
 println("Laurent addition: Time should be ~0.14 seconds.")
-
-@osx_only gc_enable(true)

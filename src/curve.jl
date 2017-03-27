@@ -1,16 +1,19 @@
-## Interval map
+## Segment map
 
-stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Number)=sum(stieltjes(setcanonicaldomain(S),f,complexroots(domain(S).curve-z)))
+stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Number) =
+    sum(stieltjes(setcanonicaldomain(S),f,complexroots(domain(S).curve-z)))
 
-function stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Number,s::Bool)
+function stieltjes{s,C<:Curve,SS}(S::Space{SS,C},f,z::Directed{s})
     #project
-    rts=complexroots(domain(S).curve-z)
+    rts=complexroots(domain(S).curve-z.x)
     di=domain(S.space)
-    mapreduce(rt->in(rt,di)?stieltjes(S.space,f,rt,s):stieltjes(S.space,f,rt),+,rts)
+    mapreduce(rt->in(rt,di)?stieltjes(S.space,f,Directed{s}(rt)):stieltjes(S.space,f,rt),+,rts)
 end
 
-stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Vector)=Complex128[stieltjes(S,f,z[k]) for k=1:size(z,1)]
-stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Matrix)=Complex128[stieltjes(S,f,z[k,j]) for k=1:size(z,1),j=1:size(z,2)]
+stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Vector) =
+    Complex128[stieltjes(S,f,z[k]) for k=1:size(z,1)]
+stieltjes{C<:Curve,SS}(S::Space{SS,C},f,z::Matrix) =
+    Complex128[stieltjes(S,f,z[k,j]) for k=1:size(z,1),j=1:size(z,2)]
 
 ## hilbert on JacobiWeight space mapped by open curves
 
@@ -32,20 +35,20 @@ end
 function stieltjesintegral{CC<:Chebyshev,S,T}(sp::Space{S,IntervalCurve{CC,T}},w,z)
     d=domain(sp)
     # leading order coefficient
-    b=d.curve.coefficients[end]*2^(max(length(d.curve)-2,0))
-    g=Fun(w,setcanonicaldomain(sp))
+    b=d.curve.coefficients[end]*2^(max(ncoefficients(d.curve)-2,0))
+    g=Fun(setcanonicaldomain(sp),w)
     g=g*fromcanonicalD(d)
-    sum(stieltjesintegral(g,complexroots(d.curve-z)))+sum(Fun(w,sp))*log(b)
+    sum(stieltjesintegral(g,complexroots(d.curve-z)))+sum(Fun(sp,w))*log(b)
 end
 
 
 function logkernel{CC<:Chebyshev,S,T}(sp::Space{S,IntervalCurve{CC,T}},w,z)
     d=domain(sp)
     # leading order coefficient
-    b=d.curve.coefficients[end]*2^(max(length(d.curve)-2,0))
-    g=Fun(w,setcanonicaldomain(sp))
+    b=d.curve.coefficients[end]*2^(max(ncoefficients(d.curve)-2,0))
+    g=Fun(setcanonicaldomain(sp),w)
     g=g*abs(fromcanonicalD(d))
-    sum(logkernel(g,complexroots(d.curve-z)))+linesum(Fun(w,sp))*log(abs(b))/π
+    sum(logkernel(g,complexroots(d.curve-z)))+linesum(Fun(sp,w))*logabs(b)/π
 end
 
 
@@ -65,19 +68,19 @@ function stieltjes{C<:PeriodicCurve}(S::Laurent{C},f,z::Number)
     # subtract out value at infinity, determined by the fact that leading term is poly
     # we find the
     sum(stieltjes(setdomain(S,Circle()),f,complexroots(c.curve-z)))-
-            div(length(domain(S).curve),2)*stieltjes(setdomain(S,Circle()),f,0.)
+            div(ncoefficients(domain(S).curve),2)*stieltjes(setdomain(S,Circle()),f,0.)
 end
 
-function stieltjes{C<:PeriodicCurve}(S::Laurent{C},f,z::Number,s::Bool)
+function stieltjes{s,C<:PeriodicCurve}(S::Laurent{C},f,z::Directed{s})
     c=domain(S)  # the curve that f lives on
     @assert domain(c.curve)==Circle()
-    rts=complexroots(c.curve-z)
+    rts=complexroots(c.curve-z.x)
 
     csp=setdomain(S,Circle())
-    ret=-div(length(domain(S).curve),2)*stieltjes(csp,f,0.)
+    ret=-div(ncoefficients(domain(S).curve),2)*stieltjes(csp,f,0.)
 
     for k=2:length(rts)
-        ret+=in(rts[k],Circle())?stieltjes(csp,f,rts[k]):stieltjes(csp,f,rts[k],s)
+        ret+=in(rts[k],Circle())?stieltjes(csp,f,Directed{s}(rts[k])):stieltjes(csp,f,rts[k])
     end
     ret
 end
@@ -89,7 +92,7 @@ function hilbert{C<:PeriodicCurve}(S::Laurent{C},f,z::Number)
     rts=complexroots(c.curve-z)
 
     csp=setdomain(S,Circle())
-    ret=div(length(domain(S).curve),2)*stieltjes(csp,f,0.)/π
+    ret=div(ncoefficients(domain(S).curve),2)*stieltjes(csp,f,0.)/π
 
     for k=2:length(rts)
         ret+=in(rts[k],Circle())?hilbert(csp,f,rts[k]):stieltjes(csp,f,rts[k])/(-π)
@@ -112,14 +115,14 @@ function Hilbert{C<:IntervalCurve,SS}(S::JacobiWeight{SS,C},k::Int)
     d=domain(S)
 
     # find the number of coefficients needed to resolve the first column
-    m=length(Fun(x->sum(stieltjes(Fun([1.0],csp),filter(y->!in(y,Interval()),complexroots(d.curve-fromcanonical(d,x))))/π),rs))
+    m=ncoefficients(Fun(x->sum(stieltjes(Fun(csp,[1.0]),filter(y->!in(y,Segment()),complexroots(d.curve-fromcanonical(d,x))))/π),rs))
     #precompute the roots
-    rts=Vector{Complex128}[filter(y->!in(y,Interval()),complexroots(d.curve-x)) for x in fromcanonical(d,points(rs,m))]
+    rts=Vector{Complex128}[filter(y->!in(y,Segment()),complexroots(d.curve-x)) for x in fromcanonical.(d,points(rs,m))]
 
     # generate cols until smaller than tol
-    cols=Array(Vector{Complex128},0)
+    cols=Array{Vector{Complex128}}(0)
     for k=1:10000
-        push!(cols,transform(rs,Complex128[-sum(stieltjes(Fun([zeros(k-1);1.0],csp),rt)/π) for rt in rts]))
+        push!(cols,transform(rs,Complex128[-sum(stieltjes(Fun(csp,[zeros(k-1);1.0]),rt)/π) for rt in rts]))
         if norm(last(cols))<tol
             break
         end
@@ -144,25 +147,25 @@ function SingularIntegral{CC<:Chebyshev,TTT,TT}(S::JacobiWeight{TTT,IntervalCurv
     d=domain(S)
 
     # hiighest order coeff
-    b=d.curve.coefficients[end]*2^(max(length(d.curve)-2,0))
+    b=d.curve.coefficients[end]*2^(max(ncoefficients(d.curve)-2,0))
 
 
     # find the number of coefficients needed to resolve the first column
-    m=length(Fun(x->sum(logkernel(Fun([1.0],csp),filter(y->!in(y,Interval()),complexroots(d.curve-fromcanonical(d,x))))),rs))
+    m=ncoefficients(Fun(x->sum(logkernel(Fun(csp,[1.0]),filter(y->!in(y,Segment()),complexroots(d.curve-fromcanonical(d,x))))),rs))
     #precompute the roots
-    rts=Vector{Complex128}[filter(y->!in(y,Interval()),complexroots(d.curve-x)) for x in fromcanonical(d,points(rs,m))]
+    rts=Vector{Complex128}[filter(y->!in(y,Segment()),complexroots(d.curve-x)) for x in fromcanonical.(d,points(rs,m))]
 
     # generate cols until smaller than tol
-    cols=Array(Vector{Float64},0)
+    cols=Array{Vector{Float64}}(0)
     for k=1:10000
-        push!(cols,transform(rs,Float64[sum(logkernel(Fun([zeros(k-1);1.0],csp),rt)) for rt in rts]))
+        push!(cols,transform(rs,Float64[sum(logkernel(Fun(csp,[zeros(k-1);1.0]),rt)) for rt in rts]))
         if norm(last(cols))<tol
             break
         end
     end
 
     K=hcat(cols...)
-    A=Σ+SpaceOperator(FiniteOperator(K),csp,rs)+(log(abs(b))/π)*DefiniteLineIntegral(csp)
+    A=Σ+SpaceOperator(FiniteOperator(K),csp,rs)+(logabs(b)/π)*DefiniteLineIntegral(csp)
 
     # Multiply by |r'(t)| to get arclength
     M=Multiplication(abs(fromcanonicalD(d,Fun(identity,csp))),csp)

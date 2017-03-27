@@ -7,13 +7,13 @@ nlevels(A)=0
 # Represent a binary hierarchical vector
 ##
 
-abstract AbstractHierarchicalArray{SV,T,HS,N} <: AbstractArray{T,N}
+@compat abstract type AbstractHierarchicalArray{SV,T,HS,N} <: AbstractArray{T,N} end
 
-typealias AbstractHierarchicalVector{S,T,HS} AbstractHierarchicalArray{S,T,HS,1}
+@compat const AbstractHierarchicalVector{S,T,HS} = AbstractHierarchicalArray{S,T,HS,1}
 
 type HierarchicalVector{S,T,HS} <: AbstractHierarchicalVector{S,T,HS}
     data::HS
-    HierarchicalVector(data::HS) = new(data)
+    (::Type{HierarchicalVector{S,T,HS}}){S,T,HS}(data::HS) = new{S,T,HS}(data)
 end
 
 HierarchicalVector{S1,S2}(data::Tuple{S1,S2}) = HierarchicalVector{promote_type(S1,S2),promote_type(eltype(S1),eltype(S2)),Tuple{S1,S2}}(data)
@@ -33,7 +33,10 @@ function HierarchicalVector(data::Vector,n::Int)
 end
 
 Base.similar(H::HierarchicalVector) = HierarchicalVector(map(similar,data(H)))
-Base.similar{SS,V,T}(H::HierarchicalVector{SS,V,T}, S) = HierarchicalVector(map(A->similar(A,S),data(H)))
+Base.similar{SS,V,T,S}(H::HierarchicalVector{SS,V,T}, ::Type{S}) =
+    HierarchicalVector(map(A->similar(A,S),data(H)))
+Base.similar{SS,V,T}(H::HierarchicalVector{SS,V,T}, S) =
+    HierarchicalVector(map(A->similar(A,S),data(H)))
 
 data(H::HierarchicalVector) = H.data
 
@@ -86,14 +89,28 @@ function Base.getindex{S<:Union{Number,AbstractVector}}(H::HierarchicalVector{S}
     H1,H2 = data(H)
     m1,m2 = length(H1),length(H2)
     if 1 ≤ i ≤ m1
-        return getindex(H1,i)
+        return H1[i]
     elseif m1 < i ≤ m1+m2
-        return getindex(H2,i-m1)
+        return H2[i-m1]
     else
         throw(BoundsError())
     end
 end
-Base.getindex{S<:Union{Number,AbstractVector}}(H::HierarchicalVector{S},ir::Range) = eltype(H)[H[i] for i=ir]
+
+function Base.setindex!{S<:Union{Number,AbstractVector}}(H::HierarchicalVector{S},v,i::Int)
+    H1,H2 = data(H)
+    m1,m2 = length(H1),length(H2)
+    if 1 ≤ i ≤ m1
+        H1[i] = v
+    elseif m1 < i ≤ m1+m2
+        H2[i-m1] = v
+    else
+        throw(BoundsError())
+    end
+end
+
+Base.getindex{S<:Union{Number,AbstractVector}}(H::HierarchicalVector{S},ir::Range) =
+    eltype(H)[H[i] for i=ir]
 Base.full{S<:Union{Number,AbstractVector}}(H::HierarchicalVector{S})=H[1:size(H,1)]
 
 # algebra

@@ -1,9 +1,9 @@
-const colours = Dict(0=>"k",1=>"r",2=>"g",3=>"b",4=>"c",5=>"m",6=>"y",7=>"orange")
+const colours = Dict(0=>:black,1=>:red,2=>:green,3=>:blue,4=>:cyan,5=>:magenta,6=>:yellow,7=>:orange)
 
 ## HierarchicalDomain
 
-function ApproxFun.plot(H::HierarchicalDomain;kwds...)
+@recipe function f(H::HierarchicalDomain)
     H1,H2 = partition(H)
-    ApproxFun.plot(H1;kwds...)
-    ApproxFun.plot(H2;kwds...)
+    @series begin H1 end
+    @series begin H2 end
 end

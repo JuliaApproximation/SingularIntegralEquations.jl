@@ -1,5 +1,6 @@
 include("Hilbert.jl")
 include("OffHilbert.jl")
+include("Convolution.jl")
 include("LowRankIntegralOperator.jl")
 include("HierarchicalDSF.jl")
 include("HierarchicalOperator.jl")

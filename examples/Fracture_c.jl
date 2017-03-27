@@ -18,11 +18,13 @@ f = -Fun(one)
 
 uSIE = [B;L]\[zeros(4);f]
 @time uSIE = [B;L]\[zeros(4);f]
-println("The length of uSIE is: ",length(uSIE))
+println("The length of uSIE is: ",ncoefficients(uSIE))
 println("The extrema of uSIE are: ",extrema(uSIE))
 
 test0 = uSIE/(1-x^2)^2
-test = Fun(x->test0(x),Ultraspherical{1}(d))
+test = Fun(x->test0(x),Ultraspherical(1,d))
 temp = 0.0
-[temp+= i*test.coefficients[i] for i=1:length(test)];
+for i=1:ncoefficients(test)
+    temp += i*test.coefficients[i]
+end
 println("The normalized generalized Stress Intensity Factors are: ",3ϵ*temp)

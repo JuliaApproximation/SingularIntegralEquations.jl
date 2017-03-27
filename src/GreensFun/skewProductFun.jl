@@ -5,7 +5,9 @@ export skewProductFun, skewpoints, skewtransform!, iskewtransform!
 # in a TensorSpace of two of the same spaces.
 #
 
-function skewProductFun{D1,D2}(f::Function,sp::TensorSpace{Tuple{Chebyshev{D1},Chebyshev{D2}}};tol=100eps())
+skewProductFun(f::Function,args...;kwds...) = skewProductFun(F(f),args...;kwds...)
+
+function skewProductFun{D1,D2}(f::F,sp::TensorSpace{Tuple{Chebyshev{D1},Chebyshev{D2}}};tol=100eps())
     for logn = 4:10
         X = coefficients(skewProductFun(f,sp,2^logn,2^logn+1;tol=tol))
         if size(X,1)<2^logn && size(X,2)<2^logn+1
@@ -16,7 +18,7 @@ function skewProductFun{D1,D2}(f::Function,sp::TensorSpace{Tuple{Chebyshev{D1},C
     skewProductFun(f,sp,2^11,2^11+1;tol=tol)
 end
 
-function skewProductFun{D1,D2}(f::Function,sp::TensorSpace{Tuple{Laurent{D1},Laurent{D2}}};tol=100eps())
+function skewProductFun{D1,D2}(f::F,sp::TensorSpace{Tuple{Laurent{D1},Laurent{D2}}};tol=100eps())
     for logn = 4:10
         X = coefficients(skewProductFun(f,sp,2^logn,2^logn;tol=tol))
         if size(X,1)<2^logn && size(X,2)<2^logn
@@ -27,7 +29,7 @@ function skewProductFun{D1,D2}(f::Function,sp::TensorSpace{Tuple{Laurent{D1},Lau
     skewProductFun(f,sp,2^11,2^11;tol=tol)
 end
 
-function skewProductFun(f::Function,S::TensorSpace,M::Integer,N::Integer;tol=100eps())
+function skewProductFun(f::F,S::TensorSpace,M::Integer,N::Integer;tol=100eps())
     xy = ApproxFun.checkpoints(S)
     T = promote_type(eltype(f(first(xy)...)),eltype(S))
     ptsx,ptsy=skewpoints(S,M,N)
@@ -40,12 +42,12 @@ function skewtransform!{T,D1,D2}(S::TensorSpace{Tuple{Chebyshev{D1},Chebyshev{D2
 
     planc=plan_chebyshevtransform(M[:,1];kind=kindx)
     for k=1:size(M,2)
-        M[:,k]=chebyshevtransform(M[:,k],planc;kind=kindx)
+        M[:,k]=planc*M[:,k]
     end
 
     planr=plan_chebyshevtransform(vec(M[1,:]);kind=kindy)
     for k=1:n
-        M[k,:]=chebyshevtransform(vec(M[k,:]),planr;kind=kindy)
+        M[k,:]=planr*vec(M[k,:])
     end
     M
 end
@@ -55,12 +57,12 @@ function iskewtransform!{T,D1,D2}(S::TensorSpace{Tuple{Chebyshev{D1},Chebyshev{D
 
     planc=plan_ichebyshevtransform(M[:,1];kind=kindx)
     for k=1:size(M,2)
-        M[:,k]=ichebyshevtransform(M[:,k],planc;kind=kindx)
+        M[:,k]=planc*M[:,k]
     end
 
     planr=plan_ichebyshevtransform(vec(M[1,:]);kind=kindy)
     for k=1:n
-        M[k,:]=ichebyshevtransform(vec(M[k,:]),planr;kind=kindy)
+        M[k,:]=planr*vec(M[k,:])
     end
     M
 end

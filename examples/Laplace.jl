@@ -10,18 +10,18 @@
 using ApproxFun, SingularIntegralEquations
 
 z_s = 2.0
-ui(x,y) = logabs(complex(x,y)-z_s)
-g1(x,y) = 1/2
+ui = (x,y) -> logabs(complex(x,y)-z_s)
+g1 = (x,y) -> 1/2
 
 # Set the domains.
 N = 10
 r = 1e-1
-cr = exp(im*2π*(0:N-1)/N)
+cr = exp.(im*2π*(0:N-1)/N)
 crl = (1-2im*r)cr
 crr = (1+2im*r)cr
-dom = ∪(Interval,crl,crr) # All infinitesimal plates
+dom = ∪(Segment.(crl,crr)) # All infinitesimal plates
 #dom = ∪(Circle,cr,ones(length(cr))r) # All wires
-#dom = ∪(Interval,crl[1:2:end],crr[1:2:end]) ∪ ∪(Circle,cr[2:2:end],ones(length(cr[2:2:end]))r) # Interlaced wires and plates
+#dom = ∪(Segment.(crl[1:2:end],crr[1:2:end])) ∪ ∪(Circle,cr[2:2:end],ones(length(cr[2:2:end]))r) # Interlaced wires and plates
 
 sp = Space(dom)
 cwsp = CauchyWeight(sp⊗sp,0)
@@ -29,11 +29,10 @@ uiΓ,⨍ = Fun(t->ui(real(t),imag(t))+0im,sp),DefiniteLineIntegral(dom)
 
 @time G = GreensFun(g1,cwsp;method=:Cholesky)
 
-@time φ0,∂u∂n=[0 ⨍;1 ⨍[G]]\Any[0.,uiΓ]
+@time φ0,∂u∂n=[0 ⨍;1 ⨍[G]]\[0.;uiΓ]
 
-println("The length of ∂u∂n is: ",length(∂u∂n))
+println("The length of ∂u∂n is: ",ncoefficients(∂u∂n))
 
-us(x,y) = -logkernel(∂u∂n,complex(x,y))/2
-ut(x,y) = ui(x,y) + us(x,y)
+us = (x,y) -> -logkernel(∂u∂n,complex(x,y))/2
+ut = (x,y) -> ui(x,y) + us(x,y)
 println("This is the approximate gradient: ",((ut(1e-5,0.)-ut(-1e-5,0.))/2e-5))
-

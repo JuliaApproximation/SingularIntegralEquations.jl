@@ -5,7 +5,7 @@
 using ApproxFun, SingularIntegralEquations
 include("Fractureaux.jl")
 
-d = Interval(-1.,1.)
+d = Segment(-1.,1.)
 sp = Space(d)
 wsp = JacobiWeight(-.5,-.5,sp)
 ⨍ = DefiniteLineIntegral(wsp)
@@ -23,6 +23,6 @@ L,p = ⨍[K2+K0+K],-Fun(one,sp)
 
 uSIE = [B;L]\[zeros(2);p/G]
 @time uSIE = [B;L]\[zeros(2);p/G]
-println("The length of uSIE is: ",length(uSIE))
+println("The length of uSIE is: ",ncoefficients(uSIE))
 println("The extrema of uSIE are: ",extrema(uSIE))
 println("The normalized Stress Intensity Factors are: ",(uSIE/(1-x^2)/G(1))(-1),"  ",(uSIE/(1-x^2)/G(-1))(1))

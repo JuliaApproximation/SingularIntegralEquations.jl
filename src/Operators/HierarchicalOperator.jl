@@ -21,7 +21,7 @@ export HierarchicalOperator
 # top right, then followed recursively by top left and bottom right.
 ##
 
-type HierarchicalOperator{S,V,T,HS,HV} <: BandedOperator{T}
+type HierarchicalOperator{S,V,T,HS,HV} <: Operator{T}
     diagonaldata::HS
     offdiagonaldata::HV
 
@@ -29,8 +29,8 @@ type HierarchicalOperator{S,V,T,HS,HV} <: BandedOperator{T}
     factorization::PivotLDU{T,Matrix{T}} # Cache of factorization of A for pivot computation
     factored::Bool
 
-    function HierarchicalOperator(diagonaldata::HS,offdiagonaldata::HV)
-        H = new()
+    function (::Type{HierarchicalOperator{S,V,T,HS,HV}}){S,V,T,HS,HV}(diagonaldata::HS,offdiagonaldata::HV)
+        H = new{S,V,T,HS,HV}()
         H.diagonaldata = diagonaldata
         H.offdiagonaldata = offdiagonaldata
 
@@ -105,11 +105,11 @@ Base.ctranspose(H::HierarchicalOperator) = HierarchicalOperator(map(ctranspose,d
 Base.copy(H::HierarchicalOperator) = HierarchicalOperator(map(copy,diagonaldata(H)),map(copy,offdiagonaldata(H)))
 Base.copy!(H::HierarchicalOperator,J::HierarchicalOperator) = (map(copy!,diagonaldata(H),diagonaldata(J));map(copy!,offdiagonaldata(H),offdiagonaldata(J));H)
 
-Base.rank(A::Operator)=Inf
+Base.rank(A::Operator) = ∞
 
 function blockrank(H::HierarchicalOperator)
     m,n = blocksize(H)
-    A = Array{Number}(m,n)
+    A = Array{Any}(m,n)
     (m1,n1),(m2,n2) = map(blocksize,diagonaldata(H))
     r1,r2 = map(rank,offdiagonaldata(H))
     for j=1:n1,i=1:m2
@@ -119,11 +119,23 @@ function blockrank(H::HierarchicalOperator)
         A[i,j+n1] = r2
     end
     A11,A22 = map(blockrank,diagonaldata(H))
-    for j=1:n1,i=1:m1
-        A[i,j] = A11[i,j]
+    if typeof(A11) <: Infinity{Bool}
+        for j=1:n1,i=1:m1
+            A[i,j] = ∞
+        end
+    else
+        for j=1:n1,i=1:m1
+            A[i,j] = A11[i,j]
+        end
     end
-    for j=1:n2,i=1:m2
-        A[i+m1,j+n1] = A22[i,j]
+    if typeof(A22) <: Infinity{Bool}
+        for j=1:n2,i=1:m2
+            A[i+m1,j+n1] = ∞
+        end
+    else
+        for j=1:n2,i=1:m2
+            A[i+m1,j+n1] = A22[i,j]
+        end
     end
     A
 end

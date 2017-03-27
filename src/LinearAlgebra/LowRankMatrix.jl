@@ -54,7 +54,7 @@ function balance!{T}(U::Matrix{T},V::Matrix{T},m::Int,n::Int,r::Int)
         end
         uk,vk = sqrt(uk),sqrt(vk)
         σk = sqrt(uk*vk)
-        if abs2(uk) ≥ eps2(T)^2 && abs2(vk) ≥ eps2(T)^2
+        if abs2(uk) ≥ eps(T)^2 && abs2(vk) ≥ eps(T)^2
             uk,vk = σk/uk,σk/vk
             for i=1:m
                 @inbounds U[i,k] *= uk
@@ -70,7 +70,7 @@ end
 function refactorsvd!{S,T}(U::Matrix{S},Σ::Vector{T},V::Matrix{S})
     conj!(V)
     σmax = Σ[1]
-    r=max(1,count(s->s>10eps(T),Σ))
+    r=max(1,count(s->s>10σmax*eps(T),Σ))
     m,n = size(U,1),size(V,1)
     for k=1:r
         σk = sqrt(Σ[k])

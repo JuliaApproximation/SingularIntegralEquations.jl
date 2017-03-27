@@ -10,7 +10,7 @@
 hierarchicalsolve{U<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalOperator{U,V},f::Fun) = hierarchicalsolve(H,[f])[1]
 
 hierarchicalsolve(H::Operator,f::Fun) = H\f
-hierarchicalsolve{F<:Fun}(H::Operator,f::Vector{F}) = vec(H\transpose(f))
+hierarchicalsolve{F<:Fun}(H::Operator,f::Vector{F}) = map(g->H\g,f)#vec(H\transpose(f))
 
 function hierarchicalsolve{U<:Operator,V<:AbstractLowRankOperator,F<:Fun}(H::HierarchicalOperator{U,V},f::Vector{F})
     # Pre-compute Factorization
@@ -72,7 +72,7 @@ function factorize!{U<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalOpera
     H.factored = true
 end
 
-function fillpivotmatrix!{A1,A2,T}(A::Matrix{T},V12::Vector{Functional{T}},V21::Vector{Functional{T}},H22U21::Vector{Fun{A1,T}},H11U12::Vector{Fun{A2,T}})
+function fillpivotmatrix!{A1,A2,T}(A::Matrix{T},V12::Vector{Operator{T}},V21::Vector{Operator{T}},H22U21::Vector{Fun{A1,T}},H11U12::Vector{Fun{A2,T}})
     r1,r2 = length(V12),length(V21)
     for i=1:r1,j=1:r2
         @inbounds A[i,j+r1] += V12[i]*H22U21[j]
@@ -83,12 +83,12 @@ end
 function fillpivotmatrix!{V1,V2,A1,A2,T}(A::Matrix{T},V12::Vector{Fun{V1,T}},V21::Vector{Fun{V2,T}},H22U21::Vector{Fun{A1,T}},H11U12::Vector{Fun{A2,T}})
     r1,r2 = length(V12),length(V21)
     for i=1:r1,j=1:r2
-        @inbounds A[i,j+r1] += linedotu(V12[i],H22U21[j])
-        @inbounds A[j+r2,i] += linedotu(V21[j],H11U12[i])
+        @inbounds A[i,j+r1] += linebilinearform(V12[i],H22U21[j])
+        @inbounds A[j+r2,i] += linebilinearform(V21[j],H11U12[i])
     end
 end
 
-function computepivots{A1,A2,T}(V12::Vector{Functional{T}},V21::Vector{Functional{T}},H11f1::Vector{Fun{A1,T}},H22f2::Vector{Fun{A2,T}},A::PivotLDU{T})
+function computepivots{A1,A2,T}(V12::Vector{Operator{T}},V21::Vector{Operator{T}},H11f1::Vector{Fun{A1,T}},H22f2::Vector{Fun{A2,T}},A::PivotLDU{T})
     @assert length(H11f1) == length(H22f2)
     nf,r1,r2 = length(H11f1),length(V12),length(V21)
     b1,b2 = zeros(T,r1,nf),zeros(T,r2,nf)
@@ -109,10 +109,10 @@ function computepivots{V1,V2,A1,A2,T}(V12::Vector{Fun{V1,T}},V21::Vector{Fun{V2,
     b1,b2 = zeros(T,r1,nf),zeros(T,r2,nf)
     for i=1:nf
         for j=1:r1
-            @inbounds b1[j,i] += linedotu(V12[j],H22f2[i])
+            @inbounds b1[j,i] += linebilinearform(V12[j],H22f2[i])
         end
         for j=1:r2
-            @inbounds b2[j,i] += linedotu(V21[j],H11f1[i])
+            @inbounds b2[j,i] += linebilinearform(V21[j],H11f1[i])
         end
     end
     A_ldiv_B1B2!(A,b1,b2)
