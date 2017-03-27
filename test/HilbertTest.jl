@@ -163,7 +163,7 @@ f=Fun(z->exp(exp(0.1im)*z+1/z),Laurent(Circle()))
 @test cauchy(f,0.5exp(0.2im)) ≈ -cauchy(reverseorientation(Fun(f,Fourier)),0.5exp(0.2im))
 @test cauchy(f,0.5exp(0.2im)) ≈ (OffHilbert(space(f),Laurent(Circle(0.5)))*f)(0.5exp(0.2im))/(2im)
 
-testbandedoperator(OffHilbert(space(f),Laurent(Circle(0.5))))
+@time testbandedoperator(OffHilbert(space(f),Laurent(Circle(0.5))))
 
 f=Fun(z->exp(exp(0.1im)*z+1/(z-1.)),Laurent(Circle(1.,0.5)))
 @test cauchy(f,0.5exp(0.2im)) ≈ cauchy(Fun(f,Fourier),0.5exp(0.2im))
@@ -171,8 +171,8 @@ f=Fun(z->exp(exp(0.1im)*z+1/(z-1.)),Laurent(Circle(1.,0.5)))
 @test cauchy(f,0.5exp(0.2im)) ≈ -cauchy(reverseorientation(Fun(f,Fourier)),0.5exp(0.2im))
 
 
-testbandedoperator(Hilbert(Laurent(Circle())))
-testbandedoperator(Hilbert(Fourier(Circle())))
+@time testbandedoperator(Hilbert(Laurent(Circle())))
+@time testbandedoperator(Hilbert(Fourier(Circle())))
 
 Γ=Circle()∪Circle(0.5)
 f=depiece([Fun(z->z^(-1),Γ[1]),Fun(z->z,Γ[2])])
@@ -182,7 +182,7 @@ S=ApproxFun.choosedomainspace(A,(f-Fun(one,space(f))))
 AS=ApproxFun.promotedomainspace(A,S)
 
 
-testblockbandedoperator(AS)
+@time testblockbandedoperator(AS)
 
 
 u=A\(f-Fun(one,space(f)))
@@ -199,12 +199,12 @@ d2=Circle(c2,r2)
 z=Fun(identity,d2);
 C=Cauchy(Space(d1),Space(d2))
 
-testbandedoperator(C)
+@time testbandedoperator(C)
 
 @test norm((C*Fun(exp,d1)-Fun(exp,d2)).coefficients)<100eps()
 
 C2=Cauchy(Space(d2),Space(d1))
-testbandedoperator(C2)
+@time testbandedoperator(C2)
 
 @test norm((C2*Fun(z->exp(1/z)-1,d2)+Fun(z->exp(1/z)-1,d1)).coefficients)<100000eps()
 
@@ -214,7 +214,7 @@ d1=Circle(c1,r1)
 d2=Circle(c2,r2)
 @test norm((Cauchy(d1,d2)*Fun(z->exp(1/z)-1,d1)+Fun(z->exp(1/z)-1,d2)).coefficients)<2000eps()
 
-testbandedoperator(Cauchy(d1,d2))
+@time testbandedoperator(Cauchy(d1,d2))
 
 # complex contour
 
