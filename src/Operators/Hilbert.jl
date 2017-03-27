@@ -308,8 +308,6 @@ end
 
 ## PeriodicInterval
 
-complexlength(d::PeriodicInterval) = d.b-d.a
-
 function addentries!{DD<:PeriodicInterval}(H::ConcreteHilbert{Taylor{DD}},A,kr::Range,::Colon)
     d = domain(H)
     a,b = d.a,d.b
