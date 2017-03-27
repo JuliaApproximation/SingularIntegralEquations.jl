@@ -5,7 +5,7 @@ export ∇n
 function gradient(f::Function,Γ::Domain)
     fx = Fun(x->f(DualNumbers.Dual(real(x),1),imag(x)),Γ)
     fy = Fun(x->f(real(x),DualNumbers.Dual(imag(x),1)),Γ)
-    Fun(Γ,DualNumbers.epsilon(fx.coefficients)),Fun(Γ,DualNumbers.epsilon(fy.coefficients))
+    Fun(Γ,DualNumbers.epsilon.(fx.coefficients)),Fun(Γ,DualNumbers.epsilon.(fy.coefficients))
 end
 
 ∇n(f::Function,d::Domain) = normalderivative(f,d)

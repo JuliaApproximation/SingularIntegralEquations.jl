@@ -3,9 +3,10 @@ if !isdefined(:scatteraux_loaded)
     global scatteraux_loaded = true
 
 
-    import Base.⋅
+    import Base.⋅, Base./
 
     ⋅(d,z) = d[1]*z[1]+d[2]*z[2]
+    /{S,T}(d::Tuple{S,S},z::T) = (d[1]/z,d[2]/z)
 
     function g3neumann(x,y,k)
       z = k*abs(y-x)

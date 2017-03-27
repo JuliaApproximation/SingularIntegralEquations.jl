@@ -9,9 +9,9 @@ type HierarchicalDomain{S,T,HS} <: ApproxFun.UnivariateDomain{T}
     (::Type{HierarchicalDomain{S,T,HS}}){S,T,HS}(data::HS) = new{S,T,HS}(data)
 end
 
-type HierarchicalSpace{S,T,HS,D} <: ApproxFun.UnivariateSpace{T,D}
+type HierarchicalSpace{S,T,HS} <: ApproxFun.UnivariateSpace{T,ApproxFun.AnyDomain}
     data::HS
-    (::Type{HierarchicalSpace{S,T,HS,D}}){S,T,HS,D}(data::HS) = new{S,T,HS,D}(data)
+    (::Type{HierarchicalSpace{S,T,HS}}){S,T,HS}(data::HS) = new{S,T,HS}(data)
 end
 
 type HierarchicalFun{S,T,HS}
@@ -24,7 +24,7 @@ for HDSF in (:HierarchicalDomain,:HierarchicalSpace,:HierarchicalFun)
     @eval begin
         export $HDSF
 
-        if $HDSF == HierarchicalSpace
+        if false #$HDSF == HierarchicalSpace
             $HDSF{S1,S2}(data::Tuple{S1,S2}) = $HDSF{promote_type(S1,S2),promote_type(eltype(S1),eltype(S2)),Tuple{S1,S2},typeof(HierarchicalDomain((domain(data[1]),domain(data[2]))))}(data)
             $HDSF{S1,S2,T1,T2,HS1,HS2,D1,D2}(data::Tuple{$HDSF{S1,T1,HS1,D1},$HDSF{S2,T2,HS2,D2}}) = $HDSF{promote_type(S1,S2),promote_type(eltype(S1),eltype(S2),T1,T2),Tuple{$HDSF{S1,T1,HS1,D1},$HDSF{S2,T2,HS2,D2}},typeof(HierarchicalDomain((domain(data[1]),domain(data[2]))))}(data)
             $HDSF{S,S1,T,HS,D}(data::Tuple{S1,$HDSF{S,T,HS,D}}) = $HDSF{promote_type(S,S1),promote_type(eltype(S),eltype(S1),T),Tuple{S1,$HDSF{S,T,HS,D}},typeof(HierarchicalDomain((domain(data[1]),domain(data[2]))))}(data)

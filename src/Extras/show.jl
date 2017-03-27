@@ -81,6 +81,7 @@ if VERSION < v"0.5.0-dev+4340" # hack for now
         Base.print_matrix(io,blockrank(H),(s = Base.tty_size(); (s[1]-4, s[2])),"["," ","]")
     end
 else
+    Base.alignment(io::IO, x::Infinity) = (1,0)
     function Base.show{F<:GreensFun,L<:LowRankFun,T}(io::IO, ::MIME"text/plain", H::HierarchicalMatrix{F,GreensFun{L,T}})
         print(io,"$(nlevels(H))-level HierarchicalMatrix of GreensFun's with blockwise ranks:\n")
         Base.print_matrix(io,blockrank(H),"["," ","]")
