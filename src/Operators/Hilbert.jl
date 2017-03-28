@@ -308,62 +308,68 @@ end
 
 ## PeriodicInterval
 
-function addentries!{DD<:PeriodicInterval}(H::ConcreteHilbert{Taylor{DD}},A,kr::Range,::Colon)
+function getindex{DD<:PeriodicInterval,OT,T}(H::ConcreteHilbert{Taylor{DD},OT,T},k::Integer,j::Integer)
     d = domain(H)
     a,b = d.a,d.b
     if H.order == 1
-        for k=kr
-            if k>1
-                A[k,k]+=im
+        if k>1
+            if k == j
+                T(im)
+            else
+                zero(T)
             end
+        else
+            zero(T)
         end
     else
         error("Hilbert order $(H.order) not implemented for Taylor")
     end
-
-    A
 end
 
-function addentries!{DD<:PeriodicInterval}(H::ConcreteHilbert{Hardy{false,DD}},A,kr::Range,::Colon)
+function getindex{DD<:PeriodicInterval,OT,T}(H::ConcreteHilbert{Hardy{false,DD},OT,T},k::Integer,j::Integer)
     d = domain(H)
     a,b = d.a,d.b
     if H.order == 1
-        for k=kr
-            A[k,k]-=im
+        if k>1
+            if k == j
+                T(-im)
+            else
+                zero(T)
+            end
+        else
+            zero(T)
         end
     else
         error("Hilbert order $(H.order) not implemented for Hardy{false}")
     end
-
-    A
 end
 
-function addentries!{DD<:PeriodicInterval}(H::ConcreteHilbert{CosSpace{DD}},A,kr::Range,::Colon)
+function getindex{DD<:PeriodicInterval,OT,T}(H::ConcreteHilbert{CosSpace{DD},OT,T},k::Integer,j::Integer)
     d = domain(H)
     a,b = d.a,d.b
     if H.order == 1
-        for k=kr
-            A[k,k+1]-=1
+        if k == j-1
+            -one(T)
+        else
+            zero(T)
         end
     else
         error("Hilbert order $(H.order) not implemented for CosSpace")
     end
-
-    A
 end
 
-function addentries!{DD<:PeriodicInterval}(H::ConcreteHilbert{SinSpace{DD}},A,kr::Range,::Colon)
+function getindex{DD<:PeriodicInterval,OT,T}(H::ConcreteHilbert{SinSpace{DD},OT,T},k::Integer,j::Integer)
     d = domain(H)
     a,b = d.a,d.b
     if H.order == 1
-        for k=kr
-            A[k,k-1]+=1
+        if k == j+1
+            one(T)
+        else
+            zero(T)
         end
     else
         error("Hilbert order $(H.order) not implemented for CosSpace")
     end
-
-    A
 end
 
 ## JacobiWeight
