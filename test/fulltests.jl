@@ -4,6 +4,10 @@ using ApproxFun, SingularIntegralEquations, Base.Test
 include("runtests.jl")
 
 
+
+
+
+
 println("Full tests")
 ## Memory CurveTests
 
@@ -53,3 +57,11 @@ u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 println("Example Tests")
 
 include("ExamplesTest.jl")
+
+
+println("WienerHopfTest")
+include("WienerHopfTest.jl")
+
+
+println("Ideal Fluid Flow tests")
+include("IdealFluidFlowTest.jl")
