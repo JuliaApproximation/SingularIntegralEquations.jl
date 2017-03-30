@@ -24,7 +24,7 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
                   BandedMatrix,ChebyshevDirichlet,PolynomialSpace,AbstractProductSpace,evaluate,order,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace, MultivariateFun, BivariateFun,linesum,complexlength,
                   Fun, ProductFun, LowRankFun, mappoint, JacobiZ,
-                  real, UnivariateSpace, RealUnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, BlockOperator,
+                  real, UnivariateSpace, RealUnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger,
                   ConstantSpace,ReOperator,DirectSumSpace, ArraySpace, ZeroSpace,
                   LowRankPertOperator, LaurentDirichlet, setcanonicaldomain, SubSpace,
                   IntervalCurve,PeriodicCurve, reverseorientation, op_eltype, @wrapper, mobius,

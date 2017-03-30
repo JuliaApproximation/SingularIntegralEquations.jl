@@ -129,7 +129,7 @@ function Hilbert{C<:IntervalCurve,SS}(S::JacobiWeight{SS,C},k::Int)
     end
 
     K=hcat(cols...)
-    A=Σ+SpaceOperator(FiniteOperator(K),csp,rs)
+    A=Σ+FiniteOperator(K,csp,rs)
 
     # Multiply by |r'(t)| to get arclength
 
@@ -165,7 +165,7 @@ function SingularIntegral{CC<:Chebyshev,TTT,TT}(S::JacobiWeight{TTT,IntervalCurv
     end
 
     K=hcat(cols...)
-    A=Σ+SpaceOperator(FiniteOperator(K),csp,rs)+(logabs(b)/π)*DefiniteLineIntegral(csp)
+    A=Σ+FiniteOperator(K,csp,rs)+(logabs(b)/π)*DefiniteLineIntegral(csp)
 
     # Multiply by |r'(t)| to get arclength
     M=Multiplication(abs(fromcanonicalD(d,Fun(identity,csp))),csp)
