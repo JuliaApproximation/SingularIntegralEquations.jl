@@ -15,7 +15,7 @@ if !isdefined(:scatteraux_loaded)
       end
       ret
     end
-    @vectorize_2arg Number g3neumann
+
 
     function makegif(x,y,u,L;plotfunction=Main.Plots.PyPlot.contourf,seconds=1,cmap="seismic",vert=1)
         tm=string(time_ns())

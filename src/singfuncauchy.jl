@@ -22,7 +22,6 @@ sqrtx2real(z) = sqrtx2abs(z)*cos((angle(z-1)+angle(z+1))/2)
 x̄sqrtx2real(z) = sqrtx2abs(z)*abs(z)*cos((angle(z-1)+angle(z+1))/2-angle(z))
 
 
-@vectorize_1arg Number sqrtx2
 function sqrtx2(f::Fun)
     B = Evaluation(first(domain(f)))
     A = Derivative()-f*differentiate(f)/(f^2-1)
