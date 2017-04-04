@@ -33,7 +33,7 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
                   LowRankPertOperator, LaurentDirichlet, setcanonicaldomain, SubSpace,
                   IntervalCurve,PeriodicCurve, reverseorientation, op_eltype, @wrapper, mobius,
                   defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, refactorsvd!, SubOperator,
-                  Block, BlockBandedMatrix, BandedBlockBandedMatrix, F, Infinity
+                  Block, BlockBandedMatrix, BandedBlockBandedMatrix, F, Infinity, basistype
 
 import ApproxFun: testbandedoperator
 
