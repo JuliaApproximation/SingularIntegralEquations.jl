@@ -8,9 +8,13 @@ export cauchy, cauchyintegral, stieltjes, logkernel,
        stieltjesjacobimoment, logjacobimoment, singularintegral
 
 
-import Base: values,getindex,setindex!,*,.*,+,.+,-,.-,==,<,<=,>,
-                >=,./,/,.^,^,\,∪,transpose
+import Base: values,getindex,setindex!,*,+,-,==,<,<=,>,
+                >=,/,^,\,∪,transpose
 
+
+if VERSION < v"0.6.0-dev.1632"
+    import Base: .*, .+, .-, ./, .^
+end
 
 import BandedMatrices: bzeros
 

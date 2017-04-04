@@ -178,7 +178,7 @@ function blockrank(H::HierarchicalMatrix)
     A
 end
 
-for op in (:+,:-,:.+,:.-)
+for op in ( VERSION < v"0.6-" ? (:+,:-,:.+,:.-) : (:+,:-))
     @eval begin
         $op(H::HierarchicalMatrix) = HierarchicalMatrix(map($op,diagonaldata(H)),map($op,offdiagonaldata(H)))
         $op(H::HierarchicalMatrix,J::HierarchicalMatrix) = HierarchicalMatrix(map($op,diagonaldata(H),diagonaldata(J)),map($op,offdiagonaldata(H),offdiagonaldata(J)))

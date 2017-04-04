@@ -106,7 +106,7 @@ ApproxFun.depiece(H::HierarchicalFun) = depiece(map(depiece,data(H)))
 
 # algebra
 
-for op in (:+,:-,:.+,:.-,:.*)
+for op in ( VERSION < v"0.6-" ? (:+,:-,:.+,:.-,:.*) : (:+,:-))
     @eval begin
         $op(H::HierarchicalFun) = HierarchicalFun(map($op,data(H)))
         $op(H::HierarchicalFun,a::Number) = HierarchicalFun(($op(H.data[1],a),$op(H.data[2],a)))
@@ -132,7 +132,8 @@ Base.cumsum(H::HierarchicalFun) = HierarchicalFun((cumsum(H.data[1]),sum(H.data[
 Base.conj!(H::HierarchicalFun) = (map(conj!,data(H));H)
 Base.copy!(H::HierarchicalFun,J::HierarchicalFun) = (map(copy!,data(H),data(J));H)
 
-for op in (:(Base.zero),:(Base.ones),:(Base.abs),:(Base.abs2),:(Base.conj),:(Base.copy),:.^)
+for op in (VERSION < v"0.6-" ? (:(Base.zero),:(Base.ones),:(Base.abs),:(Base.abs2),:(Base.conj),:(Base.copy),:.^) :
+                    (:(Base.zero),:(Base.ones),:(Base.abs),:(Base.abs2),:(Base.conj),:(Base.copy)))
     @eval begin
         $op(H::HierarchicalFun) = HierarchicalFun(map($op,data(H)))
     end

@@ -16,7 +16,7 @@ Base.getindex{O,PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(C::CauchyWeight{O,Tup
     CauchyWeight(C.space[i,j],O)
 Base.transpose{O}(C::CauchyWeight{O}) = CauchyWeight(transpose(C.space),O)
 
-cauchyweight(O,x,y) = O == 0 ? logabs(y-x)/π : (y-x).^(-O)/π
+cauchyweight(O,x,y) = O == 0 ? logabs(y-x)/π : (y-x)^(-O)/π
 cauchyweight{O}(C::CauchyWeight{O},x,y) = cauchyweight(O,tocanonical(C,x,y)...)
 
 
