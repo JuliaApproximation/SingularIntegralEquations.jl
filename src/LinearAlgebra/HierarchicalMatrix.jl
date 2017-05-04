@@ -193,13 +193,14 @@ function *(H::HierarchicalMatrix, x::HierarchicalVector)
     T = promote_type(eltype(H),eltype(x))
     A_mul_B!(similar(x,T),H,x)
 end
-
-function Base.A_mul_B!(b::AbstractVector,D::Base.LinAlg.Diagonal,x::AbstractVector)
-    d = D.diag
-    for i=1:min(length(b),length(x))
-        @inbounds b[i] += d[i]*x[i]
+if VERSION < v"0.6-"
+    function Base.A_mul_B!(b::AbstractVector,D::Base.LinAlg.Diagonal,x::AbstractVector)
+        d = D.diag
+        for i=1:min(length(b),length(x))
+            @inbounds b[i] += d[i]*x[i]
+        end
+        b
     end
-    b
 end
 
 function Base.A_mul_B!(b::HierarchicalVector,H::HierarchicalMatrix,h::HierarchicalVector)
