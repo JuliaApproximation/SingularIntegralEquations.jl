@@ -120,7 +120,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
             end
 
             M=bzeros(promote_type(typeof(C),eltype(y)),l+1,n,l,u)
-            for k=1:n,j=1:ncoefficients(ret[k])
+            for k=1:n,j=1:min(l+1,ncoefficients(ret[k]))
                 M[j,k]=C*ret[k].coefficients[j]
             end
             $Op(M,ds,rs,ord)
@@ -169,7 +169,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
             end
 
             M=bzeros(promote_type(typeof(C),eltype(y)),l+3,n,l,u)
-            for k=1:n,j=1:ncoefficients(ret[k])
+            for k=1:n,j=1:min(l+3,ncoefficients(ret[k]))
                 M[j,k]=C*ret[k].coefficients[j]
             end
             $Op(M,ds,rs,ord)

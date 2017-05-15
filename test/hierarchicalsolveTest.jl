@@ -82,6 +82,10 @@ println("The hierarchical forward error norm is: ",norm(⨍[G]*u2-f))
 
 dom = Segment(-2.0,-1.0+0im)∪Segment(1.0,2.0+0im)∪Segment(-0.5-2im,0.5-2im)
 hdom = clustertree(dom)
+
+@test convert(typeof(hdom),hdom)  == hdom
+
+
 dom = UnionDomain(SingularIntegralEquations.collectdata(hdom))
 ⨍ = DefiniteLineIntegral(dom)
 f = Fun(x->logabs(x-5im),dom)
@@ -95,18 +99,15 @@ println("Adaptive QR  forward error norm is: ",norm(⨍[G]*u1-f))
 
 @test norm(⨍[G]*u1-f) < 300eps()
 
-# if VERSION ≥ v"0.5pre"
-#     warn("Skipping test in 0.5 due to error in type inference due to #265")
-# else
-    hsp = Space(hdom)
 
-    G1 = GreensFun((x,y)->0.5,CauchyWeight(hsp⊗hsp,0);method=:Cholesky)
-    H = ⨍[G1]
+hsp = Space(hdom)
 
-    @time u2 = H\f
-    @time u2 = H\f
+G1 = GreensFun((x,y)->0.5,CauchyWeight(hsp⊗hsp,0);method=:Cholesky)
+H = ⨍[G1]
 
-    println("The hierarchical forward error norm is: ",norm(⨍[G]*u2-f))
+@time u2 = H\f
+@time u2 = H\f
 
-    @test norm(⨍[G]*u2-f) < 10000eps()
-#end
+println("The hierarchical forward error norm is: ",norm(⨍[G]*u2-f))
+
+@test norm(⨍[G]*u2-f) < 10000eps()

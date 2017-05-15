@@ -1,8 +1,8 @@
 ## SingFun stieltjes
 
 export logabs
-logabs(z) = log.(abs2.(z))/2
-sqrtabs(z) = sqrt.(abs.(z))
+logabs(z) = log(abs2(z))/2
+sqrtabs(z) = sqrt(abs(z))
 
 # sqrtx2 is analytic continuation of sqrt(z^2-1)
 # with the oriented branch cut [-1,1]
@@ -22,7 +22,6 @@ sqrtx2real(z) = sqrtx2abs(z)*cos((angle(z-1)+angle(z+1))/2)
 x̄sqrtx2real(z) = sqrtx2abs(z)*abs(z)*cos((angle(z-1)+angle(z+1))/2-angle(z))
 
 
-@vectorize_1arg Number sqrtx2
 function sqrtx2(f::Fun)
     B = Evaluation(first(domain(f)))
     A = Derivative()-f*differentiate(f)/(f^2-1)

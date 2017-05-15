@@ -115,7 +115,7 @@ Base.full{S<:Union{Number,AbstractVector}}(H::HierarchicalVector{S})=H[1:size(H,
 
 # algebra
 
-for op in (:+,:-,:.+,:.-,:.*)
+for op in ( VERSION < v"0.6-" ? (:+,:-,:.+,:.-,:.*) : (:+,:-))
     @eval begin
         $op{S}(a::Bool,H::HierarchicalVector{S,Bool}) = error("Not callable")
         $op{S}(H::HierarchicalVector{S,Bool},a::Bool) = error("Not callable")
@@ -145,7 +145,8 @@ Base.cumsum(H::HierarchicalVector) = HierarchicalVector((cumsum(H.data[1]),sum(H
 Base.conj!(H::HierarchicalVector) = (map(conj!,data(H));H)
 Base.copy!(H::HierarchicalVector,J::HierarchicalVector) = (map(copy!,data(H),data(J));H)
 
-for op in (:(Base.zero),:(Base.ones),:(Base.abs),:(Base.abs2),:(Base.conj),:(Base.copy),:.^)
+for op in (VERSION < v"0.6-" ? (:(Base.zero),:(Base.ones),:(Base.abs),:(Base.abs2),:(Base.conj),:(Base.copy),:.^) :
+                            (:(Base.zero),:(Base.ones),:(Base.abs),:(Base.abs2),:(Base.conj),:(Base.copy)))
     @eval begin
         $op(H::HierarchicalVector) = HierarchicalVector(map($op,data(H)))
     end

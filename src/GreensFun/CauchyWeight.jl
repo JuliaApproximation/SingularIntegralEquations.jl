@@ -17,7 +17,7 @@ Base.getindex{O,PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(C::CauchyWeight{O,Tup
     CauchyWeight(C.space[i,j],O)
 Base.transpose{O}(C::CauchyWeight{O}) = CauchyWeight(transpose(C.space),O)
 
-cauchyweight(O,x,y) = O == 0 ? logabs(y-x)/π : (y-x).^(-O)/π
+cauchyweight(O,x,y) = O == 0 ? logabs(y-x)/π : (y-x)^(-O)/π
 cauchyweight{O}(C::CauchyWeight{O},x,y) = cauchyweight(O,tocanonical(C,x,y)...)
 
 
@@ -57,14 +57,14 @@ end
 for (Func,Op) in ((:(ApproxFun.DefiniteIntegral),:Hilbert),
                     (:(ApproxFun.DefiniteLineIntegral),:SingularIntegral))
     @eval begin
-        function Base.getindex{S,V,O,T,V1,T1,T2,DD}(⨍::$Func{V1,T1},f::ProductFun{S,V,CauchyWeight{O,Tuple{S,V},T2,DD},T})
+        function Base.getindex{S,V,O,T,T2,DD}(⨍::$Func,f::ProductFun{S,V,CauchyWeight{O,Tuple{S,V},T2,DD},T})
             if domain(f.space[1]) == domain(f.space[2])
                 $Op(domainspace(⨍),O)[f]
             else
                 ⨍[ProductFun(f.coefficients,f.space.space)]
             end
         end
-        function Base.getindex{S,M,O,T,V1,T1,T2,DD}(⨍::$Func{V1,T1},f::LowRankFun{S,M,CauchyWeight{O,Tuple{S,M},T2,DD},T})
+        function Base.getindex{S,M,O,T,T2,DD}(⨍::$Func,f::LowRankFun{S,M,CauchyWeight{O,Tuple{S,M},T2,DD},T})
             if domain(f.space[1]) == domain(f.space[2])
                 $Op(domainspace(⨍),O)[f]
             else

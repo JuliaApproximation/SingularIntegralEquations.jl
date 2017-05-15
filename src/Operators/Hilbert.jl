@@ -76,18 +76,6 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
             ChebyshevWeight(ChebyshevDirichlet{1,1}(domain(sp)))
         choosedomainspace(H::$Op{UnsetSpace},sp::PiecewiseSpace) =
             PiecewiseSpace(map(s->choosedomainspace(H,s),sp.spaces))
-
-
-
-        # BlockOperator [1 Hilbert()] which allows for bounded solutions
-        #TODO: Array values?
-        choosedomainspace{T,V}(P::BlockOperator{$ConcOp{UnsetSpace,T,V}},
-                               sp::Ultraspherical) =
-                ArraySpace([ConstantSpace(),JacobiWeight(0.5,0.5,Ultraspherical(1,domain(sp)))])
-
-        choosedomainspace{T,V,W}(P::BlockOperator{ReOperator{$ConcOp{UnsetSpace,T,V},W}},
-                               sp::Ultraspherical) =
-                ArraySpace([ConstantSpace(),JacobiWeight(0.5,0.5,Ultraspherical(1,domain(sp)))])
     end
 end
 

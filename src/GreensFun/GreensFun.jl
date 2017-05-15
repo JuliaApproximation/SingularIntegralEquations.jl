@@ -69,7 +69,7 @@ LowRankIntegralOperator{L<:LowRankFun}(G::GreensFun{L}) = LowRankIntegralOperato
 
 Base.promote_rule{K,T,K1,T1}(::Type{GreensFun{K,T}},::Type{GreensFun{K1,T1}}) = GreensFun{promote_type(K,K1),promote_type(T,T1)}
 
-defaultgetindex(⨍::Operator,G::GreensFun) = mapreduce(f->⨍[f],+,G.kernels)
+getindex(⨍::Operator,G::GreensFun) = mapreduce(f->⨍[f],+,G.kernels)
 
 # avoid ambiguity
 for TYP in (:(ApproxFun.DefiniteLineIntegralWrapper),:DefiniteLineIntegral)

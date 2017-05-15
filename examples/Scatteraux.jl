@@ -3,11 +3,6 @@ if !isdefined(:scatteraux_loaded)
     global scatteraux_loaded = true
 
 
-    import Base.⋅, Base./
-
-    ⋅(d,z) = d[1]*z[1]+d[2]*z[2]
-    /{S,T}(d::Tuple{S,S},z::T) = (d[1]/z,d[2]/z)
-
     function g3neumann(x,y,k)
       z = k*abs(y-x)
       if z < 1/16
@@ -20,7 +15,7 @@ if !isdefined(:scatteraux_loaded)
       end
       ret
     end
-    @vectorize_2arg Number g3neumann
+
 
     function logheatmap(A::AbstractMatrix,ϵ;kwds...)
         ltϵ = log10(ϵ)
@@ -52,12 +47,12 @@ if !isdefined(:scatteraux_loaded)
         MLen = seconds*fps
         for k=1:MLen
             t = 2π/ω*(k-1)/fps
-            Main.Plots.PyPlot.clf()
-            Main.Plots.PyPlot.axes(aspect="equal")
+            Main.PyPlot.clf()
+            Main.PyPlot.axes(aspect="equal")
             plot!(dom;color=:black,legend=false)
             plotfunction(x,y,real(u*exp(-im*ω*t)),L;vmin=-umax*vert,vmax=umax*vert,cmap="seismic")
             xlabel!("\$x\$");ylabel!("\$y\$")
-            Main.Plots.PyPlot.savefig(dr * "/" * lpad(k,max(4,ceil(Int,log10(MLen))),0) * ".png";dpi=150,bbox_inches="tight")
+            Main.PyPlot.savefig(dr * "/" * lpad(k,max(4,ceil(Int,log10(MLen))),0) * ".png";dpi=150,bbox_inches="tight")
         end
         # Requires: brew install imagemagick
         run(`convert -delay 6 -loop 0 $dr/*.png $dr/scattering.gif`)

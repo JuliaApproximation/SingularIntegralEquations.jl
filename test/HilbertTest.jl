@@ -174,7 +174,10 @@ f=Fun(z->exp(exp(0.1im)*z+1/(z-1.)),Laurent(Circle(1.,0.5)))
 @time testbandedoperator(Hilbert(Laurent(Circle())))
 @time testbandedoperator(Hilbert(Fourier(Circle())))
 
-Γ=Circle()∪Circle(0.5)
+
+println("    Two circle test 1")
+
+Γ=Circle() ∪ Circle(0.5)
 f=depiece([Fun(z->z^(-1),Γ[1]),Fun(z->z,Γ[2])])
 A=I-(f-Fun(one,space(f)))*Cauchy(-1)
 
@@ -192,6 +195,8 @@ u=A\(f-Fun(one,space(f)))
 @test 1+cauchy(u,.8) ≈ 1/0.8
 @test 1+cauchy(u,2.) ≈ 1
 
+println("    Two circle test 3")
+
 c1=0.5+0.1;r1=3.;
 c2=-0.1+.2im;r2=0.3;
 d1=Circle(c1,r1)
@@ -208,6 +213,8 @@ C2=Cauchy(Space(d2),Space(d1))
 
 @test norm((C2*Fun(z->exp(1/z)-1,d2)+Fun(z->exp(1/z)-1,d1)).coefficients)<100000eps()
 
+println("    Two circle test 3")
+
 c1=0.1+.1im;r1=.4;
 c2=-2.+.2im;r2=0.3;
 d1=Circle(c1,r1)
@@ -218,6 +225,7 @@ d2=Circle(c2,r2)
 
 # complex contour
 
+println("   Legendre test")
 
 #Legendre uses FastGaussQuadrature
 f=Fun(exp,Legendre())

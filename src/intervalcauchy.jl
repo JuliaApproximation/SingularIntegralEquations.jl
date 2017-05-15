@@ -75,7 +75,7 @@ function stieltjes{SS,L<:Line}(S::Space{SS,L},f,z)
     if domain(S)==Line()
         # TODO: rename tocanonical
         stieltjes(setcanonicaldomain(S),f,tocanonical(S,z)) +
-            stieltjes(setcanonicaldomain(S),f,(-1-sqrt(1+4z.^2))./(2z))
+            stieltjes(setcanonicaldomain(S),f,(-1-sqrt(1+4z^2))/(2z))
     else
         stieltjes(setdomain(S,Line()),f,mappoint(domain(S),Line(),z))
     end

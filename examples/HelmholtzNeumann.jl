@@ -14,7 +14,7 @@ k = 50.
 ω = 2π
 d = (1,-1)
 d = d[1]/hypot(d[1],d[2]),d[2]/hypot(d[1],d[2])
-ui = (x,y) -> exp(im*k*(d⋅(x,y)))
+ui = (x,y) -> exp(im*k*(d[1]*x+d[2]*y))
 
 # The Helmholtz Green's function, split into singular and nonsingular pieces.
 g1 = (x,y) ->  besselj0(k*abs(y-x))/2

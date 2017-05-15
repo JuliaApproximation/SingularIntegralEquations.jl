@@ -8,9 +8,13 @@ export cauchy, cauchyintegral, stieltjes, logkernel,
        stieltjesjacobimoment, logjacobimoment, singularintegral
 
 
-import Base: values,getindex,setindex!,*,.*,+,.+,-,.-,==,<,<=,>,
-                >=,./,/,.^,^,\,∪,transpose
+import Base: values,getindex,setindex!,*,+,-,==,<,<=,>,
+                >=,/,^,\,∪,transpose
 
+
+if VERSION < v"0.6.0-dev.1632"
+    import Base: .*, .+, .-, ./, .^
+end
 
 import BandedMatrices: bzeros
 
@@ -24,12 +28,12 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
                   BandedMatrix,ChebyshevDirichlet,PolynomialSpace,AbstractProductSpace,evaluate,order,
                   RealBasis,ComplexBasis,AnyBasis,UnsetSpace, MultivariateFun, BivariateFun,linesum,complexlength,
                   Fun, ProductFun, LowRankFun, mappoint, JacobiZ,
-                  real, UnivariateSpace, RealUnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger, BlockOperator,
+                  real, UnivariateSpace, RealUnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger,
                   ConstantSpace,ReOperator,DirectSumSpace, ArraySpace, ZeroSpace,
                   LowRankPertOperator, LaurentDirichlet, setcanonicaldomain, SubSpace,
                   IntervalCurve,PeriodicCurve, reverseorientation, op_eltype, @wrapper, mobius,
                   defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, refactorsvd!, SubOperator,
-                  Block, BlockBandedMatrix, BandedBlockBandedMatrix, F, Infinity
+                  Block, BlockBandedMatrix, BandedBlockBandedMatrix, F, Infinity, basistype
 
 import ApproxFun: testbandedoperator
 
