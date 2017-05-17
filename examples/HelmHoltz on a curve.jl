@@ -1,4 +1,5 @@
-using ApproxFun, SingularIntegralEquations, Plots
+using ApproxFun, SingularIntegralEquations , Plots
+gr()
 
 
 k = 50.
@@ -15,8 +16,135 @@ g2 = (x,y) -> x == y ? -(log(k/2)+γ)/2/π + im/4 : im/4*hankelh1(0,k*abs(y-x)) 
 
 Γ = Curve(Fun(x->x+im*x^3))
 
+#Γ = Segment(0.,1.0+im)
+
 sp = Space(Γ)
 cwsp = CauchyWeight(sp⊗sp,0)
+uiΓ,⨍ = Fun(t->ui(real(t),imag(t)),sp),DefiniteLineIntegral(Γ)
+
+@time G = GreensFun(g1,cwsp;method=:Cholesky) + GreensFun(g2,sp⊗sp;method=:Cholesky)
+
+@time ∂u∂n = ⨍[G]\uiΓ
+
+
+N=100
+x = linspace(-3,3,N);y = linspace(-2,2,N)
+x = linspace(-4,3,N);y = linspace(-2,6,N)
+
+us = (x,y) -> -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y))
+
+
+@time uvals = ui.(x,y') .+ us.(x,y')
+
+contourf(x,y,real(uvals'))
+    plot!(Γ)
+
+
+
+
+
+t=0.2;uiΓ(t+im*t^3)
+s = Fun(domain(∂u∂n))
+z = 1+2im
+
+
+linesum(∂u∂n*g1.(z,s)*logabs(s-z))/π
+
+logkernel(∂u∂n*g1.(z,s),z)
+
+linesum(g2,∂u∂n,z)
+
+
+
+
+
+
+linesum(∂u∂n*g2.(z,s))
+
+logkernel(g1,∂u∂n,z)-linesum(g2,∂u∂n,z)/π
+
+t=0.2
+z = t+im*t^3
+uiΓ(z)
+
+
+
+@which g1(z,s)
+
+
+u = ∂u∂n
+sp,n=space(u),2ncoefficients(u)
+G=g1
+typeof(u)
+vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(sp,n)
+
+
+p = plan_chebyshevtransform(complex(vals))
+
+
+g1.(z,s)
+g1(z,s)
+
+
+Fun(sp,p*(G.(z,t)))
+
+
+return map(z->logkernel(Fun(sp,p*(G.(z,t).*vals)),z),z)
+
+
+ncoefficients(∂u∂n)
+
+
+ui(t,t^3)
+
+
+⨍[G]*∂u∂n-uiΓ
+z=1.0+2.0im
+
+∂u∂n|>ncoefficients
+@which logkernel(g1,∂u∂n,complex(t,t^3))
+
+u=∂u∂n
+
+
+
+
+
+logkernel(g1,∂u∂n,1+2im)
+
+
+sp,n=space(u),2ncoefficients(u)
+vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(sp,n)
+p = plan_chebyshevtransform(complex(vals))
+return map(z->logkernel(Fun(sp,p*(G.(z,t).*vals)),z),z)
+
+
+
+z = Fun(Γ)
+
+@which logkernel(g1,∂u∂n,complex(1,2))
+
+
+
+
+
+println("The length of ∂u∂n is: ",ncoefficients(∂u∂n))
+us = (x,y) -> -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y))
+
+t=0.1;us(t,t^3)-ui(t,t^3)
+t=0.2;us(t,t^3)-ui(t,t^3)
+
+t=0.1;us(t,t)+ui(t,t)
+t=0.2;us(t,t)+ui(t,t)
+
+
+Γ = Curve(Fun(x->x+im*x^3)) ∪ Curve(Fun(x->x-1+im*(x^4+4)))
+
+plot(Γ)
+
+sp = Space(Γ)
+cwsp = CauchyWeight(sp⊗sp,0)
+
 uiΓ,⨍ = Fun(t->ui(real(t),imag(t)),sp),DefiniteLineIntegral(Γ)
 
 @time G = GreensFun(g1,cwsp;method=:Cholesky) + GreensFun(g2,sp⊗sp;method=:Cholesky)
@@ -25,4 +153,96 @@ uiΓ,⨍ = Fun(t->ui(real(t),imag(t)),sp),DefiniteLineIntegral(Γ)
 println("The length of ∂u∂n is: ",ncoefficients(∂u∂n))
 us = (x,y) -> -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y))
 
+@time us(0.1,0.2)
+
+
+writecsv("dudncoeffs.csv",∂u∂n.coefficients)
+
+
+
+# on 0.5
+dsp = domainspace(DefiniteLineIntegral(Γ))
+cfs = eval.(parse.(vec(readcsv("/Users/solver/Desktop/dudncoeffs.csv"))))
+
+∂u∂n = Fun(dsp,chop!(cfs,1E-5))
+
+us = (x,y) -> -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y))
+
 us(0.1,0.2)
+
+
+N=300
+x = linspace(-4,3,N);y = linspace(-2,6,N)
+xx,yy = x.+0.*y',0.*x.+y'
+
+@time uvals = ui.(xx,yy) .+ us.(xx,yy)
+
+
+
+using Plots
+pyplot()
+
+plot(Γ;color="black")
+
+
+
+umax = maximum(abs,uvals)
+contourf(x,y,real(uvals).')#,cmap="cubehelix")
+    plot!(Γ;color="black")
+
+xlabel("\$x\$");ylabel("\$y\$");colorbar(ax=gca(),shrink=0.685)#515#2/3)
+savefig("ScatteringNeumannPDEplot.png";dpi=600,bbox_inches="tight")
+
+
+
+
+function makegif(x,y,u,L;plotfunction=Main.PyPlot.contourf,seconds=1,cmap="seismic",vert=1)
+    tm=string(time_ns())
+    dr = pwd()*"/"*tm*"mov"
+    mkdir(dr)
+
+    umax = maxabs(u)
+    fps = 24
+    MLen = seconds*fps
+
+    tt = linspace(-1.,1.,100)
+
+    for k=1:MLen
+        t = 2π/ω*(k-1)/fps
+        Main.PyPlot.clf()
+        Main.PyPlot.axes(aspect="equal")
+        Main.PyPlot.plot(tt,tt.^3;color=:black)
+        Main.PyPlot.plot(tt-1,tt.^4.+4;color=:black)
+        plotfunction(x,y,real(u*exp(-im*ω*t)).';vmin=-umax*vert,vmax=umax*vert,cmap="seismic")
+        xlabel!("\$x\$");ylabel!("\$y\$")
+        Main.PyPlot.savefig(dr * "/" * lpad(k,max(4,ceil(Int,log10(MLen))),0) * ".png";dpi=150,bbox_inches="tight")
+    end
+    # Requires: brew install imagemagick
+    run(`convert -delay 6 -loop 0 $dr/*.png $dr/scattering.gif`)
+    run(`open $dr/scattering.gif`)
+end
+
+makegif(x,y,uvals,100;seconds=1,cmap="seismic",vert=0.5)
+
+
+
+
+fps = 24
+seconds=1
+MLen = seconds*fps
+
+k=MLen
+u=uvals;
+x=xx;y=yy;
+k=24
+    t = 2π/ω*(k-1)/fps
+    real(u*exp(-im*ω*t))
+    Main.PyPlot.contourf(x,y,real(u*exp(-im*ω*t)).')
+    plot!(Γ;color=:black,legend=false)
+xlabel!("\$x\$");ylabel!("\$y\$")
+
+tm=string(time_ns())
+dr = pwd()*"/"*tm*"mov"
+mkdir(dr)
+
+Main.PyPlot.savefig(dr * "/" * lpad(k,max(4,ceil(Int,log10(MLen))),0) * ".png";dpi=150,bbox_inches="tight")
