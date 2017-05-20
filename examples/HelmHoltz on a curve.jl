@@ -29,7 +29,6 @@ uiΓ,⨍ = Fun(t->ui(real(t),imag(t)),sp),DefiniteLineIntegral(Γ)
 
 N=100
 x = linspace(-3,3,N);y = linspace(-2,2,N)
-x = linspace(-4,3,N);y = linspace(-2,6,N)
 
 us = (x,y) -> -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y))
 
@@ -40,89 +39,6 @@ contourf(x,y,real(uvals'))
     plot!(Γ)
 
 
-
-
-
-t=0.2;uiΓ(t+im*t^3)
-s = Fun(domain(∂u∂n))
-z = 1+2im
-
-
-linesum(∂u∂n*g1.(z,s)*logabs(s-z))/π
-
-logkernel(∂u∂n*g1.(z,s),z)
-
-linesum(g2,∂u∂n,z)
-
-
-
-
-
-
-linesum(∂u∂n*g2.(z,s))
-
-logkernel(g1,∂u∂n,z)-linesum(g2,∂u∂n,z)/π
-
-t=0.2
-z = t+im*t^3
-uiΓ(z)
-
-
-
-@which g1(z,s)
-
-
-u = ∂u∂n
-sp,n=space(u),2ncoefficients(u)
-G=g1
-typeof(u)
-vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(sp,n)
-
-
-p = plan_chebyshevtransform(complex(vals))
-
-
-g1.(z,s)
-g1(z,s)
-
-
-Fun(sp,p*(G.(z,t)))
-
-
-return map(z->logkernel(Fun(sp,p*(G.(z,t).*vals)),z),z)
-
-
-ncoefficients(∂u∂n)
-
-
-ui(t,t^3)
-
-
-⨍[G]*∂u∂n-uiΓ
-z=1.0+2.0im
-
-∂u∂n|>ncoefficients
-@which logkernel(g1,∂u∂n,complex(t,t^3))
-
-u=∂u∂n
-
-
-
-
-
-logkernel(g1,∂u∂n,1+2im)
-
-
-sp,n=space(u),2ncoefficients(u)
-vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(sp,n)
-p = plan_chebyshevtransform(complex(vals))
-return map(z->logkernel(Fun(sp,p*(G.(z,t).*vals)),z),z)
-
-
-
-z = Fun(Γ)
-
-@which logkernel(g1,∂u∂n,complex(1,2))
 
 
 
@@ -152,6 +68,36 @@ uiΓ,⨍ = Fun(t->ui(real(t),imag(t)),sp),DefiniteLineIntegral(Γ)
 @time ∂u∂n = ⨍[G]\uiΓ
 println("The length of ∂u∂n is: ",ncoefficients(∂u∂n))
 us = (x,y) -> -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y))
+
+
+
+N=300
+x = linspace(-4,3,N);y = linspace(-2,6,N)
+
+us = (x,y) -> -logkernel(g1,∂u∂n,complex(x,y))-linesum(g2,∂u∂n,complex(x,y))
+
+
+@time uvals = ui.(x,y') .+ us.(x,y')
+
+
+writecsv("/Users/solver/Desktop/uvals.csv",uvals)
+
+
+
+contourf(x,y,real(uvals');legend=false,size=(1000,600))
+    plot!(Γ;color=:black)
+png("scat.png")
+
+
+
+
+
+
+
+
+
+3
+
 
 @time us(0.1,0.2)
 
