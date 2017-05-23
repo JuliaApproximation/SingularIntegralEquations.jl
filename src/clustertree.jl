@@ -3,7 +3,7 @@ export clustertree
 #
 # clustertree partitions a collection x by maximizing distances normalized by the
 # minimal diameter along coordinate axes in 2D. It uses complex numbers to represent
-# points in the plane R². The Admissibility condition for low-rank approximants to
+# points in the plane ℝ². The Admissibility condition for low-rank approximants to
 # asymptotically smooth kernels is:
 #
 # Adm_η(σ×τ) = min{diam(Γ_σ),diam(Γ_τ)} ≤ 2η dist(Γ_σ,Γ_τ),

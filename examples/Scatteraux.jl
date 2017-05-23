@@ -17,6 +17,26 @@ if !isdefined(:scatteraux_loaded)
     end
 
 
+    function logheatmap(A::AbstractMatrix,ϵ;kwds...)
+        ltϵ = log10(ϵ)
+        LGABSAt = [isinf(log10(abs(A[j,i]))) ? ltϵ : max(log10(abs(A[j,i])),ltϵ) for i=1:size(A,2),j=1:size(A,1)]
+        heatmap(flipdim(LGABSAt,1);kwds...)
+    end
+
+    function oscillate(u,T,glp)
+        push!(glp,u)
+        yield()
+        fps = 15
+        MLen = round(Int,T*fps)
+        t = inv(fps)
+        for k=1:MLen
+            u = u*exp(-im*2π*t)
+            push!(glp,u)
+            yield()
+        end
+        u
+    end
+
     function makegif(x,y,u,L;plotfunction=Main.Plots.PyPlot.contourf,seconds=1,cmap="seismic",vert=1)
         tm=string(time_ns())
         dr = pwd()*"/"*tm*"mov"

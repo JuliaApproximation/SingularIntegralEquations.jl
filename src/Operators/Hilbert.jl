@@ -41,7 +41,6 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
         end
 
         bandinds{s,DD}(::$ConcOp{Hardy{s,DD}})=0,0
-        domainspace{s,DD}(H::$ConcOp{Hardy{s,DD}})=H.space
         rangespace{s,DD}(H::$ConcOp{Hardy{s,DD}})=H.space
 
         bandinds{DD}(::$ConcOp{Laurent{DD}})=0,0
@@ -49,8 +48,13 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
         rangespace{DD}(H::$ConcOp{Laurent{DD}})=H.space
 
         bandinds{DD}(H::$ConcOp{Fourier{DD}})=-H.order,H.order
-        domainspace{DD}(H::$ConcOp{Fourier{DD}})=H.space
         rangespace{DD}(H::$ConcOp{Fourier{DD}})=H.space
+
+        bandinds{DD<:PeriodicInterval}(H::$ConcOp{CosSpace{DD}})=(0,1)
+        bandinds{DD<:PeriodicInterval}(H::$ConcOp{SinSpace{DD}})=(-1,0)
+        rangespace{DD<:PeriodicInterval}(H::$ConcOp{CosSpace{DD}})=SinSpace(domain(H))
+        rangespace{DD<:PeriodicInterval}(H::$ConcOp{SinSpace{DD}})=CosSpace(domain(H))
+
 
         function rangespace{DD}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD}})
             @assert domainspace(H).α==domainspace(H).β==-0.5
@@ -290,6 +294,71 @@ function getindex{DD<:Circle,OT,T}(H::ConcreteSingularIntegral{Fourier{DD},OT,T}
     end
 end
 
+## PeriodicInterval
+
+function getindex{DD<:PeriodicInterval,OT,T}(H::ConcreteHilbert{Taylor{DD},OT,T},k::Integer,j::Integer)
+    d = domain(H)
+    a,b = d.a,d.b
+    if H.order == 1
+        if k>1
+            if k == j
+                T(im)
+            else
+                zero(T)
+            end
+        else
+            zero(T)
+        end
+    else
+        error("Hilbert order $(H.order) not implemented for Taylor")
+    end
+end
+
+function getindex{DD<:PeriodicInterval,OT,T}(H::ConcreteHilbert{Hardy{false,DD},OT,T},k::Integer,j::Integer)
+    d = domain(H)
+    a,b = d.a,d.b
+    if H.order == 1
+        if k>1
+            if k == j
+                T(-im)
+            else
+                zero(T)
+            end
+        else
+            zero(T)
+        end
+    else
+        error("Hilbert order $(H.order) not implemented for Hardy{false}")
+    end
+end
+
+function getindex{DD<:PeriodicInterval,OT,T}(H::ConcreteHilbert{CosSpace{DD},OT,T},k::Integer,j::Integer)
+    d = domain(H)
+    a,b = d.a,d.b
+    if H.order == 1
+        if k == j-1
+            -one(T)
+        else
+            zero(T)
+        end
+    else
+        error("Hilbert order $(H.order) not implemented for CosSpace")
+    end
+end
+
+function getindex{DD<:PeriodicInterval,OT,T}(H::ConcreteHilbert{SinSpace{DD},OT,T},k::Integer,j::Integer)
+    d = domain(H)
+    a,b = d.a,d.b
+    if H.order == 1
+        if k == j+1
+            one(T)
+        else
+            zero(T)
+        end
+    else
+        error("Hilbert order $(H.order) not implemented for CosSpace")
+    end
+end
 
 ## JacobiWeight
 

@@ -7,6 +7,7 @@ immutable CauchyWeight{O,SV,T,DD} <: AbstractProductSpace{SV,T,DD,2}
 end
 
 CauchyWeight{SV,T,DD}(space::TensorSpace{SV,T,DD,2},O) = CauchyWeight{O,SV,T,DD}(space)
+CauchyWeight(domain::ProductDomain,O) = CauchyWeight(Space(domain),O)
 
 order{O}(C::CauchyWeight{O}) = O
 domain(C::CauchyWeight) = domain(C.space)

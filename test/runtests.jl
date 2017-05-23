@@ -31,6 +31,17 @@ for s in (true,false)
 end
 
 
+#
+# Hilbert transform on the real line for periodic functions on [a,b).
+# It is involutory, so H^2*f = - f, except it zeros the constant.
+#
+
+H = Hilbert()
+f = Fun(ones(20),Laurent(PeriodicInterval()))
+@test norm(H^2*f+f-1) == 0.0
+f = Fun(ones(20),Fourier(PeriodicInterval()))
+@test norm(H^2*f+f-1) == 0.0
+
 x=Fun()
 @test sum(logabs(x-2.0)) ≈ logabslegendremoment(2.0)
 @test sum(logabs(x-(2.0+im))) ≈ logabslegendremoment(2.0+im)

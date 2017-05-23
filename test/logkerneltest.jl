@@ -1,6 +1,6 @@
 using Base.Test, ApproxFun, SingularIntegralEquations
     import ApproxFun: ∞, testbandedoperator, testfunctional, testblockbandedoperator, testraggedbelowoperator, JacobiZ
-    import SingularIntegralEquations: testsies, testsieeval, stieltjesmoment, Directed, _₂F₁, ⁺, ⁻, value
+    import SingularIntegralEquations: testsies, testsieeval, stieltjesmoment, Directed, _₂F₁, ⁺, ⁻, value, joukowskyinverse
 
 
 testsieeval(Jacobi(0,0))
@@ -33,6 +33,11 @@ H=OffSingularIntegral(S,Chebyshev(3..4),0)
 H=OffSingularIntegral(S,Chebyshev(3..4.0+im),0)
 @test (H*f)(3.5+0.5im) ≈ logkernel(f,3.5+0.5im)
 
+x = Fun()
+f = chebyshevt(10)/sqrt(1-x^2)
+logkernel(f,0.123+.456im) ≈ -real(joukowskyinverse(Val{true},0.123+.456im)^10)/10
+f = chebyshevt(11)/sqrt(1-x^2)
+logkernel(f,0.123+.456im) ≈ -real(joukowskyinverse(Val{true},0.123+.456im)^11)/11
 
 ## Circle
 
