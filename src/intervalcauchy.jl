@@ -26,12 +26,12 @@ stieltjesbackward(S::Space,z::Number) = JacobiZ(S,z)\[stieltjesmoment(S,0,z)]
 
 
 stieltjesforward(sp::Space,n,z) = forwardsubstitution(JacobiZ(sp,undirected(z)),n,
-                                                            stieltjesmoment(sp,0,z),
-                                                            stieltjesmoment(sp,1,z))
+                                                      stieltjesmoment(sp,0,z),
+                                                      stieltjesmoment(sp,1,z))
 
 hilbertforward(sp::Space,n,z) = forwardsubstitution(JacobiZ(sp,z),n,
-                                                            hilbertmoment(sp,0,z),
-                                                            hilbertmoment(sp,1,z))
+                                                    hilbertmoment(sp,0,z),
+                                                    hilbertmoment(sp,1,z))
 
 
 function stieltjesintervalrecurrence(S,f::AbstractVector,z)
@@ -49,7 +49,7 @@ stieltjesintervalrecurrence(S,f::AbstractVector,z::AbstractArray) =
     reshape(promote_type(eltype(f),eltype(z))[ stieltjesintervalrecurrence(S,f,z[i]) for i in eachindex(z) ], size(z))
 
 
-function stieltjes{D<:Segment}(S::PolynomialSpace{D},f,z::Number)
+function stieltjes(S::PolynomialSpace{<:Segment},f,z::Number)
     if domain(S)==Segment()
         #TODO: check tolerance
         stieltjesintervalrecurrence(Legendre(),coefficients(f,S,Legendre()),z)
@@ -58,7 +58,7 @@ function stieltjes{D<:Segment}(S::PolynomialSpace{D},f,z::Number)
     end
 end
 
-function hilbert{D<:Segment}(S::PolynomialSpace{D},f,z::Number)
+function hilbert(S::PolynomialSpace{<:Segment},f,z::Number)
     if domain(S)==Segment()
         cfs = hilbertforward(S,length(f),z)
         dotu(cfs,f)
@@ -71,7 +71,7 @@ end
 
 
 # Sum over all inverses of fromcanonical, see [Olver,2014]
-function stieltjes{SS,L<:Line}(S::Space{SS,L},f,z)
+function stieltjes(S::Space{<:Line},f,z)
     if domain(S)==Line()
         # TODO: rename tocanonical
         stieltjes(setcanonicaldomain(S),f,tocanonical(S,z)) +
@@ -95,10 +95,12 @@ function logkernel{DD<:Segment}(S::PolynomialSpace{DD},v,z::Number)
         f=Fun(Fun(S,v),Legendre())  # convert to Legendre expansion
         u=D\(f|(2:∞))   # find integral, dropping first coefficient of f
 
-        (f.coefficients[1]*logabslegendremoment(z) + real(stieltjes(Fun(u,Legendre()),z+0im)))/π
+        (f.coefficients[1]*logabslegendremoment(z) +
+            real(stieltjes(Fun(u,Legendre()),z+0im)))/π
     else
         Mp=abs(fromcanonicalD(S,0))
-        Mp*logkernel(setcanonicaldomain(S),v,mobius(S,z))+linesum(Fun(S,v))*log(Mp)/π
+        Mp*logkernel(setcanonicaldomain(S),v,mobius(S,z)) +
+            linesum(Fun(S,v))*log(Mp)/π
     end
 end
 

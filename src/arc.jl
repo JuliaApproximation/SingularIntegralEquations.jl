@@ -3,12 +3,14 @@
 ## Cauchy
 
 # pseudocauchy does not normalize at ∞
-pseudostieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z) = stieltjes(setcanonicaldomain(S),f,mobius(S,z))
-pseudohilbert{LS,RR<:Arc}(S::Space{LS,RR},f,z) = hilbert(setdomain(S,Segment()),f,mobius(S,z))
+pseudostieltjes(S::Space{<:Arc},f,z) = stieltjes(setcanonicaldomain(S),f,mobius(S,z))
+pseudohilbert(S::Space{<:Arc},f,z) = hilbert(setdomain(S,Segment()),f,mobius(S,z))
 
 
-stieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z) = stieltjes(setcanonicaldomain(S),f,mobius(S,z))-stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
-hilbert{LS,RR<:Arc}(S::Space{LS,RR},f,z) = hilbert(setcanonicaldomain(S),f,mobius(S,z))+(1/π)*stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
+stieltjes(S::Space{<:Arc},f,z) =
+    stieltjes(setcanonicaldomain(S),f,mobius(S,z))-stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
+hilbert(S::Space{<:Arc},f,z) =
+    hilbert(setcanonicaldomain(S),f,mobius(S,z))+(1/π)*stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
 
 
 
@@ -33,7 +35,7 @@ end
 
 ## stieltjesintegral
 
-function stieltjesintegral{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
+function stieltjesintegral(sp::Space{<:Arc},w,z)
     g=Fun(setcanonicaldomain(sp),w)*fromcanonicalD(sp)
     stieltjesintegral(g,mobius(sp,z))-
         stieltjesintegral(g,mobius(sp,Inf))+
@@ -41,7 +43,7 @@ function stieltjesintegral{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
 end
 
 
-function linesumstieltjesintegral{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
+function linesumstieltjesintegral(sp::Space{<:Arc},w,z)
     g=Fun(setcanonicaldomain(sp),w)*abs(fromcanonicalD(sp))
     stieltjesintegral(g,mobius(sp,z))-
         stieltjesintegral(g,mobius(sp,Inf))+
@@ -49,7 +51,7 @@ function linesumstieltjesintegral{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
 end
 
 
-function logkernel{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
+function logkernel(sp::Space{<:Arc},w,z)
     g=Fun(setcanonicaldomain(sp),w)*abs(fromcanonicalD(sp))
     logkernel(g,mobius(sp,z))-
         logkernel(g,mobius(sp,Inf))+

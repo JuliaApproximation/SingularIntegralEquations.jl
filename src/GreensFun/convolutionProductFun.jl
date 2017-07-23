@@ -29,8 +29,9 @@ function convolutionProductFun{U<:UnivariateSpace,V<:UnivariateSpace}(f::F,u::U,
 end
 
 convolutionProductFun{U<:UnivariateSpace,
-                      V<:UnivariateSpace,T,DD}(f::F,
-                                            ss::TensorSpace{Tuple{U,V},T,DD,2};kwds...) = convolutionProductFun(f,ss[1],ss[2];kwds...)
+                      V<:UnivariateSpace,DD,RR}(f::F,
+                                            ss::TensorSpace{Tuple{U,V},DD,RR};kwds...) =
+    convolutionProductFun(f,ss[1],ss[2];kwds...)
 
 
 

@@ -178,7 +178,7 @@ f=Fun(z->exp(exp(0.1im)*z+1/(z-1.)),Laurent(Circle(1.,0.5)))
 println("    Two circle test 1")
 
 Γ=Circle() ∪ Circle(0.5)
-f=depiece([Fun(z->z^(-1),Γ[1]),Fun(z->z,Γ[2])])
+f=Fun([Fun(z->z^(-1),component(Γ,1)),Fun(z->z,component(Γ,2))],PiecewiseSpace)
 A=I-(f-Fun(one,space(f)))*Cauchy(-1)
 
 S=ApproxFun.choosedomainspace(A,(f-Fun(one,space(f))))

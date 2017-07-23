@@ -134,22 +134,22 @@ end
 ##
 
 function partition{PWS<:PiecewiseSpace,S1<:PiecewiseSpace,S2<:PiecewiseSpace,T}(f::Fun{PWS,T},sp1::S1,sp2::S2)
-    p,N1,N2 = pieces(f),length(sp1),length(sp2)
+    p,N1,N2 = components(f),length(sp1),length(sp2)
     return (depiece(p[1:N1])),(depiece(p[1+N1:N1+N2]))
 end
 
 function partition{PWS<:PiecewiseSpace,S1<:PiecewiseSpace,S2,T}(f::Fun{PWS,T},sp1::S1,sp2::S2)
-    p,N1 = pieces(f),length(sp1)
+    p,N1 = components(f),length(sp1)
     return (depiece(p[1:N1])),(p[1+N1])
 end
 
 function partition{PWS<:PiecewiseSpace,S1,S2<:PiecewiseSpace,T}(f::Fun{PWS,T},sp1::S1,sp2::S2)
-    p,N2 = pieces(f),length(sp2)
+    p,N2 = components(f),length(sp2)
     return (p[1]),(depiece(p[2:1+N2]))
 end
 
 function partition{PWS<:PiecewiseSpace,S1,S2,T}(f::Fun{PWS,T},sp1::S1,sp2::S2)
-    p = pieces(f)
+    p = components(f)
     return (p[1]),(p[2])
 end
 
@@ -186,33 +186,33 @@ end
 
 function assemble{S1<:PiecewiseSpace,S2<:PiecewiseSpace,T1,T2}(sol1::Vector{Fun{S1,T1}},sol2::Vector{Fun{S2,T2}})
     @assert length(sol1) == length(sol2)
-    p = depiece(vcat(pieces(sol1[1]),pieces(sol2[1])))
+    p = depiece(vcat(components(sol1[1]),components(sol2[1])))
     ret = Vector{typeof(p)}(length(sol1))
     ret[1] = p
     for k=2:length(sol1)
-        @inbounds ret[k] = depiece(vcat(pieces(sol1[k]),pieces(sol2[k])))
+        @inbounds ret[k] = depiece(vcat(components(sol1[k]),components(sol2[k])))
     end
     ret
 end
 
 function assemble{S1<:PiecewiseSpace,S2,T1,T2}(sol1::Vector{Fun{S1,T1}},sol2::Vector{Fun{S2,T2}})
     @assert length(sol1) == length(sol2)
-    p = depiece(vcat(pieces(sol1[1]),sol2[1]))
+    p = depiece(vcat(components(sol1[1]),sol2[1]))
     ret = Vector{typeof(p)}(length(sol1))
     ret[1] = p
     for k=2:length(sol1)
-        @inbounds ret[k] = depiece(vcat(pieces(sol1[k]),sol2[k]))
+        @inbounds ret[k] = depiece(vcat(components(sol1[k]),sol2[k]))
     end
     ret
 end
 
 function assemble{S1,S2<:PiecewiseSpace,T1,T2}(sol1::Vector{Fun{S1,T1}},sol2::Vector{Fun{S2,T2}})
     @assert length(sol1) == length(sol2)
-    p = depiece(vcat(sol1[1],pieces(sol2[1])))
+    p = depiece(vcat(sol1[1],components(sol2[1])))
     ret = Vector{typeof(p)}(length(sol1))
     ret[1] = p
     for k=2:length(sol1)
-        @inbounds ret[k] = depiece(vcat(sol1[k],pieces(sol2[k])))
+        @inbounds ret[k] = depiece(vcat(sol1[k],components(sol2[k])))
     end
     ret
 end

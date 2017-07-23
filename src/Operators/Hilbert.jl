@@ -24,46 +24,48 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
     OffOp=parse("Off"*string(Op))
     @eval begin
         ## Convenience routines
-        $Op(d::IntervalDomain,n::Int)=$Op(JacobiWeight(-.5,-.5,Chebyshev(d)),n)
-        $Op(d::IntervalDomain)=$Op(JacobiWeight(-.5,-.5,Chebyshev(d)))
-        $Op(d::PeriodicDomain,n::Int)=$Op(Laurent(d),n)
-        $Op(d::PeriodicDomain)=$Op(Laurent(d))
+        $Op(d::IntervalDomain,n::Int) =
+            $Op(JacobiWeight(-.5,-.5,Chebyshev(d)),n)
+        $Op(d::IntervalDomain) =
+            $Op(JacobiWeight(-.5,-.5,Chebyshev(d)))
+        $Op(d::PeriodicDomain,n::Int) = $Op(Laurent(d),n)
+        $Op(d::PeriodicDomain) = $Op(Laurent(d))
 
         ## Modifiers for SumSpace, ArraySpace, and PiecewiseSpace
         function $Op(S::PiecewiseSpace,n::Int)
-            sp=vec(S)
-            m=length(sp)
-            diag=Any[$Op(sp[k],n) for k=1:m]
-            C=Any[k==j?diag[k]:$OffOp(sp[k],rangespace(diag[j]),n) for j=1:m,k=1:m]
-            D=Operator{mapreduce(i->eltype(C[i]),promote_type,1:m^2)}[C[j,k] for j=1:m,k=1:m]
-            D=promotespaces(D)
+            sp = components(S)
+            m = length(sp)
+            diag = Any[$Op(sp[k],n) for k=1:m]
+            C = Any[k==j?diag[k]:$OffOp(sp[k],rangespace(diag[j]),n) for j=1:m,k=1:m]
+            D = Operator{mapreduce(i->eltype(C[i]),promote_type,1:m^2)}[C[j,k] for j=1:m,k=1:m]
+            D = promotespaces(D)
             $OpWrap(InterlaceOperator(D,S,PiecewiseSpace(map(rangespace,D[:,1]))),n)
         end
 
-        bandinds{s,DD}(::$ConcOp{Hardy{s,DD}})=0,0
-        domainspace{s,DD}(H::$ConcOp{Hardy{s,DD}})=H.space
-        rangespace{s,DD}(H::$ConcOp{Hardy{s,DD}})=H.space
+        bandinds{s,DD,RR}(::$ConcOp{Hardy{s,DD,RR}}) = 0,0
+        domainspace{s,DD,RR}(H::$ConcOp{Hardy{s,DD,RR}}) = H.space
+        rangespace{s,DD,RR}(H::$ConcOp{Hardy{s,DD,RR}}) = H.space
 
-        bandinds{DD}(::$ConcOp{Laurent{DD}})=0,0
-        domainspace{DD}(H::$ConcOp{Laurent{DD}})=H.space
-        rangespace{DD}(H::$ConcOp{Laurent{DD}})=H.space
+        bandinds{DD,RR}(::$ConcOp{Laurent{DD,RR}}) = 0,0
+        domainspace{DD,RR}(H::$ConcOp{Laurent{DD,RR}}) = H.space
+        rangespace{DD,RR}(H::$ConcOp{Laurent{DD,RR}}) = H.space
 
-        bandinds{DD}(H::$ConcOp{Fourier{DD}})=-H.order,H.order
-        domainspace{DD}(H::$ConcOp{Fourier{DD}})=H.space
-        rangespace{DD}(H::$ConcOp{Fourier{DD}})=H.space
+        bandinds{DD,RR}(H::$ConcOp{Fourier{DD,RR}}) = -H.order,H.order
+        domainspace{DD,RR}(H::$ConcOp{Fourier{DD,RR}}) = H.space
+        rangespace{DD,RR}(H::$ConcOp{Fourier{DD,RR}}) = H.space
 
-        function rangespace{DD}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD}})
-            @assert domainspace(H).α==domainspace(H).β==-0.5
+        function rangespace{DD,RR}(H::$ConcOp{JacobiWeight{Chebyshev{DD,RR},DD,RR}})
+            @assert domainspace(H).α == domainspace(H).β == -0.5
             H.order==0 ? Chebyshev(domain(H)) : Ultraspherical(H.order,domain(H))
         end
-        function rangespace{DD}(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD},DD}})
+        function rangespace{DD,RR}(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD,RR},DD,RR}})
             @assert order(domainspace(H).space) == 1
             @assert domainspace(H).α==domainspace(H).β==0.5
             (H.order==1||H.order==0) ? Chebyshev(domain(H)) : Ultraspherical(H.order-1,domain(H))
         end
-        # bandinds{λ,DD}(H::$ConcOp{JacobiWeight{Ultraspherical{λ,DD},DD}})=-λ,H.order-λ
-        bandinds{DD}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD}}) = 0,H.order
-        bandinds{DD}(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD},DD}}) =
+        # bandinds{λ,DD,RR}(H::$ConcOp{JacobiWeight{Ultraspherical{λ,DD,RR},DD,RR}})=-λ,H.order-λ
+        bandinds{DD,RR}(H::$ConcOp{JacobiWeight{Chebyshev{DD,RR},DD,RR}}) = 0,H.order
+        bandinds{DD,RR}(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD,RR},DD,RR}}) =
             H.order > 0 ? (-1,H.order-1) : (-2,0)
 
         choosedomainspace(H::$Op{UnsetSpace},sp::Ultraspherical) =
@@ -93,17 +95,17 @@ end
 
 # Length catch
 
-ConcreteHilbert(sp::Space{ComplexBasis},n) =
-    ConcreteHilbert{typeof(sp),typeof(n),Complex{real(eltype(domain(sp)))}}(sp,n)
-ConcreteSingularIntegral(sp::Space{ComplexBasis},n) =
-    ConcreteSingularIntegral{typeof(sp),typeof(n),Complex{real(eltype(domain(sp)))}}(sp,n)
+ConcreteHilbert(sp::Space{D,R},n) where {D,R<:Complex} =
+    ConcreteHilbert{typeof(sp),typeof(n),prectype(sp)}(sp,n)
+ConcreteSingularIntegral(sp::Space{D,R},n) where {D,R<:Complex} =
+    ConcreteSingularIntegral{typeof(sp),typeof(n),prectype(sp)}(sp,n)
 
 
 # Override sumspace
 
 for TYP in (:Hilbert,:SingularIntegral)
     ConcOp=parse("Concrete"*string(TYP))
-    @eval function $TYP{DD<:Circle}(F::Fourier{DD},n)
+    @eval function $TYP{DD<:Circle,RR}(F::Fourier{DD,RR},n)
         if !domain(F).orientation
             R=reverseorientation(F)
             Conversion(R,F)*(-$TYP(R,n))*Conversion(F,R)
@@ -122,18 +124,19 @@ for Typ in (:Hilbert,:SingularIntegral)
     ConcTyp = parse("Concrete"*string(Typ))
     WrapTyp = parse(string(Typ)*"Wrapper")
     @eval begin
-        $Typ{s,DD<:Circle}(S::Hardy{s,DD},m::Integer) =
+        $Typ{s,DD<:Circle,RR}(S::Hardy{s,DD,RR},m::Integer) =
             m ≤ 1 ? $ConcTyp(S,m) : $WrapTyp(Derivative(m-1)*Hilbert(S),m)
-        $Typ{DD<:Circle}(S::Laurent{DD},m::Integer) =
+        $Typ{DD<:Circle,RR}(S::Laurent{DD,RR},m::Integer) =
             m ≤ 1 ? $ConcTyp(S,m) : $WrapTyp(Derivative(m-1)*Hilbert(S),m)
-        $Typ{DD<:Circle}(S::Fourier{DD},m::Integer) =
+        $Typ{DD<:Circle,RR}(S::Fourier{DD,RR},m::Integer) =
             m ≤ 1 ? $ConcTyp(S,m) : $WrapTyp(Derivative(m-1)*Hilbert(S),m)
     end
 end
 
 
 
-function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Hardy{true,DD},OT,T},k::Integer,j::Integer)
+function getindex(H::ConcreteHilbert{Hardy{true,DD,RR},OT,T},
+                  k::Integer,j::Integer) where {DD<:Circle,RR,OT,T}
     ##TODO: Add scale for different radii.
     m = H.order
     d = domain(H)
@@ -150,7 +153,8 @@ function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Hardy{true,DD},OT,T},k::In
     end
 end
 
-function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Hardy{false,DD},OT,T},k::Integer,j::Integer)
+function getindex(H::ConcreteHilbert{Hardy{false,DD,RR},OT,T},
+                  k::Integer,j::Integer) where {DD<:Circle,RR,OT,T}
     ##TODO: Add scale for different radii.
     m = H.order
     d = domain(H)
@@ -163,7 +167,8 @@ function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Hardy{false,DD},OT,T},k::I
     end
 end
 
-function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Laurent{DD},OT,T},k::Integer,j::Integer)
+function getindex(H::ConcreteHilbert{Laurent{DD,RR},OT,T},
+                  k::Integer,j::Integer) where {DD<:Circle,RR,OT,T}
     ##TODO: Add scale for different radii.
     m = H.order
     d = domain(H)
@@ -190,7 +195,7 @@ function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Laurent{DD},OT,T},k::Integ
     end
 end
 
-function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Fourier{DD},OT,T},k::Integer,j::Integer)
+function getindex(H::ConcreteHilbert{Fourier{DD,RR},OT,T},k::Integer,j::Integer) where {DD<:Circle,RR,OT,T}
     m = H.order
     d = domain(H)
     r = d.radius
@@ -213,7 +218,7 @@ function getindex{DD<:Circle,OT,T}(H::ConcreteHilbert{Fourier{DD},OT,T},k::Integ
     end
 end
 
-function getindex{DD<:Circle,OT,T}(H::ConcreteSingularIntegral{Hardy{true,DD},OT,T},k::Integer,j::Integer)
+function getindex(H::ConcreteSingularIntegral{Hardy{true,DD,RR},OT,T},k::Integer,j::Integer) where {DD<:Circle,RR,OT,T}
 ##TODO: Add scale for different radii.
     m = H.order
     d = domain(H)
@@ -230,7 +235,7 @@ function getindex{DD<:Circle,OT,T}(H::ConcreteSingularIntegral{Hardy{true,DD},OT
     end
 end
 
-function getindex{DD<:Circle,OT,T}(H::ConcreteSingularIntegral{Hardy{false,DD},OT,T},k::Integer,j::Integer)
+function getindex(H::ConcreteSingularIntegral{Hardy{false,DD,RR},OT,T},k::Integer,j::Integer) where {DD<:Circle,RR,OT,T}
 ##TODO: Add scale for different radii.
     m = H.order
     d = domain(H)
@@ -243,7 +248,7 @@ function getindex{DD<:Circle,OT,T}(H::ConcreteSingularIntegral{Hardy{false,DD},O
     end
 end
 
-function getindex{DD<:Circle,OT,T}(H::ConcreteSingularIntegral{Laurent{DD},OT,T},k::Integer,j::Integer)
+function getindex(H::ConcreteSingularIntegral{Laurent{DD,RR},OT,T},k::Integer,j::Integer) where {DD<:Circle,RR,OT,T}
     ##TODO: Add scale for different radii.
     m = H.order
     d = domain(H)
@@ -268,7 +273,7 @@ function getindex{DD<:Circle,OT,T}(H::ConcreteSingularIntegral{Laurent{DD},OT,T}
     end
 end
 
-function getindex{DD<:Circle,OT,T}(H::ConcreteSingularIntegral{Fourier{DD},OT,T},k::Integer,j::Integer)
+function getindex(H::ConcreteSingularIntegral{Fourier{DD,RR},OT,T},k::Integer,j::Integer) where {DD<:Circle,RR,OT,T}
     m = H.order
     d = domain(H)
     r = d.radius
@@ -299,7 +304,7 @@ for (Op,Len) in ((:Hilbert,:complexlength),
     OpWrap=parse(string(Op)*"Wrapper")
 
     @eval begin
-        function $Op{DD<:Segment}(S::JacobiWeight{Chebyshev{DD},DD},m::Int)
+        function $Op(S::JacobiWeight{Chebyshev{DD,RR},DD},m::Int) where {DD<:Segment,RR}
             if S.α==S.β==-0.5
                 if m==0
                     $ConcOp(S,m)
@@ -323,7 +328,7 @@ for (Op,Len) in ((:Hilbert,:complexlength),
             end
         end
 
-        function getindex{DD<:Segment,OT,T}(H::$ConcOp{JacobiWeight{Chebyshev{DD},DD},OT,T},k::Integer,j::Integer)
+        function getindex(H::$ConcOp{JacobiWeight{Chebyshev{DD,RR},DD,RR},OT,T},k::Integer,j::Integer) where {DD<:Segment,RR,OT,T}
             sp=domainspace(H)
             @assert H.order == 0
             @assert sp.α==sp.β==-0.5
@@ -338,7 +343,7 @@ for (Op,Len) in ((:Hilbert,:complexlength),
         end
 
         # we always have real for n==1
-        function $Op{DD<:Segment}(S::JacobiWeight{Ultraspherical{Int,DD},DD},m)
+        function $Op(S::JacobiWeight{Ultraspherical{Int,DD,RR},DD},m) where {DD<:Segment,RR}
             @assert order(S.space) == 1
             if S.α==S.β==0.5
                 if m==1
@@ -352,7 +357,7 @@ for (Op,Len) in ((:Hilbert,:complexlength),
                 error(string($Op)*" not implemented for parameters $(S.α),$(S.β)")
             end
         end
-        function getindex{DD<:Segment,OT,T}(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD},DD},OT,T},k::Integer,j::Integer)
+        function getindex(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD,RR},DD,RR},OT,T},k::Integer,j::Integer) where {DD<:Segment,RR,OT,T}
             # order(domainspace(H))==1
             m=H.order
             d=domain(H)

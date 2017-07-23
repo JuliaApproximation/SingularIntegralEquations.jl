@@ -55,8 +55,10 @@ function hornersum{S<:Number,V<:Number}(cfs::AbstractVector{S},y::V)
     y*ret
 end
 
-hornersum{S<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractVector{V}) = promote_type(S,V)[hornersum(cfs,y[k]) for k=1:length(y)]
-hornersum{S<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractArray{V,2}) = promote_type(S,V)[hornersum(cfs,y[k,j]) for k=1:size(y,1),j=1:size(y,2)]
+hornersum{S<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractVector{V}) =
+    promote_type(S,V)[hornersum(cfs,y[k]) for k=1:length(y)]
+hornersum{S<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractArray{V,2}) =
+    promote_type(S,V)[hornersum(cfs,y[k,j]) for k=1:size(y,1),j=1:size(y,2)]
 
 function divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y::T,ys::U,s::V)
     N,P = length(cfs),promote_type(S,T,U,V)
