@@ -10,10 +10,11 @@ CauchyWeight{SV,DD,RR}(space::TensorSpace{SV,DD,RR},O) = CauchyWeight{O,SV,DD,RR
 
 order{O}(C::CauchyWeight{O}) = O
 domain(C::CauchyWeight) = domain(C.space)
-Base.getindex(C::CauchyWeight,k::Integer) = C.space[k]
+ncomponents(C::CauchyWeight) = ncomponents(C.space)
+component(C::CauchyWeight,k::Integer) = CauchyWeight(component(C.space,k),order(C))
 ApproxFun.columnspace(C::CauchyWeight,::) = C[1]
-Base.getindex{O,PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(C::CauchyWeight{O,Tuple{PWS1,PWS2}},i,j) =
-    CauchyWeight(C.space[i,j],O)
+component{O,PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(C::CauchyWeight{O,Tuple{PWS1,PWS2}},i,j) =
+    CauchyWeight(component(C.space,i,j),O)
 Base.transpose{O}(C::CauchyWeight{O}) = CauchyWeight(transpose(C.space),O)
 
 cauchyweight(O,x,y) = O == 0 ? logabs(y-x)/π : (y-x)^(-O)/π
@@ -32,7 +33,9 @@ cauchyweight{O}(C::CauchyWeight{O},x,y) = cauchyweight(O,tocanonical(C,x,y)...)
 for Func in (:ProductFun,:convolutionProductFun)
     @eval begin
         function $Func{O}(f::F,cwsp::CauchyWeight{O};kwds...)
-            F = domain(cwsp[1]) == domain(cwsp[2]) ? $Func(f,cwsp[1],cwsp[2];kwds...) : $Func((x,y)->f(x,y)*cauchyweight(O,x,y),cwsp[1],cwsp[2];kwds...)
+            F = domain(factor(cwsp.space,1)) == domain(factor(cwsp.space,2)) ?
+                $Func(f,factor(cwsp.space,1),factor(cwsp.space,2);kwds...) :
+                $Func((x,y)->f(x,y)*cauchyweight(O,x,y),factor(cwsp.space,1),factor(cwsp.space,2);kwds...)
             return ProductFun(F.coefficients,cwsp)
         end
     end
@@ -40,10 +43,14 @@ end
 
 function LowRankFun{O}(f::F,cwsp::CauchyWeight{O};retmax::Bool=false,kwds...)
     if retmax
-        F,maxabsf = domain(cwsp[1]) == domain(cwsp[2]) ? LowRankFun(f,cwsp[1],cwsp[2];retmax=retmax,kwds...) : LowRankFun((x,y)->f(x,y)*cauchyweight(O,x,y),cwsp[1],cwsp[2];retmax=retmax,kwds...)
+        F,maxabsf = domain(factor(cwsp.space,1)) == domain(factor(cwsp.space,2)) ?
+            LowRankFun(f,factor(cwsp.space,1),factor(cwsp.space,2);retmax=retmax,kwds...) :
+            LowRankFun((x,y)->f(x,y)*cauchyweight(O,x,y),factor(cwsp.space,1),factor(cwsp.space,2);retmax=retmax,kwds...)
         LowRankFun(F.A,F.B,cwsp),maxabsf
     else
-        F = domain(cwsp[1]) == domain(cwsp[2]) ? LowRankFun(f,cwsp[1],cwsp[2];kwds...) : LowRankFun((x,y)->f(x,y)*cauchyweight(O,x,y),cwsp[1],cwsp[2];kwds...)
+        F = domain(factor(cwsp.space,1)) == domain(factor(cwsp.space,2)) ?
+            LowRankFun(f,factor(cwsp.space,1),factor(cwsp.space,2);kwds...) :
+            LowRankFun((x,y)->f(x,y)*cauchyweight(O,x,y),factor(cwsp.space,1),factor(cwsp.space,2);kwds...)
         LowRankFun(F.A,F.B,cwsp)
     end
 end
@@ -64,7 +71,7 @@ for (Func,Op) in ((:(ApproxFun.DefiniteIntegral),:Hilbert),
             end
         end
         function Base.getindex{S,M,O,T,T2,DD}(⨍::$Func,f::LowRankFun{S,M,CauchyWeight{O,Tuple{S,M},T2,DD},T})
-            if domain(f.space[1]) == domain(f.space[2])
+            if domain(factor(f.space.space,1)) == domain(factor(f.space.space,2))
                 $Op(domainspace(⨍),O)[f]
             else
                 ⨍[LowRankFun(f.A,f.B,f.space.space)]

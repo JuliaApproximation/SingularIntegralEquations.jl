@@ -187,16 +187,16 @@ end
 # Array of GreensFun on TensorSpace of PiecewiseSpaces
 
 function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::F,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...)
-    M,N = length(ss[1]),length(ss[2])
+    M,N = ncomponents(factor(ss.space,1)),ncomponents(factor(ss.space,2))
     @assert M == N
     G = Array{GreensFun}(N,N)
     if method == :standard
         for i=1:N,j=1:N
-            G[i,j] = GreensFun(f,ss[i,j];method=method,kwds...)
+            G[i,j] = GreensFun(f,component(ss,i,j);method=method,kwds...)
         end
     elseif method == :convolution
         for i=1:N,j=i:N
-            G[i,j] = GreensFun(f,ss[i,j];method=method,kwds...)
+            G[i,j] = GreensFun(f,component(ss,i,j);method=method,kwds...)
         end
         for i=2:N,j=1:i-1
             G[i,j] = transpose(G[j,i])
@@ -204,35 +204,35 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::F,ss::AbstractP
     elseif method == :unsplit
         maxF = Array{Number}(N)
         for i=1:N
-          G[i,i] = GreensFun(f,ss[i,i];method=method,kwds...)
+          G[i,i] = GreensFun(f,component(ss,i,i);method=method,kwds...)
           maxF[i] = one(real(mapreduce(eltype,promote_type,G[i,i].kernels)))/2π
         end
         for i=1:N,j=i+1:N
-            G[i,j] = GreensFun(f,ss[i,j].space;method=:lowrank,tolerance=(tolerance,max(maxF[i],maxF[j])),kwds...)
+            G[i,j] = GreensFun(f,component(ss,i,j).space;method=:lowrank,tolerance=(tolerance,max(maxF[i],maxF[j])),kwds...)
         end
         for i=2:N,j=1:i-1
             G[i,j] = transpose(G[j,i])
         end
     elseif method == :lowrank
         for i=1:N,j=1:N
-            G[i,j] = GreensFun(f,ss[i,j];method=method,kwds...)
+            G[i,j] = GreensFun(f,component(ss,i,j);method=method,kwds...)
         end
     elseif method == :Cholesky
         if tolerance == :relative
             for i=1:N
-                G[i,i] = GreensFun(f,ss[i,i];method=method,kwds...)
+                G[i,i] = GreensFun(f,component(ss,i,i);method=method,kwds...)
                 for j=i+1:N
-                    G[i,j] = GreensFun(f,ss[i,j];method=:lowrank,kwds...)
+                    G[i,j] = GreensFun(f,component(ss,i,j);method=:lowrank,kwds...)
                 end
             end
         elseif tolerance == :absolute
             maxF = Array{Number}(N)
             for i=1:N
-                F,maxF[i] = LowRankFun(f,ss[i,i];method=method,retmax=true,kwds...)
+                F,maxF[i] = LowRankFun(f,component(ss,i,i);method=method,retmax=true,kwds...)
                 G[i,i] = GreensFun(F)
             end
             for i=1:N,j=i+1:N
-                G[i,j] = GreensFun(f,ss[i,j];method=:lowrank,tolerance=(tolerance,max(maxF[i],maxF[j])),kwds...)
+                G[i,j] = GreensFun(f,component(ss,i,j);method=:lowrank,tolerance=(tolerance,max(maxF[i],maxF[j])),kwds...)
             end
         end
         for i=2:N,j=1:i-1
@@ -243,7 +243,7 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::F,ss::AbstractP
 end
 
 function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::F,g::F,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:unsplit,tolerance::Symbol=:absolute,kwds...)
-    M,N = length(ss[1]),length(ss[2])
+    M,N = ncomponents(factor(ss.space,1)),ncomponents(factor(ss.space,2))
     @assert M == N
     G = Array{GreensFun}(N,N)
     if method == :unsplit

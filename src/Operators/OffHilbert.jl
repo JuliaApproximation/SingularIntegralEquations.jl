@@ -392,8 +392,10 @@ end
 
 ## OffHilbert Functional
 
-HornerFunctional(y0,sp) =
-    FiniteOperator(hornervector(y0).',sp,ConstantSpace())
+function HornerFunctional(y0,sp)
+    v = hornervector(y0)
+    FiniteOperator(v.',sp,ConstantSpace(eltype(v)))
+end
 
 
 function OffHilbert{DD,RR}(sp::JacobiWeight{Ultraspherical{Int,DD,RR},DD},z::Number)
@@ -412,7 +414,7 @@ function OffHilbert{DD,RR}(sp::JacobiWeight{Ultraspherical{Int,DD,RR},DD},z::Num
                 break
             end
         end
-        FiniteOperator(r.',sp,ConstantSpace())
+        FiniteOperator(r.',sp,ConstantSpace(eltype(r)))
     end
 end
 
@@ -430,7 +432,7 @@ function OffHilbert{DD,RR}(sp::JacobiWeight{ChebyshevDirichlet{1,1,DD,RR},DD},z:
         sx2z=sqrtx2(z)
         sx2zi=1./sx2z
 
-        FiniteOperator([-sx2zi;1-sx2zi;2*hornervector(z-sx2z)].',sp,ConstantSpace())
+        FiniteOperator([-sx2zi;1-sx2zi;2*hornervector(z-sx2z)].',sp,ConstantSpace(typeof(sx2zi)))
     else
         # try converting to Canonical
         us=JacobiWeight(sp.β,sp.α,Chebyshev(domain(sp)))

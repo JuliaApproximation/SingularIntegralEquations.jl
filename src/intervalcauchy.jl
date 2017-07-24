@@ -87,7 +87,7 @@ end
 
 
 
-function logkernel{DD<:Segment}(S::PolynomialSpace{DD},v,z::Number)
+function logkernel(S::PolynomialSpace{<:Segment},v,z::Number)
     if domain(S) == Segment()
         DS=JacobiWeight(1,1,Jacobi(1,1))
         D=Derivative(DS)[2:end,:]
@@ -102,9 +102,4 @@ function logkernel{DD<:Segment}(S::PolynomialSpace{DD},v,z::Number)
         Mp*logkernel(setcanonicaldomain(S),v,mobius(S,z)) +
             linesum(Fun(S,v))*log(Mp)/π
     end
-end
-
-for FUNC in (:logkernel,:stieltjes)
-    @eval $FUNC{D<:Segment}(S::PolynomialSpace{D},f,z::AbstractArray) =
-        map(x->$FUNC(S,f,x),z)
 end

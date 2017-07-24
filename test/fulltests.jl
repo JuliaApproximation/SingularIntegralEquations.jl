@@ -36,7 +36,7 @@ Ai=ApproxFun.interlace([Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),
 
 
 
-B=ApproxFun.SpaceOperator(ApproxFun.BasisFunctional(3),S,ApproxFun.ConstantSpace())
+B=ApproxFun.SpaceOperator(ApproxFun.BasisFunctional(3),S,ApproxFun.ConstantSpace(Float64))
 
 Ai=ApproxFun.interlace([0                 0                 0                 B;
           Fun(ones(Γ[1]),Γ) Fun(ones(Γ[2]),Γ) Fun(ones(Γ[3]),Γ) real(H)])
