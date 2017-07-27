@@ -64,7 +64,7 @@ for (Func,Op) in ((:(ApproxFun.DefiniteIntegral),:Hilbert),
                     (:(ApproxFun.DefiniteLineIntegral),:SingularIntegral))
     @eval begin
         function Base.getindex{S,V,O,T,T2,DD}(⨍::$Func,f::ProductFun{S,V,CauchyWeight{O,Tuple{S,V},T2,DD},T})
-            if domain(f.space[1]) == domain(f.space[2])
+            if domain(factor(f.space.space,1)) == domain(factor(f.space.space,2))
                 $Op(domainspace(⨍),O)[f]
             else
                 ⨍[ProductFun(f.coefficients,f.space.space)]

@@ -20,31 +20,17 @@ type HierarchicalFun{S,T,HS}
 end
 
 
-for HDSF in (:HierarchicalDomain,:HierarchicalSpace,:HierarchicalFun)
+for (HDSF,etyp) in ((:HierarchicalDomain,:eltype),(:HierarchicalSpace,:rangetype),(:HierarchicalFun,:eltype))
     @eval begin
         export $HDSF
 
-        if false #$HDSF == HierarchicalSpace
-            $HDSF{S1,S2}(data::Tuple{S1,S2}) =
-                $HDSF{promote_type(S1,S2),promote_type(eltype(S1),eltype(S2)),Tuple{S1,S2},typeof(HierarchicalDomain((domain(data[1]),domain(data[2]))))}(data)
-            $HDSF{S1,S2,T1,T2,HS1,HS2,D1,D2}(data::Tuple{$HDSF{S1,T1,HS1,D1},$HDSF{S2,T2,HS2,D2}}) =
-                $HDSF{promote_type(S1,S2),promote_type(eltype(S1),eltype(S2),T1,T2),Tuple{$HDSF{S1,T1,HS1,D1},$HDSF{S2,T2,HS2,D2}},typeof(HierarchicalDomain((domain(data[1]),domain(data[2]))))}(data)
-            $HDSF{S,S1,T,HS,D}(data::Tuple{S1,$HDSF{S,T,HS,D}}) =
-                $HDSF{promote_type(S,S1),promote_type(eltype(S),eltype(S1),T),Tuple{S1,$HDSF{S,T,HS,D}},typeof(HierarchicalDomain((domain(data[1]),domain(data[2]))))}(data)
-            $HDSF{S,S1,T,HS,D}(data::Tuple{$HDSF{S,T,HS,D},S1}) =
-                $HDSF{promote_type(S,S1),promote_type(eltype(S),eltype(S1),T),Tuple{$HDSF{S,T,HS,D},S1},typeof(HierarchicalDomain((domain(data[1]),domain(data[2]))))}(data)
-            collectdata{S,T,D}(H::$HDSF{S,T,NTuple{2,S},D}) = collect(data(H))
-            collectdata{S,T,HS,D}(H::$HDSF{S,T,Tuple{S,$HDSF{S,T,HS,D},D}}) = vcat(H.data[1],collectdata(H.data[2]))
-            collectdata{S,T,HS,D}(H::$HDSF{S,T,Tuple{$HDSF{S,T,HS,D},S},D}) = vcat(collectdata(H.data[1]),H.data[2])
-        else
-            $HDSF{S1,S2}(data::Tuple{S1,S2}) = $HDSF{promote_type(S1,S2),promote_type(eltype(S1),eltype(S2)),Tuple{S1,S2}}(data)
-            $HDSF{S1,S2,T1,T2,HS1,HS2}(data::Tuple{$HDSF{S1,T1,HS1},$HDSF{S2,T2,HS2}}) = $HDSF{promote_type(S1,S2),promote_type(eltype(S1),eltype(S2),T1,T2),Tuple{$HDSF{S1,T1,HS1},$HDSF{S2,T2,HS2}}}(data)
-            $HDSF{S,S1,T,HS}(data::Tuple{S1,$HDSF{S,T,HS}}) = $HDSF{promote_type(S,S1),promote_type(eltype(S),eltype(S1),T),Tuple{S1,$HDSF{S,T,HS}}}(data)
-            $HDSF{S,S1,T,HS}(data::Tuple{$HDSF{S,T,HS},S1}) = $HDSF{promote_type(S,S1),promote_type(eltype(S),eltype(S1),T),Tuple{$HDSF{S,T,HS},S1}}(data)
-            collectdata{S,T}(H::$HDSF{S,T,NTuple{2,S}}) = collect(data(H))
-            collectdata{S,T,HS}(H::$HDSF{S,T,Tuple{S,$HDSF{S,T,HS}}}) = vcat(H.data[1],collectdata(H.data[2]))
-            collectdata{S,T,HS}(H::$HDSF{S,T,Tuple{$HDSF{S,T,HS},S}}) = vcat(collectdata(H.data[1]),H.data[2])
-        end
+        $HDSF{S1,S2}(data::Tuple{S1,S2}) = $HDSF{promote_type(S1,S2),promote_type($etyp(S1),$etyp(S2)),Tuple{S1,S2}}(data)
+        $HDSF{S1,S2,T1,T2,HS1,HS2}(data::Tuple{$HDSF{S1,T1,HS1},$HDSF{S2,T2,HS2}}) = $HDSF{promote_type(S1,S2),promote_type($etyp(S1),$etyp(S2),T1,T2),Tuple{$HDSF{S1,T1,HS1},$HDSF{S2,T2,HS2}}}(data)
+        $HDSF{S,S1,T,HS}(data::Tuple{S1,$HDSF{S,T,HS}}) = $HDSF{promote_type(S,S1),promote_type($etyp(S),$etyp(S1),T),Tuple{S1,$HDSF{S,T,HS}}}(data)
+        $HDSF{S,S1,T,HS}(data::Tuple{$HDSF{S,T,HS},S1}) = $HDSF{promote_type(S,S1),promote_type($etyp(S),$etyp(S1),T),Tuple{$HDSF{S,T,HS},S1}}(data)
+        collectdata{S,T}(H::$HDSF{S,T,NTuple{2,S}}) = collect(data(H))
+        collectdata{S,T,HS}(H::$HDSF{S,T,Tuple{S,$HDSF{S,T,HS}}}) = vcat(H.data[1],collectdata(H.data[2]))
+        collectdata{S,T,HS}(H::$HDSF{S,T,Tuple{$HDSF{S,T,HS},S}}) = vcat(collectdata(H.data[1]),H.data[2])
 
         $HDSF(data::Vector) = $HDSF(data,round(Int,log2(length(data))))
 
@@ -84,8 +70,6 @@ for HDSF in (:HierarchicalDomain,:HierarchicalSpace,:HierarchicalFun)
 
         Base.convert{S,T,HS}(::Type{$HDSF{S,T,HS}},M::$HDSF) = $HDSF(convert(Vector{S},collectdata(M)))
         Base.promote_rule{S,T,HS,SS,TT,HSS}(::Type{$HDSF{S,T,HS}},::Type{$HDSF{SS,TT,HSS}})=$HDSF{promote_type(S,SS),promote_type(T,TT),promote_type(HS,HSS)}
-        Base.eltype{S,T}(::$HDSF{S,T})=T
-        Base.eltype{S,T,HS}(::Type{$HDSF{S,T,HS}})=T
     end
 end
 

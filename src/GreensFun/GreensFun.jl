@@ -77,10 +77,10 @@ for TYP in (:(ApproxFun.DefiniteLineIntegralWrapper),:DefiniteLineIntegral)
         m,n = size(B)
         wsp = domainspace(⨍)
         @assert m == length(wsp.spaces)
-        ⨍j = DefiniteLineIntegral(wsp[1])
+        ⨍j = DefiniteLineIntegral(component(wsp,1))
         ret = Array{Operator{promote_type(eltype(⨍j),map(eltype,B)...)}}(m,n)
         for j=1:n
-            ⨍j = DefiniteLineIntegral(wsp[j])
+            ⨍j = DefiniteLineIntegral(component(wsp,j))
             for i=1:m
                 ret[i,j] = ⨍j[B[i,j]]
             end
@@ -270,14 +270,14 @@ converttoPiecewiseSpace(H::Space) = H
 converttoPiecewiseSpace(H::HierarchicalSpace) = PiecewiseSpace(H)
 
 function partition{HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}(ss::ApproxFun.TensorSpace{Tuple{HS1,HS2}})
-    ss11,ss12 = partition(ss[1])
-    ss21,ss22 = partition(ss[2])
+    ss11,ss12 = partition(factor(ss.space,1))
+    ss21,ss22 = partition(factor(ss.space,2))
     (ss11⊗ss21,ss12⊗ss22),(converttoPiecewiseSpace(ss12)⊗converttoPiecewiseSpace(ss21),converttoPiecewiseSpace(ss11)⊗converttoPiecewiseSpace(ss22))
 end
 
 function partition{O,HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}(ss::CauchyWeight{O,Tuple{HS1,HS2}})
-    ss11,ss12 = partition(ss[1])
-    ss21,ss22 = partition(ss[2])
+    ss11,ss12 = partition(factor(ss.space,1))
+    ss21,ss22 = partition(factor(ss.space,2))
     (CauchyWeight(ss11⊗ss21,O),CauchyWeight(ss12⊗ss22,O)),(CauchyWeight(converttoPiecewiseSpace(ss12)⊗converttoPiecewiseSpace(ss21),O),CauchyWeight(converttoPiecewiseSpace(ss11)⊗converttoPiecewiseSpace(ss22),O))
 end
 
@@ -296,10 +296,10 @@ blocksize{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = map(length,do
 function domain{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G})
     H11,H22 = diagonaldata(H)
     H21,H12 = offdiagonaldata(H)
-    m1,n2 = domain(H12)[1],domain(H12)[2]
-    m2,n1 = domain(H21)[1],domain(H21)[2]
-    @assert (m1,n1) == (domain(H11)[1],domain(H11)[2])
-    @assert (m2,n2) == (domain(H22)[1],domain(H22)[2])
+    m1,n2 = factor(domain(H12),1),factor(domain(H12),2)
+    m2,n1 = factor(domain(H21),1),factor(domain(H21),2)
+    @assert (m1,n1) == (factor(domain(H11),1),factor(domain(H11),2))
+    @assert (m2,n2) == (factor(domain(H22),1),factor(domain(H22),2))
     (m1∪m2)*(n1∪n2)
 end
 
@@ -307,13 +307,13 @@ for TYP in (:(ApproxFun.DefiniteLineIntegralWrapper),:DefiniteLineIntegral)
     @eval function Base.getindex{G<:GreensFun,L<:LowRankFun,T}(⨍::$TYP,H::HierarchicalMatrix{G,GreensFun{L,T}})
         H11,H22 = diagonaldata(H)
         wsp = domainspace(⨍)
-        if length(domain(H11)[2]) ≥ 2
-            ⨍1 = DefiniteLineIntegral(PiecewiseSpace(wsp[1:length(domain(H11)[2])]))
+        if length(factor(domain(H11),2)) ≥ 2
+            ⨍1 = DefiniteLineIntegral(PiecewiseSpace(wsp[1:length(factor(domain(H11),2))]))
         else
             ⨍1 = DefiniteLineIntegral(wsp[1])
         end
-        if length(domain(H22)[2]) ≥ 2
-            ⨍2 = DefiniteLineIntegral(PiecewiseSpace(wsp[end-length(domain(H22)[2])+1:end]))
+        if length(factor(domain(H22),2)) ≥ 2
+            ⨍2 = DefiniteLineIntegral(PiecewiseSpace(wsp[end-length(factor(domain(H22),2))+1:end]))
         else
             ⨍2 = DefiniteLineIntegral(wsp[end])
         end

@@ -80,7 +80,7 @@ println("The hierarchical forward error norm is: ",norm(⨍[G]*u2-f))
 
 # Test three domains
 
-dom = Segment(-2.0,-1.0+0im)∪Segment(1.0,2.0+0im)∪Segment(-0.5-2im,0.5-2im)
+dom = Segment(-2.0,-1.0+0im) ∪ Segment(1.0,2.0+0im) ∪ Segment(-0.5-2im,0.5-2im)
 hdom = clustertree(dom)
 
 @test convert(typeof(hdom),hdom)  == hdom

@@ -418,10 +418,14 @@ function OffHilbert{DD,RR}(sp::JacobiWeight{Ultraspherical{Int,DD,RR},DD},z::Num
     end
 end
 
-function OffHilbert{DD,RR}(sp::JacobiWeight{Chebyshev{DD,RR},DD},z::Number)
-    #try converting to Ultraspherical(1)
-    us=JacobiWeight(sp.β,sp.α,Ultraspherical(1,domain(sp)))
-    OffHilbert(us,z)*Conversion(sp,us)
+for Op in (:OffHilbert, :OffSingularIntegral)
+    @eval begin
+        function $Op{DD,RR}(sp::JacobiWeight{Chebyshev{DD,RR},DD},z::Union{Space,Number},k...)
+            #try converting to Ultraspherical(1)
+            us=JacobiWeight(sp.β,sp.α,Ultraspherical(1,domain(sp)))
+            $Op(us,z,k...)*Conversion(sp,us)
+        end
+    end
 end
 
 

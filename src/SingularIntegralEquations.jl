@@ -34,7 +34,7 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
                   IntervalCurve,PeriodicCurve, reverseorientation, @wrapper, mobius,
                   defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, refactorsvd!, SubOperator,
                   Block, BlockBandedMatrix, BandedBlockBandedMatrix, F, Infinity,
-                  component, ncomponents, factor, nfactors, components, factors
+                  component, ncomponents, factor, nfactors, components, factors, rangetype
 
 import ApproxFun: testbandedoperator
 
