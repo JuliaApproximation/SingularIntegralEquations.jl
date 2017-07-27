@@ -44,7 +44,7 @@ for Op in (:OffHilbert,:OffSingularIntegral)
     end
 end
 
-function OffHilbert(ds::Space,rs::Space,order::Int)
+function default_OffHilbert(ds::Space,rs::Space,order::Int)
     @assert order==1
     tol=1E-13
 
@@ -75,6 +75,42 @@ function OffHilbert(ds::Space,rs::Space,order::Int)
     warn("Max Iteration Reached for OffHilbert from "*string(ds)*" to "*string(rs))
     OffHilbert(convert(BandedMatrix,C),ds,rs,order)
 end
+
+
+function default_OffSingularIntegral(ds::Space,rs::Space,order::Int)
+    tol=1E-13
+
+    vv=Array{Vector{Complex128}}(0)
+    m=100
+    for k=1:2:1000
+        b=Fun(ds,[zeros(k-1);1.])
+        v1=Fun(x->singularintegral(order,b,x),rs,m)
+        b=Fun(ds,[zeros(k);1.])
+        v2=Fun(x->singularintegral(order,b,x),rs,m)
+        if abs(v1.coefficients[end-1])>100tol || abs(v1.coefficients[end])>100tol ||
+            abs(v2.coefficients[end-1])>100tol || abs(v2.coefficients[end])>100tol
+            warn("OffSingularIntegral not resolved with $m rows")
+        end
+        if norm(v1.coefficients,Inf)<tol &&
+            norm(v2.coefficients,Inf)<tol
+            C=zeros(Complex128,mapreduce(length,max,vv),length(vv))
+            for j=1:length(vv)
+                @inbounds C[1:length(vv[j]),j]=vv[j]
+            end
+            return OffSingularIntegral(convert(BandedMatrix,C),ds,rs,order)
+        end
+
+        push!(vv,v1.coefficients)
+        push!(vv,v2.coefficients)
+    end
+
+    warn("Max Iteration Reached for OffHilbert from "*string(ds)*" to "*string(rs))
+    OffSingularIntegral(convert(BandedMatrix,C),ds,rs,order)
+end
+
+
+OffHilbert(ds::Space,rs::Space,order::Int) = default_OffHilbert(ds,rs,order)
+OffSingularIntegral(ds::Space,rs::Space,order::Int) = default_OffSingularIntegral(ds,rs,order)
 
 ## JacobiWeight
 
@@ -419,11 +455,25 @@ function OffHilbert{DD,RR}(sp::JacobiWeight{Ultraspherical{Int,DD,RR},DD},z::Num
 end
 
 for Op in (:OffHilbert, :OffSingularIntegral)
+    defOp = parse("default_"*string(Op))
     @eval begin
-        function $Op{DD,RR}(sp::JacobiWeight{Chebyshev{DD,RR},DD},z::Union{Space,Number},k...)
-            #try converting to Ultraspherical(1)
-            us=JacobiWeight(sp.β,sp.α,Ultraspherical(1,domain(sp)))
-            $Op(us,z,k...)*Conversion(sp,us)
+        function $Op{DD,RR}(sp::JacobiWeight{Chebyshev{DD,RR},DD},z::Number,k::Int)
+            if sp.β == sp.α == 0.5
+                #try converting to Ultraspherical(1)
+                us=JacobiWeight(sp.β,sp.α,Ultraspherical(1,domain(sp)))
+                $Op(us,z,k)*Conversion(sp,us)
+            else
+                $defOp(sp,z,k)
+            end
+        end
+        function $Op{DD,RR}(sp::JacobiWeight{Chebyshev{DD,RR},DD},z::Space,k::Int)
+            if sp.β == sp.α == 0.5
+                #try converting to Ultraspherical(1)
+                us=JacobiWeight(sp.β,sp.α,Ultraspherical(1,domain(sp)))
+                $Op(us,z,k)*Conversion(sp,us)
+            else
+                $defOp(sp,z,k)
+            end
         end
     end
 end

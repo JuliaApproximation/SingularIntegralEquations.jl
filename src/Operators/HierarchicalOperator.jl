@@ -144,7 +144,8 @@ for OP in (:domainspace,:rangespace)
     @eval $OP{S<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalOperator{S,V})=PiecewiseSpace(map($OP,diagonaldata(H))...)
 end
 
-blocksize{U<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalOperator{U,V}) = length(domainspace(H)),length(rangespace(H)) # TODO: check it's not rangespace...domainspace
+blocksize{U<:Operator,V<:AbstractLowRankOperator}(H::HierarchicalOperator{U,V}) =
+    ncomponents(domainspace(H)),ncomponents(rangespace(H)) # TODO: check it's not rangespace...domainspace
 
 for op in ( VERSION < v"0.6-" ? (:+,:-,:.+,:.-) : (:+,:-))
     @eval begin

@@ -291,7 +291,7 @@ function GreensFun{HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}(f::F,ss::Abstr
     return HierarchicalMatrix((G11,G22),(G21,G12))
 end
 
-blocksize{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = map(length,domain(H).domains)
+blocksize{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = map(ncomponents,domain(H).domains)
 
 function domain{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G})
     H11,H22 = diagonaldata(H)
@@ -306,18 +306,19 @@ end
 for TYP in (:(ApproxFun.DefiniteLineIntegralWrapper),:DefiniteLineIntegral)
     @eval function Base.getindex{G<:GreensFun,L<:LowRankFun,T}(⨍::$TYP,H::HierarchicalMatrix{G,GreensFun{L,T}})
         H11,H22 = diagonaldata(H)
-        wsp = domainspace(⨍)
-        if length(factor(domain(H11),2)) ≥ 2
-            ⨍1 = DefiniteLineIntegral(PiecewiseSpace(wsp[1:length(factor(domain(H11),2))]))
+        wsp = components(domainspace(⨍))
+        if ncomponents(factor(domain(H11),2)) ≥ 2
+            ⨍1 = DefiniteLineIntegral(PiecewiseSpace(wsp[1:ncomponents(factor(domain(H11),2))]))
         else
             ⨍1 = DefiniteLineIntegral(wsp[1])
         end
-        if length(factor(domain(H22),2)) ≥ 2
-            ⨍2 = DefiniteLineIntegral(PiecewiseSpace(wsp[end-length(factor(domain(H22),2))+1:end]))
+        if ncomponents(factor(domain(H22),2)) ≥ 2
+            ⨍2 = DefiniteLineIntegral(PiecewiseSpace(wsp[end-ncomponents(factor(domain(H22),2))+1:end]))
         else
             ⨍2 = DefiniteLineIntegral(wsp[end])
         end
-        HierarchicalOperator((qrfact(⨍1[H11]),qrfact(⨍2[H22])),map(LowRankIntegralOperator,offdiagonaldata(H)))
+        HierarchicalOperator((qrfact(⨍1[H11]),qrfact(⨍2[H22])),
+                             map(LowRankIntegralOperator,offdiagonaldata(H)))
     end
 end
 
