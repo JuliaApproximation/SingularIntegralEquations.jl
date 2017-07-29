@@ -15,6 +15,8 @@ component(C::CauchyWeight,k::Integer) = CauchyWeight(component(C.space,k),order(
 ApproxFun.columnspace(C::CauchyWeight,::) = C[1]
 component{O,PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(C::CauchyWeight{O,Tuple{PWS1,PWS2}},i,j) =
     CauchyWeight(component(C.space,i,j),O)
+
+factor(s::CauchyWeight,k) = factor(s.space,k) # TODO: Why is this a meaningful definition?
 Base.transpose{O}(C::CauchyWeight{O}) = CauchyWeight(transpose(C.space),O)
 
 cauchyweight(O,x,y) = O == 0 ? logabs(y-x)/π : (y-x)^(-O)/π

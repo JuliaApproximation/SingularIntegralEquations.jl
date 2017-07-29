@@ -9,15 +9,15 @@ z=Fun(Γ)
 
 @test ApproxFun.choosedomainspace(Hilbert(),z) == JacobiWeight(-0.5,-0.5,ChebyshevDirichlet{1,1}(Γ))
 
-Ai=ApproxFun.interlace([1 Hilbert()])
+Ai=[1 Hilbert()]
 
 @test isa(ApproxFun.choosedomainspace(Ai.ops[1],space(z)),ApproxFun.ConstantSpace)
 
 
 S=choosedomainspace(Ai,space(z))
-@test isa(S[1],ApproxFun.ConstantSpace)
-@test isa(S[2],ApproxFun.JacobiWeight{ApproxFun.ChebyshevDirichlet{1,1,ApproxFun.Segment{Complex{Float64}}},
-                                                        ApproxFun.Segment{Complex{Float64}}})
+@test isa(component(S,1),ApproxFun.ConstantSpace)
+@test isa(component(S,2),ApproxFun.JacobiWeight{ApproxFun.ChebyshevDirichlet{1,1,ApproxFun.Segment{Complex{Float64}},Float64},
+                                                        ApproxFun.Segment{Complex{Float64}},Float64})
 
 
 
@@ -25,9 +25,8 @@ S=choosedomainspace(Ai,space(z))
 AiS=promotedomainspace(Ai,S)
 @test domainspace(AiS) == S
 
-domainspace(Ai)
 S=JacobiWeight(0.5,0.5,Ultraspherical(1,Γ))
-@time c,ui=[1 Hilbert(S)]\imag(α*z)
+@time c,ui=[1 Hilbert(S)]\[imag(α*z)]
 
 u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 
@@ -39,14 +38,13 @@ k=227;
 z=Fun(Γ)
 α=exp(-k/50im)
 
-Ai=ApproxFun.interlace([1 PseudoHilbert()])
+Ai=[1 PseudoHilbert()]
 
 @test isa(ApproxFun.choosedomainspace(Ai.ops[1],space(z)),ApproxFun.ConstantSpace)
-@test isa(ApproxFun.choosedomainspace(Ai,space(z))[1],ApproxFun.ConstantSpace)
-@test isa(ApproxFun.choosedomainspace(Ai,space(z))[2],
-            ApproxFun.JacobiWeight{ApproxFun.ChebyshevDirichlet{1,1,ApproxFun.Arc{Float64,Float64,Complex{Float64}}},
-                                                                    ApproxFun.Arc{Float64,Float64,Complex{Float64}}})
-
+@test isa(component(ApproxFun.choosedomainspace(Ai,space(z)),1),ApproxFun.ConstantSpace)
+@test isa(component(ApproxFun.choosedomainspace(Ai,space(z)),2),
+            ApproxFun.JacobiWeight{ApproxFun.ChebyshevDirichlet{1,1,ApproxFun.Arc{Float64,Float64,Complex{Float64}},Float64},
+                                                                    ApproxFun.Arc{Float64,Float64,Complex{Float64}},Float64})
 
 S=choosedomainspace(Ai,space(z))
 AiS=promotedomainspace(Ai,S)
@@ -58,7 +56,7 @@ k=227;
 z=Fun(Γ)
 α=exp(-k/50im)
 S=JacobiWeight(0.5,0.5,Γ)
-@time c,ui=[1 PseudoHilbert(S)]\imag(α*z)
+@time c,ui=[1 PseudoHilbert(S)]\[imag(α*z)]
 
 
 u=(x,y)->α*(x+im*y)+2pseudocauchy(ui,x+im*y)
@@ -71,23 +69,21 @@ u=(x,y)->α*(x+im*y)+2pseudocauchy(ui,x+im*y)
 z=Fun(Fourier(Γ))
 
 
-Ai=ApproxFun.interlace([0 DefiniteLineIntegral();
-      1 real(Hilbert())])
+Ai=[0 DefiniteLineIntegral();
+      1 real(Hilbert())]
 
 
 
 S=ApproxFun.choosedomainspace(Ai,space([Fun(0.);z]))
 
-@test isa(S[1],ApproxFun.ConstantSpace)
-@test S[2] == Fourier(Γ)
+@test isa(component(S,1),ApproxFun.ConstantSpace)
+@test component(S,2) == Fourier(Γ)
 
 @test domainspace(ApproxFun.promotedomainspace(Ai,S)) == S
 
 
 A=ApproxFun.promotedomainspace(Ai,S)
 
-
-@which A.ops[3][2]
 testraggedbelowoperator(A)
 
 
@@ -108,7 +104,7 @@ u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
     z=Fun(Γ)
     α=im
     S=JacobiWeight(0.5,0.5,Γ)
-    @time c,ui=[1 real(Hilbert(S))]\imag(α*z)
+    @time c,ui=[1 real(Hilbert(S))]\[imag(α*z)]
 
 u=(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 
@@ -120,14 +116,14 @@ u=(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 Γ=Segment(-1.,-0.5) ∪ Segment(-0.3,1.)
 z=Fun(Γ)
 
-S=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical(1,d)),Γ))
+S=PiecewiseSpace(map(d->JacobiWeight(0.5,0.5,Ultraspherical(1,d)),components(Γ)))
 
 
 k=114;
     α=exp(k/50*im)
 
-Ai=ApproxFun.interlace([ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(S)])
+Ai=[ones(component(Γ,1))+zeros(component(Γ,2)) zeros(component(Γ,1))+ones(component(Γ,2)) Hilbert(S)]
 testblockbandedoperator(Ai)
 
 
-@time a,b,ui=[ones(Γ[1])+zeros(Γ[2]) zeros(Γ[1])+ones(Γ[2]) Hilbert(S)]\imag(α*z)
+@time a,b,ui=[ones(component(Γ,1))+zeros(component(Γ,2)) zeros(component(Γ,1))+ones(component(Γ,2)) Hilbert(S)]\[imag(α*z)]

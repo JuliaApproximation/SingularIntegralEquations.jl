@@ -187,7 +187,7 @@ end
 # Array of GreensFun on TensorSpace of PiecewiseSpaces
 
 function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::F,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...)
-    M,N = ncomponents(factor(ss.space,1)),ncomponents(factor(ss.space,2))
+    M,N = ncomponents(factor(ss,1)),ncomponents(factor(ss,2))
     @assert M == N
     G = Array{GreensFun}(N,N)
     if method == :standard

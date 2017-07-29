@@ -34,6 +34,6 @@ hilbert(S::PiecewiseSpace,v,z) = hilbert(components(Fun(S,v)),z)
 
 
 function cauchy{S<:ArraySpace,T}(v::Fun{S,T},z::Number)
-    m=mat(v)
+    m = Array(v)
     Complex{Float64}[cauchy(m[k,j],z) for k=1:size(m,1),j=1:size(m,2)]
 end

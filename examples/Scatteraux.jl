@@ -35,7 +35,7 @@ if !isdefined(:scatteraux_loaded)
             Main.PyPlot.savefig(dr * "/" * lpad(k,max(4,ceil(Int,log10(MLen))),0) * ".png";dpi=150,bbox_inches="tight")
         end
         # Requires: brew install imagemagick
-        run(`convert -delay 6 -loop 0 $dr/*.png $dr/scattering.gif`)
+        run(`convert -delay 6 -loop 0 $dr/\*.png $dr/scattering.gif`)
         run(`open $dr/scattering.gif`)
     end
 end

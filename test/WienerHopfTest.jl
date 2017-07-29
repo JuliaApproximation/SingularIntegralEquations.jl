@@ -74,7 +74,7 @@ Ṽ = QR\(G-I)
 V  = (I+(I-G)*C)\(G-I)
 
 
-@test map(f->f(exp(0.1im)),ApproxFun.mat(G-I)) ≈ (G-I)(exp(0.1im))
+@test map(f->f(exp(0.1im)),Array(G-I)) ≈ (G-I)(exp(0.1im))
 
 @test (G-I)[:,1]==Fun((G-I)[:,1],rangespace(QR))
 @test (G-I)[:,1]==Fun(vec((G-I)[:,1]),rangespace(QR))

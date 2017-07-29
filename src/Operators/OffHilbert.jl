@@ -217,7 +217,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
     end
 end
 
-function OffHilbert(DS::Laurent{D1},RS::Laurent{D2},ord::Int) where {D1<:Circle,D2<:Circle}
+function OffHilbert(DS::Laurent{D1,R1},RS::Laurent{D2,R2},ord::Int) where {D1<:Circle,D2<:Circle,R1,R2}
     ds=domain(DS);rs=domain(RS)
     @assert ord==1
 
@@ -251,7 +251,7 @@ function OffHilbert(DS::Laurent{D1},RS::Laurent{D2},ord::Int) where {D1<:Circle,
     OffHilbert(2im*M,DS,RS)
 end
 
-function OffHilbert(DS::Fourier{D1},RS::Fourier{D2},ord::Int) where {D1<:Circle,D2<:Circle}
+function OffHilbert(DS::Fourier{D1,R1},RS::Fourier{D2,R2},ord::Int) where {D1<:Circle,D2<:Circle,R1,R2}
     LD=Laurent(domain(DS))
     LR=Laurent(domain(RS))
     Conversion(LR,RS)*OffHilbert(LD,LR,ord)*Conversion(DS,LD)
