@@ -26,14 +26,16 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
                   ConcreteDefiniteIntegral, ConcreteDefiniteLineIntegral,
                   SumSpace,PiecewiseSpace, interlace,Multiplication, VectorSpace, ArraySpace,
                   BandedMatrix,ChebyshevDirichlet,PolynomialSpace,AbstractProductSpace,evaluate,order,
-                  RealBasis,ComplexBasis,AnyBasis,UnsetSpace, MultivariateFun, BivariateFun,linesum,complexlength,
-                  Fun, ProductFun, LowRankFun, mappoint, JacobiZ,
+                  UnsetSpace, MultivariateFun, BivariateFun,linesum,complexlength,
+                  Fun, ProductFun, LowRankFun, mappoint, JacobiZ, prectype,
                   real, UnivariateSpace, RealUnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger,
                   ConstantSpace,ReOperator,DirectSumSpace, ArraySpace, ZeroSpace,
                   LowRankPertOperator, LaurentDirichlet, setcanonicaldomain, SubSpace,
-                  IntervalCurve,PeriodicCurve, reverseorientation, op_eltype, @wrapper, mobius,
+                  IntervalCurve,PeriodicCurve, reverseorientation, @wrapper, mobius,
                   defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, refactorsvd!, SubOperator,
-                  Block, BlockBandedMatrix, BandedBlockBandedMatrix, F, Infinity, basistype
+                  Block, BlockBandedMatrix, BandedBlockBandedMatrix, F, Infinity,
+                  component, ncomponents, factor, nfactors, components, factors, rangetype,
+                  VFun, Point
 
 import ApproxFun: testbandedoperator
 

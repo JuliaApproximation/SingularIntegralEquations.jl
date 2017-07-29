@@ -3,12 +3,14 @@
 ## Cauchy
 
 # pseudocauchy does not normalize at ∞
-pseudostieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z) = stieltjes(setcanonicaldomain(S),f,mobius(S,z))
-pseudohilbert{LS,RR<:Arc}(S::Space{LS,RR},f,z) = hilbert(setdomain(S,Segment()),f,mobius(S,z))
+pseudostieltjes(S::Space{<:Arc},f,z) = stieltjes(setcanonicaldomain(S),f,mobius(S,z))
+pseudohilbert(S::Space{<:Arc},f,z) = hilbert(setdomain(S,Segment()),f,mobius(S,z))
 
 
-stieltjes{LS,RR<:Arc}(S::Space{LS,RR},f,z) = stieltjes(setcanonicaldomain(S),f,mobius(S,z))-stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
-hilbert{LS,RR<:Arc}(S::Space{LS,RR},f,z) = hilbert(setcanonicaldomain(S),f,mobius(S,z))+(1/π)*stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
+stieltjes(S::Space{<:Arc},f,z) =
+    stieltjes(setcanonicaldomain(S),f,mobius(S,z))-stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
+hilbert(S::Space{<:Arc},f,z) =
+    hilbert(setcanonicaldomain(S),f,mobius(S,z))+(1/π)*stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
 
 
 
@@ -22,10 +24,11 @@ function PseudoHilbert{LS,RR<:Arc}(sp::JacobiWeight{LS,RR},k::Integer)
 end
 
 
-function Hilbert{LS,RR<:Arc}(sp::JacobiWeight{LS,RR},k::Integer)
+function Hilbert(sp::JacobiWeight{LS,RR},k::Integer) where {LS,RR<:Arc}
     @assert k==1
     csp=setcanonicaldomain(sp)
-    H=Hilbert(csp)+(1/π)*Stieltjes(csp,mobius(sp,Inf))
+    St = Stieltjes(csp,mobius(sp,Inf))
+    H=Hilbert(csp)+(1/π)*SpaceOperator(St,csp,ConstantSpace(eltype(St)))
     HilbertWrapper(SpaceOperator(H,setdomain(domainspace(H),domain(sp)),setdomain(rangespace(H),domain(sp))),k)
 end
 
@@ -33,7 +36,7 @@ end
 
 ## stieltjesintegral
 
-function stieltjesintegral{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
+function stieltjesintegral(sp::Space{<:Arc},w,z)
     g=Fun(setcanonicaldomain(sp),w)*fromcanonicalD(sp)
     stieltjesintegral(g,mobius(sp,z))-
         stieltjesintegral(g,mobius(sp,Inf))+
@@ -41,7 +44,7 @@ function stieltjesintegral{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
 end
 
 
-function linesumstieltjesintegral{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
+function linesumstieltjesintegral(sp::Space{<:Arc},w,z)
     g=Fun(setcanonicaldomain(sp),w)*abs(fromcanonicalD(sp))
     stieltjesintegral(g,mobius(sp,z))-
         stieltjesintegral(g,mobius(sp,Inf))+
@@ -49,7 +52,7 @@ function linesumstieltjesintegral{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
 end
 
 
-function logkernel{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
+function logkernel(sp::Space{<:Arc},w,z)
     g=Fun(setcanonicaldomain(sp),w)*abs(fromcanonicalD(sp))
     logkernel(g,mobius(sp,z))-
         logkernel(g,mobius(sp,Inf))+
@@ -57,7 +60,7 @@ function logkernel{LS,RR<:Arc}(sp::Space{LS,RR},w,z)
 end
 
 
-function SingularIntegral{JW,RR<:Arc}(S::JacobiWeight{JW,RR},k::Integer)
+function SingularIntegral(S::JacobiWeight{JW,RR},k::Integer) where {JW,RR<:Arc}
     d=domain(S)
     if k==0
         tol=1E-15
@@ -74,10 +77,11 @@ function SingularIntegral{JW,RR<:Arc}(S::JacobiWeight{JW,RR},k::Integer)
                 break
             end
         end
-        L∞=FiniteOperator(cnst.',csp,ConstantSpace())
+        L∞=FiniteOperator(cnst.',csp,ConstantSpace(eltype(cnst)))
 
         x=Fun(identity,S)
-        SpaceOperator((Σ-L∞)*M,S,setdomain(rangespace(Σ),d))+(logabs(x-fromcanonical(d,Inf))/π)*DefiniteLineIntegral(S)
+        SpaceOperator((Σ-L∞)*M,S,setdomain(rangespace(Σ),d)) +
+            (logabs(x-fromcanonical(d,Inf))/π)*DefiniteLineIntegral(S)
     else
         # multiply by abs(M')/M' to change to dz to ds
         Mp=fromcanonicalD(d)

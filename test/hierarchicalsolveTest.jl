@@ -47,9 +47,11 @@ H+H-(H-H)
 i = 2
 
 dom = cantor(Segment(),i)
+
 ⨍ = DefiniteLineIntegral(dom)
 f = Fun(x->logabs(x-5im),dom)
 sp = Space(dom)
+
 
 G = GreensFun((x,y)->0.5,CauchyWeight(sp⊗sp,0);method=:Cholesky)
 
@@ -62,7 +64,10 @@ hdom = clustertree(dom)
 hsp = Space(hdom)
 
 G1 = GreensFun((x,y)->0.5,CauchyWeight(hsp⊗hsp,0);method=:Cholesky)
+@test SingularIntegralEquations.blockrank(G1) == [1 8 9 9; 8 1 9 9; 9 9 1 8; 9 9 8 1]
+
 H = ⨍[G1]
+@test SingularIntegralEquations.blocksize(H) == (4,4)
 
 @time u2 = H\f
 @time u2 = H\f
@@ -80,7 +85,7 @@ println("The hierarchical forward error norm is: ",norm(⨍[G]*u2-f))
 
 # Test three domains
 
-dom = Segment(-2.0,-1.0+0im)∪Segment(1.0,2.0+0im)∪Segment(-0.5-2im,0.5-2im)
+dom = Segment(-2.0,-1.0+0im) ∪ Segment(1.0,2.0+0im) ∪ Segment(-0.5-2im,0.5-2im)
 hdom = clustertree(dom)
 
 @test convert(typeof(hdom),hdom)  == hdom

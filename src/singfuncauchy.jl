@@ -55,9 +55,6 @@ function hornersum{S<:Number,V<:Number}(cfs::AbstractVector{S},y::V)
     y*ret
 end
 
-hornersum{S<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractVector{V}) = promote_type(S,V)[hornersum(cfs,y[k]) for k=1:length(y)]
-hornersum{S<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractArray{V,2}) = promote_type(S,V)[hornersum(cfs,y[k,j]) for k=1:size(y,1),j=1:size(y,2)]
-
 function divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y::T,ys::U,s::V)
     N,P = length(cfs),promote_type(S,T,U,V)
     ret = N > 0 ? convert(P,cfs[N]/(N+s)) : zero(P)
@@ -67,27 +64,13 @@ function divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVec
     y*ys*ret
 end
 
-divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractVector{T},
-                                                       ys::AbstractVector{U},s::V) =
-    promote_type(S,T,U,V)[divkhornersum(cfs,y[k],ys[k],s) for k=1:length(y)]
-divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y::AbstractArray{T,2},
-                                                       ys::AbstractArray{U,2},s::V) =
-    promote_type(S,T,U,V)[divkhornersum(cfs,y[k,j],ys[k,j],s) for k=1:size(y,1),j=1:size(y,2)]
-
 realdivkhornersum{S<:Real}(cfs::AbstractVector{S},y,ys,s) = real(divkhornersum(cfs,y,ys,s))
-realdivkhornersum{S<:Complex}(cfs::AbstractVector{S},y,ys,s) = complex(real(divkhornersum(real(cfs),y,ys,s)),
-                                                                       real(divkhornersum(imag(cfs),y,ys,s)))
+realdivkhornersum{S<:Complex}(cfs::AbstractVector{S},y,ys,s) =
+    complex(real(divkhornersum(real(cfs),y,ys,s)),
+            real(divkhornersum(imag(cfs),y,ys,s)))
 
 
-function stieltjes{S<:PolynomialSpace,DD<:Segment}(sp::JacobiWeight{S,DD},u,zv::Array)
-    ret=similar(zv,Complex128)
-    for k=1:length(zv)
-        @inbounds ret[k]=stieltjes(sp,u,zv[k])
-    end
-    ret
-end
-
-function stieltjes{S<:PolynomialSpace,DD<:Segment}(sp::JacobiWeight{S,DD},u,z)
+function stieltjes(sp::JacobiWeight{<:PolynomialSpace,<:Segment},u,z)
     d=domain(sp)
 
     if sp.α == sp.β == .5
@@ -134,7 +117,7 @@ end
 #  hilbert(f,z)=im*(cauchy(true,f,z)+cauchy(false,f,z))
 ##
 
-function hilbert{DD<:Segment}(sp::JacobiWeight{Chebyshev{DD},DD},u)
+function hilbert(sp::JacobiWeight{Chebyshev{DD},DD},u) where {DD<:Segment}
     d=domain(u)
 
     if sp.α == sp.β == .5
@@ -170,10 +153,7 @@ realintegratejin(c,cfs,y) =
 #####
 
 
-
-logkernel{SS<:PolynomialSpace,DD<:Segment}(S::JacobiWeight{SS,DD},f,z::AbstractArray) = map(x->logkernel(S,f,x),z)
-
-function logkernel{S<:PolynomialSpace,DD<:Segment}(sp::JacobiWeight{S,DD},u,z)
+function logkernel(sp::JacobiWeight{<:PolynomialSpace,<:Segment},u,z)
     d=domain(sp)
     a,b=d.a,d.b
 
@@ -217,7 +197,7 @@ function logkernel{S<:PolynomialSpace,DD<:Segment}(sp::JacobiWeight{S,DD},u,z)
     end
 end
 
-function stieltjesintegral{S<:PolynomialSpace,DD<:Segment}(sp::JacobiWeight{S,DD},u,z)
+function stieltjesintegral(sp::JacobiWeight{<:PolynomialSpace,<:Segment},u,z)
     d=domain(sp)
     a,b=d.a,d.b
 

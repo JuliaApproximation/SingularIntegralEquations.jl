@@ -3,13 +3,13 @@
 ## stieltjes
 
 
-function stieltjes{L<:PeriodicLine,SS}(S::Space{SS,L},f,z::Number)
+function stieltjes(S::Space{<:PeriodicLine},f,z::Number)
     S2=setdomain(S,Circle())
     stieltjes(S2,f,mappoint(domain(S),Circle(),z))+hilbert(S2,f,-1)*π
 end
 
 
-function hilbert{L<:PeriodicLine,SS}(S::Space{SS,L},f,z::Number)
+function hilbert(S::Space{<:PeriodicLine},f,z::Number)
     S2=setdomain(S,Circle())
     hilbert(S2,f,mappoint(domain(f),Circle(),z))-hilbert(S2,f,-1)
 end
@@ -23,11 +23,13 @@ end
 # and C± 1 = ±1/2  (understood as a PV integral) so that H 1 = 0
 
 
-bandinds{DD<:PeriodicLine}(H::ConcreteHilbert{LaurentDirichlet{DD}})=0,0
-rangespace{DD<:PeriodicLine}(H::ConcreteHilbert{LaurentDirichlet{DD}})=domainspace(H)
+bandinds(H::ConcreteHilbert{LaurentDirichlet{DD,RR}}) where {DD<:PeriodicLine,RR} =
+    (0,0)
+rangespace(H::ConcreteHilbert{LaurentDirichlet{DD,RR}}) where {DD<:PeriodicLine,RR} =
+    domainspace(H)
 
 
-function getindex{T}(H::ConcreteHilbert{LaurentDirichlet{PeriodicLine{false,T}}},k::Integer,j::Integer)
+function getindex(H::ConcreteHilbert{LaurentDirichlet{PeriodicLine{false,T},RR}},k::Integer,j::Integer) where {T,RR}
     if k==j && iseven(k)
         -T(im)
     elseif k==j && isodd(k) && k > 0

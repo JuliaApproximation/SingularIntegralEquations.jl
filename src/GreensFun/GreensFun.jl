@@ -77,10 +77,10 @@ for TYP in (:(ApproxFun.DefiniteLineIntegralWrapper),:DefiniteLineIntegral)
         m,n = size(B)
         wsp = domainspace(⨍)
         @assert m == length(wsp.spaces)
-        ⨍j = DefiniteLineIntegral(wsp[1])
+        ⨍j = DefiniteLineIntegral(component(wsp,1))
         ret = Array{Operator{promote_type(eltype(⨍j),map(eltype,B)...)}}(m,n)
         for j=1:n
-            ⨍j = DefiniteLineIntegral(wsp[j])
+            ⨍j = DefiniteLineIntegral(component(wsp,j))
             for i=1:m
                 ret[i,j] = ⨍j[B[i,j]]
             end
@@ -187,16 +187,16 @@ end
 # Array of GreensFun on TensorSpace of PiecewiseSpaces
 
 function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::F,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...)
-    M,N = length(ss[1]),length(ss[2])
+    M,N = ncomponents(factor(ss,1)),ncomponents(factor(ss,2))
     @assert M == N
     G = Array{GreensFun}(N,N)
     if method == :standard
         for i=1:N,j=1:N
-            G[i,j] = GreensFun(f,ss[i,j];method=method,kwds...)
+            G[i,j] = GreensFun(f,component(ss,i,j);method=method,kwds...)
         end
     elseif method == :convolution
         for i=1:N,j=i:N
-            G[i,j] = GreensFun(f,ss[i,j];method=method,kwds...)
+            G[i,j] = GreensFun(f,component(ss,i,j);method=method,kwds...)
         end
         for i=2:N,j=1:i-1
             G[i,j] = transpose(G[j,i])
@@ -204,35 +204,35 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::F,ss::AbstractP
     elseif method == :unsplit
         maxF = Array{Number}(N)
         for i=1:N
-          G[i,i] = GreensFun(f,ss[i,i];method=method,kwds...)
+          G[i,i] = GreensFun(f,component(ss,i,i);method=method,kwds...)
           maxF[i] = one(real(mapreduce(eltype,promote_type,G[i,i].kernels)))/2π
         end
         for i=1:N,j=i+1:N
-            G[i,j] = GreensFun(f,ss[i,j].space;method=:lowrank,tolerance=(tolerance,max(maxF[i],maxF[j])),kwds...)
+            G[i,j] = GreensFun(f,component(ss,i,j).space;method=:lowrank,tolerance=(tolerance,max(maxF[i],maxF[j])),kwds...)
         end
         for i=2:N,j=1:i-1
             G[i,j] = transpose(G[j,i])
         end
     elseif method == :lowrank
         for i=1:N,j=1:N
-            G[i,j] = GreensFun(f,ss[i,j];method=method,kwds...)
+            G[i,j] = GreensFun(f,component(ss,i,j);method=method,kwds...)
         end
     elseif method == :Cholesky
         if tolerance == :relative
             for i=1:N
-                G[i,i] = GreensFun(f,ss[i,i];method=method,kwds...)
+                G[i,i] = GreensFun(f,component(ss,i,i);method=method,kwds...)
                 for j=i+1:N
-                    G[i,j] = GreensFun(f,ss[i,j];method=:lowrank,kwds...)
+                    G[i,j] = GreensFun(f,component(ss,i,j);method=:lowrank,kwds...)
                 end
             end
         elseif tolerance == :absolute
             maxF = Array{Number}(N)
             for i=1:N
-                F,maxF[i] = LowRankFun(f,ss[i,i];method=method,retmax=true,kwds...)
+                F,maxF[i] = LowRankFun(f,component(ss,i,i);method=method,retmax=true,kwds...)
                 G[i,i] = GreensFun(F)
             end
             for i=1:N,j=i+1:N
-                G[i,j] = GreensFun(f,ss[i,j];method=:lowrank,tolerance=(tolerance,max(maxF[i],maxF[j])),kwds...)
+                G[i,j] = GreensFun(f,component(ss,i,j);method=:lowrank,tolerance=(tolerance,max(maxF[i],maxF[j])),kwds...)
             end
         end
         for i=2:N,j=1:i-1
@@ -243,7 +243,7 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::F,ss::AbstractP
 end
 
 function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::F,g::F,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:unsplit,tolerance::Symbol=:absolute,kwds...)
-    M,N = length(ss[1]),length(ss[2])
+    M,N = ncomponents(factor(ss.space,1)),ncomponents(factor(ss.space,2))
     @assert M == N
     G = Array{GreensFun}(N,N)
     if method == :unsplit
@@ -270,14 +270,14 @@ converttoPiecewiseSpace(H::Space) = H
 converttoPiecewiseSpace(H::HierarchicalSpace) = PiecewiseSpace(H)
 
 function partition{HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}(ss::ApproxFun.TensorSpace{Tuple{HS1,HS2}})
-    ss11,ss12 = partition(ss[1])
-    ss21,ss22 = partition(ss[2])
+    ss11,ss12 = partition(factor(ss.space,1))
+    ss21,ss22 = partition(factor(ss.space,2))
     (ss11⊗ss21,ss12⊗ss22),(converttoPiecewiseSpace(ss12)⊗converttoPiecewiseSpace(ss21),converttoPiecewiseSpace(ss11)⊗converttoPiecewiseSpace(ss22))
 end
 
 function partition{O,HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}(ss::CauchyWeight{O,Tuple{HS1,HS2}})
-    ss11,ss12 = partition(ss[1])
-    ss21,ss22 = partition(ss[2])
+    ss11,ss12 = partition(factor(ss.space,1))
+    ss21,ss22 = partition(factor(ss.space,2))
     (CauchyWeight(ss11⊗ss21,O),CauchyWeight(ss12⊗ss22,O)),(CauchyWeight(converttoPiecewiseSpace(ss12)⊗converttoPiecewiseSpace(ss21),O),CauchyWeight(converttoPiecewiseSpace(ss11)⊗converttoPiecewiseSpace(ss22),O))
 end
 
@@ -291,33 +291,34 @@ function GreensFun{HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}(f::F,ss::Abstr
     return HierarchicalMatrix((G11,G22),(G21,G12))
 end
 
-blocksize{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = map(length,domain(H).domains)
+blocksize{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = map(ncomponents,domain(H).domains)
 
 function domain{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G})
     H11,H22 = diagonaldata(H)
     H21,H12 = offdiagonaldata(H)
-    m1,n2 = domain(H12)[1],domain(H12)[2]
-    m2,n1 = domain(H21)[1],domain(H21)[2]
-    @assert (m1,n1) == (domain(H11)[1],domain(H11)[2])
-    @assert (m2,n2) == (domain(H22)[1],domain(H22)[2])
+    m1,n2 = factor(domain(H12),1),factor(domain(H12),2)
+    m2,n1 = factor(domain(H21),1),factor(domain(H21),2)
+    @assert (m1,n1) == (factor(domain(H11),1),factor(domain(H11),2))
+    @assert (m2,n2) == (factor(domain(H22),1),factor(domain(H22),2))
     (m1∪m2)*(n1∪n2)
 end
 
 for TYP in (:(ApproxFun.DefiniteLineIntegralWrapper),:DefiniteLineIntegral)
     @eval function Base.getindex{G<:GreensFun,L<:LowRankFun,T}(⨍::$TYP,H::HierarchicalMatrix{G,GreensFun{L,T}})
         H11,H22 = diagonaldata(H)
-        wsp = domainspace(⨍)
-        if length(domain(H11)[2]) ≥ 2
-            ⨍1 = DefiniteLineIntegral(PiecewiseSpace(wsp[1:length(domain(H11)[2])]))
+        wsp = components(domainspace(⨍))
+        if ncomponents(factor(domain(H11),2)) ≥ 2
+            ⨍1 = DefiniteLineIntegral(PiecewiseSpace(wsp[1:ncomponents(factor(domain(H11),2))]))
         else
             ⨍1 = DefiniteLineIntegral(wsp[1])
         end
-        if length(domain(H22)[2]) ≥ 2
-            ⨍2 = DefiniteLineIntegral(PiecewiseSpace(wsp[end-length(domain(H22)[2])+1:end]))
+        if ncomponents(factor(domain(H22),2)) ≥ 2
+            ⨍2 = DefiniteLineIntegral(PiecewiseSpace(wsp[end-ncomponents(factor(domain(H22),2))+1:end]))
         else
             ⨍2 = DefiniteLineIntegral(wsp[end])
         end
-        HierarchicalOperator((qrfact(⨍1[H11]),qrfact(⨍2[H22])),map(LowRankIntegralOperator,offdiagonaldata(H)))
+        HierarchicalOperator((qrfact(⨍1[H11]),qrfact(⨍2[H22])),
+                             map(LowRankIntegralOperator,offdiagonaldata(H)))
     end
 end
 

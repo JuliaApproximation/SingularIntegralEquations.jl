@@ -15,9 +15,10 @@ for op in (:(stieltjes),:(cauchy),:(logkernel),:(stieltjesintegral),:(cauchyinte
         $op{F<:Fun}(v::Vector{F},z) = mapreduce(f->$op(f,z),+,v)
         $op{F<:Fun}(v::Vector{F}) = map($op,v)
         $op(v::Vector{Any},z) = mapreduce(f->$op(f,z),+,v)
-        $op(S::PiecewiseSpace,v,z) = $op(pieces(Fun(S,v)),z)
-        $op{S<:PiecewiseSpace,T}(f::Fun{S,T}) = (v = $op(pieces(f)); Fun(ApproxFun.SumSpace(map(space,v)),vec(coefficientmatrix(v).')))
-        $op(S::PiecewiseSpace,v) = depiece($op(pieces(Fun(S,v))))
+        $op(S::PiecewiseSpace,v,z) = $op(components(Fun(S,v)),z)
+        $op{S<:PiecewiseSpace,T}(f::Fun{S,T}) =
+            (v = $op(components(f)); Fun(ApproxFun.SumSpace(map(space,v)),vec(coefficientmatrix(v).')))
+        $op(S::PiecewiseSpace,v) = depiece($op(components(Fun(S,v))))
 
         # directed is usually analytic continuation, so we need to unwrap
         # directd
@@ -28,11 +29,11 @@ end
 
 hilbert{F<:Union{Fun,Any}}(v::Vector{F},x) =
     mapreduce(f->(x in domain(f))?hilbert(f,x):-stieltjes(f,x)/π,+,v)
-hilbert(S::PiecewiseSpace,v,z) = hilbert(pieces(Fun(S,v)),z)
+hilbert(S::PiecewiseSpace,v,z) = hilbert(components(Fun(S,v)),z)
 
 
 
 function cauchy{S<:ArraySpace,T}(v::Fun{S,T},z::Number)
-    m=mat(v)
+    m = Array(v)
     Complex{Float64}[cauchy(m[k,j],z) for k=1:size(m,1),j=1:size(m,2)]
 end

@@ -10,7 +10,7 @@ end
 
 ∇n(f::Function,d::Domain) = normalderivative(f,d)
 
-normalderivative(f::Function,Γ::UnionDomain) = depiece(map(d->normalderivative(f,d),Γ))
+normalderivative(f::Function,Γ::UnionDomain) = Fun(map(d->normalderivative(f,d),Γ),PiecewiseSpace)
 
 function normalderivative(f::Function,Γ::Domain)
     fx,fy = gradient(f,Γ)

@@ -16,7 +16,10 @@ for set in (:cantor,:thincantor,:thinnercantor,:thinnestcantor)
                 return d
             else
                 C = $set(Segment{T}(),n,α)
-                return UnionDomain(map(d->Arc(c,r,(d.a+1/2α)π,(d.b+1/2α)π),C[1:div(length(C),2)])) ∪ UnionDomain(map(d->Arc(c,r,(d.a-1/2α)π,(d.b-1/2α)π),C[div(length(C),2)+1:length(C)]))
+                return UnionDomain(map(d->Arc(c,r,(d.a+1/2α)π,(d.b+1/2α)π),
+                                       components(C)[1:(ncomponents(C)÷2)])) ∪
+                        UnionDomain(map(d->Arc(c,r,(d.a-1/2α)π,(d.b-1/2α)π),
+                                        components(C)[(ncomponents(C)÷2)+1:ncomponents(C)]))
             end
         end
 
@@ -79,9 +82,9 @@ function thinnestcantor{T}(d::Segment{T},n::Int,α::Number)
     end
 end
 
-smithvolterracantor{T}(d::Domain{T},n::Int) = smithvolterracantor(d,n,one(T)/4,one(T)/4)
+smithvolterracantor(d::Domain{T},n::Int) where {T} = smithvolterracantor(d,n,one(T)/4,one(T)/4)
 
-function smithvolterracantor{T}(d::Segment{T},n::Int,α::Number,β::Number)
+function smithvolterracantor(d::Segment{T},n::Int,α::Number,β::Number) where {T}
     a,b = d.a,d.b
     if n == 0
         return d
