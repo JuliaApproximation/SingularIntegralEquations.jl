@@ -35,6 +35,9 @@ for Op in (:OffHilbert,:OffSingularIntegral)
         $Op(ds::PeriodicDomain,rs::PeriodicDomain,order) = $Op(Laurent(ds),Laurent(rs),order)
         $Op(ds::PeriodicDomain,rs::PeriodicDomain) = $Op(Laurent(ds),Laurent(rs))
 
+        $Op(ds::Space,rs::Number,order) = $Op(ds,Space(rs),order)
+        $Op(ds::Space,rs::Number) = $Op(ds,Space(rs))
+
         domainspace(C::$Op) = C.domainspace
         rangespace(C::$Op) = C.rangespace
         bandinds(C::$Op) = bandinds(C.data)
@@ -49,21 +52,21 @@ function default_OffHilbert(ds::Space,rs::Space,order::Int)
     tol=1E-13
 
     vv=Array{Vector{Complex128}}(0)
-    m=100
+    m=min(100,dimension(rs))
     for k=1:2:1000
         b=Fun(ds,[zeros(k-1);1.])
         v1=Fun(x->-stieltjes(b,x)/π,rs,m)
         b=Fun(ds,[zeros(k);1.])
         v2=Fun(x->-stieltjes(b,x)/π,rs,m)
-        if abs(v1.coefficients[end-1])>100tol || abs(v1.coefficients[end])>100tol ||
-            abs(v2.coefficients[end-1])>100tol || abs(v2.coefficients[end])>100tol
+        if m ≥ 2 && (abs(v1.coefficients[end-1])>100tol || abs(v1.coefficients[end])>100tol ||
+                        abs(v2.coefficients[end-1])>100tol || abs(v2.coefficients[end])>100tol)
             warn("OffHilbert not resolved with $m rows")
         end
         if norm(v1.coefficients,Inf)<tol &&
             norm(v2.coefficients,Inf)<tol
             C=zeros(Complex128,mapreduce(length,max,vv),length(vv))
             for j=1:length(vv)
-                @inbounds C[1:length(vv[j]),j]=vv[j]
+                @inbounds C[1:length(vv[j]),j] = vv[j]
             end
             return OffHilbert(convert(BandedMatrix,C),ds,rs,order)
         end
@@ -116,7 +119,7 @@ OffSingularIntegral(ds::Space,rs::Space,order::Int) = default_OffSingularIntegra
 
 for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
     @eval begin
-        function $Op{DD<:Segment,RR}(ds::JacobiWeight{Ultraspherical{Int,DD,RR},DD},rs::Space,ord::Int)
+        function $Op(ds::JacobiWeight{Ultraspherical{Int,DD,RR},DD},rs::Space,ord::Int) where {DD<:Segment,RR}
             @assert order(ds.space) == 1
             @assert ds.α==ds.β==0.5
             d = domain(ds)
@@ -162,7 +165,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
             $Op(M,ds,rs,ord)
         end
 
-        function $Op{DD<:Segment,RR}(ds::JacobiWeight{ChebyshevDirichlet{1,1,DD,RR},DD},rs::PolynomialSpace,ord::Int)
+        function $Op(ds::JacobiWeight{ChebyshevDirichlet{1,1,DD,RR},DD},rs::PolynomialSpace,ord::Int) where {DD<:Segment,RR}
             @assert ds.α==ds.β==-0.5
             d = domain(ds)
             C = (.5*$Len(d))^(1-ord) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
@@ -214,7 +217,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
     end
 end
 
-function OffHilbert{D1<:Circle,D2<:Circle}(DS::Laurent{D1},RS::Laurent{D2},ord::Int)
+function OffHilbert(DS::Laurent{D1},RS::Laurent{D2},ord::Int) where {D1<:Circle,D2<:Circle}
     ds=domain(DS);rs=domain(RS)
     @assert ord==1
 
@@ -248,7 +251,7 @@ function OffHilbert{D1<:Circle,D2<:Circle}(DS::Laurent{D1},RS::Laurent{D2},ord::
     OffHilbert(2im*M,DS,RS)
 end
 
-function OffHilbert{D1<:Circle,D2<:Circle}(DS::Fourier{D1},RS::Fourier{D2},ord::Int)
+function OffHilbert(DS::Fourier{D1},RS::Fourier{D2},ord::Int) where {D1<:Circle,D2<:Circle}
     LD=Laurent(domain(DS))
     LR=Laurent(domain(RS))
     Conversion(LR,RS)*OffHilbert(LD,LR,ord)*Conversion(DS,LD)
@@ -428,19 +431,21 @@ end
 
 ## OffHilbert Functional
 
-function HornerFunctional(y0,sp)
+function HornerFunctional(y0,sp,cs)
     v = hornervector(y0)
-    FiniteOperator(v.',sp,ConstantSpace(eltype(v)))
+    FiniteOperator(v.',sp,cs)
 end
 
 
-function OffHilbert{DD,RR}(sp::JacobiWeight{Ultraspherical{Int,DD,RR},DD},z::Number)
+function OffHilbert(sp::JacobiWeight{Ultraspherical{Int,DD,RR},DD},cs::ConstantSpace{<:Point},k::Int) where {DD<:Segment,RR}
+    z = Number(domain(cs))
+    @assert k == 1
     @assert order(sp.space) == 1
     if sp.α == sp.β == 0.5
         # this translates the following cauchy to a functional
         #    0.5im*hornersum(cfs,joukowskyinverse(Val{true},mobius(u,z)))
         # which consists of multiplying by 2*im
-        -HornerFunctional(joukowskyinverse(Val{true},mobius(sp,z)),sp)
+        -HornerFunctional(joukowskyinverse(Val{true},mobius(sp,z)),sp,cs)
     else
         # calculate directly
         r=Array{eltype(z)}(0)
@@ -450,23 +455,14 @@ function OffHilbert{DD,RR}(sp::JacobiWeight{Ultraspherical{Int,DD,RR},DD},z::Num
                 break
             end
         end
-        FiniteOperator(r.',sp,ConstantSpace(eltype(r)))
+        FiniteOperator(r.',sp,cs)
     end
 end
 
 for Op in (:OffHilbert, :OffSingularIntegral)
     defOp = parse("default_"*string(Op))
     @eval begin
-        function $Op{DD,RR}(sp::JacobiWeight{Chebyshev{DD,RR},DD},z::Number,k::Int)
-            if sp.β == sp.α == 0.5
-                #try converting to Ultraspherical(1)
-                us=JacobiWeight(sp.β,sp.α,Ultraspherical(1,domain(sp)))
-                $Op(us,z,k)*Conversion(sp,us)
-            else
-                $defOp(sp,z,k)
-            end
-        end
-        function $Op{DD,RR}(sp::JacobiWeight{Chebyshev{DD,RR},DD},z::Space,k::Int)
+        function $Op(sp::JacobiWeight{Chebyshev{DD,RR},DD},z::Space,k::Int) where {DD,RR}
             if sp.β == sp.α == 0.5
                 #try converting to Ultraspherical(1)
                 us=JacobiWeight(sp.β,sp.α,Ultraspherical(1,domain(sp)))
@@ -479,17 +475,19 @@ for Op in (:OffHilbert, :OffSingularIntegral)
 end
 
 
-function OffHilbert{DD,RR}(sp::JacobiWeight{ChebyshevDirichlet{1,1,DD,RR},DD},z::Number)
+function OffHilbert(sp::JacobiWeight{ChebyshevDirichlet{1,1,DD,RR},DD},cs::ConstantSpace{<:Point},k::Int) where {DD<:Segment,RR}
+    z = Number(domain(cs))
+    @assert k == 1
     if sp.α == sp.β == -0.5
         z=mobius(sp,z)
 
         sx2z=sqrtx2(z)
         sx2zi=1./sx2z
 
-        FiniteOperator([-sx2zi;1-sx2zi;2*hornervector(z-sx2z)].',sp,ConstantSpace(typeof(sx2zi)))
+        FiniteOperator([-sx2zi;1-sx2zi;2*hornervector(z-sx2z)].',sp,cs)
     else
         # try converting to Canonical
         us=JacobiWeight(sp.β,sp.α,Chebyshev(domain(sp)))
-        OffHilbert(us,z)*Conversion(sp,us)
+        OffHilbert(us,cs)*Conversion(sp,us)
     end
 end

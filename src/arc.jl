@@ -24,10 +24,11 @@ function PseudoHilbert{LS,RR<:Arc}(sp::JacobiWeight{LS,RR},k::Integer)
 end
 
 
-function Hilbert{LS,RR<:Arc}(sp::JacobiWeight{LS,RR},k::Integer)
+function Hilbert(sp::JacobiWeight{LS,RR},k::Integer) where {LS,RR<:Arc}
     @assert k==1
     csp=setcanonicaldomain(sp)
-    H=Hilbert(csp)+(1/π)*Stieltjes(csp,mobius(sp,Inf))
+    St = Stieltjes(csp,mobius(sp,Inf))
+    H=Hilbert(csp)+(1/π)*SpaceOperator(St,csp,ConstantSpace(eltype(St)))
     HilbertWrapper(SpaceOperator(H,setdomain(domainspace(H),domain(sp)),setdomain(rangespace(H),domain(sp))),k)
 end
 
@@ -59,7 +60,7 @@ function logkernel(sp::Space{<:Arc},w,z)
 end
 
 
-function SingularIntegral{JW,RR<:Arc}(S::JacobiWeight{JW,RR},k::Integer)
+function SingularIntegral(S::JacobiWeight{JW,RR},k::Integer) where {JW,RR<:Arc}
     d=domain(S)
     if k==0
         tol=1E-15
@@ -79,7 +80,8 @@ function SingularIntegral{JW,RR<:Arc}(S::JacobiWeight{JW,RR},k::Integer)
         L∞=FiniteOperator(cnst.',csp,ConstantSpace(eltype(cnst)))
 
         x=Fun(identity,S)
-        SpaceOperator((Σ-L∞)*M,S,setdomain(rangespace(Σ),d))+(logabs(x-fromcanonical(d,Inf))/π)*DefiniteLineIntegral(S)
+        SpaceOperator((Σ-L∞)*M,S,setdomain(rangespace(Σ),d)) +
+            (logabs(x-fromcanonical(d,Inf))/π)*DefiniteLineIntegral(S)
     else
         # multiply by abs(M')/M' to change to dz to ds
         Mp=fromcanonicalD(d)

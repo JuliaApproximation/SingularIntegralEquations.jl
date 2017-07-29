@@ -264,6 +264,7 @@ a=Arc(0.,1.,0.,π/2)
 f=Fun(exp,a)*sqrt(abs((ζ-1)*(ζ-im)))
 H=Hilbert()
 z=exp(.1im)
+
 @test (H*f)(z) ≈ hilbert(f,z)
 
 testbandedoperator(Hilbert(space(f)))
