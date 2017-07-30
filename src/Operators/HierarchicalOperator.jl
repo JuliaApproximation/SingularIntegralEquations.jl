@@ -96,7 +96,7 @@ function condest(H::HierarchicalOperator)
     return cond(H.A)*mapreduce(condest,+,diagonaldata(H))
 end
 
-Base.convert{S,V,T,HS,HV}(::Type{HierarchicalOperator{S,V,T,HS,HV}},M::HierarchicalOperator) = HierarchicalOperator(convert(Vector{S},collectdiagonaldata(M)),convert(Vector{V},collectoffdiagonaldata(M)))
+convert{S,V,T,HS,HV}(::Type{HierarchicalOperator{S,V,T,HS,HV}},M::HierarchicalOperator) = HierarchicalOperator(convert(Vector{S},collectdiagonaldata(M)),convert(Vector{V},collectoffdiagonaldata(M)))
 Base.promote_rule{S,V,T,HS,HV,SS,VV,TT,HSS,HVV}(::Type{HierarchicalOperator{S,V,T,HS,HV}},::Type{HierarchicalOperator{SS,VV,TT,HSS,HVV}})=HierarchicalOperator{promote_type(S,SS),promote_type(V,VV),promote_type(T,TT),promote_type(HS,HSS),promote_type(HV,HVV)}
 
 Base.transpose(H::HierarchicalOperator) = HierarchicalOperator(map(transpose,diagonaldata(H)),map(transpose,reverse(offdiagonaldata(H))))

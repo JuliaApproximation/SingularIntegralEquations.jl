@@ -64,7 +64,7 @@ function collectdata{S}(H::HierarchicalVector{S})
 end
 
 
-Base.convert{S,T,HS}(::Type{HierarchicalVector{S,T,HS}},M::HierarchicalVector) = HierarchicalVector(convert(Vector{S},collectdata(M)))
+convert{S,T,HS}(::Type{HierarchicalVector{S,T,HS}},M::HierarchicalVector) = HierarchicalVector(convert(Vector{S},collectdata(M)))
 Base.promote_rule{S,T,HS,SS,TT,HSS}(::Type{HierarchicalVector{S,T,HS}},::Type{HierarchicalVector{SS,TT,HSS}})=HierarchicalVector{promote_type(S,SS),promote_type(T,TT),promote_type(HS,HSS)}
 
 function Base.size{S<:AbstractVector}(H::HierarchicalVector{S})

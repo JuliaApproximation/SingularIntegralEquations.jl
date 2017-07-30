@@ -68,9 +68,9 @@ for (HDSF,etyp) in ((:HierarchicalDomain,:eltype),(:HierarchicalSpace,:rangetype
             ret
         end
 
-        Base.convert(::Type{$HDSF{S,T,HS}},M::$HDSF{S,T,HS}) where {S,T,HS} =
+        convert(::Type{$HDSF{S,T,HS}},M::$HDSF{S,T,HS}) where {S,T,HS} =
             M
-        Base.convert(::Type{$HDSF{S,T,HS}},M::$HDSF) where {S,T,HS} =
+        convert(::Type{$HDSF{S,T,HS}},M::$HDSF) where {S,T,HS} =
             $HDSF{S,T,HS}(convert(Vector{S},collectdata(M)))
         Base.promote_rule(::Type{$HDSF{S,T,HS}},::Type{$HDSF{SS,TT,HSS}}) where {S,T,HS,SS,TT,HSS} =
             $HDSF{promote_type(S,SS),promote_type(T,TT),promote_type(HS,HSS)}

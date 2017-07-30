@@ -102,8 +102,8 @@ function condest(H::HierarchicalMatrix)
     return cond(H.A)*mapreduce(condest,+,diagonaldata(H))
 end
 
-Base.convert{S,V,T,HS,HV}(::Type{HierarchicalMatrix{S,V,T,HS,HV}},M::HierarchicalMatrix) = HierarchicalMatrix(convert(Vector{S},collectdiagonaldata(M)),convert(Vector{V},collectoffdiagonaldata(M)))
-Base.convert{T}(::Type{Matrix{T}},M::HierarchicalMatrix) = full(M)
+convert{S,V,T,HS,HV}(::Type{HierarchicalMatrix{S,V,T,HS,HV}},M::HierarchicalMatrix) = HierarchicalMatrix(convert(Vector{S},collectdiagonaldata(M)),convert(Vector{V},collectoffdiagonaldata(M)))
+convert{T}(::Type{Matrix{T}},M::HierarchicalMatrix) = full(M)
 Base.promote_rule{S,V,T,HS,HV,SS,VV,TT,HSS,HVV}(::Type{HierarchicalMatrix{S,V,T,HS,HV}},::Type{HierarchicalMatrix{SS,VV,TT,HSS,HVV}})=HierarchicalMatrix{promote_type(S,SS),promote_type(V,VV),promote_type(T,TT),promote_type(HS,HSS),promote_type(HV,HVV)}
 Base.promote_rule{T,SS,VV,TT,HSS,HVV}(::Type{Matrix{T}},::Type{HierarchicalMatrix{SS,VV,TT,HSS,HVV}})=Matrix{promote_type(T,TT)}
 Base.promote_rule{T,SS,VV,TT,HSS,HVV}(::Type{LowRankMatrix{T}},::Type{HierarchicalMatrix{SS,VV,TT,HSS,HVV}})=Matrix{promote_type(T,TT)}

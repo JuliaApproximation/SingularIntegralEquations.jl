@@ -9,7 +9,7 @@ export cauchy, cauchyintegral, stieltjes, logkernel,
 
 
 import Base: values,getindex,setindex!,*,+,-,==,<,<=,>,
-                >=,/,^,\,∪,transpose
+                >=,/,^,\,∪,transpose, convert
 
 
 if VERSION < v"0.6.0-dev.1632"
@@ -55,10 +55,10 @@ end
 
 (::Type{Directed{s}}){s}(x) = Directed{s,eltype(x)}(x)
 
-Base.convert{s,T}(::Type{Directed{s,T}},x::Directed{s}) = Directed{s,T}(T(x.x))
-Base.convert{s,T}(::Type{Directed{s,T}},x::T) = Directed{s,T}(x)
-Base.convert{s,T}(::Type{Directed{s,T}},x::Real) = Directed{s,T}(T(x))
-Base.convert{s,T}(::Type{Directed{s,T}},x::Complex) = Directed{s,T}(T(x))
+convert{s,T}(::Type{Directed{s,T}},x::Directed{s}) = Directed{s,T}(T(x.x))
+convert{s,T}(::Type{Directed{s,T}},x::T) = Directed{s,T}(x)
+convert{s,T}(::Type{Directed{s,T}},x::Real) = Directed{s,T}(T(x))
+convert{s,T}(::Type{Directed{s,T}},x::Complex) = Directed{s,T}(T(x))
 
 const ⁺ = Directed{true}(true)
 const ⁻ = Directed{false}(true)

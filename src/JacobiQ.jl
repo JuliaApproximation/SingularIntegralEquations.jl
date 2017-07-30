@@ -19,7 +19,7 @@ JacobiQ(a,b) = JacobiQ(a,b,Segment())
 
 Base.promote_rule{T,V,D}(::Type{JacobiQ{D,T}},::Type{JacobiQ{D,V}}) =
     JacobiQ{D,promote_type(T,V)}
-Base.convert{T,V,D}(::Type{JacobiQ{D,T}},J::JacobiQ{D,V}) =
+convert{T,V,D}(::Type{JacobiQ{D,T}},J::JacobiQ{D,V}) =
     JacobiQ{D,T}(J.a,J.b,J.domain)
 
 @compat const WeightedJacobiQ{D,T} = JacobiQWeight{JacobiQ{D,T},D}
