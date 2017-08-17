@@ -102,8 +102,8 @@ function condest(H::HierarchicalMatrix)
     return cond(H.A)*mapreduce(condest,+,diagonaldata(H))
 end
 
-Base.convert{S,V,T,HS,HV}(::Type{HierarchicalMatrix{S,V,T,HS,HV}},M::HierarchicalMatrix) = HierarchicalMatrix(convert(Vector{S},collectdiagonaldata(M)),convert(Vector{V},collectoffdiagonaldata(M)))
-Base.convert{T}(::Type{Matrix{T}},M::HierarchicalMatrix) = full(M)
+convert{S,V,T,HS,HV}(::Type{HierarchicalMatrix{S,V,T,HS,HV}},M::HierarchicalMatrix) = HierarchicalMatrix(convert(Vector{S},collectdiagonaldata(M)),convert(Vector{V},collectoffdiagonaldata(M)))
+convert{T}(::Type{Matrix{T}},M::HierarchicalMatrix) = full(M)
 Base.promote_rule{S,V,T,HS,HV,SS,VV,TT,HSS,HVV}(::Type{HierarchicalMatrix{S,V,T,HS,HV}},::Type{HierarchicalMatrix{SS,VV,TT,HSS,HVV}})=HierarchicalMatrix{promote_type(S,SS),promote_type(V,VV),promote_type(T,TT),promote_type(HS,HSS),promote_type(HV,HVV)}
 Base.promote_rule{T,SS,VV,TT,HSS,HVV}(::Type{Matrix{T}},::Type{HierarchicalMatrix{SS,VV,TT,HSS,HVV}})=Matrix{promote_type(T,TT)}
 Base.promote_rule{T,SS,VV,TT,HSS,HVV}(::Type{LowRankMatrix{T}},::Type{HierarchicalMatrix{SS,VV,TT,HSS,HVV}})=Matrix{promote_type(T,TT)}
@@ -178,7 +178,7 @@ function blockrank(H::HierarchicalMatrix)
     A
 end
 
-for op in (:+,:-,:.+,:.-)
+for op in ( VERSION < v"0.6-" ? (:+,:-,:.+,:.-) : (:+,:-))
     @eval begin
         $op(H::HierarchicalMatrix) = HierarchicalMatrix(map($op,diagonaldata(H)),map($op,offdiagonaldata(H)))
         $op(H::HierarchicalMatrix,J::HierarchicalMatrix) = HierarchicalMatrix(map($op,diagonaldata(H),diagonaldata(J)),map($op,offdiagonaldata(H),offdiagonaldata(J)))
@@ -193,13 +193,14 @@ function *(H::HierarchicalMatrix, x::HierarchicalVector)
     T = promote_type(eltype(H),eltype(x))
     A_mul_B!(similar(x,T),H,x)
 end
-
-function Base.A_mul_B!(b::AbstractVector,D::Base.LinAlg.Diagonal,x::AbstractVector)
-    d = D.diag
-    for i=1:min(length(b),length(x))
-        @inbounds b[i] += d[i]*x[i]
+if VERSION < v"0.6-"
+    function Base.A_mul_B!(b::AbstractVector,D::Base.LinAlg.Diagonal,x::AbstractVector)
+        d = D.diag
+        for i=1:min(length(b),length(x))
+            @inbounds b[i] += d[i]*x[i]
+        end
+        b
     end
-    b
 end
 
 function Base.A_mul_B!(b::HierarchicalVector,H::HierarchicalMatrix,h::HierarchicalVector)

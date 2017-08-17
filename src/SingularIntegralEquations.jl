@@ -8,9 +8,13 @@ export cauchy, cauchyintegral, stieltjes, logkernel,
        stieltjesjacobimoment, logjacobimoment, singularintegral
 
 
-import Base: values,getindex,setindex!,*,.*,+,.+,-,.-,==,<,<=,>,
-                >=,./,/,.^,^,\,∪,transpose
+import Base: values,getindex,setindex!,*,+,-,==,<,<=,>,
+                >=,/,^,\,∪,transpose, convert
 
+
+if VERSION < v"0.6.0-dev.1632"
+    import Base: .*, .+, .-, ./, .^
+end
 
 import BandedMatrices: bzeros
 
@@ -22,14 +26,16 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
                   ConcreteDefiniteIntegral, ConcreteDefiniteLineIntegral,
                   SumSpace,PiecewiseSpace, interlace,Multiplication, VectorSpace, ArraySpace,
                   BandedMatrix,ChebyshevDirichlet,PolynomialSpace,AbstractProductSpace,evaluate,order,
-                  RealBasis,ComplexBasis,AnyBasis,UnsetSpace, MultivariateFun, BivariateFun,linesum,complexlength,
-                  Fun, ProductFun, LowRankFun, mappoint, JacobiZ,
+                  UnsetSpace, MultivariateFun, BivariateFun,linesum,complexlength,
+                  Fun, ProductFun, LowRankFun, mappoint, JacobiZ, prectype,
                   real, UnivariateSpace, RealUnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger,
                   ConstantSpace,ReOperator,DirectSumSpace, ArraySpace, ZeroSpace,
                   LowRankPertOperator, LaurentDirichlet, setcanonicaldomain, SubSpace,
-                  IntervalCurve,PeriodicCurve, reverseorientation, op_eltype, @wrapper, mobius,
+                  IntervalCurve,PeriodicCurve, reverseorientation, @wrapper, mobius,
                   defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, refactorsvd!, SubOperator,
-                  Block, BlockBandedMatrix, BandedBlockBandedMatrix, F, Infinity
+                  Block, BlockBandedMatrix, BandedBlockBandedMatrix, F, Infinity,
+                  component, ncomponents, factor, nfactors, components, factors, rangetype,
+                  VFun, Point
 
 import ApproxFun: testbandedoperator
 
@@ -49,10 +55,10 @@ end
 
 (::Type{Directed{s}}){s}(x) = Directed{s,eltype(x)}(x)
 
-Base.convert{s,T}(::Type{Directed{s,T}},x::Directed{s}) = Directed{s,T}(T(x.x))
-Base.convert{s,T}(::Type{Directed{s,T}},x::T) = Directed{s,T}(x)
-Base.convert{s,T}(::Type{Directed{s,T}},x::Real) = Directed{s,T}(T(x))
-Base.convert{s,T}(::Type{Directed{s,T}},x::Complex) = Directed{s,T}(T(x))
+convert{s,T}(::Type{Directed{s,T}},x::Directed{s}) = Directed{s,T}(T(x.x))
+convert{s,T}(::Type{Directed{s,T}},x::T) = Directed{s,T}(x)
+convert{s,T}(::Type{Directed{s,T}},x::Real) = Directed{s,T}(T(x))
+convert{s,T}(::Type{Directed{s,T}},x::Complex) = Directed{s,T}(T(x))
 
 const ⁺ = Directed{true}(true)
 const ⁻ = Directed{false}(true)

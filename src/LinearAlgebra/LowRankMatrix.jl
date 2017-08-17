@@ -84,8 +84,8 @@ function refactorsvd!{S,T}(U::Matrix{S},Σ::Vector{T},V::Matrix{S})
     r
 end
 
-Base.convert{T}(::Type{LowRankMatrix{T}},L::LowRankMatrix) = LowRankMatrix{T}(convert(Matrix{T},L.U),convert(Matrix{T},L.V))
-Base.convert{T}(::Type{Matrix{T}},L::LowRankMatrix) = convert(Matrix{T},full(L))
+convert{T}(::Type{LowRankMatrix{T}},L::LowRankMatrix) = LowRankMatrix{T}(convert(Matrix{T},L.U),convert(Matrix{T},L.V))
+convert{T}(::Type{Matrix{T}},L::LowRankMatrix) = convert(Matrix{T},full(L))
 Base.promote_rule{T,V}(::Type{LowRankMatrix{T}},::Type{LowRankMatrix{V}})=LowRankMatrix{promote_type(T,V)}
 Base.promote_rule{T,V}(::Type{LowRankMatrix{T}},::Type{Matrix{V}})=Matrix{promote_type(T,V)}
 
@@ -136,7 +136,7 @@ Base.copy!(L::LowRankMatrix,N::LowRankMatrix) = (copy!(L.U,N.U);copy!(L.V,N.V);L
 
 # algebra
 
-for op in (:+,:-,:.+,:.-)
+for op in ( VERSION < v"0.6-" ? (:+,:-,:.+,:.-) : (:+,:-))
     @eval begin
         $op(L::LowRankMatrix) = LowRankMatrix($op(L.U),L.V)
 

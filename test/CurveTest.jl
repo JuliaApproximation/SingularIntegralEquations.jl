@@ -83,6 +83,8 @@ w=sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x))
 
 testbandedoperator(SingularIntegral(space(w),0))
 testbandedoperator(Hilbert(space(w)))
+testblockbandedoperator(SingularIntegral(space(w),0))
+testblockbandedoperator(Hilbert(space(w)))
 
 w=1/(sqrt(abs(first(d)-x))*sqrt(abs(last(d)-x)))
 

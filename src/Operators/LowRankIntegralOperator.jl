@@ -1,10 +1,10 @@
 export LowRankIntegralOperator
 
 immutable LowRankIntegralOperator{S<:Space,M<:Space,T} <: AbstractLowRankOperator{T}
-    U::Vector{Fun{S,T}}
-    V::Vector{Fun{M,T}}
+    U::Vector{VFun{S,T}}
+    V::Vector{VFun{M,T}}
 
-    function (::Type{LowRankIntegralOperator{S,M,T}}){S,M,T}(U::Vector{Fun{S,T}},V::Vector{Fun{M,T}})
+    function (::Type{LowRankIntegralOperator{S,M,T}}){S,M,T}(U::Vector{VFun{S,T}},V::Vector{VFun{M,T}})
         @assert length(U) == length(V)
         @assert length(U) > 0
         ds=space(first(V))
@@ -19,10 +19,13 @@ immutable LowRankIntegralOperator{S<:Space,M<:Space,T} <: AbstractLowRankOperato
     end
 end
 
-LowRankIntegralOperator{S,M,T}(U::Vector{Fun{S,T}},V::Vector{Fun{M,T}})=LowRankIntegralOperator{S,M,T}(U,V)
+LowRankIntegralOperator{S,M,T}(U::Vector{VFun{S,T}},V::Vector{VFun{M,T}}) =
+    LowRankIntegralOperator{S,M,T}(U,V)
 
 
-LowRankIntegralOperator{S,M,T1,T2}(U::Vector{Fun{S,T1}},V::Vector{Fun{M,T2}})=LowRankIntegralOperator(convert(Vector{Fun{S,promote_type(T1,T2)}},U),convert(Vector{Fun{M,promote_type(T1,T2)}},V))
+LowRankIntegralOperator{S,M,T1,T2}(U::Vector{VFun{S,T1}},V::Vector{VFun{M,T2}}) =
+    LowRankIntegralOperator(convert(Vector{VFun{S,promote_type(T1,T2)}},U),
+                            convert(Vector{VFun{M,promote_type(T1,T2)}},V))
 
 LowRankIntegralOperator(A::Fun,B::Fun)=LowRankIntegralOperator([A],[B])
 

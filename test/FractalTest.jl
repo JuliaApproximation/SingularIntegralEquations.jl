@@ -10,10 +10,11 @@ for set in (:cantor,:thincantor,:thinnercantor,:thinnestcantor)
     @eval begin
         @test $set(d,0) == d
         @test $set(d,0,4) == d
-        @test $set(d,1) == Segment(0.0,1/3)∪Segment(2/3,1.0)
-        @test $set(d,1,4) == Segment(0.0,1/4)∪Segment(3/4,1.0)
+        @test $set(d,1) == Segment(0.0,1/3) ∪ Segment(2/3,1.0)
+        @test $set(d,1,4) == Segment(0.0,1/4) ∪ Segment(3/4,1.0)
         @test $set(c,0) == c
-        @test $set(c,1) == Arc(0.0,1.0,(-2.6179938779914944,-0.523598775598299))∪Arc(0.0,1.0,(0.5235987755982987,2.6179938779914944))
+        @test $set(c,1) == Arc(0.0,1.0,(-2.6179938779914944,-0.523598775598299)) ∪
+                            Arc(0.0,1.0,(0.5235987755982987,2.6179938779914944))
     end
 end
 

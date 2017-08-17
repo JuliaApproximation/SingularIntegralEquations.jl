@@ -2,6 +2,14 @@
 for (Func,Len) in ((:(Base.sum),:complexlength),(:linesum,:arclength))
     @eval begin
         function $Func{CC<:Chebyshev,DD}(G::Function,u::Fun{JacobiWeight{CC,DD}},z)
+           d,α,β,n=domain(u),u.space.α,u.space.β,2ncoefficients(u)
+           vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(d,n)
+           sp,p = space(u),plan_chebyshevtransform(complex(vals))
+           map(z->$Func(Fun(sp,p*(G.(z,t).*vals))),z)
+       end
+
+       # TODO: remove the following hack
+        function $Func{CC<:Chebyshev,DD<:Segment}(G::Function,u::Fun{JacobiWeight{CC,DD}},z)
             d,α,β,n=domain(u),u.space.α,u.space.β,2ncoefficients(u)
             vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(d,n)
             if α == β == -0.5
@@ -30,17 +38,21 @@ end
 
 for TYP in (:Fourier,:Laurent)
     @eval begin
-        function Base.sum{DD}(G::Function,u::Fun{$TYP{DD}},z)
+        function Base.sum{DD<:PeriodicInterval}(G::Function,u::Fun{$TYP{DD}},z)
             d,n=domain(u),2ncoefficients(u)
             vals,t = values(pad(u,n)),points(d,n)
-            if isa(d,Circle)
-              return map(z->mean(G.(z,t).*vals.*t),z)*2π*im
-            else
-              return map(z->mean(G.(z,t).*vals),z)*arclength(d)
-            end
+
+            return map(z->mean(G.(z,t).*vals),z)*arclength(d)
         end
 
-        function linesum{DD}(G::Function,u::Fun{$TYP{DD}},z)
+        function Base.sum{DD<:Circle}(G::Function,u::Fun{$TYP{DD}},z)
+            d,n=domain(u),2ncoefficients(u)
+            vals,t = values(pad(u,n)),points(d,n)
+            #TODO: shouldn't this depend on which circle?
+            return map(z->mean(G.(z,t).*vals.*t),z)*2π*im
+        end
+
+        function linesum{DD<:PeriodicInterval}(G::Function,u::Fun{$TYP{DD}},z)
             d,n=domain(u),2ncoefficients(u)
             vals,t = values(pad(u,n)),points(d,n)
             map(z->mean(G.(z,t).*vals),z)*arclength(d)

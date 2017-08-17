@@ -9,15 +9,15 @@ x = Fun(identity)
 w = 1/sqrt(1-x^2)
 d = domain(x)
 d2 = d^2
-B = [dirichlet(d);neumann(d)]
+B = [Dirichlet(d);Neumann(d)]
 H2 = Hilbert(d,2)
 H4 = Hilbert(d,4)
 ϵ = 0.2
 L = -6ϵ^2*H4[w] + H2[w]
 f = -Fun(one)
 
-uSIE = [B;L]\[zeros(4);f]
-@time uSIE = [B;L]\[zeros(4);f]
+uSIE = [B;L]\[[0,0],[0,0],f]
+@time uSIE = [B;L]\[[0,0],[0,0],f]
 println("The length of uSIE is: ",ncoefficients(uSIE))
 println("The extrema of uSIE are: ",extrema(uSIE))
 
