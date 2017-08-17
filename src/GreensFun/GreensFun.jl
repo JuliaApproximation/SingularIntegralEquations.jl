@@ -102,9 +102,6 @@ end
 -(B::BivariateFun,G::GreensFun) = GreensFun([kernels(B);-G.kernels])
 
 # work around 0.4 bug
-if VERSION < v"0.5"
-    +(A::GreensFun,B::GreensFun,C::GreensFun) = A+(B+C)
-end
 
 # Custom operations on Arrays required to infer type of resulting Array{GreensFun}
 
