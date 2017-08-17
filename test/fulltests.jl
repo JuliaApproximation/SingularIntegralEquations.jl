@@ -28,7 +28,7 @@ testblockbandedoperator(H)
 
 #  TODO: fix testraggedbelowoperator(H)
 
-Ai = [Fun(ones(component(Γ,1)),Γ) Fun(ones(component(Γ,2)),Γ) Fun(ones(component(Γ,3)),Γ) real(H)]
+Ai = [Operator(Fun(ones(component(Γ,1)),Γ)) Fun(ones(component(Γ,2)),Γ) Fun(ones(component(Γ,3)),Γ) real(H)]
 
 @test ApproxFun.israggedbelow(Ai)
 @test ApproxFun.israggedbelow(Ai.ops[4])
@@ -38,7 +38,7 @@ Ai = [Fun(ones(component(Γ,1)),Γ) Fun(ones(component(Γ,2)),Γ) Fun(ones(compo
 
 B=ApproxFun.SpaceOperator(ApproxFun.BasisFunctional(3),S,ApproxFun.ConstantSpace(Float64))
 
-Ai=[0                 0                 0                 B;
+Ai=[Operator(0)                 0                 0                 B;
     Fun(ones(component(Γ,1)),Γ) Fun(ones(component(Γ,2)),Γ) Fun(ones(component(Γ,3)),Γ) real(H)]
 
 
@@ -48,7 +48,7 @@ Ai=[0                 0                 0                 B;
 
 k=114;
     α=exp(k/50*im)
-    @time a,b,c,ui=[0                 0                 0                 B;
+    @time a,b,c,ui=[Operator(0)                 0                 0                 B;
               Fun(ones(component(Γ,1)),Γ) Fun(ones(component(Γ,2)),Γ) Fun(ones(component(Γ,3)),Γ) real(H)]\Any[0.;imag(α*z)]
 
 
