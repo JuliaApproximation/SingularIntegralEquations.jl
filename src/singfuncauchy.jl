@@ -46,7 +46,7 @@ joukowskyinversereal(::Type{Val{false}},z) = real(z)+sqrtx2real(z)
 
 
 
-function hornersum{S<:Number,V<:Number}(cfs::AbstractVector{S},y::V)
+function hornersum(cfs::AbstractVector{S},y::V) where {S<:Number,V<:Number}
     N,P = length(cfs),Base.promote_op(*,S,V)
     ret = N > 0 ? convert(P,cfs[N]) : zero(P)
     for k=N-1:-1:1
@@ -55,7 +55,7 @@ function hornersum{S<:Number,V<:Number}(cfs::AbstractVector{S},y::V)
     y*ret
 end
 
-function divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVector{S},y::T,ys::U,s::V)
+function divkhornersum(cfs::AbstractVector{S},y::T,ys::U,s::V) where {S<:Number,T<:Number,U<:Number,V<:Number}
     N,P = length(cfs),promote_type(S,T,U,V)
     ret = N > 0 ? convert(P,cfs[N]/(N+s)) : zero(P)
     for k=N-1:-1:1
@@ -64,8 +64,8 @@ function divkhornersum{S<:Number,T<:Number,U<:Number,V<:Number}(cfs::AbstractVec
     y*ys*ret
 end
 
-realdivkhornersum{S<:Real}(cfs::AbstractVector{S},y,ys,s) = real(divkhornersum(cfs,y,ys,s))
-realdivkhornersum{S<:Complex}(cfs::AbstractVector{S},y,ys,s) =
+realdivkhornersum(cfs::AbstractVector{S},y,ys,s) where {S<:Real} = real(divkhornersum(cfs,y,ys,s))
+realdivkhornersum(cfs::AbstractVector{S},y,ys,s) where {S<:Complex} =
     complex(real(divkhornersum(real(cfs),y,ys,s)),
             real(divkhornersum(imag(cfs),y,ys,s)))
 

@@ -9,14 +9,14 @@ export Convolution
 # where G is supplied as a Fun.
 #############
 
-@compat abstract type Convolution{S,BT,T} <: Operator{T} end
+abstract type Convolution{S,BT,T} <: Operator{T} end
 
-immutable ConcreteConvolution{S<:Space,BT,T} <: Convolution{S,BT,T}
+struct ConcreteConvolution{S<:Space,BT,T} <: Convolution{S,BT,T}
     op::BT
     G::Fun{S,T}
 end
 
-Convolution{S,BT,T}(op::BT,G::Fun{S,T}) = ConcreteConvolution(op,G)
+Convolution(op::BT,G::Fun{S,T}) where {S,BT,T} = ConcreteConvolution(op,G)
 
 domain(C::ConcreteConvolution) = domain(C.op)
 domainspace(C::ConcreteConvolution) = domainspace(C.op)
@@ -24,15 +24,15 @@ rangespace(C::ConcreteConvolution) = UnsetSpace()
 bandinds(C::ConcreteConvolution) = error("No range space attached to Convolution")
 getindex(C::ConcreteConvolution,k::Integer,j::Integer) = error("No range space attached to Convolution")
 
-rangespace{D,BT}(C::ConcreteConvolution{Laurent{D},BT}) = space(C.G)
-rangespace{D,BT}(C::ConcreteConvolution{Fourier{D},BT}) = space(C.G)
-rangespace{D,BT}(C::ConcreteConvolution{CosSpace{D},BT}) = Fourier(domain(C.G))
+rangespace(C::ConcreteConvolution{Laurent{D},BT}) where {D,BT} = space(C.G)
+rangespace(C::ConcreteConvolution{Fourier{D},BT}) where {D,BT} = space(C.G)
+rangespace(C::ConcreteConvolution{CosSpace{D},BT}) where {D,BT} = Fourier(domain(C.G))
 
-bandinds{D,BT}(C::ConcreteConvolution{Laurent{D},BT}) = 0,0
-bandinds{D,BT}(C::ConcreteConvolution{Fourier{D},BT}) = 0,0
-bandinds{D,BT}(C::ConcreteConvolution{CosSpace{D},BT}) = 0,0
+bandinds(C::ConcreteConvolution{Laurent{D},BT}) where {D,BT} = 0,0
+bandinds(C::ConcreteConvolution{Fourier{D},BT}) where {D,BT} = 0,0
+bandinds(C::ConcreteConvolution{CosSpace{D},BT}) where {D,BT} = 0,0
 
-function getindex{D,T1,T2}(C::ConcreteConvolution{Fourier{D},ConcreteDefiniteLineIntegral{Fourier{D},T1},T2},k::Integer,j::Integer)
+function getindex(C::ConcreteConvolution{Fourier{D},ConcreteDefiniteLineIntegral{Fourier{D},T1},T2},k::Integer,j::Integer) where {D,T1,T2}
     T = promote_type(T1,T2)
     if k == j
         if k == 1 && k ≤ ncoefficients(C.G)
@@ -49,7 +49,7 @@ function getindex{D,T1,T2}(C::ConcreteConvolution{Fourier{D},ConcreteDefiniteLin
     end
 end
 
-function getindex{D,T1,T2}(C::ConcreteConvolution{CosSpace{D},ConcreteDefiniteLineIntegral{Fourier{D},T1},T2},k::Integer,j::Integer)
+function getindex(C::ConcreteConvolution{CosSpace{D},ConcreteDefiniteLineIntegral{Fourier{D},T1},T2},k::Integer,j::Integer) where {D,T1,T2}
     T = promote_type(T1,T2)
     if k == j
         if k == 1 && k ≤ ncoefficients(C.G)
@@ -64,7 +64,7 @@ function getindex{D,T1,T2}(C::ConcreteConvolution{CosSpace{D},ConcreteDefiniteLi
     end
 end
 
-function getindex{D,T1,T2}(C::ConcreteConvolution{Laurent{D},ConcreteDefiniteLineIntegral{Laurent{D},T1},T2},k::Integer,j::Integer)
+function getindex(C::ConcreteConvolution{Laurent{D},ConcreteDefiniteLineIntegral{Laurent{D},T1},T2},k::Integer,j::Integer) where {D,T1,T2}
     T = promote_type(T1,T2)
     if k == j && k ≤ ncoefficients(C.G)
         (C.op[1]*C.G.coefficients[k])::T
@@ -73,7 +73,7 @@ function getindex{D,T1,T2}(C::ConcreteConvolution{Laurent{D},ConcreteDefiniteLin
     end
 end
 
-function getindex{D,OT,T1,T2}(C::ConcreteConvolution{Laurent{D},ConcreteSingularIntegral{Laurent{D},OT,T1},T2},k::Integer,j::Integer)
+function getindex(C::ConcreteConvolution{Laurent{D},ConcreteSingularIntegral{Laurent{D},OT,T1},T2},k::Integer,j::Integer) where {D,OT,T1,T2}
     T = promote_type(T1,T2)
     c = C.G.coefficients
     Op = C.op

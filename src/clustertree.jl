@@ -27,7 +27,7 @@ clustertree(A::AbstractMatrix,c::AbstractVector,x::AbstractVector) = clustertree
 
 for (TYP,HTYP) in ((:Number,:HierarchicalVector),(:Domain,:HierarchicalDomain))
     @eval begin
-        function clustertree{T<:$TYP}(A::AbstractMatrix,c::AbstractVector,x::AbstractVector{T},p::AbstractVector)
+        function clustertree(A::AbstractMatrix,c::AbstractVector,x::AbstractVector{T},p::AbstractVector) where T<:$TYP
             i,j = indmaxp(A,p)
 
             cmax = c[i]-c[j]

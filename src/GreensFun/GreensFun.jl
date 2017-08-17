@@ -12,9 +12,9 @@ export GreensFun
 # could consist of a Vector of ProductFun's and LowRankFun's.
 # If there are GreensFun's in the Vector, then we recurse.
 
-immutable GreensFun{K<:BivariateFun,T} <: BivariateFun{T}
+struct GreensFun{K<:BivariateFun,T} <: BivariateFun{T}
     kernels::Vector{K}
-    function (::Type{GreensFun{K,T}}){K,T}(Kernels::Vector{K})
+    function GreensFun{K,T}(Kernels::Vector{K}) where {K,T}
         if greensfun_checkdomains(Kernels)
             if greensfun_checkgreensfun(Kernels)
                 return GreensFun(vcat(map(kernels,Kernels)...))
@@ -26,7 +26,7 @@ immutable GreensFun{K<:BivariateFun,T} <: BivariateFun{T}
     end
 end
 
-function greensfun_checkdomains{K}(Kernels::Vector{K})
+function greensfun_checkdomains(Kernels::Vector{K}) where K
     d = domain(Kernels[1])
     ret = true
     for i in 2:length(Kernels)
@@ -35,7 +35,7 @@ function greensfun_checkdomains{K}(Kernels::Vector{K})
     ret
 end
 
-function greensfun_checkgreensfun{K}(Kernels::Vector{K})
+function greensfun_checkgreensfun(Kernels::Vector{K}) where K
     ret = true
     for i in 1:length(Kernels)
         ret *= !(typeof(Kernels[i]) <: GreensFun)
@@ -43,13 +43,13 @@ function greensfun_checkgreensfun{K}(Kernels::Vector{K})
     !ret
 end
 
-GreensFun{K<:MultivariateFun}(kernels::Vector{K}) =
+GreensFun(kernels::Vector{K}) where {K<:MultivariateFun} =
     GreensFun{eltype(kernels),mapreduce(eltype,promote_type,kernels)}(kernels)
 
-GreensFun{K<:MultivariateFun}(F::K) = GreensFun(K[F])
+GreensFun(F::K) where {K<:MultivariateFun} = GreensFun(K[F])
 
-convert{K<:BivariateFun,T}(::Type{GreensFun{K,T}},A::GreensFun{K,T}) = A
-convert{K<:BivariateFun,T}(::Type{GreensFun{K,T}},A::GreensFun) = error("Cannot convert GreensFun")
+convert(::Type{GreensFun{K,T}},A::GreensFun{K,T}) where {K<:BivariateFun,T} = A
+convert(::Type{GreensFun{K,T}},A::GreensFun) where {K<:BivariateFun,T} = error("Cannot convert GreensFun")
 
 Base.length(G::GreensFun) = length(G.kernels)
 Base.transpose(G::GreensFun) = GreensFun(mapreduce(transpose,+,G.kernels))
@@ -62,18 +62,18 @@ evaluate(G::GreensFun,x,y) = mapreduce(f->evaluate(f,x,y),+,G.kernels)
 kernels(B::BivariateFun) = B
 kernels(G::GreensFun) = G.kernels
 
-Base.rank{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(rank,+,G.kernels)
-slices{L<:LowRankFun}(G::GreensFun{L}) = mapreduce(x->x.A,vcat,G.kernels),mapreduce(x->x.B,vcat,G.kernels)
-slices{L<:LowRankFun}(G::GreensFun{L},k::Int) = slices(G)[k]
-LowRankIntegralOperator{L<:LowRankFun}(G::GreensFun{L}) = LowRankIntegralOperator(slices(G)...)
+Base.rank(G::GreensFun{L}) where {L<:LowRankFun} = mapreduce(rank,+,G.kernels)
+slices(G::GreensFun{L}) where {L<:LowRankFun} = mapreduce(x->x.A,vcat,G.kernels),mapreduce(x->x.B,vcat,G.kernels)
+slices(G::GreensFun{L},k::Int) where {L<:LowRankFun} = slices(G)[k]
+LowRankIntegralOperator(G::GreensFun{L}) where {L<:LowRankFun} = LowRankIntegralOperator(slices(G)...)
 
-Base.promote_rule{K,T,K1,T1}(::Type{GreensFun{K,T}},::Type{GreensFun{K1,T1}}) = GreensFun{promote_type(K,K1),promote_type(T,T1)}
+Base.promote_rule(::Type{GreensFun{K,T}},::Type{GreensFun{K1,T1}}) where {K,T,K1,T1} = GreensFun{promote_type(K,K1),promote_type(T,T1)}
 
 getindex(⨍::Operator,G::GreensFun) = mapreduce(f->⨍[f],+,G.kernels)
 
 # avoid ambiguity
 for TYP in (:(ApproxFun.DefiniteLineIntegralWrapper),:DefiniteLineIntegral)
-    @eval function getindex{F<:BivariateFun}(⨍::$TYP,B::Matrix{F})
+    @eval function getindex(⨍::$TYP,B::Matrix{F}) where F<:BivariateFun
         m,n = size(B)
         wsp = domainspace(⨍)
         @assert m == length(wsp.spaces)
@@ -107,7 +107,7 @@ end
 
 for op in (:+,:-)
     @eval begin
-        function $op{F<:BivariateFun,T1,G<:BivariateFun,T2}(A::Array{GreensFun{F,T1}},B::Array{GreensFun{G,T2}})
+        function $op(A::Array{GreensFun{F,T1}},B::Array{GreensFun{G,T2}}) where {F<:BivariateFun,T1,G<:BivariateFun,T2}
             C = similar(A, GreensFun{promote_type(F,G),promote_type(T1,T2)}, promote_shape(size(A),size(B)))
             for i=1:length(A)
                 @inbounds C[i] = $op(A[i],B[i])
@@ -133,7 +133,7 @@ end
 GreensFun(f::Function,args...;kwds...) = GreensFun(F(f),args...;kwds...)
 GreensFun(f::Function,g::Function,args...;kwds...) = GreensFun(F(f),F(g),args...;kwds...)
 
-function GreensFun{SS<:AbstractProductSpace}(f::F,ss::SS;method::Symbol=:lowrank,kwds...)
+function GreensFun(f::F,ss::SS;method::Symbol=:lowrank,kwds...) where SS<:AbstractProductSpace
     if method == :standard
         F = ProductFun(f,ss,kwds...)
     elseif method == :convolution
@@ -163,7 +163,7 @@ function GreensFun{SS<:AbstractProductSpace}(f::F,ss::SS;method::Symbol=:lowrank
     GreensFun(F)
 end
 
-function GreensFun{SS<:AbstractProductSpace}(f::F,g::F,ss::SS;method::Symbol=:unsplit,kwds...)
+function GreensFun(f::F,g::F,ss::SS;method::Symbol=:unsplit,kwds...) where SS<:AbstractProductSpace
     if method == :unsplit
         # Approximate Riemann function of operator.
         G = skewProductFun(g,ss.space;kwds...)
@@ -183,7 +183,7 @@ end
 
 # Array of GreensFun on TensorSpace of PiecewiseSpaces
 
-function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::F,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...)
+function GreensFun(f::F,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...) where {PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}
     M,N = ncomponents(factor(ss,1)),ncomponents(factor(ss,2))
     @assert M == N
     G = Array{GreensFun}(N,N)
@@ -239,7 +239,7 @@ function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::F,ss::AbstractP
     G
 end
 
-function GreensFun{PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}(f::F,g::F,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:unsplit,tolerance::Symbol=:absolute,kwds...)
+function GreensFun(f::F,g::F,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:unsplit,tolerance::Symbol=:absolute,kwds...) where {PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}
     M,N = ncomponents(factor(ss.space,1)),ncomponents(factor(ss.space,2))
     @assert M == N
     G = Array{GreensFun}(N,N)
@@ -266,19 +266,19 @@ end
 converttoPiecewiseSpace(H::Space) = H
 converttoPiecewiseSpace(H::HierarchicalSpace) = PiecewiseSpace(H)
 
-function partition{HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}(ss::ApproxFun.TensorSpace{Tuple{HS1,HS2}})
+function partition(ss::ApproxFun.TensorSpace{Tuple{HS1,HS2}}) where {HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}
     ss11,ss12 = partition(factor(ss.space,1))
     ss21,ss22 = partition(factor(ss.space,2))
     (ss11⊗ss21,ss12⊗ss22),(converttoPiecewiseSpace(ss12)⊗converttoPiecewiseSpace(ss21),converttoPiecewiseSpace(ss11)⊗converttoPiecewiseSpace(ss22))
 end
 
-function partition{O,HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}(ss::CauchyWeight{O,Tuple{HS1,HS2}})
+function partition(ss::CauchyWeight{O,Tuple{HS1,HS2}}) where {O,HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}
     ss11,ss12 = partition(factor(ss.space,1))
     ss21,ss22 = partition(factor(ss.space,2))
     (CauchyWeight(ss11⊗ss21,O),CauchyWeight(ss12⊗ss22,O)),(CauchyWeight(converttoPiecewiseSpace(ss12)⊗converttoPiecewiseSpace(ss21),O),CauchyWeight(converttoPiecewiseSpace(ss11)⊗converttoPiecewiseSpace(ss22),O))
 end
 
-function GreensFun{HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}(f::F,ss::AbstractProductSpace{Tuple{HS1,HS2}};method::Symbol=:lowrank,kwds...)
+function GreensFun(f::F,ss::AbstractProductSpace{Tuple{HS1,HS2}};method::Symbol=:lowrank,kwds...) where {HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}
     (ss11,ss22),(ss21,ss12) = partition(ss)
     meth1 = method == :Cholesky || method == :lowrank ? :standard : method
     G11 = GreensFun(f,ss11;method=method,kwds...)
@@ -288,9 +288,9 @@ function GreensFun{HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}(f::F,ss::Abstr
     return HierarchicalMatrix((G11,G22),(G21,G12))
 end
 
-blocksize{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G}) = map(ncomponents,domain(H).domains)
+blocksize(H::HierarchicalMatrix{F,G}) where {F<:GreensFun,G<:GreensFun} = map(ncomponents,domain(H).domains)
 
-function domain{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G})
+function domain(H::HierarchicalMatrix{F,G}) where {F<:GreensFun,G<:GreensFun}
     H11,H22 = diagonaldata(H)
     H21,H12 = offdiagonaldata(H)
     m1,n2 = factor(domain(H12),1),factor(domain(H12),2)
@@ -301,7 +301,7 @@ function domain{F<:GreensFun,G<:GreensFun}(H::HierarchicalMatrix{F,G})
 end
 
 for TYP in (:(ApproxFun.DefiniteLineIntegralWrapper),:DefiniteLineIntegral)
-    @eval function Base.getindex{G<:GreensFun,L<:LowRankFun,T}(⨍::$TYP,H::HierarchicalMatrix{G,GreensFun{L,T}})
+    @eval function Base.getindex(⨍::$TYP,H::HierarchicalMatrix{G,GreensFun{L,T}}) where {G<:GreensFun,L<:LowRankFun,T}
         H11,H22 = diagonaldata(H)
         wsp = components(domainspace(⨍))
         if ncomponents(factor(domain(H11),2)) ≥ 2

@@ -49,4 +49,4 @@ end
 
 lhelmfs(trg::Union{VecOrMat{Float64},VecOrMat{Complex{Float64}}},E::Float64;derivs::Bool=false) = lhelmfs(trg,fill(E,size(trg));derivs=derivs)
 
-lhelmfs{T1<:Union{Float64,Complex{Float64}},T2<:Union{Float64,Complex{Float64}}}(trg::Union{T1,VecOrMat{T1}},src::Union{T2,VecOrMat{T2}},E::Float64;derivs::Bool=false) = lhelmfs(trg-src,E+imag(src);derivs=derivs)
+lhelmfs(trg::Union{T1,VecOrMat{T1}},src::Union{T2,VecOrMat{T2}},E::Float64;derivs::Bool=false) where {T1<:Union{Float64,Complex{Float64}},T2<:Union{Float64,Complex{Float64}}} = lhelmfs(trg-src,E+imag(src);derivs=derivs)

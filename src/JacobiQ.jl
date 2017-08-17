@@ -5,7 +5,7 @@ import ApproxFun: jacobirecA, jacobirecB, jacobirecC, jacobirecα, jacobirecβ, 
 export JacobiQ, LegendreQ, WeightedJacobiQ
 
 
-immutable JacobiQ{D<:Domain,T} <: Space{D,T}
+struct JacobiQ{D<:Domain,T} <: Space{D,T}
     a::T
     b::T
     domain::D
@@ -17,15 +17,15 @@ JacobiQ(a,b,d) = JacobiQ(a,b,Domain(d))
 JacobiQ(a,b) = JacobiQ(a,b,Segment())
 
 
-Base.promote_rule{T,V,D}(::Type{JacobiQ{D,T}},::Type{JacobiQ{D,V}}) =
+Base.promote_rule(::Type{JacobiQ{D,T}},::Type{JacobiQ{D,V}}) where {T,V,D} =
     JacobiQ{D,promote_type(T,V)}
-convert{T,V,D}(::Type{JacobiQ{D,T}},J::JacobiQ{D,V}) =
+convert(::Type{JacobiQ{D,T}},J::JacobiQ{D,V}) where {T,V,D} =
     JacobiQ{D,T}(J.a,J.b,J.domain)
 
-@compat const WeightedJacobiQ{D,T} = JacobiQWeight{JacobiQ{D,T},D}
+const WeightedJacobiQ{D,T} = JacobiQWeight{JacobiQ{D,T},D}
 
-(::Type{WeightedJacobiQ})(α,β,d::Domain) = JacobiQWeight(α,β,JacobiQ(β,α,d))
-(::Type{WeightedJacobiQ})(α,β) = JacobiQWeight(α,β,JacobiQ(β,α))
+WeightedJacobiQ(α,β,d::Domain) = JacobiQWeight(α,β,JacobiQ(β,α,d))
+WeightedJacobiQ(α,β) = JacobiQWeight(α,β,JacobiQ(β,α))
 
 spacescompatible(a::JacobiQ,b::JacobiQ)=a.a==b.a && a.b==b.b
 
@@ -42,7 +42,7 @@ setdomain(S::JacobiQ,d::Domain) = JacobiQ(S.a,S.b,d)
 
 for (REC,JREC) in ((:recα,:jacobirecα),(:recβ,:jacobirecβ),(:recγ,:jacobirecγ),
                    (:recA,:jacobirecA),(:recB,:jacobirecB),(:recC,:jacobirecC))
-    @eval $REC{T}(::Type{T},sp::JacobiQ,k) = $JREC(T,sp.a,sp.b,k)
+    @eval $REC(::Type{T},sp::JacobiQ,k) where {T} = $JREC(T,sp.a,sp.b,k)
 end
 
 function stieltjes(f::Fun{<:Jacobi})

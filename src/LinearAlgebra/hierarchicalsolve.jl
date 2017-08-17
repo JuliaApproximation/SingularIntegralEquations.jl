@@ -4,11 +4,11 @@
 
 # Classical matrix case
 
-\{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat) = hierarchicalsolve(H,f)
+\(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat) where {S<:AbstractMatrix,U<:LowRankMatrix} = hierarchicalsolve(H,f)
 
 hierarchicalsolve(H::AbstractMatrix,f::AbstractVecOrMat) = H\f
 
-function hierarchicalsolve{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat)
+function hierarchicalsolve(H::HierarchicalMatrix{S,U},f::AbstractVecOrMat) where {S<:AbstractMatrix,U<:LowRankMatrix}
     T,nf = promote_type(eltype(H),eltype(f)),size(f,2)
 
     # Pre-compute Factorization
@@ -43,7 +43,7 @@ function hierarchicalsolve{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMa
     reshape([hierarchicalsolve(H11,RHS1);hierarchicalsolve(H22,RHS2)],size(f))
 end
 
-function factorize!{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMatrix{S,U})
+function factorize!(H::HierarchicalMatrix{S,U}) where {S<:AbstractMatrix,U<:LowRankMatrix}
     # Partition HierarchicalMatrix
 
     (H11,H22),(H21,H12) = partition(H)
@@ -71,7 +71,7 @@ function factorize!{S<:AbstractMatrix,U<:LowRankMatrix}(H::HierarchicalMatrix{S,
     H.factored = true
 end
 
-function computepivots{V1,V2,A1,A2,T}(V12::Matrix{V1},V21::Matrix{V2},H11f1::Matrix{A1},H22f2::Matrix{A2},A::Factorization{T},nf::Int)
+function computepivots(V12::Matrix{V1},V21::Matrix{V2},H11f1::Matrix{A1},H22f2::Matrix{A2},A::Factorization{T},nf::Int) where {V1,V2,A1,A2,T}
     P = promote_type(V1,V2,A1,A2)
     r1,r2 = size(V12,2),size(V21,2)
     b = zeros(P,r1+r2,nf)
@@ -87,7 +87,7 @@ function computepivots{V1,V2,A1,A2,T}(V12::Matrix{V1},V21::Matrix{V2},H11f1::Mat
     vc[1:r1,1:nf],vc[r1+1:r1+r2,1:nf]
 end
 
-function computepivots{T}(V12::Matrix{T},V21::Matrix{T},H11f1::Vector{T},H22f2::Vector{T},A::PivotLDU{T},nf::Int)
+function computepivots(V12::Matrix{T},V21::Matrix{T},H11f1::Vector{T},H22f2::Vector{T},A::PivotLDU{T},nf::Int) where T
     r1,r2 = size(V12,2),size(V21,2)
     b1,b2 = zeros(T,r1),zeros(T,r2)
     for j=1:r1
@@ -99,7 +99,7 @@ function computepivots{T}(V12::Matrix{T},V21::Matrix{T},H11f1::Vector{T},H22f2::
     A_ldiv_B1B2!(A,b1,b2)
 end
 
-function computepivots{T}(V12::Matrix{T},V21::Matrix{T},H11f1::Matrix{T},H22f2::Matrix{T},A::PivotLDU{T},nf::Int)
+function computepivots(V12::Matrix{T},V21::Matrix{T},H11f1::Matrix{T},H22f2::Matrix{T},A::PivotLDU{T},nf::Int) where T
     r1,r2 = size(V12,2),size(V21,2)
     b1,b2 = zeros(T,r1,nf),zeros(T,r2,nf)
     for i=1:nf

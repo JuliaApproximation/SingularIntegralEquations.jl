@@ -54,14 +54,14 @@ end
 
 ## HierarchicalDomain
 
-function Base.show{S,T}(io::IO, H::HierarchicalDomain{S,T})
+function Base.show(io::IO, H::HierarchicalDomain{S,T}) where {S,T}
     print(io,"$(nlevels(H))-level HierarchicalDomain{$S,$T}:\n")
     show(io,UnionDomain(collectdata(H)))
 end
 
 ## HierarchicalSpace
 
-function Base.show{S,T}(io::IO, H::HierarchicalSpace{S,T})
+function Base.show(io::IO, H::HierarchicalSpace{S,T}) where {S,T}
     print(io,"$(nlevels(H))-level HierarchicalSpace{$S,$T}:\n")
     show(io,PiecewiseSpace(collectdata(H)))
 end
@@ -72,11 +72,11 @@ end
 ## HierarchicalOperator{U<:Operator,V<:AbstractLowRankOperator}
 
 Base.alignment(io::IO, x::Infinity) = (1,0)
-function Base.show{F<:GreensFun,L<:LowRankFun,T}(io::IO, ::MIME"text/plain", H::HierarchicalMatrix{F,GreensFun{L,T}})
+function Base.show(io::IO, ::MIME"text/plain", H::HierarchicalMatrix{F,GreensFun{L,T}}) where {F<:GreensFun,L<:LowRankFun,T}
     print(io,"$(nlevels(H))-level HierarchicalMatrix of GreensFun's with blockwise ranks:\n")
     Base.print_matrix(io,blockrank(H),"["," ","]")
 end
-function Base.show{U<:Operator,V<:AbstractLowRankOperator}(io::IO, ::MIME"text/plain", H::HierarchicalOperator{U,V})
+function Base.show(io::IO, ::MIME"text/plain", H::HierarchicalOperator{U,V}) where {U<:Operator,V<:AbstractLowRankOperator}
     print(io,"$(nlevels(H))-level HierarchicalOperator with blockwise ranks:\n")
     Base.print_matrix(io,blockrank(H),"["," ","]")
 end
