@@ -8,9 +8,9 @@ for TYP in subtypes(AbstractFloat)
     end
 end
 
-lhelm_riemanncomplex{T<:AbstractFloat}(z::Complex{T},z0::Complex{T},ζ::Complex{T},ζ0::Complex{T},E::T) = lhelm_riemanncomplex(z,z0,ζ,ζ0,E,riemann_array(T))
+lhelm_riemanncomplex(z::Complex{T},z0::Complex{T},ζ::Complex{T},ζ0::Complex{T},E::T) where {T<:AbstractFloat} = lhelm_riemanncomplex(z,z0,ζ,ζ0,E,riemann_array(T))
 
-function lhelm_riemanncomplex{T<:AbstractFloat}(z::Complex{T},z0::Complex{T},ζ::Complex{T},ζ0::Complex{T},E::T,A::Array{Complex{T}})
+function lhelm_riemanncomplex(z::Complex{T},z0::Complex{T},ζ::Complex{T},ζ0::Complex{T},E::T,A::Array{Complex{T}}) where T<:AbstractFloat
     cst = -(E/4+(z0-ζ0)/(8im))
     executerecurrence!(A,cst)
 
@@ -33,13 +33,13 @@ function lhelm_riemanncomplex{T<:AbstractFloat}(z::Complex{T},z0::Complex{T},ζ:
 end
 
 lhelm_riemann(x::AbstractFloat,x0::AbstractFloat,y::AbstractFloat,y0::AbstractFloat,E::AbstractFloat) = lhelm_riemanncomplex(complex(x,y),complex(x0,y0),complex(x,-y),complex(x0,-y0),E)
-lhelm_riemann{T1<:AbstractFloat,T2<:AbstractFloat}(x::Union{T1,Complex{T1}},y::Union{T2,Complex{T2}},E::AbstractFloat) = lhelm_riemann(real(x),real(y),imag(x),imag(y),E)
+lhelm_riemann(x::Union{T1,Complex{T1}},y::Union{T2,Complex{T2}},E::AbstractFloat) where {T1<:AbstractFloat,T2<:AbstractFloat} = lhelm_riemann(real(x),real(y),imag(x),imag(y),E)
 
 lhelm_riemann(x::Vector,y::Vector,E::AbstractFloat) = promote_type(eltype(x),eltype(y),typeof(E))[lhelm_riemann(x[k],y[k],E) for k in 1:length(x)]
 lhelm_riemann(x::Matrix,y::Matrix,E::AbstractFloat) = reshape(lhelm_riemann(vec(x),vec(y),E),size(x))
 
 
-function executerecurrence!{T<:AbstractFloat}(A::Array{Complex{T}},cst::Complex{T})
+function executerecurrence!(A::Array{Complex{T}},cst::Complex{T}) where T<:AbstractFloat
     eighthim = one(T)/(8im)
     sixteenthim = eighthim/2
 

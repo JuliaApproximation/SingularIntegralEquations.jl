@@ -4,19 +4,19 @@
 # Represent a binary hierarchical Domain, Space, and Fun
 ##
 
-type HierarchicalDomain{S,T,HS} <: ApproxFun.UnivariateDomain{T}
+mutable struct HierarchicalDomain{S,T,HS} <: ApproxFun.UnivariateDomain{T}
     data::HS
-    (::Type{HierarchicalDomain{S,T,HS}}){S,T,HS}(data::HS) = new{S,T,HS}(data)
+    HierarchicalDomain{S,T,HS}(data::HS) where {S,T,HS} = new{S,T,HS}(data)
 end
 
-type HierarchicalSpace{S,T,HS} <: ApproxFun.Space{ApproxFun.AnyDomain,T}
+mutable struct HierarchicalSpace{S,T,HS} <: ApproxFun.Space{ApproxFun.AnyDomain,T}
     data::HS
-    (::Type{HierarchicalSpace{S,T,HS}}){S,T,HS}(data::HS) = new{S,T,HS}(data)
+    HierarchicalSpace{S,T,HS}(data::HS) where {S,T,HS} = new{S,T,HS}(data)
 end
 
-type HierarchicalFun{S,T,HS}
+mutable struct HierarchicalFun{S,T,HS}
     data::HS
-    (::Type{HierarchicalFun{S,T,HS}}){S,T,HS}(data::HS) = new{S,T,HS}(data)
+    HierarchicalFun{S,T,HS}(data::HS) where {S,T,HS} = new{S,T,HS}(data)
 end
 
 
@@ -24,13 +24,13 @@ for (HDSF,etyp) in ((:HierarchicalDomain,:eltype),(:HierarchicalSpace,:rangetype
     @eval begin
         export $HDSF
 
-        $HDSF{S1,S2}(data::Tuple{S1,S2}) = $HDSF{promote_type(S1,S2),promote_type($etyp(S1),$etyp(S2)),Tuple{S1,S2}}(data)
-        $HDSF{S1,S2,T1,T2,HS1,HS2}(data::Tuple{$HDSF{S1,T1,HS1},$HDSF{S2,T2,HS2}}) = $HDSF{promote_type(S1,S2),promote_type($etyp(S1),$etyp(S2),T1,T2),Tuple{$HDSF{S1,T1,HS1},$HDSF{S2,T2,HS2}}}(data)
-        $HDSF{S,S1,T,HS}(data::Tuple{S1,$HDSF{S,T,HS}}) = $HDSF{promote_type(S,S1),promote_type($etyp(S),$etyp(S1),T),Tuple{S1,$HDSF{S,T,HS}}}(data)
-        $HDSF{S,S1,T,HS}(data::Tuple{$HDSF{S,T,HS},S1}) = $HDSF{promote_type(S,S1),promote_type($etyp(S),$etyp(S1),T),Tuple{$HDSF{S,T,HS},S1}}(data)
-        collectdata{S,T}(H::$HDSF{S,T,NTuple{2,S}}) = collect(data(H))
-        collectdata{S,T,HS}(H::$HDSF{S,T,Tuple{S,$HDSF{S,T,HS}}}) = vcat(H.data[1],collectdata(H.data[2]))
-        collectdata{S,T,HS}(H::$HDSF{S,T,Tuple{$HDSF{S,T,HS},S}}) = vcat(collectdata(H.data[1]),H.data[2])
+        $HDSF(data::Tuple{S1,S2}) where {S1,S2} = $HDSF{promote_type(S1,S2),promote_type($etyp(S1),$etyp(S2)),Tuple{S1,S2}}(data)
+        $HDSF(data::Tuple{$HDSF{S1,T1,HS1},$HDSF{S2,T2,HS2}}) where {S1,S2,T1,T2,HS1,HS2} = $HDSF{promote_type(S1,S2),promote_type($etyp(S1),$etyp(S2),T1,T2),Tuple{$HDSF{S1,T1,HS1},$HDSF{S2,T2,HS2}}}(data)
+        $HDSF(data::Tuple{S1,$HDSF{S,T,HS}}) where {S,S1,T,HS} = $HDSF{promote_type(S,S1),promote_type($etyp(S),$etyp(S1),T),Tuple{S1,$HDSF{S,T,HS}}}(data)
+        $HDSF(data::Tuple{$HDSF{S,T,HS},S1}) where {S,S1,T,HS} = $HDSF{promote_type(S,S1),promote_type($etyp(S),$etyp(S1),T),Tuple{$HDSF{S,T,HS},S1}}(data)
+        collectdata(H::$HDSF{S,T,NTuple{2,S}}) where {S,T} = collect(data(H))
+        collectdata(H::$HDSF{S,T,Tuple{S,$HDSF{S,T,HS}}}) where {S,T,HS} = vcat(H.data[1],collectdata(H.data[2]))
+        collectdata(H::$HDSF{S,T,Tuple{$HDSF{S,T,HS},S}}) where {S,T,HS} = vcat(collectdata(H.data[1]),H.data[2])
 
         $HDSF(data::Vector) = $HDSF(data,round(Int,log2(length(data))))
 
@@ -44,7 +44,7 @@ for (HDSF,etyp) in ((:HierarchicalDomain,:eltype),(:HierarchicalSpace,:rangetype
         end
 
         Base.similar(H::$HDSF) = $HDSF(map(similar,data(H)))
-        Base.similar{SS,V,T}(H::$HDSF{SS,V,T}, S) = $HDSF(map(A->similar(A,S),data(H)))
+        Base.similar(H::$HDSF{SS,V,T}, S) where {SS,V,T} = $HDSF(map(A->similar(A,S),data(H)))
 
         data(H::$HDSF) = H.data
 
@@ -52,7 +52,7 @@ for (HDSF,etyp) in ((:HierarchicalDomain,:eltype),(:HierarchicalSpace,:rangetype
 
         partition(H::$HDSF) = data(H)
 
-        function partition{H<:$HDSF}(VH::Vector{H})
+        function partition(VH::Vector{H}) where H<:$HDSF
             n = length(VH)
             H11,H12 = partition(VH[1])
             H1,H2 = fill(H11,n),fill(H12,n)
@@ -62,7 +62,7 @@ for (HDSF,etyp) in ((:HierarchicalDomain,:eltype),(:HierarchicalSpace,:rangetype
             H1,H2
         end
 
-        function collectdata{S}(H::$HDSF{S})
+        function collectdata(H::$HDSF{S}) where S
             ret = S[]
             append!(ret,mapreduce(collectdata,vcat,data(H)))
             ret
@@ -112,9 +112,9 @@ end
 for op in (:linebilinearform,:bilinearform)
     @eval begin
         $op(H::HierarchicalFun,J::HierarchicalFun) = $op(H.data[1],J.data[1])+$op(H.data[2],J.data[2])
-        $op{S<:PiecewiseSpace}(H::HierarchicalFun,J::Fun{S}) =
+        $op(H::HierarchicalFun,J::Fun{S}) where {S<:PiecewiseSpace} =
             sum(map($op,collectdata(H),components(J)))
-        $op{S<:PiecewiseSpace}(J::Fun{S},H::HierarchicalFun) =
+        $op(J::Fun{S},H::HierarchicalFun) where {S<:PiecewiseSpace} =
             sum(map($op,components(J),collectdata(H)))
     end
 end
@@ -134,50 +134,50 @@ end
 
 for (op,opformatted) in ((:+,:⊕),(:-,:⊖))
     @eval begin
-        function $opformatted{S,T,HS1<:HierarchicalFun,HS2<:HierarchicalFun,P<:PiecewiseSpace}(H::HierarchicalFun{S,T,Tuple{HS1,HS2}},J::Fun{P})
+        function $opformatted(H::HierarchicalFun{S,T,Tuple{HS1,HS2}},J::Fun{P}) where {S,T,HS1<:HierarchicalFun,HS2<:HierarchicalFun,P<:PiecewiseSpace}
             H1,H2 = partition(H)
             n1,n2 = length(PiecewiseSpace(space(H1))),length(PiecewiseSpace(space(H2)))
             return HierarchicalFun(($opformatted(H1,Fun(components(J)[1:n1],PiecewiseSpace)),
                                 $opformatted(H2,Fun(components(J)[1+n1:n1+n2],PiecewiseSpace))))
         end
-        function $opformatted{S,T,HS1<:Fun,HS2<:HierarchicalFun,P<:PiecewiseSpace}(H::HierarchicalFun{S,T,Tuple{HS1,HS2}},J::Fun{P})
+        function $opformatted(H::HierarchicalFun{S,T,Tuple{HS1,HS2}},J::Fun{P}) where {S,T,HS1<:Fun,HS2<:HierarchicalFun,P<:PiecewiseSpace}
             H1,H2 = partition(H)
             n1,n2 = 1,length(PiecewiseSpace(space(H2)))
             return HierarchicalFun(($op(H1,Fun(components(J)[1:n1],PiecewiseSpace)),
                                     $opformatted(H2,Fun(components(J)[1+n1:n1+n2],PiecewiseSpace))))
         end
-        function $opformatted{S,T,HS1<:HierarchicalFun,HS2<:Fun,P<:PiecewiseSpace}(H::HierarchicalFun{S,T,Tuple{HS1,HS2}},J::Fun{P})
+        function $opformatted(H::HierarchicalFun{S,T,Tuple{HS1,HS2}},J::Fun{P}) where {S,T,HS1<:HierarchicalFun,HS2<:Fun,P<:PiecewiseSpace}
             H1,H2 = partition(H)
             n1,n2 = length(PiecewiseSpace(space(H1))),1
             return HierarchicalFun(($opformatted(H1,Fun(components(J)[1:n1],PiecewiseSpace)),
                                     $op(H2,Fun(components(J)[1+n1:n1+n2],PiecewiseSpace))))
         end
-        function $opformatted{S,T,HS1<:Fun,HS2<:Fun,P<:PiecewiseSpace}(H::HierarchicalFun{S,T,Tuple{HS1,HS2}},J::Fun{P})
+        function $opformatted(H::HierarchicalFun{S,T,Tuple{HS1,HS2}},J::Fun{P}) where {S,T,HS1<:Fun,HS2<:Fun,P<:PiecewiseSpace}
             H1,H2 = partition(H)
             n1,n2 = 1,1
             return HierarchicalFun(($op(H1,Fun(components(J)[1:n1],PiecewiseSpace)),
                                     $op(H2,Fun(components(J)[1+n1:n1+n2],PiecewiseSpace))))
         end
 
-        function $opformatted{S,T,HS1<:HierarchicalFun,HS2<:HierarchicalFun,P<:PiecewiseSpace}(J::Fun{P},H::HierarchicalFun{S,T,Tuple{HS1,HS2}})
+        function $opformatted(J::Fun{P},H::HierarchicalFun{S,T,Tuple{HS1,HS2}}) where {S,T,HS1<:HierarchicalFun,HS2<:HierarchicalFun,P<:PiecewiseSpace}
             H1,H2 = partition(H)
             n1,n2 = length(PiecewiseSpace(space(H1))),length(PiecewiseSpace(space(H2)))
             return HierarchicalFun(($opformatted(Fun(components(J)[1:n1],PiecewiseSpace),H1),
                                     $opformatted(Fun(components(J)[1+n1:n1+n2],PiecewiseSpace),H2)))
         end
-        function $opformatted{S,T,HS1<:Fun,HS2<:HierarchicalFun,P<:PiecewiseSpace}(J::Fun{P},H::HierarchicalFun{S,T,Tuple{HS1,HS2}})
+        function $opformatted(J::Fun{P},H::HierarchicalFun{S,T,Tuple{HS1,HS2}}) where {S,T,HS1<:Fun,HS2<:HierarchicalFun,P<:PiecewiseSpace}
             H1,H2 = partition(H)
             n1,n2 = 1,length(PiecewiseSpace(space(H2)))
             return HierarchicalFun(($op(Fun(components(J)[1:n1],PiecewiseSpace),H1),
                                     $opformatted(Fun(components(J)[1+n1:n1+n2],PiecewiseSpace),H2)))
         end
-        function $opformatted{S,T,HS1<:HierarchicalFun,HS2<:Fun,P<:PiecewiseSpace}(J::Fun{P},H::HierarchicalFun{S,T,Tuple{HS1,HS2}})
+        function $opformatted(J::Fun{P},H::HierarchicalFun{S,T,Tuple{HS1,HS2}}) where {S,T,HS1<:HierarchicalFun,HS2<:Fun,P<:PiecewiseSpace}
             H1,H2 = partition(H)
             n1,n2 = length(PiecewiseSpace(space(H1))),1
             return HierarchicalFun(($opformatted(Fun(components(J)[1:n1],PiecewiseSpace),H1),
                                     $op(Fun(components(J)[1+n1:n1+n2],PiecewiseSpace),H2)))
         end
-        function $opformatted{S,T,HS1<:Fun,HS2<:Fun,P<:PiecewiseSpace}(J::Fun{P},H::HierarchicalFun{S,T,Tuple{HS1,HS2}})
+        function $opformatted(J::Fun{P},H::HierarchicalFun{S,T,Tuple{HS1,HS2}}) where {S,T,HS1<:Fun,HS2<:Fun,P<:PiecewiseSpace}
             H1,H2 = partition(H)
             n1,n2 = 1,1
             return HierarchicalFun(($op(Fun(components(J)[1:n1],PiecewiseSpace),H1),

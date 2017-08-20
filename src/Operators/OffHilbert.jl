@@ -24,7 +24,7 @@ for Op in (:OffHilbert,:OffSingularIntegral)
         getindex(C::$Op,k::Integer,j::Integer) =
             k ≤ size(C.data,1) && j ≤ size(C.data,2) ? C.data[k,j] : zero(eltype(C))
 
-        convert{T}(::Type{Operator{T}},OH::$Op) =
+        convert(::Type{Operator{T}},OH::$Op) where {T} =
             $Op{typeof(OH.domainspace),
                 typeof(OH.rangespace),
                 T}(OH.data,OH.domainspace,OH.rangespace,OH.order)

@@ -42,30 +42,30 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
             $OpWrap(InterlaceOperator(D,S,PiecewiseSpace(map(rangespace,D[:,1]))),n)
         end
 
-        bandinds{s,DD,RR}(::$ConcOp{Hardy{s,DD,RR}}) = 0,0
-        domainspace{s,DD,RR}(H::$ConcOp{Hardy{s,DD,RR}}) = H.space
-        rangespace{s,DD,RR}(H::$ConcOp{Hardy{s,DD,RR}}) = H.space
+        bandinds(::$ConcOp{Hardy{s,DD,RR}}) where {s,DD,RR} = 0,0
+        domainspace(H::$ConcOp{Hardy{s,DD,RR}}) where {s,DD,RR} = H.space
+        rangespace(H::$ConcOp{Hardy{s,DD,RR}}) where {s,DD,RR} = H.space
 
-        bandinds{DD,RR}(::$ConcOp{Laurent{DD,RR}}) = 0,0
-        domainspace{DD,RR}(H::$ConcOp{Laurent{DD,RR}}) = H.space
-        rangespace{DD,RR}(H::$ConcOp{Laurent{DD,RR}}) = H.space
+        bandinds(::$ConcOp{Laurent{DD,RR}}) where {DD,RR} = 0,0
+        domainspace(H::$ConcOp{Laurent{DD,RR}}) where {DD,RR} = H.space
+        rangespace(H::$ConcOp{Laurent{DD,RR}}) where {DD,RR} = H.space
 
-        bandinds{DD,RR}(H::$ConcOp{Fourier{DD,RR}}) = -H.order,H.order
-        domainspace{DD,RR}(H::$ConcOp{Fourier{DD,RR}}) = H.space
-        rangespace{DD,RR}(H::$ConcOp{Fourier{DD,RR}}) = H.space
+        bandinds(H::$ConcOp{Fourier{DD,RR}}) where {DD,RR} = -H.order,H.order
+        domainspace(H::$ConcOp{Fourier{DD,RR}}) where {DD,RR} = H.space
+        rangespace(H::$ConcOp{Fourier{DD,RR}}) where {DD,RR} = H.space
 
-        function rangespace{DD,RR}(H::$ConcOp{JacobiWeight{Chebyshev{DD,RR},DD,RR}})
+        function rangespace(H::$ConcOp{JacobiWeight{Chebyshev{DD,RR},DD,RR}}) where {DD,RR}
             @assert domainspace(H).α == domainspace(H).β == -0.5
             H.order==0 ? Chebyshev(domain(H)) : Ultraspherical(H.order,domain(H))
         end
-        function rangespace{DD,RR}(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD,RR},DD,RR}})
+        function rangespace(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD,RR},DD,RR}}) where {DD,RR}
             @assert order(domainspace(H).space) == 1
             @assert domainspace(H).α==domainspace(H).β==0.5
             (H.order==1||H.order==0) ? Chebyshev(domain(H)) : Ultraspherical(H.order-1,domain(H))
         end
         # bandinds{λ,DD,RR}(H::$ConcOp{JacobiWeight{Ultraspherical{λ,DD,RR},DD,RR}})=-λ,H.order-λ
-        bandinds{DD,RR}(H::$ConcOp{JacobiWeight{Chebyshev{DD,RR},DD,RR}}) = 0,H.order
-        bandinds{DD,RR}(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD,RR},DD,RR}}) =
+        bandinds(H::$ConcOp{JacobiWeight{Chebyshev{DD,RR},DD,RR}}) where {DD,RR} = 0,H.order
+        bandinds(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD,RR},DD,RR}}) where {DD,RR} =
             H.order > 0 ? (-1,H.order-1) : (-2,0)
 
         choosedomainspace(H::$Op{UnsetSpace},sp::Ultraspherical) =
@@ -105,7 +105,7 @@ ConcreteSingularIntegral(sp::Space{D,R},n) where {D,R<:Complex} =
 
 for TYP in (:Hilbert,:SingularIntegral)
     ConcOp=parse("Concrete"*string(TYP))
-    @eval function $TYP{DD<:Circle,RR}(F::Fourier{DD,RR},n)
+    @eval function $TYP(F::Fourier{DD,RR},n) where {DD<:Circle,RR}
         if !domain(F).orientation
             R=reverseorientation(F)
             Conversion(R,F)*(-$TYP(R,n))*Conversion(F,R)
@@ -124,11 +124,11 @@ for Typ in (:Hilbert,:SingularIntegral)
     ConcTyp = parse("Concrete"*string(Typ))
     WrapTyp = parse(string(Typ)*"Wrapper")
     @eval begin
-        $Typ{s,DD<:Circle,RR}(S::Hardy{s,DD,RR},m::Integer) =
+        $Typ(S::Hardy{s,DD,RR},m::Integer) where {s,DD<:Circle,RR} =
             m ≤ 1 ? $ConcTyp(S,m) : $WrapTyp(Derivative(m-1)*Hilbert(S),m)
-        $Typ{DD<:Circle,RR}(S::Laurent{DD,RR},m::Integer) =
+        $Typ(S::Laurent{DD,RR},m::Integer) where {DD<:Circle,RR} =
             m ≤ 1 ? $ConcTyp(S,m) : $WrapTyp(Derivative(m-1)*Hilbert(S),m)
-        $Typ{DD<:Circle,RR}(S::Fourier{DD,RR},m::Integer) =
+        $Typ(S::Fourier{DD,RR},m::Integer) where {DD<:Circle,RR} =
             m ≤ 1 ? $ConcTyp(S,m) : $WrapTyp(Derivative(m-1)*Hilbert(S),m)
     end
 end

@@ -16,7 +16,7 @@ hilbert(S::Space{<:Arc},f,z) =
 
 
 
-function PseudoHilbert{LS,RR<:Arc}(sp::JacobiWeight{LS,RR},k::Integer)
+function PseudoHilbert(sp::JacobiWeight{LS,RR},k::Integer) where {LS,RR<:Arc}
     @assert k==1
     csp=setcanonicaldomain(sp)
     H=Hilbert(csp)

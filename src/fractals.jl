@@ -9,7 +9,7 @@ for set in (:cantor,:thincantor,:thinnercantor,:thinnestcantor)
     @eval begin
         $set(d::Domain,n::Int) = $set(d,n,3)
 
-        function $set{T,V}(d::Circle{T,V},n::Int,α::Number)
+        function $set(d::Circle{T,V},n::Int,α::Number) where {T,V}
             c,r = d.center,d.radius
             α = convert(promote_type(real(T),V,typeof(α)),α)
             if n == 0
@@ -28,7 +28,7 @@ end
 
 # α is width, n is number of levels
 
-function cantor{T}(d::Segment{T},n::Int,α::Number)
+function cantor(d::Segment{T},n::Int,α::Number) where T
     a,b = d.a,d.b
     if n == 0
         return d
@@ -43,7 +43,7 @@ end
 
 # Thin Cantor set removes the middle n/(n+2)th at the nth level
 
-function thincantor{T}(d::Segment{T},n::Int,α::Number)
+function thincantor(d::Segment{T},n::Int,α::Number) where T
     a,b = d.a,d.b
     if n == 0
         return d
@@ -56,7 +56,7 @@ function thincantor{T}(d::Segment{T},n::Int,α::Number)
     end
 end
 
-function thinnercantor{T}(d::Segment{T},n::Int,α::Number)
+function thinnercantor(d::Segment{T},n::Int,α::Number) where T
     a,b = d.a,d.b
     if n == 0
         return d
@@ -69,7 +69,7 @@ function thinnercantor{T}(d::Segment{T},n::Int,α::Number)
     end
 end
 
-function thinnestcantor{T}(d::Segment{T},n::Int,α::Number)
+function thinnestcantor(d::Segment{T},n::Int,α::Number) where T
     a,b = d.a,d.b
     if n == 0
         return d

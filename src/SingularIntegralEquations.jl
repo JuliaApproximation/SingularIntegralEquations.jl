@@ -12,9 +12,6 @@ import Base: values,getindex,setindex!,*,+,-,==,<,<=,>,
                 >=,/,^,\,∪,transpose, convert
 
 
-if VERSION < v"0.6.0-dev.1632"
-    import Base: .*, .+, .-, ./, .^
-end
 
 import BandedMatrices: bzeros
 
@@ -46,46 +43,46 @@ import DualNumbers: dual
 For functions with branch cuts, it is assumed that the value is on the branch cut,
 Therefore not requiring tolerances.  This will naturally give the analytic continuation.
 """
-immutable Directed{s,T} <: Number
+struct Directed{s,T} <: Number
     x::T
-    (::Type{Directed{s,T}}){s,T}(x::T) = new{s,T}(x)
-    (::Type{Directed{s,T}}){s,T}(x::Number) = new{s,T}(T(x))
+    Directed{s,T}(x::T) where {s,T} = new{s,T}(x)
+    Directed{s,T}(x::Number) where {s,T} = new{s,T}(T(x))
 end
 
 
-(::Type{Directed{s}}){s}(x) = Directed{s,eltype(x)}(x)
+Directed{s}(x) where {s} = Directed{s,eltype(x)}(x)
 
-convert{s,T}(::Type{Directed{s,T}},x::Directed{s}) = Directed{s,T}(T(x.x))
-convert{s,T}(::Type{Directed{s,T}},x::T) = Directed{s,T}(x)
-convert{s,T}(::Type{Directed{s,T}},x::Real) = Directed{s,T}(T(x))
-convert{s,T}(::Type{Directed{s,T}},x::Complex) = Directed{s,T}(T(x))
+convert(::Type{Directed{s,T}},x::Directed{s}) where {s,T} = Directed{s,T}(T(x.x))
+convert(::Type{Directed{s,T}},x::T) where {s,T} = Directed{s,T}(x)
+convert(::Type{Directed{s,T}},x::Real) where {s,T} = Directed{s,T}(T(x))
+convert(::Type{Directed{s,T}},x::Complex) where {s,T} = Directed{s,T}(T(x))
 
 const ⁺ = Directed{true}(true)
 const ⁻ = Directed{false}(true)
 
 orientationsign(::Type{Directed{true}}) = 1
 orientationsign(::Type{Directed{false}}) = -1
-orientation{s}(::Type{Directed{s}}) = s
-orientation{s}(::Directed{s}) = s
+orientation(::Type{Directed{s}}) where {s} = s
+orientation(::Directed{s}) where {s} = s
 
 # removes direction from a number
 undirected(x::Directed) = x.x
 undirected(x::Number) = x
 undirected(x::Fun) = x
-reverseorientation{s}(x::Directed{s}) = Directed{!s}(x.x)
+reverseorientation(x::Directed{s}) where {s} = Directed{!s}(x.x)
 reverseorientation(x::Number) = x
 
 
 for OP in (:*,:+,:-,:/)
     @eval begin
-        $OP{s}(a::Directed{s}) = Directed{s}($OP(a.x))
-        $OP{s}(a::Directed{s},b::Directed{s}) = Directed{s}($OP(a.x,b.x))
-        $OP{s}(a::Directed{s},b::Number) = Directed{s}($OP(a.x,b))
-        $OP{s}(a::Number,b::Directed{s}) = Directed{s}($OP(a,b.x))
+        $OP(a::Directed{s}) where {s} = Directed{s}($OP(a.x))
+        $OP(a::Directed{s},b::Directed{s}) where {s} = Directed{s}($OP(a.x,b.x))
+        $OP(a::Directed{s},b::Number) where {s} = Directed{s}($OP(a.x,b))
+        $OP(a::Number,b::Directed{s}) where {s} = Directed{s}($OP(a,b.x))
     end
 end
 
-real{s,T}(::Type{Directed{s,T}}) = real(T)
+real(::Type{Directed{s,T}}) where {s,T} = real(T)
 
 # abs, real and imag delete orientation.
 for OP in (:(Base.isfinite),:(Base.isinf),:(Base.abs),:(Base.real),:(Base.imag),:(Base.angle))
@@ -105,7 +102,7 @@ Base.sqrt(x::Directed{false}) = im*sqrt(-x.x)
 ^(x::Directed{false},a::Number) = exp(a*π*im)*(-x.x)^a
 
 
-dual{s}(a::Directed{s},b) = Directed{s}(dual(undirected(a),b))
+dual(a::Directed{s},b) where {s} = Directed{s}(dual(undirected(a),b))
 
 
 

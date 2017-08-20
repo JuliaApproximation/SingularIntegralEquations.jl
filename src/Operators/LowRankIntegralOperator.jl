@@ -1,10 +1,10 @@
 export LowRankIntegralOperator
 
-immutable LowRankIntegralOperator{S<:Space,M<:Space,T} <: AbstractLowRankOperator{T}
+struct LowRankIntegralOperator{S<:Space,M<:Space,T} <: AbstractLowRankOperator{T}
     U::Vector{VFun{S,T}}
     V::Vector{VFun{M,T}}
 
-    function (::Type{LowRankIntegralOperator{S,M,T}}){S,M,T}(U::Vector{VFun{S,T}},V::Vector{VFun{M,T}})
+    function LowRankIntegralOperator{S,M,T}(U::Vector{VFun{S,T}},V::Vector{VFun{M,T}}) where {S,M,T}
         @assert length(U) == length(V)
         @assert length(U) > 0
         ds=space(first(V))
@@ -19,17 +19,17 @@ immutable LowRankIntegralOperator{S<:Space,M<:Space,T} <: AbstractLowRankOperato
     end
 end
 
-LowRankIntegralOperator{S,M,T}(U::Vector{VFun{S,T}},V::Vector{VFun{M,T}}) =
+LowRankIntegralOperator(U::Vector{VFun{S,T}},V::Vector{VFun{M,T}}) where {S,M,T} =
     LowRankIntegralOperator{S,M,T}(U,V)
 
 
-LowRankIntegralOperator{S,M,T1,T2}(U::Vector{VFun{S,T1}},V::Vector{VFun{M,T2}}) =
+LowRankIntegralOperator(U::Vector{VFun{S,T1}},V::Vector{VFun{M,T2}}) where {S,M,T1,T2} =
     LowRankIntegralOperator(convert(Vector{VFun{S,promote_type(T1,T2)}},U),
                             convert(Vector{VFun{M,promote_type(T1,T2)}},V))
 
 LowRankIntegralOperator(A::Fun,B::Fun)=LowRankIntegralOperator([A],[B])
 
-Base.promote_rule{S,M,T,S1,M1,T1}(::Type{LowRankIntegralOperator{S,M,T}},::Type{LowRankIntegralOperator{S1,M1,T1}})=LowRankIntegralOperator{promote_type(S,S1),promote_type(M,M1),promote_type(T,T1)}
+Base.promote_rule(::Type{LowRankIntegralOperator{S,M,T}},::Type{LowRankIntegralOperator{S1,M1,T1}}) where {S,M,T,S1,M1,T1}=LowRankIntegralOperator{promote_type(S,S1),promote_type(M,M1),promote_type(T,T1)}
 Base.rank(L::AbstractLowRankOperator)=length(L.U)
 
 domainspace(L::LowRankIntegralOperator)=space(first(L.V))

@@ -1,7 +1,7 @@
 
 for (Func,Len) in ((:(Base.sum),:complexlength),(:linesum,:arclength))
     @eval begin
-        function $Func{CC<:Chebyshev,DD}(G::Function,u::Fun{JacobiWeight{CC,DD}},z)
+        function $Func(G::Function,u::Fun{JacobiWeight{CC,DD}},z) where {CC<:Chebyshev,DD}
            d,α,β,n=domain(u),u.space.α,u.space.β,2ncoefficients(u)
            vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(d,n)
            sp,p = space(u),plan_chebyshevtransform(complex(vals))
@@ -9,7 +9,7 @@ for (Func,Len) in ((:(Base.sum),:complexlength),(:linesum,:arclength))
        end
 
        # TODO: remove the following hack
-        function $Func{CC<:Chebyshev,DD<:Segment}(G::Function,u::Fun{JacobiWeight{CC,DD}},z)
+        function $Func(G::Function,u::Fun{JacobiWeight{CC,DD}},z) where {CC<:Chebyshev,DD<:Segment}
             d,α,β,n=domain(u),u.space.α,u.space.β,2ncoefficients(u)
             vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(d,n)
             if α == β == -0.5
@@ -22,14 +22,14 @@ for (Func,Len) in ((:(Base.sum),:complexlength),(:linesum,:arclength))
     end
 end
 
-function logkernel{CC<:Chebyshev,DD}(G::Function,u::Fun{JacobiWeight{CC,DD}},z)
+function logkernel(G::Function,u::Fun{JacobiWeight{CC,DD}},z) where {CC<:Chebyshev,DD}
     sp,n=space(u),2ncoefficients(u)
     vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(sp,n)
     p = plan_chebyshevtransform(complex(vals))
     return map(z->logkernel(Fun(sp,p*(G.(z,t).*vals)),z),z)
 end
 
-function cauchy{CC<:Chebyshev,DD}(G::Function,u::Fun{JacobiWeight{CC,DD}},z)
+function cauchy(G::Function,u::Fun{JacobiWeight{CC,DD}},z) where {CC<:Chebyshev,DD}
     sp,n=space(u),2ncoefficients(u)
     vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(sp,n)
     p = plan_chebyshevtransform(vals)#complex(vals))
@@ -38,21 +38,21 @@ end
 
 for TYP in (:Fourier,:Laurent)
     @eval begin
-        function Base.sum{DD<:PeriodicInterval}(G::Function,u::Fun{$TYP{DD}},z)
+        function Base.sum(G::Function,u::Fun{$TYP{DD}},z) where DD<:PeriodicInterval
             d,n=domain(u),2ncoefficients(u)
             vals,t = values(pad(u,n)),points(d,n)
 
             return map(z->mean(G.(z,t).*vals),z)*arclength(d)
         end
 
-        function Base.sum{DD<:Circle}(G::Function,u::Fun{$TYP{DD}},z)
+        function Base.sum(G::Function,u::Fun{$TYP{DD}},z) where DD<:Circle
             d,n=domain(u),2ncoefficients(u)
             vals,t = values(pad(u,n)),points(d,n)
             #TODO: shouldn't this depend on which circle?
             return map(z->mean(G.(z,t).*vals.*t),z)*2π*im
         end
 
-        function linesum{DD<:PeriodicInterval}(G::Function,u::Fun{$TYP{DD}},z)
+        function linesum(G::Function,u::Fun{$TYP{DD}},z) where DD<:PeriodicInterval
             d,n=domain(u),2ncoefficients(u)
             vals,t = values(pad(u,n)),points(d,n)
             map(z->mean(G.(z,t).*vals),z)*arclength(d)
@@ -62,31 +62,31 @@ end
 
 
 
-function logkernel{DD}(G::Function,sp::Fourier{DD},u,z)
+function logkernel(G::Function,sp::Fourier{DD},u,z) where DD
     n=2length(u)
     vals,t = values(pad(Fun(sp,u),n)),points(sp,n)
     p = plan_transform(sp,vals)
     return map(z->logkernel(sp,transform(sp,G.(z,t).*vals,p),z),z)
 end
-logkernel{DD}(G::Function,sp::Laurent{DD},u,z)=logkernel(G,Fun(Fun(sp,u),Fourier),z)
+logkernel(G::Function,sp::Laurent{DD},u,z) where {DD}=logkernel(G,Fun(Fun(sp,u),Fourier),z)
 
 for Func in (:(Base.sum),:linesum,:logkernel,:cauchy)
     @eval begin
-        $Func{F<:Fun}(G::Function,u::Vector{F},z)=mapreduce(u->$Func(G,u,z),+,u)
+        $Func(G::Function,u::Vector{F},z) where {F<:Fun}=mapreduce(u->$Func(G,u,z),+,u)
         $Func(G::Function,sp::PiecewiseSpace,u,z)=$Func(G,vec(Fun(sp,u)),z)
         $Func(G::Function,u::Fun,z)=$Func(G,space(u),coefficients(u),z)
-        $Func{PS<:PolynomialSpace}(G::Function,sp::JacobiWeight{PS},f,z)=$Func(G,Fun(Fun(sp,f),JacobiWeight(sp.β,sp.α,Chebyshev(domain(sp)))),z)
+        $Func(G::Function,sp::JacobiWeight{PS},f,z) where {PS<:PolynomialSpace}=$Func(G,Fun(Fun(sp,f),JacobiWeight(sp.β,sp.α,Chebyshev(domain(sp)))),z)
     end
 end
 
-function logkernel{LS,RR<:Arc}(G::Function,sp::Space{LS,RR},u,z)
+function logkernel(G::Function,sp::Space{LS,RR},u,z) where {LS,RR<:Arc}
     n=2length(u)
     vals,t = itransform(sp,pad(u,n)),points(sp,n)
     p = plan_transform(sp,complex(vals))
     return map(z->logkernel(sp,transform(sp,G.(z,t).*vals,p),z),z)
 end
 
-function linesum{LS,RR<:Arc}(G::Function,sp::Space{LS,RR},u,z)
+function linesum(G::Function,sp::Space{LS,RR},u,z) where {LS,RR<:Arc}
     n=2length(u)
     vals,t = itransform(sp,pad(u,n)),points(sp,n)
     p = plan_transform(sp,complex(vals))
