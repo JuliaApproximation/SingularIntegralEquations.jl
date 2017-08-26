@@ -94,8 +94,8 @@ end
 Base.log(x::Directed{true}) = log(-x.x) - π*im
 Base.log(x::Directed{false}) = log(-x.x) + π*im
 Base.log1p(x::Directed) = log(1+x)
-Base.sqrt(x::Directed{true}) = x.x ≥ 0 ? sqrt(complex(x.x)) : -im*sqrt(-x.x)
-Base.sqrt(x::Directed{false}) = x.x ≥ 0 ? sqrt(complex(x.x)) : im*sqrt(-x.x)
+Base.sqrt(x::Directed{true}) = real(x.x) ≥ 0 ? sqrt(complex(x.x)) : -im*sqrt(-x.x)
+Base.sqrt(x::Directed{false}) = real(x.x) ≥ 0 ? sqrt(complex(x.x)) : im*sqrt(-x.x)
 ^(x::Directed{true},a::Integer) = x.x^a
 ^(x::Directed{false},a::Integer) = x.x^a
 ^(x::Directed{true},a::Number) = exp(-a*π*im)*(-x.x)^a
