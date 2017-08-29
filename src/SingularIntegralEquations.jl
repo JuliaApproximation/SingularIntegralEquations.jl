@@ -8,8 +8,8 @@ export cauchy, cauchyintegral, stieltjes, logkernel,
        stieltjesjacobimoment, logjacobimoment, singularintegral
 
 
-import Base: values,getindex,setindex!,*,+,-,==,<,<=,>,
-                >=,/,^,\,∪,transpose, convert
+import Base: values, getindex, setindex!, *, +, -, ==, <, <=, >,
+                >=, /, ^, \, ∪, transpose, convert
 
 
 
@@ -66,11 +66,11 @@ orientation(::Type{Directed{s}}) where {s} = s
 orientation(::Directed{s}) where {s} = s
 
 # removes direction from a number
-undirected(x::Directed) = x.x
 undirected(x::Number) = x
 undirected(x::Fun) = x
-reverseorientation(x::Directed{s}) where {s} = Directed{!s}(x.x)
+undirected(x::Directed) = undirected(x.x)  # x might also have directeion
 reverseorientation(x::Number) = x
+reverseorientation(x::Directed{s}) where {s} = Directed{!s}(reverseorientation(x.x))
 
 
 for OP in (:*,:+,:-,:/)
