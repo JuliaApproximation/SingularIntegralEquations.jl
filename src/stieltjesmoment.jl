@@ -21,7 +21,7 @@ stieltjesmoment(S::JacobiQ,z) = stieltjesjacobimoment(S.a,S.b,z)
 
 normalization(n::Int,α::Real,β::Real) = 2^(α+β)*gamma(n+α+1)*gamma(n+β+1)/gamma(2n+α+β+2)
 stieltjesjacobimoment(α::Real,β::Real,n::Int,z) =
-    (x = 2./(1-z);normalization(n,α,β)*undirected(-x)^(n+1)*_₂F₁(n+1,n+α+1,2n+α+β+2,x))
+    (x = 2./(1-z);normalization(n,α,β)*HypergeometricFunctions.mxa_₂F₁(n+1,n+α+1,2n+α+β+2,x))
 stieltjesjacobimoment(α::Real,β::Real,z) = stieltjesjacobimoment(α,β,0,z)
 
 
