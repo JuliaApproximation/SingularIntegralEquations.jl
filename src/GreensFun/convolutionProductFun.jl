@@ -5,9 +5,9 @@ export convolutionProductFun
 # defined as the distance of their arguments.
 #
 
-convolutionProductFun(f::Function,args...;kwds...) = convolutionProductFun(F(f),args...;kwds...)
+convolutionProductFun(f::Function,args...;kwds...) = convolutionProductFun(dynamic(f),args...;kwds...)
 
-function convolutionProductFun(f::F,u::UnivariateSpace,v::UnivariateSpace;tol=eps())
+function convolutionProductFun(f::DFunction,u::UnivariateSpace,v::UnivariateSpace;tol=eps())
     du,dv = domain(u),domain(v)
     ext = extrema(du,dv)
     if ext[1] == 0
@@ -28,7 +28,7 @@ function convolutionProductFun(f::F,u::UnivariateSpace,v::UnivariateSpace;tol=ep
     end
 end
 
-convolutionProductFun(f::F,
+convolutionProductFun(f::DFunction,
                       ss::TensorSpace{Tuple{U,V},DD,RR};kwds...) where {U<:UnivariateSpace,V<:UnivariateSpace,DD,RR} =
     convolutionProductFun(f,ss[1],ss[2];kwds...)
 

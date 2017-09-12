@@ -66,7 +66,7 @@ function stieltjesintervalrecurrence(S,f::AbstractVector,z)
         cfs = stieltjesforward(S,length(f),z)
         dotu(cfs,f)
     else
-        cfs = stieltjesbackward(S,z)
+        cfs = stieltjesbackward(S,undirected(z))
         dotu(cfs,f)
     end
 end

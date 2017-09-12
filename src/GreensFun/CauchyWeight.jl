@@ -34,7 +34,7 @@ cauchyweight(C::CauchyWeight{O},x,y) where {O} = cauchyweight(O,tocanonical(C,x,
 
 for Func in (:ProductFun,:convolutionProductFun)
     @eval begin
-        function $Func(f::F,cwsp::CauchyWeight{O};kwds...) where O
+        function $Func(f::DFunction,cwsp::CauchyWeight{O};kwds...) where O
             F = domain(factor(cwsp.space,1)) == domain(factor(cwsp.space,2)) ?
                 $Func(f,factor(cwsp.space,1),factor(cwsp.space,2);kwds...) :
                 $Func((x,y)->f(x,y)*cauchyweight(O,x,y),factor(cwsp.space,1),factor(cwsp.space,2);kwds...)
@@ -43,7 +43,7 @@ for Func in (:ProductFun,:convolutionProductFun)
     end
 end
 
-function LowRankFun(f::F,cwsp::CauchyWeight{O};retmax::Bool=false,kwds...) where O
+function LowRankFun(f::DFunction,cwsp::CauchyWeight{O};retmax::Bool=false,kwds...) where O
     if retmax
         F,maxabsf = domain(factor(cwsp.space,1)) == domain(factor(cwsp.space,2)) ?
             LowRankFun(f,factor(cwsp.space,1),factor(cwsp.space,2);retmax=retmax,kwds...) :
