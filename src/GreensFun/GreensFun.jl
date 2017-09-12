@@ -130,8 +130,8 @@ end
 
 ## Constructors
 
-GreensFun(f::Function,args...;kwds...) = GreensFun(F(f),args...;kwds...)
-GreensFun(f::Function,g::Function,args...;kwds...) = GreensFun(F(f),F(g),args...;kwds...)
+GreensFun(f::Function,args...;kwds...) = GreensFun(dynamic(f),args...;kwds...)
+GreensFun(f::Function,g::Function,args...;kwds...) = GreensFun(dynamic(f),dynamic(g),args...;kwds...)
 
 function GreensFun(f::DFunction,ss::SS;method::Symbol=:lowrank,kwds...) where SS<:AbstractProductSpace
     if method == :standard
