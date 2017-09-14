@@ -95,6 +95,32 @@ f=(1-x)^(-0.1)*(1+x)^(-0.2)*exp(x)
 
 
 
+# other intervals
+
+x = Fun()
+f = exp(x)
+z = 2+im
+@test logkernel(f,z) ≈ linesum(f*logabs(x-z))/π
+@test logkernel(f, -10.0) ≈ linesum(f*logabs(x+10))/π
+
+
+
+x = Fun()
+f = real(sqrt(1-x)*exp(x))
+z = 2+im
+@test logkernel(f,z) ≈ linesum(f*logabs(x-z))/π
+@test logkernel(f, -10.0) ≈ linesum(f*logabs(x+10))/π
+@test_broken logkernel(f, 0.1) ≈ logkernel(f, 0.1+eps()im)
+
+
+x = Fun(0.1..1)
+f = real(sqrt(1-x)*exp(x))
+z = 2+im
+@test logkernel(f,z) ≈ linesum(f*logabs(x-z))/π
+@test logkernel(f, -10.0) ≈ linesum(f*logabs(x+10))/π
+@test_broken logkernel(f, 0.2) ≈ logkernel(f, 0.2+eps()im)
+
+
 ## Arc
 a=Arc(0.,1.,0.,π/2)
 testsieeval(Legendre(a);posdirection=(-1-im))

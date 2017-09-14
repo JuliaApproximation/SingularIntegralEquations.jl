@@ -38,6 +38,19 @@ end
 logjacobimoment(α::Real,β::Real,z) = logjacobimoment(α,β,0,z)
 
 
+function logabsjacobimoment(α::Real,β::Real,n::Int,z)
+    x = 2./(1-z)
+    if n == 0
+        2normalization(0,α,β)*(logabs(z-1)-real(dualpart(_₂F₁(dual(zero(α)+eps(α+β),one(β)),α+1,α+β+2,x))))
+        # For testing purposes only, should be equivalent to above within radius of convergence
+        #2normalization(0,α,β)*(log(z-1)-(α+1)/(α+β+2)*x.*_₃F₂(α+2,α+β+3,x))
+    else
+        -2normalization(n,α,β)/n*real((-x)^n*_₂F₁(n,n+α+1,2n+α+β+2,x))
+    end
+end
+
+logabsjacobimoment(α::Real,β::Real,z) = logabsjacobimoment(α,β,0,z)
+
 
 
 stieltjeslegendremoment(n::Int,z) = stieltjesjacobimoment(zero(real(eltype(z))),zero(real(eltype(z))),n,z)

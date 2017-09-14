@@ -268,3 +268,9 @@ z=exp(.1im)
 @test (H*f)(z) ≈ hilbert(f,z)
 
 testbandedoperator(Hilbert(space(f)))
+
+
+## test piecewise singularintegral
+
+P₀ = legendre(0,Domain(0..1)) + legendre(0,Domain(0..im))
+@test singularintegral(1,P₀, 2+im) ≈ linesum(P₀/(z-s))/π

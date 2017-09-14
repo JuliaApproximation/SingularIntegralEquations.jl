@@ -32,11 +32,13 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
                   defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, refactorsvd!, SubOperator,
                   Block, BlockBandedMatrix, BandedBlockBandedMatrix, DFunction, Infinity,
                   component, ncomponents, factor, nfactors, components, factors, rangetype,
-                  VFun, Point, dynamic
+                  VFun, Point, dynamic, pieces, npieces, piece
 
 import ApproxFun: testbandedoperator
 
 import DualNumbers: dual
+
+export ⁺, ⁻
 
 """
 `Directed` represents a number that is a limit from either left (s=true) or right (s=false)
@@ -128,8 +130,12 @@ cauchyintegral(u...) = stieltjesintegral(u...)*(im/(2π))
 function singularintegral(k::Integer,s::Space,f,z)
     k == 0 && return logkernel(s,f,z)
     k == 1 && isreal(domain(s)) && return stieltjes(s,f,z)/π
+    k == 1 && domain(s) isa Segment && return stieltjes(s,f/sign(domain(s)),z)/π
     error("Not implemented")
 end
+
+singularintegral(k::Integer,s::PiecewiseSpace,f,z) =
+    mapreduce(g -> singularintegral(k, g, z), +, pieces(Fun(s,f)))
 
 
 function csingularintegral(k::Integer,s::Space,f,z)
