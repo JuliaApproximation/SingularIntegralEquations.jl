@@ -62,6 +62,6 @@ function stieltjes(f::Fun{<:JacobiWeight})
 end
 
 evaluate(f::AbstractVector,S::JacobiQ{<:Segment},x) =
-    stieltjesintervalrecurrence(S,f,tocanonical(S,x))./2jacobiQweight(S.b,S.a,tocanonical(S,x))
+    stieltjesintervalrecurrence(S,f,mobius(S,x))./2jacobiQweight(S.b,S.a,mobius(S,x))
 evaluate(f::AbstractVector,S::JacobiQ{<:Curve},z::Number) =
     sum(evaluate(f,setcanonicaldomain(S),complexroots(domain(S).curve-z)))
