@@ -19,7 +19,8 @@ for op in (:(stieltjes),:(cauchy),:(logkernel),:(stieltjesintegral),:(cauchyinte
 
         # directed is usually analytic continuation, so we need to unwrap
         # directd
-        $op(S::PiecewiseSpace,v,z::Directed) = mapreduce(f-> (z ∈ domain(f)) ? $op(f,z) : $op(f,z.x),+,Fun(S,v))
+        $op(S::PiecewiseSpace,v,z::Directed) =
+            mapreduce(f-> (z ∈ domain(f)) ? $op(f,z) : $op(f,z.x),+,components(Fun(S,v)))
     end
 end
 
