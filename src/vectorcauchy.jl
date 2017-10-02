@@ -13,8 +13,10 @@ end
 for op in (:(stieltjes),:(cauchy),:(logkernel),:(stieltjesintegral),:(cauchyintegral))
     @eval begin
         $op(S::PiecewiseSpace,v,z) = mapreduce(f->$op(f,z),+,components(Fun(S,v)))
-        $op(f::Fun{S,T}) where {S<:PiecewiseSpace,T} =
-            (v = map($op,components(f)); Fun(ApproxFun.SumSpace(map(space,v)),vec(coefficientmatrix(v).')))
+        function $op(f::Fun{S,T}) where {S<:PiecewiseSpace,T}
+            v = map($op,components(f))
+            Fun(ApproxFun.SumSpace(map(space,v)),vec(coefficientmatrix(v).'))
+        end
         $op(S::PiecewiseSpace,v) = depiece($op(components(Fun(S,v))))
 
         # directed is usually analytic continuation, so we need to unwrap

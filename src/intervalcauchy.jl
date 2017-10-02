@@ -62,7 +62,9 @@ end
 
 function stieltjesintervalrecurrence(S,f::AbstractVector,z)
     tol=1./floor(Int,sqrt(length(f)))
-    if (abs(real(z)) ≤ 1.+tol) && (abs(imag(z)) ≤ tol)
+    if isinf(z)
+        zero(promote_type(typeof(z), eltype(f)))
+    elseif (abs(real(z)) ≤ 1.+tol) && (abs(imag(z)) ≤ tol)
         cfs = stieltjesforward(S,length(f),z)
         dotu(cfs,f)
     else
