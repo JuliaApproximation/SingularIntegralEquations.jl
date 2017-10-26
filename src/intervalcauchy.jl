@@ -87,9 +87,10 @@ function stieltjes(S::PolynomialSpace{<:Segment},f,z::Number)
 end
 
 function hilbert(S::PolynomialSpace{<:Segment},f,z::Number)
-    if domain(S)==Segment()
-        cfs = hilbertforward(S,length(f),z)
-        dotu(cfs,f)
+    if domain(S) == Segment()
+        L = Legendre(domain(S))
+        cfs = hilbertforward(L,length(f),z)
+        dotu(cfs,coefficients(f, S, L))
     else
         hilbert(setdomain(S,Segment()),f,mobius(S,z))
     end
