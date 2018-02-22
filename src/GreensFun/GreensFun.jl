@@ -130,10 +130,10 @@ end
 
 ## Constructors
 
-GreensFun(f::Function,args...;kwds...) = GreensFun(F(f),args...;kwds...)
-GreensFun(f::Function,g::Function,args...;kwds...) = GreensFun(F(f),F(g),args...;kwds...)
+GreensFun(f::Function,args...;kwds...) = GreensFun(dynamic(f),args...;kwds...)
+GreensFun(f::Function,g::Function,args...;kwds...) = GreensFun(dynamic(f),dynamic(g),args...;kwds...)
 
-function GreensFun(f::F,ss::SS;method::Symbol=:lowrank,kwds...) where SS<:AbstractProductSpace
+function GreensFun(f::DFunction,ss::SS;method::Symbol=:lowrank,kwds...) where SS<:AbstractProductSpace
     if method == :standard
         F = ProductFun(f,ss,kwds...)
     elseif method == :convolution
@@ -163,7 +163,7 @@ function GreensFun(f::F,ss::SS;method::Symbol=:lowrank,kwds...) where SS<:Abstra
     GreensFun(F)
 end
 
-function GreensFun(f::F,g::F,ss::SS;method::Symbol=:unsplit,kwds...) where SS<:AbstractProductSpace
+function GreensFun(f::DFunction,g::DFunction,ss::SS;method::Symbol=:unsplit,kwds...) where SS<:AbstractProductSpace
     if method == :unsplit
         # Approximate Riemann function of operator.
         G = skewProductFun(g,ss.space;kwds...)
@@ -183,7 +183,7 @@ end
 
 # Array of GreensFun on TensorSpace of PiecewiseSpaces
 
-function GreensFun(f::F,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...) where {PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}
+function GreensFun(f::DFunction,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...) where {PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}
     M,N = ncomponents(factor(ss,1)),ncomponents(factor(ss,2))
     @assert M == N
     G = Array{GreensFun}(N,N)
@@ -239,7 +239,7 @@ function GreensFun(f::F,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbo
     G
 end
 
-function GreensFun(f::F,g::F,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:unsplit,tolerance::Symbol=:absolute,kwds...) where {PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}
+function GreensFun(f::DFunction,g::DFunction,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:unsplit,tolerance::Symbol=:absolute,kwds...) where {PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}
     M,N = ncomponents(factor(ss.space,1)),ncomponents(factor(ss.space,2))
     @assert M == N
     G = Array{GreensFun}(N,N)
@@ -278,7 +278,7 @@ function partition(ss::CauchyWeight{O,Tuple{HS1,HS2}}) where {O,HS1<:Hierarchica
     (CauchyWeight(ss11⊗ss21,O),CauchyWeight(ss12⊗ss22,O)),(CauchyWeight(converttoPiecewiseSpace(ss12)⊗converttoPiecewiseSpace(ss21),O),CauchyWeight(converttoPiecewiseSpace(ss11)⊗converttoPiecewiseSpace(ss22),O))
 end
 
-function GreensFun(f::F,ss::AbstractProductSpace{Tuple{HS1,HS2}};method::Symbol=:lowrank,kwds...) where {HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}
+function GreensFun(f::DFunction,ss::AbstractProductSpace{Tuple{HS1,HS2}};method::Symbol=:lowrank,kwds...) where {HS1<:HierarchicalSpace,HS2<:HierarchicalSpace}
     (ss11,ss22),(ss21,ss12) = partition(ss)
     meth1 = method == :Cholesky || method == :lowrank ? :standard : method
     G11 = GreensFun(f,ss11;method=method,kwds...)

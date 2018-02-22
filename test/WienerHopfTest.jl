@@ -48,7 +48,6 @@ ApproxFun.testblockbandedoperator(C2)
 @test cauchy(G,exp(0.1im)⁻) ≈ (C*G)(exp(0.1im))
 
 
-
 V1 = A\F
 Ṽ1 = A\F̃
 

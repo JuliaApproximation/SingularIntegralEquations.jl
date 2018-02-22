@@ -1,23 +1,24 @@
 import ApproxFun: dotu
 
 # This solves via forward substitution
-function forwardsubstitution!(ret,B,n,μ1,μ2)
+function forwardsubstitution!(ret,B,μ1,μ2,filter=identity)
+    n = length(ret)
     if n≥1
-        ret[1]=μ1
+        ret[1] = filter(μ1)
     end
     if n≥2
-        ret[2]=μ2
+        ret[2] = filter(μ2)
     end
     if n≥3
-        for k=2:n-1
-            ret[k+1]=-(B[k,k-1]*ret[k-1]+B[k,k]*ret[k])/B[k,k+1]
+        @inbounds for k=2:n-1
+            ret[k+1] = filter(-(B[k,k-1]*ret[k-1]+B[k,k]*ret[k])/B[k,k+1])
         end
     end
     ret
 end
 
 forwardsubstitution(R,n,μ1,μ2) =
-    forwardsubstitution!(Array{promote_type(eltype(R),typeof(μ1),typeof(μ2))}(n),R,n,μ1,μ2)
+    forwardsubstitution!(Array{promote_type(eltype(R),typeof(μ1),typeof(μ2))}(n),R,μ1,μ2)
 
 
 
@@ -25,22 +26,49 @@ forwardsubstitution(R,n,μ1,μ2) =
 stieltjesbackward(S::Space,z::Number) = JacobiZ(S,z)\[stieltjesmoment(S,0,z)]
 
 
+stieltjesbackward!(ret,S::Space,z::Number) = ret[:] = stieltjesbackward(S,z)[1:length(ret)]
+
+
 stieltjesforward(sp::Space,n,z) = forwardsubstitution(JacobiZ(sp,undirected(z)),n,
                                                       stieltjesmoment(sp,0,z),
                                                       stieltjesmoment(sp,1,z))
+
+stieltjesforward!(ret,sp::Space,z,filter=identity) = forwardsubstitution!(ret,JacobiZ(sp,undirected(z)),
+                                                    stieltjesmoment(sp,0,z),
+                                                    stieltjesmoment(sp,1,z),filter)
 
 hilbertforward(sp::Space,n,z) = forwardsubstitution(JacobiZ(sp,z),n,
                                                     hilbertmoment(sp,0,z),
                                                     hilbertmoment(sp,1,z))
 
 
+
+function stieltjesmoment!(ret,S::PolynomialSpace{<:Segment},z,filter=identity)
+    if domain(S) == Segment()
+        n = length(ret)
+        tol = 1/floor(Int,sqrt(n))
+        if (abs(real(z)) ≤ 1.+tol) && (abs(imag(z)) ≤ tol)
+            cfs = stieltjesforward!(ret,S,z,filter)
+        else
+            cfs = stieltjesbackward!(ret,S,z)
+        end
+
+        ret
+    else
+        stieltjesmoment!(ret,setdomain(S,Segment()),mobius(S,z),filter)
+    end
+end
+
+
 function stieltjesintervalrecurrence(S,f::AbstractVector,z)
     tol=1./floor(Int,sqrt(length(f)))
-    if (abs(real(z))≤1.+tol) && (abs(imag(z))≤tol)
+    if isinf(z)
+        zero(promote_type(typeof(z), eltype(f)))
+    elseif (abs(real(z)) ≤ 1.+tol) && (abs(imag(z)) ≤ tol)
         cfs = stieltjesforward(S,length(f),z)
         dotu(cfs,f)
     else
-        cfs = stieltjesbackward(S,z)
+        cfs = stieltjesbackward(S,undirected(z))
         dotu(cfs,f)
     end
 end
@@ -59,9 +87,10 @@ function stieltjes(S::PolynomialSpace{<:Segment},f,z::Number)
 end
 
 function hilbert(S::PolynomialSpace{<:Segment},f,z::Number)
-    if domain(S)==Segment()
-        cfs = hilbertforward(S,length(f),z)
-        dotu(cfs,f)
+    if domain(S) == Segment()
+        L = Legendre(domain(S))
+        cfs = hilbertforward(L,length(f),z)
+        dotu(cfs,coefficients(f, S, L))
     else
         hilbert(setdomain(S,Segment()),f,mobius(S,z))
     end

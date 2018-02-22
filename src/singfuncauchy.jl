@@ -184,16 +184,18 @@ function logkernel(sp::JacobiWeight{<:PolynomialSpace,<:Segment},u,z)
         else
             zero(z)
         end
-    elseif domain(sp)==Segment()
+    elseif domain(sp) == Segment()
         DS=WeightedJacobi(sp.β+1,sp.α+1)
         D=Derivative(DS)[2:end,:]
 
         f=Fun(Fun(sp,u),WeightedJacobi(sp.β,sp.α))  # convert to Legendre expansion
         uu=D\(f|(2:∞))   # find integral, dropping first coefficient of f
 
-        (f.coefficients[1]*real(logjacobimoment(sp.α,sp.β,z)) + real(stieltjes(uu,z)))/π
-    else
-        error("other intervals not yet implemented")
+        (f.coefficients[1]*logabsjacobimoment(sp.α,sp.β,z) + real(stieltjes(uu,z)))/π
+    else # map to canonical
+        c = 1/abs(fromcanonicalD(d))
+        g = setcanonicaldomain(Fun(sp,u))
+        (logkernel(g,mobius(d,z))/c - logabs(c)sum(g)/(c*π))
     end
 end
 

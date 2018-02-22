@@ -7,7 +7,7 @@ export skewProductFun, skewpoints, skewtransform!, iskewtransform!
 
 skewProductFun(f::Function,args...;kwds...) = skewProductFun(F(f),args...;kwds...)
 
-function skewProductFun(f::F,sp::TensorSpace{Tuple{Chebyshev{D1},Chebyshev{D2}}};tol=100eps()) where {D1,D2}
+function skewProductFun(f::DFunction,sp::TensorSpace{Tuple{Chebyshev{D1},Chebyshev{D2}}};tol=100eps()) where {D1,D2}
     for logn = 4:10
         X = coefficients(skewProductFun(f,sp,2^logn,2^logn+1;tol=tol))
         if size(X,1)<2^logn && size(X,2)<2^logn+1
@@ -18,7 +18,7 @@ function skewProductFun(f::F,sp::TensorSpace{Tuple{Chebyshev{D1},Chebyshev{D2}}}
     skewProductFun(f,sp,2^11,2^11+1;tol=tol)
 end
 
-function skewProductFun(f::F,sp::TensorSpace{Tuple{Laurent{D1},Laurent{D2}}};tol=100eps()) where {D1,D2}
+function skewProductFun(f::DFunction,sp::TensorSpace{Tuple{Laurent{D1},Laurent{D2}}};tol=100eps()) where {D1,D2}
     for logn = 4:10
         X = coefficients(skewProductFun(f,sp,2^logn,2^logn;tol=tol))
         if size(X,1)<2^logn && size(X,2)<2^logn
@@ -29,7 +29,7 @@ function skewProductFun(f::F,sp::TensorSpace{Tuple{Laurent{D1},Laurent{D2}}};tol
     skewProductFun(f,sp,2^11,2^11;tol=tol)
 end
 
-function skewProductFun(f::F,S::TensorSpace,M::Integer,N::Integer;tol=100eps())
+function skewProductFun(f::DFunction,S::TensorSpace,M::Integer,N::Integer;tol=100eps())
     xy = ApproxFun.checkpoints(S)
     T = promote_type(eltype(f(first(xy)...)),eltype(S))
     ptsx,ptsy=skewpoints(S,M,N)

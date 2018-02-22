@@ -41,10 +41,29 @@ function _₂F₁(a::Number,b::Number,c::Number,z::Number)
         elseif a == 1 && b ∈ ℤ # 5.
             return expm1nlog1p(1-b,-z)
         end
+    elseif isequal(c,4)
+        if abeqcd(a,b,2)
+            return logandpoly(z)
+        end
     elseif isequal(c,2.5) && abeqcd(a,b,1,1.5)
          return speciallog(z)
     end
     _₂F₁general(a,b,c,z) # catch-all
+end
+
+
+# Special case of (-x)^a*_₂F₁ to handle LogNumber correctly in RiemannHilbert.jl
+function mxa_₂F₁(a,b,c,z)
+    if isequal(c,2)
+        if abeqcd(a,b,1) # 6. 15.4.1
+            return log1p(-z)
+        end
+    elseif isequal(c,4)
+        if abeqcd(a,b,2)
+            return 6*(-2 + (1-2/undirected(z))*log1p(-z))
+        end
+    end
+    undirected(-z)^a*_₂F₁(a,b,c,z)
 end
 
 
