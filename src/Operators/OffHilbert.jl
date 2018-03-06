@@ -158,7 +158,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
                 error("Not implemented for order=$ord")
             end
 
-            M=bzeros(promote_type(typeof(C),eltype(y)),l+1,n,l,u)
+            M=BandedMatrix{promote_type(typeof(C),eltype(y))}(Zeros(l+1,n), (l,u))
             for k=1:n,j=1:min(l+1,ncoefficients(ret[k]))
                 M[j,k]=C*ret[k].coefficients[j]
             end
@@ -207,7 +207,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
                 end
             end
 
-            M=bzeros(promote_type(typeof(C),eltype(y)),l+3,n,l,u)
+            M=BandedMatrix{promote_type(typeof(C),eltype(y))}(Zeros(l+3,n),(l,u))
             for k=1:n,j=1:min(l+3,ncoefficients(ret[k]))
                 M[j,k]=C*ret[k].coefficients[j]
             end
@@ -281,7 +281,7 @@ function exterior_cauchy(b::Circle,a::Circle)
         m=max(m,ncoefficients(ret[n])-2)
     end
 
-    M=bzeros(Complex{Float64},2n,2n,m,0)
+    M=BandedMatrix{Complex{Float64}}(Zeros(2n,2n),(m,0))
     #j+2k-2≤2n
     #j≤2(n-k)+2
     for k=1:n,j=2:2:min(length(ret[k].coefficients),2(n-k)+2)
@@ -317,7 +317,7 @@ function interior_cauchy(a::Circle,b::Circle)
         end
     end
 
-    M=bzeros(Complex{Float64},2n-1,2n-1,0,m)
+    M=BandedMatrix{Complex{Float64}}(Zeros(2n-1,2n-1),(0,m))
     for k=1:n,j=max(1,2k-1-m):2:2k-1
         M[j,2k-1]=ret[k].coefficients[j]
     end
@@ -357,7 +357,7 @@ function disjoint_cauchy(a::Circle, b::Circle)
         end
     end
 
-    M=bzeros(Complex{Float64},2n-1,2n,l,u)
+    M=BandedMatrix{Complex{Float64}}(Zeros(2n-1,2n),(l,u))
     for k=1:n,j=max(1,2k-u):2:min(ncoefficients(ret[k]),2n-1)
             M[j,2k]=-ret[k].coefficients[j]
     end
