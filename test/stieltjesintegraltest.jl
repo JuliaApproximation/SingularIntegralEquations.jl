@@ -1,4 +1,4 @@
-using ApproxFun, SingularIntegralEquations, Base.Test
+using ApproxFun, SingularIntegralEquations, Compat.Test
 
 a=2.0
 xp=Fun(identity,a..1)

@@ -1,7 +1,7 @@
 #
 # test FundamentalSolutions submodule
 #
-using ApproxFun, SingularIntegralEquations, Base.Test
+using ApproxFun, SingularIntegralEquations, Compat.Test
 
 x = collect(-10:0.5:10)
 y = collect(-9.75:0.5:10.25)

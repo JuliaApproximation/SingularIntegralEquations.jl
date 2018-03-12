@@ -1,7 +1,7 @@
 #
 # test LowRankMatrix
 #
-using ApproxFun, SingularIntegralEquations, Base.Test
+using ApproxFun, SingularIntegralEquations, Compat.Test
 
 L = lrzeros(Complex{Float64},10,20)
 @test size(L) == (10,20)

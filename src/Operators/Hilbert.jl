@@ -54,25 +54,25 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
         domainspace(H::$ConcOp{Fourier{DD,RR}}) where {DD,RR} = H.space
         rangespace(H::$ConcOp{Fourier{DD,RR}}) where {DD,RR} = H.space
 
-        function rangespace(H::$ConcOp{JacobiWeight{Chebyshev{DD,RR},DD,RR}}) where {DD,RR}
+        function rangespace(H::$ConcOp{<:JacobiWeight{<:Chebyshev}})
             @assert domainspace(H).α == domainspace(H).β == -0.5
             H.order==0 ? Chebyshev(domain(H)) : Ultraspherical(H.order,domain(H))
         end
-        function rangespace(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD,RR},DD,RR}}) where {DD,RR}
+        function rangespace(H::$ConcOp{<:JacobiWeight{<:Ultraspherical{Int}}})
             @assert order(domainspace(H).space) == 1
             @assert domainspace(H).α==domainspace(H).β==0.5
             (H.order==1||H.order==0) ? Chebyshev(domain(H)) : Ultraspherical(H.order-1,domain(H))
         end
         # bandinds{λ,DD,RR}(H::$ConcOp{JacobiWeight{Ultraspherical{λ,DD,RR},DD,RR}})=-λ,H.order-λ
-        bandinds(H::$ConcOp{JacobiWeight{Chebyshev{DD,RR},DD,RR}}) where {DD,RR} = 0,H.order
-        bandinds(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD,RR},DD,RR}}) where {DD,RR} =
+        bandinds(H::$ConcOp{<:JacobiWeight{<:Chebyshev}}) = 0,H.order
+        bandinds(H::$ConcOp{<:JacobiWeight{<:Ultraspherical{Int}}}) =
             H.order > 0 ? (-1,H.order-1) : (-2,0)
 
-        choosedomainspace(H::$Op{UnsetSpace},sp::Ultraspherical) =
+        choosedomainspace(H::$Op{UnsetSpace}, sp::Ultraspherical) =
             ChebyshevWeight(ChebyshevDirichlet{1,1}(domain(sp)))
-        choosedomainspace(H::$Op{UnsetSpace},sp::Chebyshev) =
+        choosedomainspace(H::$Op{UnsetSpace}, sp::Chebyshev) =
             ChebyshevWeight(ChebyshevDirichlet{1,1}(domain(sp)))
-        choosedomainspace(H::$Op{UnsetSpace},sp::PiecewiseSpace) =
+        choosedomainspace(H::$Op{UnsetSpace}, sp::PiecewiseSpace) =
             PiecewiseSpace(map(s->choosedomainspace(H,s),sp.spaces))
     end
 end
@@ -328,7 +328,7 @@ for (Op,Len) in ((:Hilbert,:complexlength),
             end
         end
 
-        function getindex(H::$ConcOp{JacobiWeight{Chebyshev{DD,RR},DD,RR},OT,T},k::Integer,j::Integer) where {DD<:Segment,RR,OT,T}
+        function getindex(H::$ConcOp{<:JacobiWeight{<:Chebyshev{<:Segment}},OT,T},k::Integer,j::Integer) where {OT,T}
             sp=domainspace(H)
             @assert H.order == 0
             @assert sp.α==sp.β==-0.5
@@ -343,7 +343,7 @@ for (Op,Len) in ((:Hilbert,:complexlength),
         end
 
         # we always have real for n==1
-        function $Op(S::JacobiWeight{Ultraspherical{Int,DD,RR},DD},m) where {DD<:Segment,RR}
+        function $Op(S::JacobiWeight{<:Ultraspherical{Int,<:Segment}},m)
             @assert order(S.space) == 1
             if S.α==S.β==0.5
                 if m==1
@@ -357,7 +357,7 @@ for (Op,Len) in ((:Hilbert,:complexlength),
                 error(string($Op)*" not implemented for parameters $(S.α),$(S.β)")
             end
         end
-        function getindex(H::$ConcOp{JacobiWeight{Ultraspherical{Int,DD,RR},DD,RR},OT,T},k::Integer,j::Integer) where {DD<:Segment,RR,OT,T}
+        function getindex(H::$ConcOp{<:JacobiWeight{<:Ultraspherical{Int,<:Segment}},OT,T},k::Integer,j::Integer) where {OT,T}
             # order(domainspace(H))==1
             m=H.order
             d=domain(H)

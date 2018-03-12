@@ -1,4 +1,4 @@
-using ApproxFun,SingularIntegralEquations,Base.Test
+using ApproxFun,SingularIntegralEquations,Compat.Test
     import SingularIntegralEquations:stieltjesmoment,stieltjesjacobimoment
 
 

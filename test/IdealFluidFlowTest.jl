@@ -1,4 +1,4 @@
-using Base.Test, ApproxFun, SingularIntegralEquations, Base.Test
+using ApproxFun, SingularIntegralEquations, Compat.Test
     import ApproxFun: choosedomainspace, promotedomainspace, ConstantSpace, interlace,
                         testraggedbelowoperator, testblockbandedoperator, blocklengths
 
@@ -16,7 +16,7 @@ Ai=[1 Hilbert()]
 S = choosedomainspace(Ai,space(z))
 @test component(S,1) isa ApproxFun.ConstantSpace
 @test component(S,2) isa ApproxFun.JacobiWeight{ApproxFun.ChebyshevDirichlet{1,1,ApproxFun.Segment{Complex{Float64}},Float64},
-                                                        ApproxFun.Segment{Complex{Float64}},Float64}
+                                                        ApproxFun.Segment{Complex{Float64}},Float64,Float64}
 
 
 

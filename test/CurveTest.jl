@@ -1,4 +1,4 @@
-using ApproxFun, SingularIntegralEquations, Base.Test
+using ApproxFun, SingularIntegralEquations, Compat.Test
     import ApproxFun: ∞, testbandedoperator, testfunctional
 ## quadratic
 

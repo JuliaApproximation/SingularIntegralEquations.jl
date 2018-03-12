@@ -1,7 +1,7 @@
 #
 # test fractals
 #
-using ApproxFun, SingularIntegralEquations, Base.Test
+using ApproxFun, SingularIntegralEquations, Compat.Test
 
 d = Segment(0.,1.)
 c = Circle()

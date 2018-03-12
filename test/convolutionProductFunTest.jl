@@ -1,4 +1,4 @@
-using ApproxFun, SingularIntegralEquations, Base.Test
+using ApproxFun, SingularIntegralEquations, Compat.Test
 
 println("Chebyshev addition test")
 

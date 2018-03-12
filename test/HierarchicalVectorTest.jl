@@ -1,7 +1,7 @@
 #
 # test HierarchicalVector
 #
-using ApproxFun, SingularIntegralEquations, Base.Test
+using ApproxFun, SingularIntegralEquations, Compat.Test
 
 a = rand(5);b = rand(5);v = HierarchicalVector((a,b)); V = HierarchicalVector((v,v));r = rand(10);
 

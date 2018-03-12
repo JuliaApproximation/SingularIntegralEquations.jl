@@ -185,7 +185,7 @@ include("clustertree.jl")
 include("Extras/Extras.jl")
 
 
-using Base.Test
+using Compat.Test
 
 function testsieoperators(S::Space)
     testbandedoperator(SingularIntegral(S,0))
