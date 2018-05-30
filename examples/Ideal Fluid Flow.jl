@@ -22,7 +22,50 @@ k=50
     z=Fun(Γ)
     α=exp(-π*k/50im)
     S=JacobiWeight(0.5,0.5,Γ)
-    c,ui=[1 Hilbert(S)]\imag(α*z)
+    c,ui=[1 Hilbert(S)] \ [imag(α*z)]
+
+
+1 + 3
+
+
+D = Derivative() : Chebyshev() → Ultraspherical(1)
+
+
+D^2 + Fun(cos)
+
+
+
+Derivative([1,0]) : Chebyshev()^2
+
+
+
+
+xx = yy = linspace(-10,10,100)
+
+
+
+using Plots
+
+
+zz = xx' .+ im .* yy
+contour(xx, yy, imag(im      .* zz.^(1/2) ); nlevels=100)
+
+plot([0,-10], [0,10]; color=:black)
+    plot!([0,-10], [0,-10]; color=:black)
+    contour!(xx, yy, imag(im * zz.^(4/6) ); nlevels=100)
+plot([0,-10], [0,10]; color=:black)
+    plot!([0,-10], [0,-10]; color=:black)
+    contour!(xx, yy, imag( zz.^(4/3) ); nlevels=100)
+
+plot()
+
+
+
+randn(10,10)
+
+Hilbert() : JacobiWeight(0.5,0.5, Ultraspherical(1))
+
+
 
 u =(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 plot(Γ)
@@ -86,11 +129,11 @@ m=80;x = linspace(-2.,2.,m);y = linspace(-2.,2.,m+1)
     z=Fun(Γ)
     α=im
     S=JacobiWeight(0.5,0.5,Γ)
-    c,ui=[1 real(Hilbert(S))]\imag(α*z)
+    c,ui=[1 real(Hilbert(S))]\ [imag(α*z)]
 
 u=(x,y)->α*(x+im*y)+2cauchy(ui,x+im*y)
 plot(Γ)
-    contour!(x,y,imag(u(xx,yy))';nlevels=100)
+    contour!(x,y,imag(u.(x',y));nlevels=100)
 
 
 ##

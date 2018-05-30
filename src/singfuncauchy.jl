@@ -55,19 +55,19 @@ function hornersum(cfs::AbstractVector{S},y::V) where {S<:Number,V<:Number}
     y*ret
 end
 
-function divkhornersum(cfs::AbstractVector{S},y::T,ys::U,s::V) where {S<:Number,T<:Number,U<:Number,V<:Number}
+function divkhornersum(cfs::AbstractVector{S},ζ::T,ζs::U,s::V) where {S<:Number,T<:Number,U<:Number,V<:Number}
     N,P = length(cfs),promote_type(S,T,U,V)
     ret = N > 0 ? convert(P,cfs[N]/(N+s)) : zero(P)
     for k=N-1:-1:1
-        ret=muladd(y,ret,cfs[k]/(k+s))
+        ret=muladd(ζ,ret,cfs[k]/(k+s))
     end
-    y*ys*ret
+    ζ*ζs*ret
 end
 
-realdivkhornersum(cfs::AbstractVector{S},y,ys,s) where {S<:Real} = real(divkhornersum(cfs,y,ys,s))
-realdivkhornersum(cfs::AbstractVector{S},y,ys,s) where {S<:Complex} =
-    complex(real(divkhornersum(real(cfs),y,ys,s)),
-            real(divkhornersum(imag(cfs),y,ys,s)))
+realdivkhornersum(cfs::AbstractVector{S},ζ,ζs,s) where {S<:Real} = real(divkhornersum(cfs,ζ,ζs,s))
+realdivkhornersum(cfs::AbstractVector{S},ζ,ζs,s) where {S<:Complex} =
+    complex(real(divkhornersum(real(cfs),ζ,ζs,s)),
+            real(divkhornersum(imag(cfs),ζ,ζs,s)))
 
 
 function stieltjes(sp::JacobiWeight{<:PolynomialSpace,<:Segment},u,z)
@@ -141,10 +141,14 @@ end
 
 
 
-integratejin(c,cfs,y) =
-    0.5*(-cfs[1]*(log(y)+log(c))+divkhornersum(cfs,y,y,1)-divkhornersum(view(cfs,2:length(cfs)),y,zero(y)+1,0))
-realintegratejin(c,cfs,y) =
-    0.5*(-cfs[1]*(logabs(y)+logabs(c))+realdivkhornersum(cfs,y,y,1)-realdivkhornersum(view(cfs,2:length(cfs)),y,zero(y)+1,0))
+integratejin(c,cfs,ζ) =
+    0.5*(-(cfs[1] == 0 ? cfs[1] : cfs[1]*(log(ζ)+log(c))) +
+            divkhornersum(cfs,ζ,ζ,1) -
+            divkhornersum(view(cfs,2:length(cfs)),ζ,zero(ζ)+1,0))
+realintegratejin(c,cfs,ζ) =
+    0.5*(-(cfs[1] == 0 ? cfs[1] : cfs[1]*(logabs(ζ)+logabs(c))) +
+        realdivkhornersum(cfs,ζ,ζ,1) -
+        realdivkhornersum(view(cfs,2:length(cfs)),ζ,zero(ζ)+1,0))
 
 #########
 # stieltjesintegral is an indefinite integral of stieltjes
@@ -161,13 +165,15 @@ function logkernel(sp::JacobiWeight{<:PolynomialSpace,<:Segment},u,z)
         cfs=coefficients(u,sp.space,Ultraspherical(1,d))
         z=mobius(sp,z)
         x,r = joukowskyinversereal(Val{true},z),joukowskyinverseabs(Val{true},z)
-        y = r*exp(im*acos(x/r))  # dummy variable, choice of ± in arg doesn't matter
+        y =  sqrt(r^2 - x^2)  # dummy variable, choice of ± in arg doesn't matter
         arclength(d)*realintegratejin(4/(b-a),cfs,y)/2
     elseif  sp.α == sp.β == -.5
         cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
         z=mobius(sp,z)
+
         x,r = joukowskyinversereal(Val{true},z),joukowskyinverseabs(Val{true},z)
-        y = r*exp(im*acos(x/r))
+        y = sqrt(abs(r^2 - x^2) )
+        ζ = x + im*y
 
         if length(cfs) ≥1
             ret = -cfs[1]*arclength(d)*(log(r)+logabs(4/(b-a)))/2
@@ -177,7 +183,7 @@ function logkernel(sp::JacobiWeight{<:PolynomialSpace,<:Segment},u,z)
             end
 
             if length(cfs) ≥3
-                ret - arclength(d)*realintegratejin(4/(b-a),view(cfs,3:length(cfs)),y)
+                ret - arclength(d)*realintegratejin(4/abs(b-a),view(cfs,3:length(cfs)),ζ)
             else
                 ret
             end
@@ -207,20 +213,20 @@ function stieltjesintegral(sp::JacobiWeight{<:PolynomialSpace,<:Segment},u,z)
         cfs=coefficients(u,sp.space,Ultraspherical(1,d))
         y=joukowskyinverse(Val{true},mobius(sp,z))
         π*complexlength(d)*integratejin(4/(b-a),cfs,y)/2
-    elseif  sp.α == sp.β == -.5
+    elseif  sp.α == sp.β == -0.5
         cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
         z=mobius(sp,z)
-        y=joukowskyinverse(Val{true},z)
+        ζ=joukowskyinverse(Val{true},z)
 
         if length(cfs) ≥1
-            ret = -cfs[1]*π*complexlength(d)*(log(y)+log(4/abs(b-a)))/2
+            ret = -cfs[1]*π*complexlength(d)*(log(ζ)+log(4/abs(b-a)))/2
 
             if length(cfs) ≥2
-                ret += -π*complexlength(d)*cfs[2]*joukowskyinverse(Val{true},z)/2
+                ret += -π*complexlength(d)*cfs[2]*ζ/2
             end
 
             if length(cfs) ≥3
-                ret - π*complexlength(d)*integratejin(4/abs(b-a),view(cfs,3:length(cfs)),y)
+                ret - π*complexlength(d)*integratejin(4/abs(b-a),view(cfs,3:length(cfs)),ζ)
             else
                 ret
             end

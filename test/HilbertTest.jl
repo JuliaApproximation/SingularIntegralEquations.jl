@@ -277,3 +277,10 @@ s = Fun(domain(P₀))
 let z=2+im
     @test singularintegral(1,P₀, z) ≈ linesum(P₀/(z-s))/π
 end
+
+
+@testset "LogKernel is real" begin
+    Γ = Interval(-1 , 0) , Interval(1,2)
+    S = ∪(JacobiWeight.(-0.5,-0.5,Chebyshev.(Γ))...)
+    @test OffSingularIntegral(S, Space(3.0+im), 0) isa Operator{Float64}
+end
