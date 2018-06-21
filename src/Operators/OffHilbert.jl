@@ -15,7 +15,7 @@ export OffHilbert,OffSingularIntegral,Stieltjes,Cauchy
 for Op in (:OffHilbert,:OffSingularIntegral)
     @eval begin
         immutable $Op{D<:Space,R<:Space,T} <: Operator{T}
-            data::BandedMatrix{T}
+            data::BandedMatrix{T,Matrix{T}}
             domainspace::D
             rangespace::R
             order::Int

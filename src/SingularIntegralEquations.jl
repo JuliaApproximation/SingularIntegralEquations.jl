@@ -12,9 +12,6 @@ import Base: values, getindex, setindex!, *, +, -, ==, <, <=, >,
                 >=, /, ^, \, ∪, transpose, convert
 
 
-
-import BandedMatrices: bzeros
-
 import ApproxFun
 import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebilinearform,dotu, blocklengths,
                   plan_transform,plan_itransform,transform,itransform,transform!,itransform!,
