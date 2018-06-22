@@ -165,8 +165,9 @@ function logkernel(sp::JacobiWeight{<:PolynomialSpace,<:Segment},u,z)
         cfs=coefficients(u,sp.space,Ultraspherical(1,d))
         z=mobius(sp,z)
         x,r = joukowskyinversereal(Val{true},z),joukowskyinverseabs(Val{true},z)
-        y =  sqrt(r^2 - x^2)  # dummy variable, choice of ± in arg doesn't matter
-        arclength(d)*realintegratejin(4/(b-a),cfs,y)/2
+        y =  sqrt(abs(r^2 - x^2))  # dummy variable, choice of ± in arg doesn't matter
+        ζ = x + im*y
+        arclength(d)*realintegratejin(4/(b-a),cfs,ζ)/2
     elseif  sp.α == sp.β == -.5
         cfs = coefficients(u,sp.space,ChebyshevDirichlet{1,1}(d))
         z=mobius(sp,z)
