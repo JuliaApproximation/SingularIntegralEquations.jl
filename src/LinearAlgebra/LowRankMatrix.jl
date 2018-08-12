@@ -136,7 +136,7 @@ Base.copy!(L::LowRankMatrix,N::LowRankMatrix) = (copy!(L.U,N.U);copy!(L.V,N.V);L
 
 # algebra
 
-for op in ( VERSION < v"0.6-" ? (:+,:-,:.+,:.-) : (:+,:-))
+for op in (:+,:-)
     @eval begin
         $op(L::LowRankMatrix) = LowRankMatrix($op(L.U),L.V)
 

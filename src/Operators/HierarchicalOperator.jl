@@ -147,7 +147,7 @@ end
 blocksize(H::HierarchicalOperator{U,V}) where {U<:Operator,V<:AbstractLowRankOperator} =
     ncomponents(domainspace(H)),ncomponents(rangespace(H)) # TODO: check it's not rangespace...domainspace
 
-for op in ( VERSION < v"0.6-" ? (:+,:-,:.+,:.-) : (:+,:-))
+for op in (:+,:-)
     @eval begin
         $op(H::HierarchicalOperator) = HierarchicalOperator(map($op,diagonaldata(H)),map($op,offdiagonaldata(H)))
         $op(H::HierarchicalOperator,J::HierarchicalOperator) = HierarchicalOperator(map($op,diagonaldata(H),diagonaldata(J)),map($op,offdiagonaldata(H),offdiagonaldata(J)))

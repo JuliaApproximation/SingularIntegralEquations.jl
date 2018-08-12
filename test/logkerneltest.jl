@@ -1,4 +1,4 @@
-using Compat.Test, ApproxFun, SingularIntegralEquations
+using Test, ApproxFun, SingularIntegralEquations
     import ApproxFun: ∞, testbandedoperator, testfunctional, testblockbandedoperator, testraggedbelowoperator, JacobiZ
     import SingularIntegralEquations: testsies, testsieeval, stieltjesmoment, Directed, _₂F₁, ⁺, ⁻
 
@@ -124,3 +124,30 @@ z = 2+im
 ## Arc
 a=Arc(0.,1.,0.,π/2)
 testsieeval(Legendre(a);posdirection=(-1-im))
+
+
+
+
+@testset "Chebyshev singularities" begin
+    for d in (Interval(), Interval(0,1), Segment(1+im, 2+3im))
+        for k = 1:10
+            u = Fun(JacobiWeight.(-0.5,-0.5,ChebyshevDirichlet{1,1}(d)), [zeros(4);1])
+            x = Fun(d)
+            for z in (20.0+im, 3.0)
+                ex = linesum(u*logabs(z-x))/π
+                @test logkernel(u, z) ≈ ex
+            end
+        end
+    end
+
+    for d in (Interval(), Interval(0,1))
+        for k = 1:10
+            u = Fun(JacobiWeight.(-0.5,-0.5,ChebyshevDirichlet{1,1}(d)), [zeros(4);1])
+            x = Fun(d)
+            for z in (20.0+im, 3.0)
+                ex_s = sum(u*log(z-x))
+                @test stieltjesintegral(u, z) ≈ ex_s
+            end
+        end
+    end
+end

@@ -1,7 +1,7 @@
 #
 # test hierarchicalsolve
 #
-using ApproxFun, SingularIntegralEquations, Compat.Test
+using ApproxFun, SingularIntegralEquations, Test
 
 M = 50
 L = Array{LowRankMatrix{Float64}}(14)
