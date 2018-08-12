@@ -8,7 +8,7 @@
 # size(C) = (r2,r1)
 #
 
-import Base.LinAlg: Factorization, LU
+import LinearAlgebra: Factorization, LU
 
 struct PivotLDU{T,S<:AbstractMatrix} <: Factorization{T}
     B::S

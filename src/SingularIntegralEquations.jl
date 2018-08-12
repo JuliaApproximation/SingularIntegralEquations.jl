@@ -1,7 +1,8 @@
 
 __precompile__()
 module SingularIntegralEquations
-    using Base, Compat, BandedMatrices, ApproxFun, DualNumbers, RecipesBase
+    using Base, BandedMatrices, ApproxFun, DualNumbers, RecipesBase,
+            LinearAlgebra, Random
 
 export cauchy, cauchyintegral, stieltjes, logkernel,
        stieltjesintegral, hilbert, pseudohilbert, pseudocauchy,
@@ -182,7 +183,7 @@ include("clustertree.jl")
 include("Extras/Extras.jl")
 
 
-using Compat.Test
+using Test
 
 function testsieoperators(S::Space)
     testbandedoperator(SingularIntegral(S,0))
@@ -208,10 +209,10 @@ function testsieeval(S::Space;posdirection=im)
     for k=1:5
         f=Fun(S,[zeros(k-1);1])
         @test abs(sum(f/(z-x))-stieltjes(f,z)) ≤ 100eps()
-        @test stieltjes(f,p*⁺) ≈ stieltjes(f,p+eps()*posdirection)
-        @test stieltjes(f,p*⁻) ≈ stieltjes(f,p-eps()*posdirection)
-        @test cauchy(f,p*⁺)-cauchy(f,p*⁻) ≈ f(p)
-        @test im*(cauchy(f,p*⁺)+cauchy(f,p*⁻)) ≈ hilbert(f,p)
+        @test stieltjes(f,(p)⁺) ≈ stieltjes(f,p+eps()*posdirection)
+        @test stieltjes(f,(p)⁻) ≈ stieltjes(f,p-eps()*posdirection)
+        @test cauchy(f,(p)⁺)-cauchy(f,(p)⁻) ≈ f(p)
+        @test im*(cauchy(f,(p)⁺)+cauchy(f,(p)⁻)) ≈ hilbert(f,p)
 
         @test abs(linesum(f*logabs(x-z))/π-logkernel(f,z)) ≤ 100eps()
         @test logkernel(f,p) ≈ logkernel(f,p+eps()*posdirection)

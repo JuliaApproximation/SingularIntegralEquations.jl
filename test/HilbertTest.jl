@@ -1,4 +1,4 @@
-using Compat.Test, ApproxFun, SingularIntegralEquations
+using Test, ApproxFun, SingularIntegralEquations
     import ApproxFun: ∞, testbandedoperator, testfunctional, testblockbandedoperator, testraggedbelowoperator,
                         setcanonicaldomain
     import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, sqrtx2, Directed

@@ -1,4 +1,4 @@
-using ApproxFun, SingularIntegralEquations, Compat.Test
+using ApproxFun, SingularIntegralEquations, Test
     import ApproxFun: choosedomainspace, promotedomainspace, ConstantSpace, interlace,
                         testraggedbelowoperator, testblockbandedoperator, blocklengths
 
