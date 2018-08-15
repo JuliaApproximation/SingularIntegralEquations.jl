@@ -166,7 +166,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
                 error("Not implemented for order=$ord")
             end
 
-            M=BandedMatrix{promote_type(typeof(C),eltype(y))}(Zeros(l+1,n), (l,u))
+            M=BandedMatrix{promote_type(typeof(C),cfstype(y))}(Zeros(l+1,n), (l,u))
             for k=1:n,j=1:min(l+1,ncoefficients(ret[k]))
                 M[j,k]=C*ret[k].coefficients[j]
             end
@@ -215,7 +215,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
                 end
             end
 
-            M=BandedMatrix{promote_type(typeof(C),eltype(y))}(Zeros(l+3,n),(l,u))
+            M=BandedMatrix{promote_type(typeof(C),cfstype(y))}(Zeros(l+3,n),(l,u))
             for k=1:n,j=1:min(l+3,ncoefficients(ret[k]))
                 M[j,k]=C*ret[k].coefficients[j]
             end
@@ -446,7 +446,7 @@ end
 
 
 function OffHilbert(sp::JacobiWeight{Ultraspherical{Int,DD,RR},DD},cs::ConstantSpace{<:Point},k::Int) where {DD<:Segment,RR}
-    z = Number(domain(cs))
+    z = convert(Number, domain(cs))
     @assert k == 1
     @assert order(sp.space) == 1
     if sp.α == sp.β == 0.5
