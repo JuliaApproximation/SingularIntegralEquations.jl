@@ -1,9 +1,9 @@
 const NMAX = 100
 
 for TYP in subtypes(AbstractFloat)
-    A = parse("A"*string(TYP))
+    A = Meta.parse("A"*string(TYP))
     @eval begin
-        const $A = Array{Complex{$TYP}}(NMAX,NMAX)
+        const $A = Array{Complex{$TYP}}(undef,NMAX,NMAX)
         riemann_array(::Type{$TYP}) = $A
     end
 end

@@ -26,7 +26,7 @@ y = collect(-2:1.0:2)
 E = collect(-10:10.0:10)
 z = x.+im*y'
 
-𝕽 = Array{Matrix{Complex{Float64}}}(size(E))
+𝕽 = Array{Matrix{Complex{Float64}}}(undef,size(E))
 #=
 xBF = collect(-2:BigFloat(1.0):2)
 yBF = collect(-2:BigFloat(1.0):2)

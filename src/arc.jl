@@ -70,14 +70,14 @@ function SingularIntegral(S::JacobiWeight{JW,RR},k::Integer) where {JW,RR<:Arc}
         M=Multiplication(abs(fromcanonicalD(d,Fun(identity,csp))),csp)
 
         z∞=mobius(d,Inf)
-        cnst=Array{Float64}(0)
-        for k=1:10000
-            push!(cnst,logkernel(Fun(csp,[zeros(k-1);1.]),z∞))
-            if k≥3&&norm(cnst[end-2:end])<tol
+        cnst=Vector{Float64}()
+        for j = 1:10000
+            push!(cnst,logkernel(Fun(csp,[zeros(j-1);1.]),z∞))
+            if j ≥ 3 && norm(cnst[end-2:end]) < tol
                 break
             end
         end
-        L∞=FiniteOperator(cnst.',csp,ConstantSpace(eltype(cnst)))
+        L∞=FiniteOperator(cnst',csp,ConstantSpace(eltype(cnst)))
 
         x=Fun(identity,S)
         SpaceOperator((Σ-L∞)*M,S,setdomain(rangespace(Σ),d)) +

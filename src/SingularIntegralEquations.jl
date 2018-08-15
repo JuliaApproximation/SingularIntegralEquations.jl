@@ -2,7 +2,7 @@
 __precompile__()
 module SingularIntegralEquations
     using Base, BandedMatrices, ApproxFun, DualNumbers, RecipesBase,
-            LinearAlgebra, Random
+            LinearAlgebra, Random, SpecialFunctions, InteractiveUtils
 
 export cauchy, cauchyintegral, stieltjes, logkernel,
        stieltjesintegral, hilbert, pseudohilbert, pseudocauchy,
@@ -12,6 +12,7 @@ export cauchy, cauchyintegral, stieltjes, logkernel,
 import Base: values, getindex, setindex!, *, +, -, ==, <, <=, >,
                 >=, /, ^, \, ∪, transpose, convert
 
+import LinearAlgebra: ldiv!, mul!, rank, cond, qr
 
 import ApproxFun
 import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebilinearform,dotu, blocklengths,

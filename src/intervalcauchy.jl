@@ -18,7 +18,7 @@ function forwardsubstitution!(ret,B,μ1,μ2,filter=identity)
 end
 
 forwardsubstitution(R,n,μ1,μ2) =
-    forwardsubstitution!(Array{promote_type(eltype(R),typeof(μ1),typeof(μ2))}(n),R,μ1,μ2)
+    forwardsubstitution!(Array{promote_type(eltype(R),typeof(μ1),typeof(μ2))}(undef,n),R,μ1,μ2)
 
 
 
@@ -47,7 +47,7 @@ function stieltjesmoment!(ret,S::PolynomialSpace{<:Segment},z,filter=identity)
     if domain(S) == Segment()
         n = length(ret)
         tol = 1/floor(Int,sqrt(n))
-        if (abs(real(z)) ≤ 1.+tol) && (abs(imag(z)) ≤ tol)
+        if (abs(real(z)) ≤ 1+tol) && (abs(imag(z)) ≤ tol)
             cfs = stieltjesforward!(ret,S,z,filter)
         else
             cfs = stieltjesbackward!(ret,S,z)
@@ -61,10 +61,10 @@ end
 
 
 function stieltjesintervalrecurrence(S,f::AbstractVector,z)
-    tol=1./floor(Int,sqrt(length(f)))
+    tol=1/floor(Int,sqrt(length(f)))
     if isinf(z)
         zero(promote_type(typeof(z), eltype(f)))
-    elseif (abs(real(z)) ≤ 1.+tol) && (abs(imag(z)) ≤ tol)
+    elseif (abs(real(z)) ≤ 1+tol) && (abs(imag(z)) ≤ tol)
         cfs = stieltjesforward(S,length(f),z)
         dotu(cfs,f)
     else

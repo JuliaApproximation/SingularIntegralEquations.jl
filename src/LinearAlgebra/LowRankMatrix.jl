@@ -90,7 +90,7 @@ Base.promote_rule(::Type{LowRankMatrix{T}},::Type{LowRankMatrix{V}}) where {T,V}
 Base.promote_rule(::Type{LowRankMatrix{T}},::Type{Matrix{V}}) where {T,V}=Matrix{promote_type(T,V)}
 
 Base.size(L::LowRankMatrix) = size(L.U,1),size(L.V,1)
-Base.rank(L::LowRankMatrix) = size(L.U,2)
+rank(L::LowRankMatrix) = size(L.U,2)
 Base.transpose(L::LowRankMatrix) = LowRankMatrix(L.V,L.U)
 Base.ctranspose(L::LowRankMatrix{T}) where {T<:Real} = LowRankMatrix(L.V,L.U)
 Base.ctranspose(L::LowRankMatrix) = LowRankMatrix(conj(L.V),conj(L.U))
@@ -108,15 +108,15 @@ function Base.getindex(L::LowRankMatrix,i::Int,j::Int)
         throw(BoundsError())
     end
 end
-Base.getindex(L::LowRankMatrix,i::Int,jr::Range) = eltype(L)[L[i,j] for j=jr].'
-Base.getindex(L::LowRankMatrix,ir::Range,j::Int) = eltype(L)[L[i,j] for i=ir]
-Base.getindex(L::LowRankMatrix,ir::Range,jr::Range) = eltype(L)[L[i,j] for i=ir,j=jr]
+Base.getindex(L::LowRankMatrix,i::Int,jr::AbstractRange) = transpose(eltype(L)[L[i,j] for j=jr])
+Base.getindex(L::LowRankMatrix,ir::AbstractRange,j::Int) = eltype(L)[L[i,j] for i=ir]
+Base.getindex(L::LowRankMatrix,ir::AbstractRange,jr::AbstractRange) = eltype(L)[L[i,j] for i=ir,j=jr]
 Base.full(L::LowRankMatrix)=L[1:size(L,1),1:size(L,2)]
 
 # constructors
 
 for op in (:zeros,:eye,:ones,:rand)
-    lrop = parse("lr"*string(op))
+    lrop = Meta.parse("lr"*string(op))
     @eval begin
         export $lrop
         $lrop(T::Type,m::Int,n::Int) = LowRankMatrix($op(T,m,n))
@@ -159,10 +159,10 @@ end
 .*(a::Number,L::LowRankMatrix) = a*L
 .*(L::LowRankMatrix,a::Number) = L*a
 
-function Base.A_mul_B!(b::AbstractVector,L::LowRankMatrix,x::AbstractVector)
+function mul!(b::AbstractVector,L::LowRankMatrix,x::AbstractVector)
     temp = zeros(promote_type(eltype(L),eltype(x)),rank(L))
     At_mul_B!(temp,L.V,x)
-    A_mul_B!(b,L.U,temp)
+    mul!(b,L.U,temp)
     b
 end
 
@@ -171,7 +171,7 @@ function *(L::LowRankMatrix,M::LowRankMatrix)
     temp = zeros(T,rank(L),rank(M))
     At_mul_B!(temp,L.V,M.U)
     V = zeros(T,size(M,2),rank(L))
-    A_mul_Bt!(V,M.V,temp)
+    mult!(V,M.V,temp)
     LowRankMatrix(copy(L.U),V)
 end
 

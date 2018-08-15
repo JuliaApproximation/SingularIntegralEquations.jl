@@ -2,7 +2,7 @@ import ApproxFun: recA, recB, recC, recα, recβ, recγ
 import ApproxFun: jacobirecA, jacobirecB, jacobirecC, jacobirecα, jacobirecβ, jacobirecγ
 
 
-struct ComplexPlane <: Domain{Complex128} end
+struct ComplexPlane <: Domain{ComplexF64} end
 
 Base.in(x, d::ComplexPlane) = true
 

@@ -105,11 +105,11 @@ Base.ctranspose(H::HierarchicalOperator) = HierarchicalOperator(map(ctranspose,d
 Base.copy(H::HierarchicalOperator) = HierarchicalOperator(map(copy,diagonaldata(H)),map(copy,offdiagonaldata(H)))
 Base.copy!(H::HierarchicalOperator,J::HierarchicalOperator) = (map(copy!,diagonaldata(H),diagonaldata(J));map(copy!,offdiagonaldata(H),offdiagonaldata(J));H)
 
-Base.rank(A::Operator) = ∞
+rank(A::Operator) = ∞
 
 function blockrank(H::HierarchicalOperator)
     m,n = blocksize(H)
-    A = Array{Any}(m,n)
+    A = Array{Any}(undef,m,n)
     (m1,n1),(m2,n2) = map(blocksize,diagonaldata(H))
     r1,r2 = map(rank,offdiagonaldata(H))
     for j=1:n1,i=1:m2
@@ -161,10 +161,10 @@ end
 #=
 function *(H::HierarchicalOperator, x::HierarchicalVector)
     T = promote_type(eltype(H),eltype(x))
-    A_mul_B!(similar(x,T),H,x)
+    mul!(similar(x,T),H,x)
 end
 
-function Base.A_mul_B!(b::AbstractVector,D::Base.LinAlg.Diagonal,x::AbstractVector)
+function mul!(b::AbstractVector,D::Base.LinAlg.Diagonal,x::AbstractVector)
     d = D.diag
     for i=1:min(length(b),length(x))
         @inbounds b[i] += d[i]*x[i]
@@ -172,14 +172,14 @@ function Base.A_mul_B!(b::AbstractVector,D::Base.LinAlg.Diagonal,x::AbstractVect
     b
 end
 
-function Base.A_mul_B!(b::HierarchicalVector,H::HierarchicalOperator,h::HierarchicalVector)
+function mul!(b::HierarchicalVector,H::HierarchicalOperator,h::HierarchicalVector)
     (H11,H22),(H21,H12) = partition(H)
     h1,h2 = partition(h)
     b1,b2 = partition(b)
-    A_mul_B!(b1,H12,h2)
-    A_mul_B!(b1,H11,h1)
-    A_mul_B!(b2,H21,h1)
-    A_mul_B!(b2,H22,h2)
+    mul!(b1,H12,h2)
+    mul!(b1,H11,h1)
+    mul!(b2,H21,h1)
+    mul!(b2,H22,h2)
     b
 end
 

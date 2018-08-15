@@ -19,9 +19,9 @@ ApproxFun.@calculus_operator(Hilbert)
 ApproxFun.@calculus_operator(SingularIntegral)
 
 for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
-    ConcOp=parse("Concrete"*string(Op))
-    OpWrap=parse(string(Op)*"Wrapper")
-    OffOp=parse("Off"*string(Op))
+    ConcOp=Meta.parse("Concrete"*string(Op))
+    OpWrap=Meta.parse(string(Op)*"Wrapper")
+    OffOp=Meta.parse("Off"*string(Op))
     @eval begin
         ## Convenience routines
         $Op(d::IntervalDomain,n::Int) =
@@ -36,7 +36,7 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
             sp = components(S)
             m = length(sp)
             diag = Any[$Op(sp[k],n) for k=1:m]
-            C = Any[k==j?diag[k]:$OffOp(sp[k],rangespace(diag[j]),n) for j=1:m,k=1:m]
+            C = Any[k==j ? diag[k] : $OffOp(sp[k],rangespace(diag[j]),n) for j=1:m,k=1:m]
             D = Operator{mapreduce(i->eltype(C[i]),promote_type,1:m^2)}[C[j,k] for j=1:m,k=1:m]
             D = promotespaces(D)
             $OpWrap(InterlaceOperator(D,S,PiecewiseSpace(map(rangespace,D[:,1]))),n)
@@ -104,7 +104,7 @@ ConcreteSingularIntegral(sp::Space{D,R},n) where {D,R<:Complex} =
 # Override sumspace
 
 for TYP in (:Hilbert,:SingularIntegral)
-    ConcOp=parse("Concrete"*string(TYP))
+    ConcOp=Meta.parse("Concrete"*string(TYP))
     @eval function $TYP(F::Fourier{DD,RR},n) where {DD<:Circle,RR}
         if !domain(F).orientation
             R=reverseorientation(F)
@@ -121,8 +121,8 @@ end
 
 
 for Typ in (:Hilbert,:SingularIntegral)
-    ConcTyp = parse("Concrete"*string(Typ))
-    WrapTyp = parse(string(Typ)*"Wrapper")
+    ConcTyp = Meta.parse("Concrete"*string(Typ))
+    WrapTyp = Meta.parse(string(Typ)*"Wrapper")
     @eval begin
         $Typ(S::Hardy{s,DD,RR},m::Integer) where {s,DD<:Circle,RR} =
             m ≤ 1 ? $ConcTyp(S,m) : $WrapTyp(Derivative(m-1)*Hilbert(S),m)
@@ -202,10 +202,10 @@ function getindex(H::ConcreteHilbert{Fourier{DD,RR},OT,T},k::Integer,j::Integer)
     o = d.orientation
 
     if m == 0 && k==j
-        T(k==1?2r*log(r):(-r/(k÷2)))
+        T(k==1 ? 2r*log(r) : (-r/(k÷2)))
     elseif m == 1
         if k==j==1
-            T(o?im:-im)
+            T(o ? im : -im)
         elseif iseven(k) && j==k+1
             -one(T)
         elseif isodd(k) && j==k-1
@@ -300,8 +300,8 @@ end
 
 for (Op,Len) in ((:Hilbert,:complexlength),
                         (:SingularIntegral,:arclength))
-    ConcOp=parse("Concrete"*string(Op))
-    OpWrap=parse(string(Op)*"Wrapper")
+    ConcOp=Meta.parse("Concrete"*string(Op))
+    OpWrap=Meta.parse(string(Op)*"Wrapper")
 
     @eval begin
         function $Op(S::JacobiWeight{Chebyshev{DD,RR},DD},m::Int) where {DD<:Segment,RR}
@@ -310,7 +310,7 @@ for (Op,Len) in ((:Hilbert,:complexlength),
                     $ConcOp(S,m)
                 else
                     d=domain(S)
-                    C=(4./$Len(d))^(m-1)
+                    C=(4/$Len(d))^(m-1)
                     $OpWrap(SpaceOperator(
                         ToeplitzOperator([0.],[zeros(m);C]),S,Ultraspherical(m,d)),m)
                 end
@@ -336,7 +336,7 @@ for (Op,Len) in ((:Hilbert,:complexlength),
             if k==j
                 d=domain(H)
                 C=$Len(d)/4
-                -T(k==1?-2C*log(C):2C/(k-1))
+                -T(k==1 ? -2C*log(C) : 2C/(k-1))
             else
                 zero(T)
             end
@@ -349,7 +349,7 @@ for (Op,Len) in ((:Hilbert,:complexlength),
                 if m==1
                     d=domain(S)
                     $OpWrap(SpaceOperator(
-                        ToeplitzOperator([-1.0],[0.]),S,m==1?Chebyshev(d):Ultraspherical(m-1,d)),m)
+                        ToeplitzOperator([-1.0],[0.]),S,m==1 ? Chebyshev(d) : Ultraspherical(m-1,d)),m)
                 else
                     $ConcOp(S,m)
                 end
@@ -367,7 +367,7 @@ for (Op,Len) in ((:Hilbert,:complexlength),
 
 
 
-            C=(4./$Len(d))^(m-1)
+            C=(4/$Len(d))^(m-1)
             if m == 0
                 if k==j==1
                     T(C*log(C))

@@ -109,7 +109,7 @@ function Base.setindex!(H::HierarchicalVector{S},v,i::Int) where S<:Union{Number
     end
 end
 
-Base.getindex(H::HierarchicalVector{S},ir::Range) where {S<:Union{Number,AbstractVector}} =
+Base.getindex(H::HierarchicalVector{S},ir::AbstractRange) where {S<:Union{Number,AbstractVector}} =
     eltype(H)[H[i] for i=ir]
 Base.full(H::HierarchicalVector{S}) where {S<:Union{Number,AbstractVector}}=H[1:size(H,1)]
 
@@ -133,7 +133,7 @@ end
 *(H::HierarchicalVector,a::Number) = HierarchicalVector((H.data[1]*a,H.data[2]*a))
 *(a::Number,H::HierarchicalVector) = H*a
 
-for op in (:(Base.dot),:dotu)
+for op in (:(LinearAlgebra.dot),:dotu)
     @eval begin
         $op(H::HierarchicalVector,J::HierarchicalVector) = $op(H.data[1],J.data[1])+$op(H.data[2],J.data[2])
         $op(H::HierarchicalVector,J::Vector) = $op(full(H),J)
@@ -151,8 +151,8 @@ for op in (:(Base.zero),:(Base.ones),:(Base.abs),:(Base.abs2),:(Base.conj),:(Bas
     end
 end
 
-Base.A_mul_B!(b::Vector,A::Matrix,H::HierarchicalVector) = A_mul_B!(b,A,full(H))
-Base.A_mul_B!(b::Vector,A::LowRankMatrix,H::HierarchicalVector) = A_mul_B!(b,A,full(H))
+mul!(b::Vector,A::Matrix,H::HierarchicalVector) = mul!(b,A,full(H))
+mul!(b::Vector,A::LowRankMatrix,H::HierarchicalVector) = mul!(b,A,full(H))
 
 
 #=

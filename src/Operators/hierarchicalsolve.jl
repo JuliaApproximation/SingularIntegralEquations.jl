@@ -40,8 +40,8 @@ function hierarchicalsolve(H::HierarchicalOperator{U,V},f::Vector{F}) where {U<:
 
     # Solve again with updated right-hand sides
 
-    RHS1 = f1 - v12.'*U12
-    RHS2 = f2 - v21.'*U21
+    RHS1 = f1 - transpose(v12)*U12
+    RHS2 = f2 - transpose(v21)*U21
 
     sol1,sol2 = hierarchicalsolve(H11,RHS1),hierarchicalsolve(H22,RHS2)
 
@@ -100,7 +100,7 @@ function computepivots(V12::Vector{Operator{T}},V21::Vector{Operator{T}},H11f1::
             @inbounds b2[j,i] += V21[j]*H11f1[i]
         end
     end
-    A_ldiv_B1B2!(A,b1,b2)
+    ldiv1B2!(A,b1,b2)
 end
 
 function computepivots(V12::Vector{VFun{V1,T}},V21::Vector{VFun{V2,T}},H11f1::Vector{VFun{A1,T}},H22f2::Vector{VFun{A2,T}},A::PivotLDU{T}) where {V1,V2,A1,A2,T}
@@ -115,7 +115,7 @@ function computepivots(V12::Vector{VFun{V1,T}},V21::Vector{VFun{V2,T}},H11f1::Ve
             @inbounds b2[j,i] += linebilinearform(V21[j],H11f1[i])
         end
     end
-    A_ldiv_B1B2!(A,b1,b2)
+    ldiv1B2!(A,b1,b2)
 end
 
 

@@ -4,11 +4,11 @@
 using ApproxFun, SingularIntegralEquations, Test
 
 M = 50
-L = Array{LowRankMatrix{Float64}}(14)
+L = Array{LowRankMatrix{Float64}}(undef,14)
 [L[i] = LowRankMatrix(0.001rand(4M,2),0.001rand(4M,2)) for i=1:2]
 [L[i] = LowRankMatrix(0.01rand(2M,2),0.01rand(2M,2)) for i=[3:4;9:10]]
 [L[i] = LowRankMatrix(0.1rand(M,2),0.1rand(M,2)) for i=[5:8;11:14]]
-D = Array{Diagonal{Float64}}(8)
+D = Array{Diagonal{Float64}}(undef,8)
 [D[i] = Diagonal(1./collect(1:M)) for i=1:8]
 
 H = HierarchicalMatrix(D,L)
@@ -17,7 +17,7 @@ H = HierarchicalMatrix(D,L)
 #@test blockrank(H) == fill(2,8,8)+diagm(fill(48,8))
 @test isfactored(H) == false
 
-B = Array{Vector{Float64}}(8)
+B = Array{Vector{Float64}}(undef,8)
 [B[i] = rand(M) for i=1:8]
 b = rand(size(H,1))#HierarchicalVector(B)
 

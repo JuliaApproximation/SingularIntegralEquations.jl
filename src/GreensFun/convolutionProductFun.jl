@@ -17,7 +17,7 @@ function convolutionProductFun(f::DFunction,u::UnivariateSpace,v::UnivariateSpac
         N = length(c)
         N1 = isa(du,PeriodicDomain) ? 2N : N
         N2 = isa(dv,PeriodicDomain) ? 2N : N
-        return ProductFun((x,y)->x==y?fd:f(x,y),u⊗v,N1,N2;tol=tol)
+        return ProductFun((x,y)->x==y ? fd : f(x,y),u⊗v,N1,N2;tol=tol)
     else
         ff = Fun(z->f(0,z),Chebyshev(Segment(ext...)))
         c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(eltype(ff)))

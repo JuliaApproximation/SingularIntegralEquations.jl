@@ -88,7 +88,7 @@ V2  = A\(G-I)[:,2]
 @test norm((A*V[:,1]-(G[:,1]-[1,0])).coefficients) < 100eps()
 
 z=exp(0.1im)
-@test V(z)+(I-G(z))*cauchy(V,z*⁻) ≈ G(z)-I
+@test V(z)+(I-G(z))*cauchy(V,(z)⁻) ≈ G(z)-I
 
 @test cauchy(V[1,1],exp(0.1im)⁻) ≈ (C*V[1,1])(exp(0.1im))
 @test cauchy(V[2,1],exp(0.1im)⁻) ≈ (C*V[2,1])(exp(0.1im))
@@ -99,8 +99,8 @@ z=exp(0.1im)
 Φp = V+Φmi
 
 
-@test Φmi(z) ≈ (I+cauchy(V,z*⁻))
-@test Φp(z) ≈ (I+cauchy(V,z*⁺))
+@test Φmi(z) ≈ (I+cauchy(V,(z)⁻))
+@test Φp(z) ≈ (I+cauchy(V,(z)⁺))
 @test Φp(z)*inv(Φmi(z)) ≈ G(z)
 
 Φm=inv.(Φmi)

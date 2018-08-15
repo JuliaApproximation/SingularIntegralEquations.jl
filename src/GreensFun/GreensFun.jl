@@ -54,7 +54,7 @@ convert(::Type{GreensFun{K,T}},A::GreensFun) where {K<:BivariateFun,T} = error("
 Base.length(G::GreensFun) = length(G.kernels)
 Base.transpose(G::GreensFun) = GreensFun(mapreduce(transpose,+,G.kernels))
 convert(::Type{GreensFun},F::Union{ProductFun,LowRankFun}) = GreensFun(F)
-Base.rank(G::GreensFun) = error("Not all kernels are low rank approximations.")
+rank(G::GreensFun) = error("Not all kernels are low rank approximations.")
 
 domain(G::GreensFun) = domain(first(G.kernels))
 (G::GreensFun)(x,y)=evaluate(G,x,y)
@@ -62,7 +62,7 @@ evaluate(G::GreensFun,x,y) = mapreduce(f->evaluate(f,x,y),+,G.kernels)
 kernels(B::BivariateFun) = B
 kernels(G::GreensFun) = G.kernels
 
-Base.rank(G::GreensFun{L}) where {L<:LowRankFun} = mapreduce(rank,+,G.kernels)
+rank(G::GreensFun{L}) where {L<:LowRankFun} = mapreduce(rank,+,G.kernels)
 slices(G::GreensFun{L}) where {L<:LowRankFun} = mapreduce(x->x.A,vcat,G.kernels),mapreduce(x->x.B,vcat,G.kernels)
 slices(G::GreensFun{L},k::Int) where {L<:LowRankFun} = slices(G)[k]
 LowRankIntegralOperator(G::GreensFun{L}) where {L<:LowRankFun} = LowRankIntegralOperator(slices(G)...)
@@ -78,7 +78,7 @@ for TYP in (:(ApproxFun.DefiniteLineIntegralWrapper),:DefiniteLineIntegral)
         wsp = domainspace(⨍)
         @assert m == length(wsp.spaces)
         ⨍j = DefiniteLineIntegral(component(wsp,1))
-        ret = Array{Operator{promote_type(eltype(⨍j),map(eltype,B)...)}}(m,n)
+        ret = Array{Operator{promote_type(eltype(⨍j),map(eltype,B)...)}}(undef,m,n)
         for j=1:n
             ⨍j = DefiniteLineIntegral(component(wsp,j))
             for i=1:m
@@ -186,7 +186,7 @@ end
 function GreensFun(f::DFunction,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...) where {PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}
     M,N = ncomponents(factor(ss,1)),ncomponents(factor(ss,2))
     @assert M == N
-    G = Array{GreensFun}(N,N)
+    G = Array{GreensFun}(undef,N,N)
     if method == :standard
         for i=1:N,j=1:N
             G[i,j] = GreensFun(f,component(ss,i,j);method=method,kwds...)
@@ -199,7 +199,7 @@ function GreensFun(f::DFunction,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};metho
             G[i,j] = transpose(G[j,i])
         end
     elseif method == :unsplit
-        maxF = Array{Number}(N)
+        maxF = Array{Number}(undef,N)
         for i=1:N
           G[i,i] = GreensFun(f,component(ss,i,i);method=method,kwds...)
           maxF[i] = one(real(mapreduce(eltype,promote_type,G[i,i].kernels)))/2π
@@ -223,7 +223,7 @@ function GreensFun(f::DFunction,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};metho
                 end
             end
         elseif tolerance == :absolute
-            maxF = Array{Number}(N)
+            maxF = Array{Number}(undef,N)
             for i=1:N
                 F,maxF[i] = LowRankFun(f,component(ss,i,i);method=method,retmax=true,kwds...)
                 G[i,i] = GreensFun(F)
@@ -242,9 +242,9 @@ end
 function GreensFun(f::DFunction,g::DFunction,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:unsplit,tolerance::Symbol=:absolute,kwds...) where {PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}
     M,N = ncomponents(factor(ss.space,1)),ncomponents(factor(ss.space,2))
     @assert M == N
-    G = Array{GreensFun}(N,N)
+    G = Array{GreensFun}(undef,N,N)
     if method == :unsplit
-        maxF = Array{Number}(N)
+        maxF = Array{Number}(undef,N)
         for i=1:N
             G[i,i] = GreensFun(f,g,ss[i,i];method=method,kwds...)
             maxF[i] = one(real(mapreduce(eltype,promote_type,G[i,i].kernels)))/2π
@@ -314,9 +314,9 @@ for TYP in (:(ApproxFun.DefiniteLineIntegralWrapper),:DefiniteLineIntegral)
         else
             ⨍2 = DefiniteLineIntegral(wsp[end])
         end
-        HierarchicalOperator((qrfact(⨍1[H11]),qrfact(⨍2[H22])),
+        HierarchicalOperator((qr(⨍1[H11]),qr(⨍2[H22])),
                              map(LowRankIntegralOperator,offdiagonaldata(H)))
     end
 end
 
-Base.qrfact(H::HierarchicalOperator) = H # trivial no-op for now.
+qr(H::HierarchicalOperator) = H # trivial no-op for now.

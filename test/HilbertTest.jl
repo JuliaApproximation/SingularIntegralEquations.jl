@@ -89,7 +89,7 @@ S = Stieltjes(ds1,rs)
 
 testbandedoperator(S)
 
-z = 3.+1.5im
+z = 3+1.5im
 @test (S*f1)(z) ≈ stieltjes(f2,z) #val,err = quadgk(x->f1(x)./(z-x),-1.,1.)
 # Operator 1.1589646343327578 - 0.7273679005911196im
 # Function 1.1589646343327455 - 0.7273679005911283im
@@ -215,8 +215,8 @@ C2=Cauchy(Space(d2),Space(d1))
 
 println("    Two circle test 3")
 
-c1=0.1+.1im;r1=.4;
-c2=-2.+.2im;r2=0.3;
+c1=0.1+0.1im;r1=.4;
+c2=-2+0.2im;r2=0.3;
 d1=Circle(c1,r1)
 d2=Circle(c2,r2)
 @test norm((Cauchy(d1,d2)*Fun(z->exp(1/z)-1,d1)+Fun(z->exp(1/z)-1,d2)).coefficients)<2000eps()
@@ -245,7 +245,7 @@ f=Fun(exp,a)*sqrt(abs((ζ-1)*(ζ-im)))
 
 
 z=exp(.1im)
-@test hilbert(f,z) ≈ im*(cauchy(f,z*⁺)+cauchy(f,z*⁻))
+@test hilbert(f,z) ≈ im*(cauchy(f,(z)⁺)+cauchy(f,(z)⁻))
 
 
 

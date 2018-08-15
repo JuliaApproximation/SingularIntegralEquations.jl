@@ -21,12 +21,12 @@ stieltjesmoment(S::JacobiQ,z) = stieltjesjacobimoment(S.a,S.b,z)
 
 normalization(n::Int,α::Real,β::Real) = 2^(α+β)*gamma(n+α+1)*gamma(n+β+1)/gamma(2n+α+β+2)
 stieltjesjacobimoment(α::Real,β::Real,n::Int,z) =
-    (x = 2./(1-z);normalization(n,α,β)*HypergeometricFunctions.mxa_₂F₁(n+1,n+α+1,2n+α+β+2,x))
+    (x = 2/(1-z);normalization(n,α,β)*HypergeometricFunctions.mxa_₂F₁(n+1,n+α+1,2n+α+β+2,x))
 stieltjesjacobimoment(α::Real,β::Real,z) = stieltjesjacobimoment(α,β,0,z)
 
 
 function logjacobimoment(α::Real,β::Real,n::Int,z)
-    x = 2./(1-z)
+    x = 2/(1-z)
     if n == 0
         2normalization(0,α,β)*(log(z-1)-dualpart(_₂F₁(dual(zero(α)+eps(α+β),one(β)),α+1,α+β+2,x)))
         # For testing purposes only, should be equivalent to above within radius of convergence
@@ -39,7 +39,7 @@ logjacobimoment(α::Real,β::Real,z) = logjacobimoment(α,β,0,z)
 
 
 function logabsjacobimoment(α::Real,β::Real,n::Int,z)
-    x = 2./(1-z)
+    x = 2/(1-z)
     if n == 0
         2normalization(0,α,β)*(logabs(z-1)-real(dualpart(_₂F₁(dual(zero(α)+eps(α+β),one(β)),α+1,α+β+2,x))))
         # For testing purposes only, should be equivalent to above within radius of convergence
@@ -109,4 +109,4 @@ end
 =#
 
 
-hilbertmoment(S::Space,k::Integer,x) = -real(stieltjesmoment(S,k,x*⁺)+stieltjesmoment(S,k,x*⁻))/(2π)
+hilbertmoment(S::Space,k::Integer,x) = -real(stieltjesmoment(S,k,(x)⁺)+stieltjesmoment(S,k,(x)⁻))/(2π)

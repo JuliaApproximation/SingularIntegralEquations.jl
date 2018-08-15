@@ -96,7 +96,7 @@ function computepivots(V12::Matrix{T},V21::Matrix{T},H11f1::Vector{T},H22f2::Vec
     for j=1:r2
         b2[j] += dot(V21[:,j],H11f1)
     end
-    A_ldiv_B1B2!(A,b1,b2)
+    ldiv1B2!(A,b1,b2)
 end
 
 function computepivots(V12::Matrix{T},V21::Matrix{T},H11f1::Matrix{T},H22f2::Matrix{T},A::PivotLDU{T},nf::Int) where T
@@ -110,5 +110,5 @@ function computepivots(V12::Matrix{T},V21::Matrix{T},H11f1::Matrix{T},H22f2::Mat
             b2[j,i] += dot(V21[:,j],H11f1[:,i])
         end
     end
-    A_ldiv_B1B2!(A,b1,b2)
+    ldiv1B2!(A,b1,b2)
 end

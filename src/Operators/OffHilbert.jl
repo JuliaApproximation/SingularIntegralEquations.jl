@@ -14,7 +14,7 @@ export OffHilbert,OffSingularIntegral,Stieltjes,Cauchy
 
 for Op in (:OffHilbert,:OffSingularIntegral)
     @eval begin
-        immutable $Op{D<:Space,R<:Space,T} <: Operator{T}
+        struct $Op{D<:Space,R<:Space,T} <: Operator{T}
             data::BandedMatrix{T,Matrix{T}}
             domainspace::D
             rangespace::R
@@ -51,7 +51,7 @@ function default_OffHilbert(ds::Space,rs::Space,order::Int)
     @assert order==1
     tol=1E-13
 
-    vv=Array{Vector{Complex128}}(0)
+    vv=Vector{Vector{ComplexF64}}()
     m=min(100,dimension(rs))
     for k=1:2:1000
         b=Fun(ds,[zeros(k-1);1.])
@@ -64,7 +64,7 @@ function default_OffHilbert(ds::Space,rs::Space,order::Int)
         end
         if norm(v1.coefficients,Inf)<tol &&
             norm(v2.coefficients,Inf)<tol
-            C=zeros(Complex128,mapreduce(length,max,vv),length(vv))
+            C=zeros(ComplexF64,mapreduce(length,max,vv),length(vv))
             for j=1:length(vv)
                 @inbounds C[1:length(vv[j]),j] = vv[j]
             end
@@ -83,7 +83,7 @@ end
 function default_OffSingularIntegral(::Type{T}, ds::Space, rs::Space, order::Int) where T
     tol=1E-13
 
-    vv=Array{Vector{T}}(0)
+    vv=Vector{Vector{T}}()
     m=100
     for k=1:2:1000
         b=Fun(ds,[zeros(k-1);1.])
@@ -117,7 +117,7 @@ end
 
 # TODO: SingularInteral( , 0 ) is really different
 default_OffSingularIntegral(ds::Space, rs::Space, order::Int) =
-    default_OffSingularIntegral(order == 0 ? Float64 : Complex128, ds, rs, order)
+    default_OffSingularIntegral(order == 0 ? Float64 : ComplexF64, ds, rs, order)
 
 
 OffHilbert(ds::Space,rs::Space,order::Int) = default_OffHilbert(ds,rs,order)
@@ -138,7 +138,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
                 x=mobius(ds,z)
                 y=joukowskyinverse(Val{true},x)
                 yk,ykp1=y,y*y
-                ret=Array{typeof(y)}(300)
+                ret=Array{typeof(y)}(undef,300)
                 ret[1]=-.5logabs(2y)+.25real(ykp1)
                 n,l,u = 1,ncoefficients(ret[1])-1,0
                 while norm(ret[n].coefficients)>100eps()
@@ -152,7 +152,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
                 end
             elseif ord == 1
                 y=Fun(z->joukowskyinverse(Val{true},mobius(ds,z)),rs)
-                ret=Array{typeof(y)}(300)
+                ret=Array{typeof(y)}(undef,300)
                 ret[1]=-y
                 n,l,u = 1,ncoefficients(ret[1])-1,0
                 while norm(ret[n].coefficients)>100eps()
@@ -183,7 +183,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
                 x=mobius(ds,z)
                 y=joukowskyinverse(Val{true},x)
                 yk,ykp1=y,y*y
-                ret=Array{typeof(y)}(300)
+                ret=Array{typeof(y)}(undef,300)
                 ret[1]=-logabs(2y/C)
                 ret[2]=-real(yk)
                 ret[3]=chop!(-ret[1]-.5real(ykp1),100eps())
@@ -201,7 +201,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
                 z=Fun(identity,rs)
                 x=mobius(ds,z)
                 y=joukowskyinverse(Val{true},x)
-                ret=Array{typeof(y)}(300)
+                ret=Array{typeof(y)}(undef,300)
                 ret[1]=-1/sqrtx2(x)
                 ret[2]=x*ret[1]+1
                 ret[3]=2y
@@ -275,7 +275,7 @@ function exterior_cauchy(b::Circle,a::Circle)
     r=b.radius
 
     S=Fun(a,[0.0,0,1])  # Shift to use bandedness
-    ret=Array{Fun{Laurent{typeof(a),Complex128},Complex128}}(300)
+    ret=Array{Fun{Laurent{typeof(a),ComplexF64},ComplexF64}}(undef,300)
     ret[1]=Fun(z->(r/(z-c)),a)
     n=1
     m=ncoefficients(ret[1])-2
@@ -301,7 +301,7 @@ end
 function interior_cauchy(a::Circle,b::Circle)
     z=mappoint(a,Circle(),Fun(b))
 
-    ret=Array{Fun{Laurent{typeof(b),Complex128},Complex128}}(300)
+    ret=Array{Fun{Laurent{typeof(b),ComplexF64},ComplexF64}}(undef,300)
     ret[1]=ones(b)
     n=1
     m=0
@@ -339,7 +339,7 @@ function disjoint_cauchy(a::Circle, b::Circle)
 
     f=Fun(z->r/(z-c),b)
 
-    ret=Array{Fun{Laurent{typeof(b),Complex128},Complex128}}(300)
+    ret=Array{Fun{Laurent{typeof(b),ComplexF64},ComplexF64}}(undef,300)
     ret[1]=f
     n=1
 
@@ -401,12 +401,12 @@ end
 #    S^+ + S^- = -2π*H
 #
 ############
-Stieltjes(d,r,ord) = (ord==0?π:-π)*OffHilbert(d,r,ord)
+Stieltjes(d,r,ord) = (ord==0 ? π : -π)*OffHilbert(d,r,ord)
 Stieltjes(d,r) = (-π)*OffHilbert(d,r)
 
 
 
-Cauchy(s::Bool,d)=(s?0.5:-0.5)*I +(-0.5im)*Hilbert(d)
+Cauchy(s::Bool,d)=(s ? 0.5 : -0.5)*I + (-0.5im)*Hilbert(d)
 Cauchy(s::Int,d)=Cauchy(s==1,d)
 Cauchy(s::Union{Int,Bool})=Cauchy(s,UnsetSpace())
 Cauchy(ds,rs,ord)=(1/(2*im))*OffHilbert(ds,rs,ord)
@@ -421,7 +421,7 @@ Cauchy(ds,rs)=Cauchy(ds,rs,1)
 
 
 function hornervector(y0)
-    r=Array{typeof(y0)}(200)
+    r=Array{typeof(y0)}(undef,200)
     r[1]=y0
     k=1
     tol=eps()
@@ -441,7 +441,7 @@ end
 
 function HornerFunctional(y0,sp,cs)
     v = hornervector(y0)
-    FiniteOperator(v.',sp,cs)
+    FiniteOperator(transpose(v),sp,cs)
 end
 
 
@@ -456,19 +456,19 @@ function OffHilbert(sp::JacobiWeight{Ultraspherical{Int,DD,RR},DD},cs::ConstantS
         -HornerFunctional(joukowskyinverse(Val{true},mobius(sp,z)),sp,cs)
     else
         # calculate directly
-        r=Array{eltype(z)}(0)
+        r=Vector{eltype(z)}()
         for k=1:10000
             push!(r,-stieltjes(Fun(sp,[zeros(k-1);1.]),z)/π)
             if abs(last(r)) < eps()
                 break
             end
         end
-        FiniteOperator(r.',sp,cs)
+        FiniteOperator(transpose(r),sp,cs)
     end
 end
 
 for Op in (:OffHilbert, :OffSingularIntegral)
-    defOp = parse("default_"*string(Op))
+    defOp = Meta.parse("default_"*string(Op))
     @eval begin
         function $Op(sp::JacobiWeight{Chebyshev{DD,RR},DD},z::Space,k::Int) where {DD,RR}
             if sp.β == sp.α == 0.5
@@ -490,9 +490,9 @@ function OffHilbert(sp::JacobiWeight{ChebyshevDirichlet{1,1,DD,RR},DD},cs::Const
         z=mobius(sp,z)
 
         sx2z=sqrtx2(z)
-        sx2zi=1./sx2z
+        sx2zi=1/sx2z
 
-        FiniteOperator([-sx2zi;1-sx2zi;2*hornervector(z-sx2z)].',sp,cs)
+        FiniteOperator(transpose([-sx2zi;1-sx2zi;2*hornervector(z-sx2z)]),sp,cs)
     else
         # try converting to Canonical
         us=JacobiWeight(sp.β,sp.α,Chebyshev(domain(sp)))

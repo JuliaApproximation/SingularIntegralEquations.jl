@@ -30,7 +30,7 @@ LowRankIntegralOperator(U::Vector{VFun{S,T1}},V::Vector{VFun{M,T2}}) where {S,M,
 LowRankIntegralOperator(A::Fun,B::Fun)=LowRankIntegralOperator([A],[B])
 
 Base.promote_rule(::Type{LowRankIntegralOperator{S,M,T}},::Type{LowRankIntegralOperator{S1,M1,T1}}) where {S,M,T,S1,M1,T1}=LowRankIntegralOperator{promote_type(S,S1),promote_type(M,M1),promote_type(T,T1)}
-Base.rank(L::AbstractLowRankOperator)=length(L.U)
+rank(L::AbstractLowRankOperator)=length(L.U)
 
 domainspace(L::LowRankIntegralOperator)=space(first(L.V))
 rangespace(L::LowRankIntegralOperator)=space(first(L.U))

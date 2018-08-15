@@ -146,20 +146,20 @@ function Base.getindex(H::HierarchicalMatrix{S,V},i::Int,j::Int) where {S<:Abstr
         throw(BoundsError())
     end
 end
-Base.getindex(H::HierarchicalMatrix{S,V},i::Int,jr::Range) where {S<:AbstractMatrix,V<:AbstractMatrix} = eltype(H)[H[i,j] for j=jr].'
-Base.getindex(H::HierarchicalMatrix{S,V},ir::Range,j::Int) where {S<:AbstractMatrix,V<:AbstractMatrix} = eltype(H)[H[i,j] for i=ir]
-Base.getindex(H::HierarchicalMatrix{S,V},ir::Range,jr::Range) where {S<:AbstractMatrix,V<:AbstractMatrix} = eltype(H)[H[i,j] for i=ir,j=jr]
+Base.getindex(H::HierarchicalMatrix{S,V},i::Int,jr::AbstractRange) where {S<:AbstractMatrix,V<:AbstractMatrix} = transpose(eltype(H)[H[i,j] for j=jr])
+Base.getindex(H::HierarchicalMatrix{S,V},ir::AbstractRange,j::Int) where {S<:AbstractMatrix,V<:AbstractMatrix} = eltype(H)[H[i,j] for i=ir]
+Base.getindex(H::HierarchicalMatrix{S,V},ir::AbstractRange,jr::AbstractRange) where {S<:AbstractMatrix,V<:AbstractMatrix} = eltype(H)[H[i,j] for i=ir,j=jr]
 Base.full(H::HierarchicalMatrix{S,V}) where {S<:AbstractMatrix,V<:AbstractMatrix}=H[1:size(H,1),1:size(H,2)]
 
 Base.copy(H::HierarchicalMatrix) = HierarchicalMatrix(map(copy,diagonaldata(H)),map(copy,offdiagonaldata(H)))
 Base.copy!(H::HierarchicalMatrix,J::HierarchicalMatrix) = (map(copy!,diagonaldata(H),diagonaldata(J));map(copy!,offdiagonaldata(H),offdiagonaldata(J));H)
 
-Base.rank(H::HierarchicalMatrix) = rank(full(H))
-Base.cond(H::HierarchicalMatrix) = cond(full(H))
+rank(H::HierarchicalMatrix) = rank(full(H))
+cond(H::HierarchicalMatrix) = cond(full(H))
 
 function blockrank(H::HierarchicalMatrix)
     m,n = blocksize(H)
-    A = Array{Int64}(m,n)
+    A = Array{Int64}(undef,m,n)
     (m1,n1),(m2,n2) = map(blocksize,diagonaldata(H))
     r1,r2 = map(rank,offdiagonaldata(H))
     for j=1:n1,i=1:m2
@@ -191,17 +191,17 @@ end
 
 function *(H::HierarchicalMatrix, x::HierarchicalVector)
     T = promote_type(eltype(H),eltype(x))
-    A_mul_B!(similar(x,T),H,x)
+    mul!(similar(x,T),H,x)
 end
 
-function Base.A_mul_B!(b::HierarchicalVector,H::HierarchicalMatrix,h::HierarchicalVector)
+function mul!(b::HierarchicalVector,H::HierarchicalMatrix,h::HierarchicalVector)
     (H11,H22),(H21,H12) = partition(H)
     h1,h2 = partition(h)
     b1,b2 = partition(b)
-    A_mul_B!(b1,H12,h2)
-    A_mul_B!(b1,H11,h1)
-    A_mul_B!(b2,H21,h1)
-    A_mul_B!(b2,H22,h2)
+    mul!(b1,H12,h2)
+    mul!(b1,H11,h1)
+    mul!(b2,H21,h1)
+    mul!(b2,H22,h2)
     b
 end
 
