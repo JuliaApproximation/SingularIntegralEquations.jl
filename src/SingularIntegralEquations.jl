@@ -31,7 +31,7 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
                   defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, refactorsvd!, SubOperator,
                   Block, BlockBandedMatrix, BandedBlockBandedMatrix, DFunction, Infinity,
                   component, ncomponents, factor, nfactors, components, factors, rangetype,
-                  VFun, Point, dynamic, pieces, npieces, piece, cfstype
+                  VFun, Point, dynamic, pieces, npieces, piece, cfstype, isreal
 
 import ApproxFun: testbandedoperator
 
