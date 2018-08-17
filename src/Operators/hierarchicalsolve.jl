@@ -68,7 +68,7 @@ function factorize!(H::HierarchicalOperator{U,V}) where {U<:Operator,V<:Abstract
 
     # Compute factorization
 
-    H.factorization = pivotldufact(H.A,length(V12),length(V21))#lufact(H.A)
+    H.factorization = pivotldufact(H.A,length(V12),length(V21))#lu(H.A)
     H.factored = true
 end
 

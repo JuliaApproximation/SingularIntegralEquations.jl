@@ -22,7 +22,7 @@ function pivotldufact(A::AbstractMatrix,r1,r2)
     @assert size(A) == (r1+r2,r1+r2)
     B = A[1:r1,r1+1:end]
     C = A[r1+1:end,1:r1]
-    PivotLDU(B,C,lufact(I-C*B),r1,r2)
+    PivotLDU(B,C,lu(I-C*B),r1,r2)
 end
 
 function ldiv1B2!(P::PivotLDU{T,S},b1::AbstractArray{T},b2::AbstractArray{T}) where {T<:Number,S}

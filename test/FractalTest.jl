@@ -6,6 +6,8 @@ using ApproxFun, SingularIntegralEquations, Test
 
     for set in (:cantor,:thincantor,:thinnercantor,:thinnestcantor)
         @eval begin
+            d = Segment(0.,1.)
+            c = Circle()
             @test $set(d,0) == d
             @test $set(d,0,4) == d
             @test $set(d,1) == Segment(0.0,1/3) ∪ Segment(2/3,1.0)

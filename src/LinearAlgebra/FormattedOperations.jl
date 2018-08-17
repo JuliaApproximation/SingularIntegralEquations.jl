@@ -3,6 +3,7 @@
 #
 
 import ApproxFun: ⊕
+import LowRankApprox: _LowRankMatrix
 export ⊖,⊛,⊘
 
 for (op,opformatted) in ((:+,:⊕),(:-,:⊖),(:*,:⊛),(:/,:⊘))
@@ -38,7 +39,7 @@ for (op,opformatted) in ((:+,:⊕),(:-,:⊖))
             QV,RV = qr(N.V)
             U,Σ,V = svd(RU*transpose(RV))
             r = refactorsvd!(U,Σ,V)
-            LowRankMatrix(QU[:,1:r]*U[1:r,1:r],QV[:,1:r]*V[1:r,1:r])
+            _LowRankMatrix(QU[:,1:r]*U[1:r,1:r],QV[:,1:r]*V[1:r,1:r])
         end
         $opformatted(L::LowRankMatrix,A::AbstractMatrix) = $opformatted(L,LowRankMatrix(A))
         $opformatted(A::AbstractMatrix,L::LowRankMatrix) = $opformatted(LowRankMatrix(A),L)

@@ -55,8 +55,8 @@ dimension(sp::JacobiQWeight) = dimension(sp.space)
 
 
 Base.first(f::Fun{JW}) where {JW<:JacobiQWeight} =
-    space(f).α > 0 ? zero(eltype(f)) : f(first(domain(f)))
+    space(f).α > 0 ? zero(cfstype(f)) : f(first(domain(f)))
 Base.last(f::Fun{JW}) where {JW<:JacobiQWeight} =
-    space(f).β > 0 ? zero(eltype(f)) : f(last(domain(f)))
+    space(f).β > 0 ? zero(cfstype(f)) : f(last(domain(f)))
 
 setdomain(sp::JacobiQWeight,d::Domain) = JacobiQWeight(sp.α,sp.β,setdomain(sp.space,d))

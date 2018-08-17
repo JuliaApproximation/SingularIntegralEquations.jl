@@ -2,7 +2,7 @@
 __precompile__()
 module SingularIntegralEquations
     using Base, BandedMatrices, ApproxFun, DualNumbers, RecipesBase,
-            LinearAlgebra, Random, SpecialFunctions, InteractiveUtils
+            LinearAlgebra, Random, SpecialFunctions, LowRankApprox, InteractiveUtils
 
 export cauchy, cauchyintegral, stieltjes, logkernel,
        stieltjesintegral, hilbert, pseudohilbert, pseudocauchy,
@@ -11,6 +11,8 @@ export cauchy, cauchyintegral, stieltjes, logkernel,
 
 import Base: values, getindex, setindex!, *, +, -, ==, <, <=, >,
                 >=, /, ^, \, ∪, transpose, convert
+
+import Base.Broadcast: broadcasted, DefaultArrayStyle
 
 import LinearAlgebra: ldiv!, mul!, rank, cond, qr
 
@@ -28,7 +30,7 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
                   ConstantSpace,ReOperator,DirectSumSpace, ArraySpace, ZeroSpace,
                   LowRankPertOperator, LaurentDirichlet, setcanonicaldomain, SubSpace,
                   IntervalCurve,PeriodicCurve, reverseorientation, @wrapper, mobius,
-                  defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, refactorsvd!, SubOperator,
+                  defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, SubOperator,
                   Block, BlockBandedMatrix, BandedBlockBandedMatrix, DFunction, Infinity,
                   component, ncomponents, factor, nfactors, components, factors, rangetype,
                   VFun, Point, dynamic, pieces, npieces, piece, cfstype, isreal
@@ -36,6 +38,8 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
 import ApproxFun: testbandedoperator
 
 import DualNumbers: dual
+
+import LowRankApprox: refactorsvd!
 
 export ⁺, ⁻
 

@@ -67,7 +67,7 @@ function factorize!(H::HierarchicalMatrix{S,U}) where {S<:AbstractMatrix,U<:LowR
 
     # Compute factorization
 
-    H.factorization = pivotldufact(H.A,r1,r2)#lufact(H.A)
+    H.factorization = pivotldufact(H.A,r1,r2)#lu(H.A)
     H.factored = true
 end
 

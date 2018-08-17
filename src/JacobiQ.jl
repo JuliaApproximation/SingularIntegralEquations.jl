@@ -87,9 +87,9 @@ end
 
 
 
-stieltjes(f::Fun{<:ZeroSpace},z) = zero(promote_type(eltype(f),typeof(z)))
+stieltjes(f::Fun{<:ZeroSpace},z) = zero(promote_type(cfstype(f),typeof(z)))
 
-istieltjes(f::Fun{<:ConstantSpace}) = Fun(ZeroSpace(),eltype(f)[])
+istieltjes(f::Fun{<:ConstantSpace}) = Fun(ZeroSpace(),cfstype(f)[])
 function istieltjes(f::Fun{<:SumSpace})
     is = istieltjes.(components(f))
     filter!(s -> !(space(s) isa ZeroSpace), is)

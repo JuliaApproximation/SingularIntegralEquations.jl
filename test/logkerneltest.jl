@@ -131,7 +131,7 @@ using Test, ApproxFun, SingularIntegralEquations
     @testset "Chebyshev singularities" begin
         for d in (Interval(), Interval(0,1), Segment(1+im, 2+3im))
             for k = 1:10
-                u = Fun(JacobiWeight.(-0.5,-0.5,ChebyshevDirichlet{1,1}(d)), [zeros(4);1])
+                u = Fun(JacobiWeight.(-0.5,-0.5,Ref(ChebyshevDirichlet{1,1}(d))), [zeros(4);1])
                 x = Fun(d)
                 for z in (20.0+im, 3.0)
                     ex = linesum(u*logabs(z-x))/π
@@ -142,7 +142,7 @@ using Test, ApproxFun, SingularIntegralEquations
 
         for d in (Interval(), Interval(0,1))
             for k = 1:10
-                u = Fun(JacobiWeight.(-0.5,-0.5,ChebyshevDirichlet{1,1}(d)), [zeros(4);1])
+                u = Fun(JacobiWeight.(-0.5,-0.5,Ref(ChebyshevDirichlet{1,1}(d))), [zeros(4);1])
                 x = Fun(d)
                 for z in (20.0+im, 3.0)
                     ex_s = sum(u*log(z-x))

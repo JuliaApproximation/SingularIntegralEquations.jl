@@ -1,32 +1,12 @@
-using ApproxFun, SingularIntegralEquations, Test
+using ApproxFun, LowRankApprox, SingularIntegralEquations, Test
 
 @testset "LowRankMatrix" begin
-    L = lrzeros(Complex{Float64},10,20)
-    @test size(L) == (10,20)
-
-    @test full(L) == zeros(Complex{Float64},10,20)
-
-    @test full(lrones(10,10)) ≈ ones(10,10)
-
-    @test rank(lreye(10,10)) == 10
-
-    L = LowRankMatrix(1./collect(1:10),1./collect(1:10.0))
-
-    x = collect(linspace(-1,1,10))
-
-    @test norm(L*x-full(L)*x) < 200eps()
-
-    @test isa(L*L',LowRankMatrix)
-
+    L = LowRankApprox._LowRankMatrix(1 ./(1:10),1 ./(1:10.0))
     A = rand(10,10)
 
-    @test isa(A*L,LowRankMatrix)
-    @test isa(L*A,LowRankMatrix)
-
-    @test isa(A+L,Matrix)
     @test isa(L⊕A,LowRankMatrix)
 
     @test rank(L+L) == 2rank(L⊕L)
     # @test rank(L-L) == 2rank(L⊖L)
-    @test rank(2L+1+full(L)) ≥ rank(L⊕full(L))
+    @test rank(2L+1+Matrix(L)) ≥ rank(L⊕Matrix(L))
 end

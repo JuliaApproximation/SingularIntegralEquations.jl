@@ -41,7 +41,7 @@ mutable struct HierarchicalMatrix{S,V,T,HS,HV} <: AbstractHierarchicalMatrix{S,V
         H.offdiagonaldata = offdiagonaldata
 
         r = mapreduce(rank,+,offdiagonaldata)
-        H.A = eye(T,r,r)
+        H.A = Matrix{T}(I,r,r)
         H.factored = false
 
         H
@@ -103,7 +103,7 @@ function condest(H::HierarchicalMatrix)
 end
 
 convert(::Type{HierarchicalMatrix{S,V,T,HS,HV}},M::HierarchicalMatrix) where {S,V,T,HS,HV} = HierarchicalMatrix(convert(Vector{S},collectdiagonaldata(M)),convert(Vector{V},collectoffdiagonaldata(M)))
-convert(::Type{Matrix{T}},M::HierarchicalMatrix) where {T} = full(M)
+convert(::Type{Matrix{T}},M::HierarchicalMatrix) where {T} = Matrix(M)
 Base.promote_rule(::Type{HierarchicalMatrix{S,V,T,HS,HV}},::Type{HierarchicalMatrix{SS,VV,TT,HSS,HVV}}) where {S,V,T,HS,HV,SS,VV,TT,HSS,HVV}=HierarchicalMatrix{promote_type(S,SS),promote_type(V,VV),promote_type(T,TT),promote_type(HS,HSS),promote_type(HV,HVV)}
 Base.promote_rule(::Type{Matrix{T}},::Type{HierarchicalMatrix{SS,VV,TT,HSS,HVV}}) where {T,SS,VV,TT,HSS,HVV}=Matrix{promote_type(T,TT)}
 Base.promote_rule(::Type{LowRankMatrix{T}},::Type{HierarchicalMatrix{SS,VV,TT,HSS,HVV}}) where {T,SS,VV,TT,HSS,HVV}=Matrix{promote_type(T,TT)}
@@ -149,13 +149,13 @@ end
 Base.getindex(H::HierarchicalMatrix{S,V},i::Int,jr::AbstractRange) where {S<:AbstractMatrix,V<:AbstractMatrix} = transpose(eltype(H)[H[i,j] for j=jr])
 Base.getindex(H::HierarchicalMatrix{S,V},ir::AbstractRange,j::Int) where {S<:AbstractMatrix,V<:AbstractMatrix} = eltype(H)[H[i,j] for i=ir]
 Base.getindex(H::HierarchicalMatrix{S,V},ir::AbstractRange,jr::AbstractRange) where {S<:AbstractMatrix,V<:AbstractMatrix} = eltype(H)[H[i,j] for i=ir,j=jr]
-Base.full(H::HierarchicalMatrix{S,V}) where {S<:AbstractMatrix,V<:AbstractMatrix}=H[1:size(H,1),1:size(H,2)]
+Matrix(H::HierarchicalMatrix{S,V}) where {S<:AbstractMatrix,V<:AbstractMatrix} = H[1:size(H,1),1:size(H,2)]
 
 Base.copy(H::HierarchicalMatrix) = HierarchicalMatrix(map(copy,diagonaldata(H)),map(copy,offdiagonaldata(H)))
 Base.copy!(H::HierarchicalMatrix,J::HierarchicalMatrix) = (map(copy!,diagonaldata(H),diagonaldata(J));map(copy!,offdiagonaldata(H),offdiagonaldata(J));H)
 
-rank(H::HierarchicalMatrix) = rank(full(H))
-cond(H::HierarchicalMatrix) = cond(full(H))
+rank(H::HierarchicalMatrix) = rank(Matrix(H))
+cond(H::HierarchicalMatrix) = cond(Matrix(H))
 
 function blockrank(H::HierarchicalMatrix)
     m,n = blocksize(H)
@@ -213,4 +213,4 @@ function *(H::HierarchicalMatrix,b::Vector)
 end
 
 
-\(H::HierarchicalMatrix,b::AbstractVecOrMat) = full(H)\b
+\(H::HierarchicalMatrix,b::AbstractVecOrMat) = Matrix(H)\b

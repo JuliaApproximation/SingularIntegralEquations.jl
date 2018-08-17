@@ -121,12 +121,14 @@ for op in (:+,:-)
         $op(H::HierarchicalVector{S,Bool},a::Bool) where {S} = error("Not callable")
 
         $op(H::HierarchicalVector) = HierarchicalVector(map($op,data(H)))
-        $op(H::HierarchicalVector,a::Number) = HierarchicalVector(($op(H.data[1],a),$op(H.data[2],a)))
-        $op(a::Number,H::HierarchicalVector) = HierarchicalVector(($op(a,H.data[1]),$op(a,H.data[2])))
 
         $op(H::HierarchicalVector,J::HierarchicalVector) = HierarchicalVector(map($op,data(H),data(J)))
         $op(H::HierarchicalVector,J::Vector) = $op(full(H),J)
         $op(J::Vector,H::HierarchicalVector) = $op(J,full(H))
+        broadcasted(::DefaultArrayStyle{1}, ::typeof($op), H::HierarchicalVector, a::Number) =
+            HierarchicalVector(($op.(H.data[1],a), $op.(H.data[2],a)))
+        broadcasted(::DefaultArrayStyle{1}, ::typeof($op), a::Number, H::HierarchicalVector) =
+            HierarchicalVector(($op.(a,H.data[1]), $op.(a,H.data[2])))
     end
 end
 

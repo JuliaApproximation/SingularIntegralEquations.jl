@@ -1,13 +1,14 @@
-using ApproxFun, SingularIntegralEquations, Test
+using LowRankApprox, ApproxFun, SingularIntegralEquations, Test
+    import LowRankApprox: _LowRankMatrix
 
 @testset "Hierarchical Solve" begin
     M = 50
     L = Array{LowRankMatrix{Float64}}(undef,14)
-    [L[i] = LowRankMatrix(0.001rand(4M,2),0.001rand(4M,2)) for i=1:2]
-    [L[i] = LowRankMatrix(0.01rand(2M,2),0.01rand(2M,2)) for i=[3:4;9:10]]
-    [L[i] = LowRankMatrix(0.1rand(M,2),0.1rand(M,2)) for i=[5:8;11:14]]
+    [L[i] = _LowRankMatrix(0.001rand(4M,2),0.001rand(4M,2)) for i=1:2]
+    [L[i] = _LowRankMatrix(0.01rand(2M,2),0.01rand(2M,2)) for i=[3:4;9:10]]
+    [L[i] = _LowRankMatrix(0.1rand(M,2),0.1rand(M,2)) for i=[5:8;11:14]]
     D = Array{Diagonal{Float64}}(undef,8)
-    [D[i] = Diagonal(1./collect(1:M)) for i=1:8]
+    [D[i] = Diagonal(1 ./collect(1:M)) for i=1:8]
 
     H = HierarchicalMatrix(D,L)
 
@@ -19,8 +20,8 @@ using ApproxFun, SingularIntegralEquations, Test
     [B[i] = rand(M) for i=1:8]
     b = rand(size(H,1))#HierarchicalVector(B)
 
-    full(H)\b
-    @time x = full(H)\b
+    Matrix(H)\b
+    @time x = Matrix(H)\b
     H\b # includes compile time
     H = HierarchicalMatrix(D,L)
     @time xw = H\b # includes precomputation
@@ -36,7 +37,7 @@ using ApproxFun, SingularIntegralEquations, Test
 
 
     H+H-(H-H)
-    @test norm(full(H-H)) < 10norm(full(H))*eps()
+    @test norm(Matrix(H-H)) < 10norm(Matrix(H))*eps()
 
 
 

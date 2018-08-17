@@ -44,7 +44,7 @@ function greensfun_checkgreensfun(Kernels::Vector{K}) where K
 end
 
 GreensFun(kernels::Vector{K}) where {K<:MultivariateFun} =
-    GreensFun{eltype(kernels),mapreduce(eltype,promote_type,kernels)}(kernels)
+    GreensFun{eltype(kernels),mapreduce(cfstype,promote_type,kernels)}(kernels)
 
 GreensFun(F::K) where {K<:MultivariateFun} = GreensFun(K[F])
 
@@ -78,7 +78,7 @@ for TYP in (:(ApproxFun.DefiniteLineIntegralWrapper),:DefiniteLineIntegral)
         wsp = domainspace(⨍)
         @assert m == length(wsp.spaces)
         ⨍j = DefiniteLineIntegral(component(wsp,1))
-        ret = Array{Operator{promote_type(eltype(⨍j),map(eltype,B)...)}}(undef,m,n)
+        ret = Array{Operator{promote_type(eltype(⨍j),map(cfstype,B)...)}}(undef,m,n)
         for j=1:n
             ⨍j = DefiniteLineIntegral(component(wsp,j))
             for i=1:m
@@ -202,7 +202,7 @@ function GreensFun(f::DFunction,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};metho
         maxF = Array{Number}(undef,N)
         for i=1:N
           G[i,i] = GreensFun(f,component(ss,i,i);method=method,kwds...)
-          maxF[i] = one(real(mapreduce(eltype,promote_type,G[i,i].kernels)))/2π
+          maxF[i] = one(real(mapreduce(cfstype,promote_type,G[i,i].kernels)))/2π
         end
         for i=1:N,j=i+1:N
             G[i,j] = GreensFun(f,component(ss,i,j).space;method=:lowrank,tolerance=(tolerance,max(maxF[i],maxF[j])),kwds...)
@@ -247,7 +247,7 @@ function GreensFun(f::DFunction,g::DFunction,ss::AbstractProductSpace{Tuple{PWS1
         maxF = Array{Number}(undef,N)
         for i=1:N
             G[i,i] = GreensFun(f,g,ss[i,i];method=method,kwds...)
-            maxF[i] = one(real(mapreduce(eltype,promote_type,G[i,i].kernels)))/2π
+            maxF[i] = one(real(mapreduce(cfstype,promote_type,G[i,i].kernels)))/2π
         end
         for i=1:N
             for j=i+1:N
