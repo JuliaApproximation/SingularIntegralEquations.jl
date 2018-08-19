@@ -10,7 +10,8 @@ export cauchy, cauchyintegral, stieltjes, logkernel,
 
 
 import Base: values, getindex, setindex!, *, +, -, ==, <, <=, >,
-                >=, /, ^, \, ∪, transpose, convert
+                >=, /, ^, \, ∪, transpose, convert, Array, Vector, Matrix,
+                AbstractVector, AbstractMatrix, AbstractArray
 
 import Base.Broadcast: broadcasted, DefaultArrayStyle
 
@@ -156,7 +157,6 @@ csingularintegral(k::Integer,f::Fun,z) = csingularintegral(k,space(f),coefficien
 stieltjes(sp::SubSpace,v,z) = stieltjes(sp.space,coefficients(v,sp,sp.space),z)
 
 
-include("LinearAlgebra/LinearAlgebra.jl")
 include("Operators/Operators.jl")
 include("FundamentalSolutions/FundamentalSolutions.jl")
 include("HypergeometricFunctions/HypergeometricFunctions.jl")
@@ -178,8 +178,6 @@ include("arc.jl")
 include("curve.jl")
 include("asymptotics.jl")
 
-include("fractals.jl")
-include("clustertree.jl")
 
 # if isdir(Pkg.dir("TikzGraphs"))
 #     include("introspect.jl")
