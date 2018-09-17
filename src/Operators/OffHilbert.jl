@@ -36,7 +36,7 @@ for Op in (:OffHilbert,:OffSingularIntegral)
         $Op(ds::PeriodicDomain,rs::PeriodicDomain) = $Op(Laurent(ds),Laurent(rs))
 
         $Op(ds::Space,rs::Number,order) = $Op(ds,Space(rs),order)
-        $Op(ds::Space,rs::Number) = $Op(ds,Space(rs))
+        $Op(ds::Space,rs::Number) = $Op(ds,ConstantSpace(Point(rs)))
 
         domainspace(C::$Op) = C.domainspace
         rangespace(C::$Op) = C.rangespace

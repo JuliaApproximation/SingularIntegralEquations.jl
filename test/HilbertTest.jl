@@ -239,9 +239,9 @@ using Test, ApproxFun, SingularIntegralEquations
     end
 
     @testset "Functional" begin
-        z=.1+.2im
-        x=Fun(identity)
-        f=exp(x)*sqrt(1-x^2)
+        z = 0.1 + 0.2im
+        x = Fun(identity)
+        f = exp(x)*sqrt(1-x^2)
 
         testfunctional(Stieltjes(space(f),z))
 
@@ -269,6 +269,6 @@ using Test, ApproxFun, SingularIntegralEquations
     @testset "LogKernel is real" begin
         Γ = Interval(-1 , 0) , Interval(1,2)
         S = ∪(JacobiWeight.(-0.5,-0.5,Chebyshev.(Γ))...)
-        @test OffSingularIntegral(S, Space(3.0+im), 0) isa Operator{Float64}
+        @test OffSingularIntegral(S, ConstantSpace(ApproxFun.Point(3.0+im)), 0) isa Operator{Float64}
     end
 end
