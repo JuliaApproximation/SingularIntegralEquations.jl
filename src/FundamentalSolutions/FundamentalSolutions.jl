@@ -1,5 +1,5 @@
 module FundamentalSolutions
-
+using InteractiveUtils
 #
 # This module calculates:
 #

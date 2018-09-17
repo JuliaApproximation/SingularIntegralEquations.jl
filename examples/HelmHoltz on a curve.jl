@@ -133,7 +133,7 @@ plot(Γ;color="black")
 
 
 umax = maximum(abs,uvals)
-contourf(x,y,real(uvals).')#,cmap="cubehelix")
+contourf(x,y,real(uvals)')#,cmap="cubehelix")
     plot!(Γ;color="black")
 
 xlabel("\$x\$");ylabel("\$y\$");colorbar(ax=gca(),shrink=0.685)#515#2/3)
@@ -159,7 +159,7 @@ function makegif(x,y,u,L;plotfunction=Main.PyPlot.contourf,seconds=1,cmap="seism
         Main.PyPlot.axes(aspect="equal")
         Main.PyPlot.plot(tt,tt.^3;color=:black)
         Main.PyPlot.plot(tt-1,tt.^4.+4;color=:black)
-        plotfunction(x,y,real(u*exp(-im*ω*t)).';vmin=-umax*vert,vmax=umax*vert,cmap="seismic")
+        plotfunction(x,y,real(u*exp(-im*ω*t))';vmin=-umax*vert,vmax=umax*vert,cmap="seismic")
         xlabel!("\$x\$");ylabel!("\$y\$")
         Main.PyPlot.savefig(dr * "/" * lpad(k,max(4,ceil(Int,log10(MLen))),0) * ".png";dpi=150,bbox_inches="tight")
     end
@@ -183,7 +183,7 @@ x=xx;y=yy;
 k=24
     t = 2π/ω*(k-1)/fps
     real(u*exp(-im*ω*t))
-    Main.PyPlot.contourf(x,y,real(u*exp(-im*ω*t)).')
+    Main.PyPlot.contourf(x,y,real(u*exp(-im*ω*t))')
     plot!(Γ;color=:black,legend=false)
 xlabel!("\$x\$");ylabel!("\$y\$")
 

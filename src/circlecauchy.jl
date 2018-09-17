@@ -14,7 +14,7 @@ function cauchycircleS(cfs::AbstractVector,z::Number,s::Bool)
             zm *= z
         end
     else
-        z=1./z
+        z=1/z
         zm = z
 
         #even coefficients are neg
@@ -60,7 +60,7 @@ stieltjes(sp::Fourier{DD,RR},f,z) where {DD<:Circle,RR} = stieltjes(Laurent(doma
 
 # we implement cauchy ±1 as canonical
 # TODO: reimplement directly
-hilbert(sp::Laurent{DD,RR},f,z) where {DD<:Circle,RR} = (stieltjes(sp,f,z*⁺)+stieltjes(sp,f,z*⁻))/(-2π)
+hilbert(sp::Laurent{DD,RR},f,z) where {DD<:Circle,RR} = (stieltjes(sp,f,(z)⁺)+stieltjes(sp,f,(z)⁻))/(-2π)
 
 
 
@@ -75,7 +75,7 @@ function stieltjesintegral(sp::Laurent{DD,RR},f,z::Number) where {DD<:Circle,RR}
     @assert d==Circle()  #TODO: radius
     ζ=Fun(d)
     r=stieltjes(integrate(f-f[2]/ζ),z)
-    abs(z)<1?r:r+2π*im*f[2]*log(z)
+    abs(z)<1 ? r : r+2π*im*f[2]*log(z)
 end
 
 
@@ -113,5 +113,5 @@ logkernel(sp::Fourier{DD,RR},g,z::Vector) where {DD<:Circle,RR} =
     promote_type(eltype(g),eltype(z))[logkernel(sp,g,zk) for zk in z]
 logkernel(sp::Fourier{DD,RR},g,z::Matrix) where {DD<:Circle,RR} =
     reshape(promote_type(eltype(g),eltype(z))[logkernel(sp,g,zk) for zk in z],size(z))
-    
+
 logkernel(sp::Laurent{DD,RR},g,z) where {DD<:Circle,RR} = logkernel(Fun(Fun(sp,g),Fourier),z)

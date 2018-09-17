@@ -12,15 +12,15 @@ function convolutionProductFun(f::DFunction,u::UnivariateSpace,v::UnivariateSpac
     ext = extrema(du,dv)
     if ext[1] == 0
         ff = Fun(z->f(0,z),Chebyshev(Segment(-ext[2]/2,ext[2]/2)))
-        fd,T = ff(0),eltype(ff)
+        fd,T = ff(0),cfstype(ff)
         c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(T))
         N = length(c)
         N1 = isa(du,PeriodicDomain) ? 2N : N
         N2 = isa(dv,PeriodicDomain) ? 2N : N
-        return ProductFun((x,y)->x==y?fd:f(x,y),u⊗v,N1,N2;tol=tol)
+        return ProductFun((x,y)->x==y ? fd : f(x,y),u⊗v,N1,N2;tol=tol)
     else
         ff = Fun(z->f(0,z),Chebyshev(Segment(ext...)))
-        c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(eltype(ff)))
+        c = chop(coefficients(ff),norm(coefficients(ff),Inf)*100eps(cfstype(ff)))
         N = length(c)
         N1 = isa(du,PeriodicDomain) ? 2N : N
         N2 = isa(dv,PeriodicDomain) ? 2N : N

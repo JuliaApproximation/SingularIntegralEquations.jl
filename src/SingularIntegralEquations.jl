@@ -2,7 +2,7 @@
 __precompile__()
 module SingularIntegralEquations
     using Base, BandedMatrices, ApproxFun, DualNumbers, RecipesBase,
-            LinearAlgebra, Random
+            LinearAlgebra, Random, SpecialFunctions, LowRankApprox, InteractiveUtils
 
 export cauchy, cauchyintegral, stieltjes, logkernel,
        stieltjesintegral, hilbert, pseudohilbert, pseudocauchy,
@@ -10,8 +10,12 @@ export cauchy, cauchyintegral, stieltjes, logkernel,
 
 
 import Base: values, getindex, setindex!, *, +, -, ==, <, <=, >,
-                >=, /, ^, \, ∪, transpose, convert
+                >=, /, ^, \, ∪, transpose, convert, Array, Vector, Matrix,
+                AbstractVector, AbstractMatrix, AbstractArray
 
+import Base.Broadcast: broadcasted, DefaultArrayStyle
+
+import LinearAlgebra: ldiv!, mul!, rank, cond, qr
 
 import ApproxFun
 import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebilinearform,dotu, blocklengths,
@@ -27,14 +31,16 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
                   ConstantSpace,ReOperator,DirectSumSpace, ArraySpace, ZeroSpace,
                   LowRankPertOperator, LaurentDirichlet, setcanonicaldomain, SubSpace,
                   IntervalCurve,PeriodicCurve, reverseorientation, @wrapper, mobius,
-                  defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, refactorsvd!, SubOperator,
+                  defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, SubOperator,
                   Block, BlockBandedMatrix, BandedBlockBandedMatrix, DFunction, Infinity,
                   component, ncomponents, factor, nfactors, components, factors, rangetype,
-                  VFun, Point, dynamic, pieces, npieces, piece
+                  VFun, Point, dynamic, pieces, npieces, piece, cfstype, isreal
 
 import ApproxFun: testbandedoperator
 
 import DualNumbers: dual
+
+import LowRankApprox: refactorsvd!
 
 export ⁺, ⁻
 
@@ -151,7 +157,6 @@ csingularintegral(k::Integer,f::Fun,z) = csingularintegral(k,space(f),coefficien
 stieltjes(sp::SubSpace,v,z) = stieltjes(sp.space,coefficients(v,sp,sp.space),z)
 
 
-include("LinearAlgebra/LinearAlgebra.jl")
 include("Operators/Operators.jl")
 include("FundamentalSolutions/FundamentalSolutions.jl")
 include("HypergeometricFunctions/HypergeometricFunctions.jl")
@@ -173,8 +178,6 @@ include("arc.jl")
 include("curve.jl")
 include("asymptotics.jl")
 
-include("fractals.jl")
-include("clustertree.jl")
 
 # if isdir(Pkg.dir("TikzGraphs"))
 #     include("introspect.jl")

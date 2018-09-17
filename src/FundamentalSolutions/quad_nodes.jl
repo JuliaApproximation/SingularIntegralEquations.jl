@@ -57,7 +57,7 @@ function quad_nodes!(ts::Vector{Float64}, ws::Vector{Float64}, a::Float64, b::Fl
             if n1<minsaddlen n1=minsaddlen; h1=(lp2-lm1)/(n1-1) end
             if n1 > MAXNQUAD n1=MAXNQUAD end
             linspace!(ts,lm1,lm1+(n1-1)h1,n1)
-            ws[1:n1] = h1*M_1_4PI
+            ws[1:n1] .= h1*M_1_4PI
             n = n1
         end
     elseif c1 != c2
@@ -76,7 +76,7 @@ function quad_nodes!(ts::Vector{Float64}, ws::Vector{Float64}, a::Float64, b::Fl
             w[1:n2] = dist1
             n = n2 + stdquad
             linspace!(ts,lm2,lp2,n2,stdquad)
-            ws[1+n2:n] = dist2*M_1_4PI
+            ws[1+n2:n] .= dist2*M_1_4PI
         elseif meth == 1
             h1 = h*sigm
             if h1>maxh h1=maxh end
@@ -90,7 +90,7 @@ function quad_nodes!(ts::Vector{Float64}, ws::Vector{Float64}, a::Float64, b::Fl
             if n2>MAXNQUAD/2 n2=div(MAXNQUAD,2) end
             n = n1+n2
             linspace!(ts,lm2,lm2+(n2-1)h2,n1,n2)
-            ws[1+n1:n] = h2*M_1_4PI
+            ws[1+n1:n] .= h2*M_1_4PI
         end
     else
         # one maximum
@@ -99,7 +99,7 @@ function quad_nodes!(ts::Vector{Float64}, ws::Vector{Float64}, a::Float64, b::Fl
             lp2 = lp1
             dist1 = (lp2-lm1)/(n2-1)
             linspace!(ts,lm1,lp2,n2)
-            ws[1:n2] = dist1*M_1_4PI
+            ws[1:n2] .= dist1*M_1_4PI
             n = n2
         elseif meth == 1
             h1 = min(h*sigp,maxh)
@@ -107,7 +107,7 @@ function quad_nodes!(ts::Vector{Float64}, ws::Vector{Float64}, a::Float64, b::Fl
             if n1<minsaddlen n1=minsaddlen; h1=(lp1-lm1)/(n1-1) end
             if n1>MAXNQUAD n1=MAXNQUAD end
             linspace!(ts,lm1,lm1+(n1-1)h1,n1)
-            ws[1:n1] = h1*M_1_4PI
+            ws[1:n1] .= h1*M_1_4PI
             n = n1
         end
     end

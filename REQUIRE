@@ -4,3 +4,5 @@ BandedMatrices 0.5
 DualNumbers 0.2.3
 RecipesBase 0.1
 FastTransforms 0.4.1
+SpecialFunctions 0.7
+LowRankApprox 0.1.4

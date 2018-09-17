@@ -11,8 +11,8 @@ CauchyWeight(space::TensorSpace{SV,DD,RR},O) where {SV,DD,RR} = CauchyWeight{O,S
 order(C::CauchyWeight{O}) where {O} = O
 domain(C::CauchyWeight) = domain(C.space)
 ncomponents(C::CauchyWeight) = ncomponents(C.space)
-component(C::CauchyWeight,k::Integer) = CauchyWeight(component(C.space,k),order(C))
-ApproxFun.columnspace(C::CauchyWeight,::) = C[1]
+component(C::CauchyWeight, k::Integer) = CauchyWeight(component(C.space,k),order(C))
+ApproxFun.columnspace(C::CauchyWeight, _) = C[1]
 component(C::CauchyWeight{O,Tuple{PWS1,PWS2}},i,j) where {O,PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace} =
     CauchyWeight(component(C.space,i,j),O)
 
@@ -87,7 +87,7 @@ end
 
 ## Evaluation of bivariate functions in a CauchyWeight space
 
-evaluate(f::ProductFun{S,V,CauchyWeight{O,Tuple{S,V},T1,DD},T2},x::Range,y::Range) where {S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2,DD} =
+evaluate(f::ProductFun{S,V,CauchyWeight{O,Tuple{S,V},T1,DD},T2},x::AbstractRange,y::AbstractRange) where {S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2,DD} =
     evaluate(f,[x],[y])
 evaluate(f::ProductFun{S,V,CauchyWeight{O,Tuple{S,V},T1,DD},T2},x,y) where {S<:UnivariateSpace,V<:UnivariateSpace,O,T1,T2,DD} =
     evaluate(ProductFun(f.coefficients,space(f).space),x,y).*cauchyweight(space(f),x,y)

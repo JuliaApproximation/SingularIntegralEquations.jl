@@ -22,10 +22,10 @@ function lhelmfs(trg::Union{Vector{Float64},Vector{Complex{Float64}}},energies::
     h = 0.25
     meth = 1
     x1,x2 = reim(trg)
-    u = Vector{Complex{Float64}}(n)
+    u = Vector{Complex{Float64}}(undef,n)
     if derivs
-        ux = Vector{Complex{Float64}}(n)
-        uy = Vector{Complex{Float64}}(n)
+        ux = Vector{Complex{Float64}}(undef,n)
+        uy = Vector{Complex{Float64}}(undef,n)
         lhfs!(u,ux,uy,x1,x2,energies,derivs,stdquad,h,meth,n)
         return u,ux,uy
     else
@@ -47,6 +47,8 @@ function lhelmfs(trg::Union{Matrix{Float64},Matrix{Complex{Float64}}},E::Matrix{
     end
 end
 
-lhelmfs(trg::Union{VecOrMat{Float64},VecOrMat{Complex{Float64}}},E::Float64;derivs::Bool=false) = lhelmfs(trg,fill(E,size(trg));derivs=derivs)
+lhelmfs(trg::Union{VecOrMat{Float64},VecOrMat{Complex{Float64}}},E::Float64;derivs::Bool=false) =
+    lhelmfs(trg,fill(E,size(trg));derivs=derivs)
 
-lhelmfs(trg::Union{T1,VecOrMat{T1}},src::Union{T2,VecOrMat{T2}},E::Float64;derivs::Bool=false) where {T1<:Union{Float64,Complex{Float64}},T2<:Union{Float64,Complex{Float64}}} = lhelmfs(trg-src,E+imag(src);derivs=derivs)
+lhelmfs(trg::Union{T1,VecOrMat{T1}},src::Union{T2,VecOrMat{T2}},E::Float64;derivs::Bool=false) where {T1<:Union{Float64,Complex{Float64}},T2<:Union{Float64,Complex{Float64}}} =
+    lhelmfs(trg.-src,E.+imag.(src);derivs=derivs)

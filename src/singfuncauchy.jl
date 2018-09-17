@@ -32,10 +32,10 @@ end
 # the first maps the slit plane to the inner circle, the second to the outer circle
 #
 # it is more accurate near infinity to do 1/J_- than z - sqrtx2(z) as it avoids round off
-joukowskyinverse(::Type{Val{true}},z) = 1./joukowskyinverse(Val{false},z)
+joukowskyinverse(::Type{Val{true}},z) = 1/joukowskyinverse(Val{false},z)
 joukowskyinverse(::Type{Val{false}},z) = undirected(z)+sqrtx2(z)
 
-joukowskyinverseabs(::Type{Val{true}},z) = 1./joukowskyinverseabs(Val{false},z)
+joukowskyinverseabs(::Type{Val{true}},z) = 1/joukowskyinverseabs(Val{false},z)
 joukowskyinverseabs(::Type{Val{false}},z) = sqrt(abs2(z)+2x̄sqrtx2real(z)+sqrtx2abs(z)^2)
 
 
@@ -81,8 +81,8 @@ function stieltjes(sp::JacobiWeight{<:PolynomialSpace,<:Segment},u,z)
         z=mobius(sp,z)
 
         sx2z=sqrtx2(z)
-        sx2zi=1./sx2z
-        Jm=1./(undirected(z)+sx2z)  # joukowskyinverse(true,z)
+        sx2zi=1/sx2z
+        Jm=1/(undirected(z)+sx2z)  # joukowskyinverse(true,z)
 
 
         if length(cfs) ≥1

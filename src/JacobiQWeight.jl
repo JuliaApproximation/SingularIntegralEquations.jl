@@ -4,7 +4,7 @@ export JacobiQWeight
 
 """
 `JacobiQWeight`
-weights a basis on `ℂ\𝕀` weighted by `(z+1)^α*(z-1)^β`.
+weights a basis on `ℂ\\𝕀` weighted by `(z+1)^α*(z-1)^β`.
 Note the inconsistency of the parameters with `JacobiQ`.
 When the domain is `[a,b]` the weight is inferred by mapping to `[-1,1]`
 """
@@ -55,8 +55,8 @@ dimension(sp::JacobiQWeight) = dimension(sp.space)
 
 
 Base.first(f::Fun{JW}) where {JW<:JacobiQWeight} =
-    space(f).α>0?zero(eltype(f)):f(first(domain(f)))
+    space(f).α > 0 ? zero(cfstype(f)) : f(first(domain(f)))
 Base.last(f::Fun{JW}) where {JW<:JacobiQWeight} =
-    space(f).β>0?zero(eltype(f)):f(last(domain(f)))
+    space(f).β > 0 ? zero(cfstype(f)) : f(last(domain(f)))
 
-setdomain(sp::JacobiQWeight,d::Domain)=JacobiQWeight(sp.α,sp.β,setdomain(sp.space,d))
+setdomain(sp::JacobiQWeight,d::Domain) = JacobiQWeight(sp.α,sp.β,setdomain(sp.space,d))

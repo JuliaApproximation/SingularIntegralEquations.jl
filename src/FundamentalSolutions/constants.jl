@@ -24,31 +24,31 @@ const jump_ratio = 1.3              # when finding endpoints, increase distance 
 const MAXNQUAD = 3000               # maximum allowed number of quad points
 
 # Allocation
-const gam = Vector{Complex{Float64}}(MAXNQUAD)
-const gamp = Vector{Complex{Float64}}(MAXNQUAD)
-const integ = Vector{Complex{Float64}}(MAXNQUAD)
-const integx = Vector{Complex{Float64}}(MAXNQUAD)
-const integy = Vector{Complex{Float64}}(MAXNQUAD)
-const ts = Vector{Float64}(MAXNQUAD)
-const ws = Vector{Float64}(MAXNQUAD)
+const gam = Vector{Complex{Float64}}(undef,MAXNQUAD)
+const gamp = Vector{Complex{Float64}}(undef,MAXNQUAD)
+const integ = Vector{Complex{Float64}}(undef,MAXNQUAD)
+const integx = Vector{Complex{Float64}}(undef,MAXNQUAD)
+const integy = Vector{Complex{Float64}}(undef,MAXNQUAD)
+const ts = Vector{Float64}(undef,MAXNQUAD)
+const ws = Vector{Float64}(undef,MAXNQUAD)
 
 # locate_minimum allocation
 
 const n_its = 2
 const n_t = 20
-const lm_ts = Vector{Float64}(n_t)
-const lm_gam = Vector{Complex{Float64}}(n_t)
-const lm_integ = Vector{Complex{Float64}}(n_t)
-const lm_integx = Vector{Complex{Float64}}(n_t)
-const lm_integy = Vector{Complex{Float64}}(n_t)
-const test_min = Vector{Float64}(n_t)
+const lm_ts = Vector{Float64}(undef,n_t)
+const lm_gam = Vector{Complex{Float64}}(undef,n_t)
+const lm_integ = Vector{Complex{Float64}}(undef,n_t)
+const lm_integx = Vector{Complex{Float64}}(undef,n_t)
+const lm_integy = Vector{Complex{Float64}}(undef,n_t)
+const test_min = Vector{Float64}(undef,n_t)
 
 # find_endpoints allocation
 
-const fe_gam = Vector{Complex{Float64}}(1)
-const fe_u = Vector{Complex{Float64}}(1)
-const fe_ux = Vector{Complex{Float64}}(1)
-const fe_uy = Vector{Complex{Float64}}(1)
+const fe_gam = Vector{Complex{Float64}}(undef,1)
+const fe_u = Vector{Complex{Float64}}(undef,1)
+const fe_ux = Vector{Complex{Float64}}(undef,1)
+const fe_uy = Vector{Complex{Float64}}(undef,1)
 
 # default numerical params, and how they scale with h (when h<0 triggers it):
 const MAXH_STD = 0.05           # max h spacing on real axis for quad-nodes meth=1, .03
