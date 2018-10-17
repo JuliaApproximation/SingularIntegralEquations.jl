@@ -1,5 +1,18 @@
 export NonlocalLaplacian
 
+#############
+# NonlocalLaplacian implements the nonlocal integral operator:
+#
+#        𝓛 u(x) := \int_{B_δ(x)} ρ_δ(|x-y|) [u(y) - u(x)] dy
+#
+# where B_δ(x) = {y ∈ ℝᵈ : |x-y| ≤ δ} is the closed ball of radius 0 < δ < ∞,
+# and the spherically symmetric kernel ρ_δ is defined by:
+#
+#       ρ_δ(r) = 2*Γ(d/2+1)*(d+2-α)/(π^{d/2} δ^{d+2-α}) χ_[0,δ](r)/r^α,
+#
+# where χ_[0,δ](⋅) is the indicator function, and 0 ≤ α < d + 2.
+#############
+
 abstract type AbstractNonlocalCalculusOperator{S, T} <: Operator{T} end
 
 abstract type NonlocalLaplacian{S, T} <: AbstractNonlocalCalculusOperator{S, T} end
