@@ -89,7 +89,21 @@ L  = ToeplitzOperator(inv(I+C*V))
 U  = ToeplitzOperator(I+V+C*V)
 ```
 
+# Nonlocal Diffusion
+
+Construct the nonlocal Laplacian acting on Fourier series by computing the spectrum on-the-fly:
+
+```julia
+α = 2.5 # ∈ [0, d+2), where d is the number of dimensions
+        # α is the strength of the singularity of the algebraic kernel
+δ = 0.1 # the horizon of the nonlocal integral operator
+L = NonlocalLaplacian(Fourier(), α, δ)
+```
+
+Afterward, you are free to treat it as any other banded (diagonal) operator.
+
 # References
 
 R. M. Slevinsky & S. Olver, <a href="http://dx.doi.org/10.1016/j.jcp.2016.12.009">A fast and well-conditioned spectral method for singular integral equations</a>, *J. Comp. Phys.*, **332**:290--315, 2017.
-    An earlier version appears here: <a href="http://arxiv.org/abs/1507.00596">arXiv:1507.00596</a>.
+
+Y. Li & R. M. Slevinsky. <a href="https://arxiv.org/abs/1810.07131">Fast and accurate algorithms for the computation of spherically symmetric nonlocal diffusion operators on lattices</a>, arXiv:1810.07131, 2018.
