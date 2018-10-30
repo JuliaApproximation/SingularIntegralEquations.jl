@@ -1,7 +1,7 @@
 
 __precompile__()
 module SingularIntegralEquations
-    using Base, BandedMatrices, ApproxFun, DualNumbers, RecipesBase,
+    using Base, BandedMatrices, ApproxFun, DualNumbers, RecipesBase, DomainSets,
             LinearAlgebra, Random, SpecialFunctions, LowRankApprox, InteractiveUtils
 
 export cauchy, cauchyintegral, stieltjes, logkernel,
@@ -18,7 +18,9 @@ import Base.Broadcast: broadcasted, DefaultArrayStyle
 import LinearAlgebra: ldiv!, mul!, rank, cond, qr
 
 import ApproxFun
-import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebilinearform,dotu, blocklengths,
+import DomainSets: UnionDomain
+
+import ApproxFun: bandwidths, blockbandwidths, SpaceOperator, bilinearform, linebilinearform,dotu, blocklengths,
                   plan_transform,plan_itransform,transform,itransform,transform!,itransform!,
                   rangespace, domainspace, promotespaces, InterlaceOperator, coefficientmatrix,
                   canonicalspace, domain, space, Space, promotedomainspace, promoterangespace, AnyDomain, CalculusOperator,
@@ -30,11 +32,12 @@ import ApproxFun: bandinds, blockbandinds, SpaceOperator, bilinearform, linebili
                   real, UnivariateSpace, RealUnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger,
                   ConstantSpace,ReOperator,DirectSumSpace, ArraySpace, ZeroSpace,
                   LowRankPertOperator, LaurentDirichlet, setcanonicaldomain, SubSpace,
-                  IntervalCurve,PeriodicCurve, reverseorientation, @wrapper, mobius,
+                  IntervalCurve, PeriodicCurve, reverseorientation, @wrapper, mobius,
                   defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, SubOperator,
                   Block, BlockBandedMatrix, BandedBlockBandedMatrix, DFunction, Infinity,
                   component, ncomponents, factor, nfactors, components, factors, rangetype,
-                  VFun, Point, dynamic, pieces, npieces, piece, cfstype, isreal
+                  VFun, Point, dynamic, pieces, npieces, piece, cfstype, isreal, IntervalOrSegmentDomain,
+                  IntervalOrSegment
 
 import ApproxFun: testbandedoperator
 
@@ -227,7 +230,7 @@ function testsies(S::Space;posdirection=im)
     testsieeval(S;posdirection=posdirection)
 end
 
-function testsies(d::IntervalDomain;posdirection=im)
+function testsies(d::IntervalOrSegmentDomain; posdirection=im)
     testsies(JacobiWeight(-0.5,-0.5,Chebyshev(d)))
     testsies(JacobiWeight(0.5,0.5,Ultraspherical(1,d)))
     testsies(JacobiWeight(-0.5,-0.5,ChebyshevDirichlet{1,1}(d)))

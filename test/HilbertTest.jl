@@ -1,15 +1,12 @@
-using Test, ApproxFun, SingularIntegralEquations
+using Test, ApproxFun, DomainSets, SingularIntegralEquations, LinearAlgebra
     import ApproxFun: ∞, testbandedoperator, testfunctional, testblockbandedoperator, testraggedbelowoperator,
                         setcanonicaldomain
     import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, sqrtx2, Directed
 
 @testset "Hilbert" begin
-    ## Sqrt singularity
-
-    for d in (Segment(),Segment(-2,-1),Segment(im,1))
+    for d in (ChebyshevInterval(), (-2)..(-1), Segment(im,1))
         testsies(d)
     end
-
 
     S=JacobiWeight(0.5,0.5,Ultraspherical(1,-2 .. -1))
     f=Fun(x->exp(x)*sqrt(x+2)*sqrt(-1-x),S)
@@ -81,7 +78,7 @@ using Test, ApproxFun, SingularIntegralEquations
     @testset "Stieltjes" begin
         ds1 = JacobiWeight(-0.5,-0.5,ApproxFun.ChebyshevDirichlet{1,1}())
         ds2 = JacobiWeight(-.5,-.5,Chebyshev())
-        rs = Chebyshev(2..4+3im)
+        rs = Chebyshev(Segment(2,4+3im))
         f1 = Fun(x->exp(x)/sqrt(1-x^2),ds1)
         f2 = Fun(x->exp(x)/sqrt(1-x^2),ds2)
         S = Stieltjes(ds1,rs)
@@ -259,7 +256,7 @@ using Test, ApproxFun, SingularIntegralEquations
     end
 
     @testset "Piecewise singularintegral" begin
-        P₀ = legendre(0,Domain(0..1)) + legendre(0,Domain(0..im))
+        P₀ = legendre(0,0..1) + legendre(0,Segment(0,im))
         s = Fun(domain(P₀))
         let z=2+im
             @test singularintegral(1,P₀, z) ≈ linesum(P₀/(z-s))/π

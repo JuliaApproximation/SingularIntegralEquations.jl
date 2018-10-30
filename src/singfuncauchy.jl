@@ -23,7 +23,7 @@ x̄sqrtx2real(z) = sqrtx2abs(z)*abs(z)*cos((angle(z-1)+angle(z+1))/2-angle(z))
 
 
 function sqrtx2(f::Fun)
-    B = Evaluation(first(domain(f)))
+    B = Evaluation(leftendpoint(domain(f)))
     A = Derivative()-f*differentiate(f)/(f^2-1)
     \([B,A],[sqrtx2(first(f)),0];tolerance=ncoefficients(f)*10E-15)
 end
@@ -70,7 +70,7 @@ realdivkhornersum(cfs::AbstractVector{S},ζ,ζs,s) where {S<:Complex} =
             real(divkhornersum(imag(cfs),ζ,ζs,s)))
 
 
-function stieltjes(sp::JacobiWeight{<:PolynomialSpace,<:Segment},u,z)
+function stieltjes(sp::JacobiWeight{<:PolynomialSpace,<:IntervalOrSegment},u,z)
     d=domain(sp)
 
     if sp.α == sp.β == .5
@@ -99,12 +99,12 @@ function stieltjes(sp::JacobiWeight{<:PolynomialSpace,<:Segment},u,z)
     elseif isapproxinteger(sp.α) && isapproxinteger(sp.β)
         stieltjes(sp.space,coefficients(u,sp,sp.space),z)
     else
-        if d==Segment()
+        if d==ChebyshevInterval()
             S2=JacobiWeight(sp.β,sp.α,Jacobi(sp.β,sp.α))  # convert and then use recurrence
             stieltjesintervalrecurrence(S2,coefficients(u,sp,S2),z)
         else
             # project to interval
-            stieltjes(setdomain(sp,Segment()),u,mobius(sp,z))
+            stieltjes(setdomain(sp,ChebyshevInterval()),u,mobius(sp,z))
         end
     end
 end
@@ -117,7 +117,7 @@ end
 #  hilbert(f,z)=im*(cauchy(true,f,z)+cauchy(false,f,z))
 ##
 
-function hilbert(sp::JacobiWeight{Chebyshev{DD},DD},u) where {DD<:Segment}
+function hilbert(sp::JacobiWeight{Chebyshev{DD},DD},u) where {DD<:IntervalOrSegment}
     d=domain(u)
 
     if sp.α == sp.β == .5
@@ -157,9 +157,9 @@ realintegratejin(c,cfs,ζ) =
 #####
 
 
-function logkernel(sp::JacobiWeight{<:PolynomialSpace,<:Segment},u,z)
+function logkernel(sp::JacobiWeight{<:PolynomialSpace,<:IntervalOrSegment},u,z)
     d=domain(sp)
-    a,b=d.a,d.b
+    a,b= endpoints(d)
 
     if sp.α == sp.β == .5
         cfs=coefficients(u,sp.space,Ultraspherical(1,d))
@@ -191,7 +191,7 @@ function logkernel(sp::JacobiWeight{<:PolynomialSpace,<:Segment},u,z)
         else
             zero(z)
         end
-    elseif domain(sp) == Segment()
+    elseif domain(sp) == ChebyshevInterval()
         DS=WeightedJacobi(sp.β+1,sp.α+1)
         D=Derivative(DS)[2:end,:]
 
@@ -206,9 +206,9 @@ function logkernel(sp::JacobiWeight{<:PolynomialSpace,<:Segment},u,z)
     end
 end
 
-function stieltjesintegral(sp::JacobiWeight{<:PolynomialSpace,<:Segment},u,z)
+function stieltjesintegral(sp::JacobiWeight{<:PolynomialSpace,<:IntervalOrSegment},u,z)
     d=domain(sp)
-    a,b=d.a,d.b
+    a,b=endpoints(d)
 
     if sp.α == sp.β == .5
         cfs=coefficients(u,sp.space,Ultraspherical(1,d))

@@ -45,7 +45,7 @@ convolutionProductFun(f::DFunction,
 
 function convolutionProductFun(f::Fun{Fourier{DD,RR},T},u::Fourier{DU,RU},v::Fourier{DV,RV};tol=eps()) where {DD,RR,T,DU,RU,DV,RV}
     df,du,dv = domain(f),domain(u),domain(v)
-    @assert df == du == dv && isa(df,PeriodicInterval)
+    @assert df == du == dv && isa(df,PeriodicSegment)
     c = coefficients(f)
     N = length(c)
     X = zeros(T,N,N)
@@ -62,7 +62,7 @@ end
 
 function convolutionProductFun(f::Fun{S,T},u::Fourier{DU,RU},v::Fourier{DV,RV};tol=eps()) where {S<:CosSpace,T,DU,RU,DV,RV}
     df,du,dv = domain(f),domain(u),domain(v)
-    @assert df == du == dv && isa(df,PeriodicInterval)
+    @assert df == du == dv && isa(df,PeriodicSegment)
     c = coefficients(f)
     N = 2length(c)-1
     X = zeros(T,N,N)
@@ -76,7 +76,7 @@ end
 
 function convolutionProductFun(f::Fun{S,T},u::Fourier{DU,RU},v::Fourier{DV,RV};tol=eps()) where {S<:SinSpace,T,DU,RU,DV,RV}
     df,du,dv = domain(f),domain(u),domain(v)
-    @assert df == du == dv && isa(df,PeriodicInterval)
+    @assert df == du == dv && isa(df,PeriodicSegment)
     c = coefficients(f)
     N = 2length(c)+1
     X = zeros(T,N,N)
@@ -89,7 +89,7 @@ end
 
 function convolutionProductFun(f::Fun{Laurent{DS,RS},T},u::Laurent{DU,RU},v::Laurent{DV,RV};tol=eps()) where {DS,RS,T,DU,RU,DV,RV}
     df,du,dv = domain(f),domain(u),domain(v)
-    @assert df == du == dv && isa(df,PeriodicInterval)
+    @assert df == du == dv && isa(df,PeriodicSegment)
     c = coefficients(f)
     N = length(c)
     X = mod(N,2) == 0 ? zeros(T,N+1,N) : zeros(T,N,N)
@@ -104,7 +104,7 @@ end
 
 function convolutionProductFun(f::Fun{Taylor{DS,RS},T},u::Laurent{DU,RU},v::Laurent{DV,RV};tol=eps()) where {DS,RS,T,DU,RU,DV,RV}
     df,du,dv = domain(f),domain(u),domain(v)
-    @assert df == du == dv && isa(df,PeriodicInterval)
+    @assert df == du == dv && isa(df,PeriodicSegment)
     c = coefficients(f)
     N = 2length(c)-1
     X = zeros(T,N-1,N)
@@ -117,7 +117,7 @@ end
 
 function convolutionProductFun(f::Fun{Hardy{false,DS,RS},T},u::Laurent{DU,RU},v::Laurent{DV,RV};tol=eps()) where {DS,RS,T,DU,RU,DV,RV}
     df,du,dv = domain(f),domain(u),domain(v)
-    @assert df == du == dv && isa(df,PeriodicInterval)
+    @assert df == du == dv && isa(df,PeriodicSegment)
     c = coefficients(f)
     N = 2length(c)
     X = zeros(T,N+1,N)

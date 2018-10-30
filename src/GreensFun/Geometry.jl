@@ -3,7 +3,7 @@
 centroid(x) = x
 
 centroid(d::Circle) = d.center
-centroid(d::Segment) = mean((first(d),last(d)))
+centroid(d::IntervalOrSegment) = mean((first(d),last(d)))
 
 # dist and dist2 are the nearest distance and distance-squared between x and y
 
@@ -20,7 +20,7 @@ diam2(x) = diam(x)^2
 
 diam2(x::Number) = 1
 diam(d::Circle) = 2d.radius
-diam2(d::Segment) = abs2(first(d)-last(d))
+diam2(d::IntervalOrSegment) = abs2(first(d)-last(d))
 diam2(d::UnionDomain) = maximum(extrema2(d))
 
 # Extremal distances between domains
@@ -53,13 +53,13 @@ for op in (:(Base.extrema),:extrema2)
 end
 
 #
-# Geometry for non-intersecting Segments
+# Geometry for non-intersecting IntervalOrSegments
 #
-function dist2(c::Number,d::Segment)
+function dist2(c::Number,d::IntervalOrSegment)
     if in(c,d)
         zero(real(c))
     else
-        a,b = d.a,d.b
+        a,b = endpoints(d)
         x1,y1 = reim(a)
         x2,y2 = reim(b)
         x3,y3 = reim(c)
@@ -71,7 +71,7 @@ function dist2(c::Number,d::Segment)
     end
 end
 
-function extrema2(d1::Segment,d2::Segment)
+function extrema2(d1::IntervalOrSegment,d2::IntervalOrSegment)
     a,b = d1.a,d1.b
     c,d = d2.a,d2.b
     extrema((dist2(a,d2),dist2(b,d2),dist2(c,d1),dist2(d,d1),abs2(a-c),abs2(a-d),abs2(b-c),abs2(b-d)))
@@ -106,16 +106,16 @@ function extrema2(d1::Circle,d2::Circle)
 end
 
 #
-# Geometry between non-intersecting Segments and Circles
+# Geometry between non-intersecting IntervalOrSegments and Circles
 #
 # Consider the minimal distances from a & b to the center, adding or subtracting
 # a radius in either direction. Add to these combinations the minimal distance from the center
-# to the Segment, adding or subtracting a radius in either direction.
+# to the IntervalOrSegment, adding or subtracting a radius in either direction.
 # The extremal distances are a subset.
 #
-function Base.extrema(d1::Segment,d2::Circle)
+function Base.extrema(d1::IntervalOrSegment,d2::Circle)
     a,b = d1.a,d1.b
     c,r=d2.center,d2.radius
     extrema(( dist(a,d2),dist(b,d2),dist(a,d2)+2r,dist(b,d2)+2r,dist(c,d1)+r,dist(c,d1)-r ))
 end
-Base.extrema(d1::Circle,d2::Segment) = extrema(d2,d1)
+Base.extrema(d1::Circle,d2::IntervalOrSegment) = extrema(d2,d1)

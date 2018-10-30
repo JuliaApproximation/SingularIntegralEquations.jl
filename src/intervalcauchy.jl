@@ -43,8 +43,8 @@ hilbertforward(sp::Space,n,z) = forwardsubstitution(JacobiZ(sp,z),n,
 
 
 
-function stieltjesmoment!(ret,S::PolynomialSpace{<:Segment},z,filter=identity)
-    if domain(S) == Segment()
+function stieltjesmoment!(ret,S::PolynomialSpace{<:IntervalOrSegment},z,filter=identity)
+    if domain(S) == ChebyshevInterval()
         n = length(ret)
         tol = 1/floor(Int,sqrt(n))
         if (abs(real(z)) ≤ 1+tol) && (abs(imag(z)) ≤ tol)
@@ -55,7 +55,7 @@ function stieltjesmoment!(ret,S::PolynomialSpace{<:Segment},z,filter=identity)
 
         ret
     else
-        stieltjesmoment!(ret,setdomain(S,Segment()),mobius(S,z),filter)
+        stieltjesmoment!(ret,setdomain(S,ChebyshevInterval()),mobius(S,z),filter)
     end
 end
 
@@ -77,22 +77,22 @@ stieltjesintervalrecurrence(S,f::AbstractVector,z::AbstractArray) =
     reshape(promote_type(eltype(f),eltype(z))[ stieltjesintervalrecurrence(S,f,z[i]) for i in eachindex(z) ], size(z))
 
 
-function stieltjes(S::PolynomialSpace{<:Segment},f,z::Number)
-    if domain(S)==Segment()
+function stieltjes(S::PolynomialSpace{<:IntervalOrSegment},f,z::Number)
+    if domain(S)==ChebyshevInterval()
         #TODO: check tolerance
         stieltjesintervalrecurrence(Legendre(),coefficients(f,S,Legendre()),z)
     else
-        stieltjes(setdomain(S,Segment()),f,mobius(S,z))
+        stieltjes(setdomain(S,ChebyshevInterval()),f,mobius(S,z))
     end
 end
 
-function hilbert(S::PolynomialSpace{<:Segment},f,z::Number)
-    if domain(S) == Segment()
+function hilbert(S::PolynomialSpace{<:IntervalOrSegment},f,z::Number)
+    if domain(S) == ChebyshevInterval()
         L = Legendre(domain(S))
         cfs = hilbertforward(L,length(f),z)
         dotu(cfs,coefficients(f, S, L))
     else
-        hilbert(setdomain(S,Segment()),f,mobius(S,z))
+        hilbert(setdomain(S,ChebyshevInterval()),f,mobius(S,z))
     end
 end
 
@@ -116,8 +116,8 @@ end
 
 
 
-function logkernel(S::PolynomialSpace{<:Segment},v,z::Number)
-    if domain(S) == Segment()
+function logkernel(S::PolynomialSpace{<:IntervalOrSegment},v,z::Number)
+    if domain(S) == ChebyshevInterval()
         DS=JacobiWeight(1,1,Jacobi(1,1))
         D=Derivative(DS)[2:end,:]
 

@@ -23,7 +23,7 @@ end
 
 JacobiQWeight(a::Number,b::Number,d::RealUnivariateSpace) =
     JacobiQWeight{typeof(d),typeof(domain(d))}(Float64(a),Float64(b),d)
-JacobiQWeight(a::Number,b::Number,d::IntervalDomain) =
+JacobiQWeight(a::Number,b::Number,d::IntervalOrSegmentDomain) =
     JacobiQWeight(Float64(a),Float64(b),Space(d))
 JacobiQWeight(a::Number,b::Number,d::Vector) =
     JacobiQWeight(Float64(a),Float64(b),Space(d))
@@ -48,7 +48,7 @@ transformtimes(f::Fun,g::Fun{JW}) where {JW<:JacobiQWeight} = Fun(g.space,coeffi
 
 jacobiQweight(α,β,x) = (x+1)^α*(x-1)^β
 jacobiQweight(α,β,d::Domain) = Fun(JacobiQWeight(α,β,ConstantSpace(d)),[1.])
-jacobiQweight(α,β) = jacobiQweight(α,β,Segment())
+jacobiQweight(α,β) = jacobiQweight(α,β,ChebyshevInterval())
 
 weight(sp::JacobiQWeight,x) = jacobiQweight(sp.α,sp.β,tocanonical(sp.space.domain,x))
 dimension(sp::JacobiQWeight) = dimension(sp.space)

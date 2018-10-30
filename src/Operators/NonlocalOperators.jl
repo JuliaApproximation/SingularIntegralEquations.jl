@@ -44,15 +44,15 @@ rangespace(L::ConcreteNonlocalLaplacian{Fourier{DD,RR}}) where {DD,RR} = L.space
 rangespace(L::ConcreteNonlocalLaplacian{CosSpace{DD,RR}}) where {DD,RR} = L.space
 rangespace(L::ConcreteNonlocalLaplacian{SinSpace{DD,RR}}) where {DD,RR} = L.space
 
-bandinds(::ConcreteNonlocalLaplacian{Hardy{s,DD,RR}}) where {s,DD,RR} = 0,0
-bandinds(::ConcreteNonlocalLaplacian{Laurent{DD,RR}}) where {DD,RR} = 0,0
-bandinds(::ConcreteNonlocalLaplacian{Fourier{DD,RR}}) where {DD,RR} = 0,0
-bandinds(::ConcreteNonlocalLaplacian{CosSpace{DD,RR}}) where {DD,RR} = 0,0
-bandinds(::ConcreteNonlocalLaplacian{SinSpace{DD,RR}}) where {DD,RR} = 0,0
+bandwidths(::ConcreteNonlocalLaplacian{Hardy{s,DD,RR}}) where {s,DD,RR} = 0,0
+bandwidths(::ConcreteNonlocalLaplacian{Laurent{DD,RR}}) where {DD,RR} = 0,0
+bandwidths(::ConcreteNonlocalLaplacian{Fourier{DD,RR}}) where {DD,RR} = 0,0
+bandwidths(::ConcreteNonlocalLaplacian{CosSpace{DD,RR}}) where {DD,RR} = 0,0
+bandwidths(::ConcreteNonlocalLaplacian{SinSpace{DD,RR}}) where {DD,RR} = 0,0
 
 ##TODO: Add scale for different periods.
 function getindex(L::ConcreteNonlocalLaplacian{Hardy{true, DD, RR}, T},
-                  k::Integer, j::Integer) where {DD <: PeriodicInterval, RR, T}
+                  k::Integer, j::Integer) where {DD <: PeriodicSegment, RR, T}
     if k == j
         fourier_lambda(k-1, L.α, L.δ, 1)
     else
@@ -61,7 +61,7 @@ function getindex(L::ConcreteNonlocalLaplacian{Hardy{true, DD, RR}, T},
 end
 
 function getindex(L::ConcreteNonlocalLaplacian{Hardy{false, DD, RR}, T},
-                  k::Integer, j::Integer) where {DD <: PeriodicInterval, RR, T}
+                  k::Integer, j::Integer) where {DD <: PeriodicSegment, RR, T}
     if k == j
         fourier_lambda(k, L.α, L.δ, 1)
     else
@@ -72,7 +72,7 @@ end
 for SP in (:Laurent, :Fourier)
     @eval begin
         function getindex(L::ConcreteNonlocalLaplacian{$SP{DD, RR}, T},
-                          k::Integer, j::Integer) where {DD <: PeriodicInterval, RR, T}
+                          k::Integer, j::Integer) where {DD <: PeriodicSegment, RR, T}
             if k == j
                 fourier_lambda(k÷2, L.α, L.δ, 1)
             else
@@ -83,7 +83,7 @@ for SP in (:Laurent, :Fourier)
 end
 
 function getindex(L::ConcreteNonlocalLaplacian{CosSpace{DD, RR}, T},
-                  k::Integer, j::Integer) where {DD <: PeriodicInterval, RR, T}
+                  k::Integer, j::Integer) where {DD <: PeriodicSegment, RR, T}
     if k == j
         fourier_lambda(k-1, L.α, L.δ, 1)
     else
@@ -92,7 +92,7 @@ function getindex(L::ConcreteNonlocalLaplacian{CosSpace{DD, RR}, T},
 end
 
 function getindex(L::ConcreteNonlocalLaplacian{SinSpace{DD, RR}, T},
-                  k::Integer, j::Integer) where {DD <: PeriodicInterval, RR, T}
+                  k::Integer, j::Integer) where {DD <: PeriodicSegment, RR, T}
     if k == j
         fourier_lambda(k, L.α, L.δ, 1)
     else

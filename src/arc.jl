@@ -4,7 +4,7 @@
 
 # pseudocauchy does not normalize at ∞
 pseudostieltjes(S::Space{<:Arc},f,z) = stieltjes(setcanonicaldomain(S),f,mobius(S,z))
-pseudohilbert(S::Space{<:Arc},f,z) = hilbert(setdomain(S,Segment()),f,mobius(S,z))
+pseudohilbert(S::Space{<:Arc},f,z) = hilbert(setdomain(S,ChebyshevInterval()),f,mobius(S,z))
 
 
 stieltjes(S::Space{<:Arc},f,z) =

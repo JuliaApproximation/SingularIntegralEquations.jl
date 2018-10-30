@@ -114,9 +114,9 @@ function Hilbert(S::JacobiWeight{SS,C},k::Int) where {C<:IntervalCurve,SS}
     d=domain(S)
 
     # find the number of coefficients needed to resolve the first column
-    m=ncoefficients(Fun(x->sum(stieltjes.(Fun(csp,[1.0]),filter(y->!in(y,Segment()),complexroots(d.curve-fromcanonical(d,x))))/π),rs))
+    m=ncoefficients(Fun(x->sum(stieltjes.(Fun(csp,[1.0]),filter(y->!in(y,ChebyshevInterval()),complexroots(d.curve-fromcanonical(d,x))))/π),rs))
     #precompute the roots
-    rts=Vector{ComplexF64}[filter(y->!in(y,Segment()),complexroots(d.curve-x)) for x in fromcanonical.(Ref(d),points(rs,m))]
+    rts=Vector{ComplexF64}[filter(y->!in(y,ChebyshevInterval()),complexroots(d.curve-x)) for x in fromcanonical.(Ref(d),points(rs,m))]
 
     # generate cols until smaller than tol
     cols=Vector{Vector{ComplexF64}}()
@@ -150,9 +150,9 @@ function SingularIntegral(S::JacobiWeight{TTT,IntervalCurve{CC,TT,VT}},k::Intege
 
 
     # find the number of coefficients needed to resolve the first column
-    m=ncoefficients(Fun(x->sum(logkernel.(Fun(csp,[1.0]),filter(y->!in(y,Segment()),complexroots(d.curve-fromcanonical(d,x))))),rs))
+    m=ncoefficients(Fun(x->sum(logkernel.(Fun(csp,[1.0]),filter(y->!in(y,ChebyshevInterval()),complexroots(d.curve-fromcanonical(d,x))))),rs))
     #precompute the roots
-    rts=Vector{ComplexF64}[filter(y->!in(y,Segment()),complexroots(d.curve-x)) for x in fromcanonical.(Ref(d),points(rs,m))]
+    rts=Vector{ComplexF64}[filter(y->!in(y,ChebyshevInterval()),complexroots(d.curve-x)) for x in fromcanonical.(Ref(d),points(rs,m))]
 
     # generate cols until smaller than tol
     cols=Vector{Vector{Float64}}()

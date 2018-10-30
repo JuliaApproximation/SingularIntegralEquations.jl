@@ -19,7 +19,7 @@ import Base.MathConstants: γ, catalan
         @test norm(G(.123,.456)-G2(.123,.456))≤10000eps()
     end
 
-    @testset "Fourier on PeriodicInterval" begin
+    @testset "Fourier on PeriodicSegment" begin
         f2 = Fun(θ->exp(sin(θ))+sin(cos(θ)),Fourier())
         FLR = LowRankFun((θ,ϕ)->f2(ϕ-θ),Fourier(),Fourier())
         FPF = ProductFun((θ,ϕ)->f2(ϕ-θ),Fourier(),Fourier())
@@ -38,16 +38,16 @@ import Base.MathConstants: γ, catalan
         @test norm(f2(.456-.123)-G(.123,.456))≤400eps()
     end
 
-    @testset "Laurent on PeriodicInterval" begin
+    @testset "Laurent on PeriodicSegment" begin
         f2 = Fun(θ->exp(sin(θ))+sin(cos(θ)),Laurent())
         G = convolutionProductFun(f2,Laurent(),Laurent())
         @test norm(f2(.456-.123)-G(.123,.456))≤400eps()
 
-        f2 = Fun(θ->π+ℯ*exp(im*θ)+sqrt(2)*exp(im*2θ)+catalan*exp(im*3θ)+γ*exp(im*4θ),Taylor(PeriodicInterval()))
+        f2 = Fun(θ->π+ℯ*exp(im*θ)+sqrt(2)*exp(im*2θ)+catalan*exp(im*3θ)+γ*exp(im*4θ),Taylor(PeriodicSegment()))
         G = convolutionProductFun(f2,Laurent(),Laurent())
         @test norm(f2(.456-.123)-G(.123,.456))≤100eps()
 
-        f2 = Fun(θ->ℯ*exp(-im*θ)+sqrt(2)*exp(-im*2θ)+catalan*exp(-im*3θ)+γ*exp(-im*4θ),Hardy{false}(PeriodicInterval()))
+        f2 = Fun(θ->ℯ*exp(-im*θ)+sqrt(2)*exp(-im*2θ)+catalan*exp(-im*3θ)+γ*exp(-im*4θ),Hardy{false}(PeriodicSegment()))
         G = convolutionProductFun(f2,Laurent(),Laurent())
         @test norm(f2(.456-.123)-G(.123,.456))≤100eps()
     end
