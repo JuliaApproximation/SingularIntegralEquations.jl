@@ -50,7 +50,7 @@ for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
         domainspace(H::$ConcOp{Laurent{DD,RR}}) where {DD,RR} = H.space
         rangespace(H::$ConcOp{Laurent{DD,RR}}) where {DD,RR} = H.space
 
-        bandwidths(H::$ConcOp{Fourier{DD,RR}}) where {DD,RR} = -H.order,H.order
+        bandwidths(H::$ConcOp{Fourier{DD,RR}}) where {DD,RR} = H.order,H.order
         domainspace(H::$ConcOp{Fourier{DD,RR}}) where {DD,RR} = H.space
         rangespace(H::$ConcOp{Fourier{DD,RR}}) where {DD,RR} = H.space
 

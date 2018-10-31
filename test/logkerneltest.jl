@@ -30,7 +30,7 @@ using Test, ApproxFun, SingularIntegralEquations
     H=OffSingularIntegral(S,Chebyshev(3..4),0)
     @test (H*f)(3.5) ≈ logkernel(f,3.5)
 
-    H=OffSingularIntegral(S,Chebyshev(3..4.0+im),0)
+    H=OffSingularIntegral(S,Chebyshev(Segment(3,4.0+im)),0)
     @test (H*f)(3.5+0.5im) ≈ logkernel(f,3.5+0.5im)
 
 
@@ -129,7 +129,7 @@ using Test, ApproxFun, SingularIntegralEquations
 
 
     @testset "Chebyshev singularities" begin
-        for d in (Interval(), Interval(0,1), Segment(1+im, 2+3im))
+        for d in (ChebyshevInterval(), Interval(0,1), Segment(1+im, 2+3im))
             for k = 1:10
                 u = Fun(JacobiWeight.(-0.5,-0.5,Ref(ChebyshevDirichlet{1,1}(d))), [zeros(4);1])
                 x = Fun(d)
@@ -140,7 +140,7 @@ using Test, ApproxFun, SingularIntegralEquations
             end
         end
 
-        for d in (Interval(), Interval(0,1))
+        for d in (ChebyshevInterval(), Interval(0,1))
             for k = 1:10
                 u = Fun(JacobiWeight.(-0.5,-0.5,Ref(ChebyshevDirichlet{1,1}(d))), [zeros(4);1])
                 x = Fun(d)
