@@ -9,10 +9,11 @@ pseudohilbert(S::Space{<:Arc},f,z) = hilbert(setdomain(S,ChebyshevInterval()),f,
 
 stieltjes(S::Space{<:Arc},f,z) =
     stieltjes(setcanonicaldomain(S),f,mobius(S,z))-stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
-hilbert(S::Space{<:Arc},f,z) =
-    hilbert(setcanonicaldomain(S),f,mobius(S,z))+(1/π)*stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
-
-
+function hilbert(S::Space{<:Arc},f,z)
+    y = mobius(S,z)
+    abs(imag(y)) < 10E-15 || throw(ArgumentError())
+    hilbert(setcanonicaldomain(S),f,real(y))+(1/π)*stieltjes(setcanonicaldomain(S),f,mobius(S,Inf))
+end
 
 
 

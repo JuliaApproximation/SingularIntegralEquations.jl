@@ -121,7 +121,8 @@ using ApproxFun, SingularIntegralEquations, LinearAlgebra, Test
         @test sum(w*log(z-x))/(-2π*im) ≈ cauchyintegral(w,z)
         @test linesum(w*logabs(z-x))/π ≈ logkernel(w,z)
         @test (SingularIntegral(0)*w)(fromcanonical(d,0.1)) ≈ logkernel(w,fromcanonical(d,0.1))
-        @test (Hilbert()*w)(fromcanonical(d,0.1)) ≈ hilbert(w,fromcanonical(d,0.1))
+        @test (Hilbert()*w)(fromcanonical(d,0.1)) ≈ hilbert(w,fromcanonical(d,0.1)) ≈
+            im*(cauchy(w,fromcanonical(d,0.1)-eps())+cauchy(w,fromcanonical(d,0.1)+eps()))
     end
 
     @testset "Legendre singularities" begin
