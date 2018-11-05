@@ -28,7 +28,7 @@ g2 = (x,y) -> x == y ? -(log(k/2)+γ)/2/π + im/4 : im/4*hankelh1(0,k*abs(y-x)) 
 #dom = ∪(Segment.([-1.0-0.4im,0.1+0.4im,-0.9-0.5im],[-0.1+0.4im,1.0-0.4im,0.9-0.5im]))
 #dom = ∪(Segment.([-1.0-0.4im,-0.5-0.4im,0.1+0.4im,0.2+0.0im,-1.4-0.75im],[-0.1+0.4im,-0.2+0.0im,1.0-0.4im,0.5-0.4im,1.4-0.75im]))
 #dom = ∪(Circle.([0.,-1.0im],[0.5,0.25]))∪(Segment.([-1.5,0.5-1.0im,-0.5+1.0im],[-0.5-1.0im,1.5,0.5+1.0im]))
-dom = Segment()
+dom = ChebyshevInterval()
 
 sp = Space(dom)
 cwsp = CauchyWeight(sp⊗sp,0)

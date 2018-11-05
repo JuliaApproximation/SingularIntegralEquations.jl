@@ -23,10 +23,10 @@ struct JacobiQ{D<:Domain,T} <: Space{D,T}
     domain::D
 end
 LegendreQ(domain) = JacobiQ(0.,0.,domain)
-LegendreQ() = LegendreQ(Segment())
+LegendreQ() = LegendreQ(ChebyshevInterval())
 JacobiQ(a,b,d::Domain) = JacobiQ(promote(a,b)...,d)
 JacobiQ(a,b,d) = JacobiQ(a,b,Domain(d))
-JacobiQ(a,b) = JacobiQ(a,b,Segment())
+JacobiQ(a,b) = JacobiQ(a,b,ChebyshevInterval())
 
 domain(::JacobiQ) = ComplexPlane()
 
@@ -66,7 +66,7 @@ function stieltjes(f::Fun{<:JacobiWeight})
     Fun(WeightedJacobiQ(β,α,domain(f)),2coefficients(f,WeightedJacobi(β,α,domain(f))))
 end
 
-function evaluate(f::AbstractVector,S::JacobiQ{<:Segment},x)
+function evaluate(f::AbstractVector,S::JacobiQ{<:IntervalOrSegment},x)
     isinf(x) && return zero(promote_type(typeof(x), eltype(f)))
     stieltjesintervalrecurrence(S,f,mobius(S.domain,x))./2jacobiQweight(S.b,S.a,mobius(S.domain,x))
 end

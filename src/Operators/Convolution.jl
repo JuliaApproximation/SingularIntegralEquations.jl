@@ -21,16 +21,16 @@ Convolution(op::BT,G::Fun{S,T}) where {S,BT,T} = ConcreteConvolution(op,G)
 domain(C::ConcreteConvolution) = domain(C.op)
 domainspace(C::ConcreteConvolution) = domainspace(C.op)
 rangespace(C::ConcreteConvolution) = UnsetSpace()
-bandinds(C::ConcreteConvolution) = error("No range space attached to Convolution")
+bandwidths(C::ConcreteConvolution) = error("No range space attached to Convolution")
 getindex(C::ConcreteConvolution,k::Integer,j::Integer) = error("No range space attached to Convolution")
 
 rangespace(C::ConcreteConvolution{Laurent{D},BT}) where {D,BT} = space(C.G)
 rangespace(C::ConcreteConvolution{Fourier{D},BT}) where {D,BT} = space(C.G)
 rangespace(C::ConcreteConvolution{CosSpace{D},BT}) where {D,BT} = Fourier(domain(C.G))
 
-bandinds(C::ConcreteConvolution{Laurent{D},BT}) where {D,BT} = 0,0
-bandinds(C::ConcreteConvolution{Fourier{D},BT}) where {D,BT} = 0,0
-bandinds(C::ConcreteConvolution{CosSpace{D},BT}) where {D,BT} = 0,0
+bandwidths(C::ConcreteConvolution{Laurent{D},BT}) where {D,BT} = 0,0
+bandwidths(C::ConcreteConvolution{Fourier{D},BT}) where {D,BT} = 0,0
+bandwidths(C::ConcreteConvolution{CosSpace{D},BT}) where {D,BT} = 0,0
 
 function getindex(C::ConcreteConvolution{Fourier{D},ConcreteDefiniteLineIntegral{Fourier{D},T1},T2},k::Integer,j::Integer) where {D,T1,T2}
     T = promote_type(T1,T2)

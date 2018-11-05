@@ -9,7 +9,7 @@ for (Func,Len) in ((:(Base.sum),:complexlength),(:linesum,:arclength))
        end
 
        # TODO: remove the following hack
-        function $Func(G::Function,u::Fun{<:JacobiWeight{<:Chebyshev,<:Segment}},z)
+        function $Func(G::Function,u::Fun{<:JacobiWeight{<:Chebyshev,<:IntervalOrSegment}},z)
             d,α,β,n=domain(u),u.space.α,u.space.β,2ncoefficients(u)
             vals,t = ichebyshevtransform(pad(u.coefficients,n)),points(d,n)
             if α == β == -0.5
@@ -38,7 +38,7 @@ end
 
 for TYP in (:Fourier,:Laurent)
     @eval begin
-        function Base.sum(G::Function,u::Fun{<:$TYP{<:PeriodicInterval}},z)
+        function Base.sum(G::Function,u::Fun{<:$TYP{<:PeriodicSegment}},z)
             d,n=domain(u),2ncoefficients(u)
             vals,t = values(pad(u,n)),points(d,n)
 
@@ -52,7 +52,7 @@ for TYP in (:Fourier,:Laurent)
             return map(z->mean(G.(z,t).*vals.*t),z)*2π*im
         end
 
-        function linesum(G::Function,u::Fun{<:$TYP{<:PeriodicInterval}},z)
+        function linesum(G::Function,u::Fun{<:$TYP{<:PeriodicSegment}},z)
             d,n=domain(u),2ncoefficients(u)
             vals,t = values(pad(u,n)),points(d,n)
             map(z->mean(G.(z,t).*vals),z)*arclength(d)

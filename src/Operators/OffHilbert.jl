@@ -40,9 +40,9 @@ for Op in (:OffHilbert,:OffSingularIntegral)
 
         domainspace(C::$Op) = C.domainspace
         rangespace(C::$Op) = C.rangespace
-        bandinds(C::$Op) = bandinds(C.data)
+        bandwidths(C::$Op) = bandwidths(C.data)
         # divide size by blocklengths
-        blockbandinds(C::$Op) = (-(size(C.data,1)-1)÷maximum(blocklengths(rangespace(C))),
+        blockbandwidths(C::$Op) = ((size(C.data,1)-1)÷maximum(blocklengths(rangespace(C))),
                                  (size(C.data,2)-1)÷maximum(blocklengths(domainspace(C))))
     end
 end
@@ -127,7 +127,7 @@ OffSingularIntegral(ds::Space,rs::Space,order::Int) = default_OffSingularIntegra
 
 for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
     @eval begin
-        function $Op(ds::JacobiWeight{Ultraspherical{Int,DD,RR},DD},rs::Space,ord::Int) where {DD<:Segment,RR}
+        function $Op(ds::JacobiWeight{Ultraspherical{Int,DD,RR},DD},rs::Space,ord::Int) where {DD<:IntervalOrSegment,RR}
             @assert order(ds.space) == 1
             @assert ds.α==ds.β==0.5
             d = domain(ds)
@@ -173,7 +173,7 @@ for (Op,Len) in ((:OffHilbert,:complexlength),(:OffSingularIntegral,:arclength))
             $Op(M,ds,rs,ord)
         end
 
-        function $Op(ds::JacobiWeight{ChebyshevDirichlet{1,1,DD,RR},DD},rs::PolynomialSpace,ord::Int) where {DD<:Segment,RR}
+        function $Op(ds::JacobiWeight{ChebyshevDirichlet{1,1,DD,RR},DD},rs::PolynomialSpace,ord::Int) where {DD<:IntervalOrSegment,RR}
             @assert ds.α==ds.β==-0.5
             d = domain(ds)
             C = (.5*$Len(d))^(1-ord) # probably this is right for all orders ≥ 2. Certainly so for 0,1.
@@ -445,7 +445,7 @@ function HornerFunctional(y0,sp,cs)
 end
 
 
-function OffHilbert(sp::JacobiWeight{Ultraspherical{Int,DD,RR},DD},cs::ConstantSpace{<:Point},k::Int) where {DD<:Segment,RR}
+function OffHilbert(sp::JacobiWeight{Ultraspherical{Int,DD,RR},DD},cs::ConstantSpace{<:Point},k::Int) where {DD<:IntervalOrSegment,RR}
     z = convert(Number, domain(cs))
     @assert k == 1
     @assert order(sp.space) == 1
@@ -483,7 +483,7 @@ for Op in (:OffHilbert, :OffSingularIntegral)
 end
 
 
-function OffHilbert(sp::JacobiWeight{ChebyshevDirichlet{1,1,DD,RR},DD},cs::ConstantSpace{<:Point},k::Int) where {DD<:Segment,RR}
+function OffHilbert(sp::JacobiWeight{ChebyshevDirichlet{1,1,DD,RR},DD},cs::ConstantSpace{<:Point},k::Int) where {DD<:IntervalOrSegment,RR}
     z = Number(domain(cs))
     @assert k == 1
     if sp.α == sp.β == -0.5

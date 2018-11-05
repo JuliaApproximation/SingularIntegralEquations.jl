@@ -23,7 +23,7 @@ end
 # and C± 1 = ±1/2  (understood as a PV integral) so that H 1 = 0
 
 
-bandinds(H::ConcreteHilbert{LaurentDirichlet{DD,RR}}) where {DD<:PeriodicLine,RR} =
+bandwidths(H::ConcreteHilbert{LaurentDirichlet{DD,RR}}) where {DD<:PeriodicLine,RR} =
     (0,0)
 rangespace(H::ConcreteHilbert{LaurentDirichlet{DD,RR}}) where {DD<:PeriodicLine,RR} =
     domainspace(H)

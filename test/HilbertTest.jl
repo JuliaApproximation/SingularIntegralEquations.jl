@@ -1,15 +1,12 @@
-using Test, ApproxFun, SingularIntegralEquations
+using Test, ApproxFun, DomainSets, SingularIntegralEquations, LinearAlgebra
     import ApproxFun: ∞, testbandedoperator, testfunctional, testblockbandedoperator, testraggedbelowoperator,
                         setcanonicaldomain
     import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, sqrtx2, Directed
 
 @testset "Hilbert" begin
-    ## Sqrt singularity
-
-    for d in (Segment(),Segment(-2,-1),Segment(im,1))
+    for d in (ChebyshevInterval(), (-2)..(-1), Segment(im,1))
         testsies(d)
     end
-
 
     S=JacobiWeight(0.5,0.5,Ultraspherical(1,-2 .. -1))
     f=Fun(x->exp(x)*sqrt(x+2)*sqrt(-1-x),S)
@@ -81,7 +78,7 @@ using Test, ApproxFun, SingularIntegralEquations
     @testset "Stieltjes" begin
         ds1 = JacobiWeight(-0.5,-0.5,ApproxFun.ChebyshevDirichlet{1,1}())
         ds2 = JacobiWeight(-.5,-.5,Chebyshev())
-        rs = Chebyshev(2..4+3im)
+        rs = Chebyshev(Segment(2,4+3im))
         f1 = Fun(x->exp(x)/sqrt(1-x^2),ds1)
         f2 = Fun(x->exp(x)/sqrt(1-x^2),ds2)
         S = Stieltjes(ds1,rs)
@@ -137,9 +134,18 @@ using Test, ApproxFun, SingularIntegralEquations
         # Operator 1.7772163062194861 + 0.0im
         # Function 1.7772163062194637
     end
+
+    @testset "Circle Hilbert" begin
+        H = Hilbert(Fourier(Circle()))
+        testbandedoperator(H)
+        @test bandwidths(H) == (1,1)
+    end
+
     @testset "Cauchy" begin
         f2=Fun(sech,PeriodicLine())
-        @test cauchy(f2,1+im) ≈ (0.23294739894134472 + 0.10998776661109881im )
+
+        z = 1 + im
+        @test cauchy(f2,1+im) ≈ (0.23294739894134472 + 0.10998776661109881im ) # Mathematica
         @test cauchy(f2,1-im) ≈ (-0.23294739894134472 + 0.10998776661109881im )
 
 
@@ -171,7 +177,6 @@ using Test, ApproxFun, SingularIntegralEquations
         @time testbandedoperator(Hilbert(Fourier(Circle())))
     end
 
-
     @testset "Two circle test 1" begin
         Γ=Circle() ∪ Circle(0.5)
         f=Fun([Fun(z->z^(-1),component(Γ,1)),Fun(z->z,component(Γ,2))],PiecewiseSpace)
@@ -191,6 +196,7 @@ using Test, ApproxFun, SingularIntegralEquations
         @test 1+cauchy(u,.8) ≈ 1/0.8
         @test 1+cauchy(u,2.) ≈ 1
     end
+
     @testset "Two circle test 2" begin
         c1=0.5+0.1;r1=3.;
         c2=-0.1+.2im;r2=0.3;
@@ -208,6 +214,7 @@ using Test, ApproxFun, SingularIntegralEquations
 
         @test norm((C2*Fun(z->exp(1/z)-1,d2)+Fun(z->exp(1/z)-1,d1)).coefficients)<100000eps()
     end
+
     @testset "Two circle test 3" begin
         c1=0.1+0.1im;r1=.4;
         c2=-2+0.2im;r2=0.3;
@@ -259,7 +266,7 @@ using Test, ApproxFun, SingularIntegralEquations
     end
 
     @testset "Piecewise singularintegral" begin
-        P₀ = legendre(0,Domain(0..1)) + legendre(0,Domain(0..im))
+        P₀ = legendre(0,Segment(0,1)) + legendre(0,Segment(0,im))
         s = Fun(domain(P₀))
         let z=2+im
             @test singularintegral(1,P₀, z) ≈ linesum(P₀/(z-s))/π

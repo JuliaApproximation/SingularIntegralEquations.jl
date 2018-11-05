@@ -16,7 +16,7 @@ g2 = (x,y) -> x == y ? -(log(k/2)+γ)/2/π + im/4 : im/4*hankelh1(0,k*abs(y-x)) 
 
 ui = (x,y) -> exp(im*k*(x-y)/sqrt(2))    # Incident plane wave at 45°
 
-dom = Segment()                     # Set the domain
+dom = ChebyshevInterval()                     # Set the domain
 sp = Space(dom)                      # Canonical space on the domain
 ⨍ = DefiniteLineIntegral(dom)        # Line integration functional
 uiΓ = Fun(t->ui(real(t),imag(t)),sp) # Incident wave on Γ
