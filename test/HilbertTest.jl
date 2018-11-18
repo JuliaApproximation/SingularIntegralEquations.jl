@@ -278,4 +278,24 @@ using Test, ApproxFun, DomainSets, SingularIntegralEquations, LinearAlgebra
         S = ∪(JacobiWeight.(-0.5,-0.5,Chebyshev.(Γ))...)
         @test OffSingularIntegral(S, ConstantSpace(ApproxFun.Point(3.0+im)), 0) isa Operator{Float64}
     end
+
+
+    @testset "Ideal fluid flow" begin
+        a = 0.3
+        θ = 1.3
+        Γ = Segment(-1,-a) ∪ Segment(a, 1)
+
+        x = Fun(Γ)
+        sp = PiecewiseSpace(JacobiWeight.(0.5,0.5,components(Γ))...)
+        H = Hilbert(sp)
+
+
+        o₁ = Fun(x -> -1 ≤ x ≤ -a ? 1 : 0, Γ )
+        o₂ = Fun(x -> a ≤ x ≤ 1 ? 1 : 0, Γ )
+
+        a, b, f = [o₁ o₂ H] \ [-2x*sin(θ)]
+
+        @test Number(a) ≈ -Number(b) ≈ 1.151966678272007
+        @test f(0.5) ≈ 0.6384624727021831
+    end
 end
