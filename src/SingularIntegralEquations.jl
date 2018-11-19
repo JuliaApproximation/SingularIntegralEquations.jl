@@ -11,14 +11,14 @@ export cauchy, cauchyintegral, stieltjes, logkernel,
 
 import Base: values, getindex, setindex!, *, +, -, ==, <, <=, >,
                 >=, /, ^, \, ∪, transpose, convert, Array, Vector, Matrix,
-                AbstractVector, AbstractMatrix, AbstractArray
+                AbstractVector, AbstractMatrix, AbstractArray, in
 
 import Base.Broadcast: broadcasted, DefaultArrayStyle
 
 import LinearAlgebra: ldiv!, mul!, rank, cond, qr
 
 import ApproxFun
-import DomainSets: UnionDomain
+import DomainSets: UnionDomain, TypedEndpointsInterval
 
 import ApproxFun: bandwidths, blockbandwidths, SpaceOperator, bilinearform, linebilinearform,dotu, blocklengths,
                   plan_transform,plan_itransform,transform,itransform,transform!,itransform!,
@@ -125,7 +125,8 @@ hilbert(S,f,z) = hilbert(Fun(S,f))(z)
 hilbert(f::Fun,z) = hilbert(space(f),coefficients(f),z)
 
 logkernel(f::Fun,z) = logkernel(space(f),coefficients(f),z)
-
+in(x::Directed, d::Domain) = x.x ∈ d
+in(x::Directed, d::TypedEndpointsInterval{:closed,:closed}) = x.x ∈ d
 
 
 
