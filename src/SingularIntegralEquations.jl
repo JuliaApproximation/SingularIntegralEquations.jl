@@ -37,7 +37,7 @@ import ApproxFun: bandwidths, blockbandwidths, SpaceOperator, bilinearform, line
                   Block, BlockBandedMatrix, BandedBlockBandedMatrix, DFunction, Infinity,
                   component, ncomponents, factor, nfactors, components, factors, rangetype,
                   VFun, Point, dynamic, pieces, npieces, piece, cfstype, isreal, IntervalOrSegmentDomain,
-                  IntervalOrSegment
+                  IntervalOrSegment, canonicaldomain
 
 import ApproxFun: testbandedoperator
 

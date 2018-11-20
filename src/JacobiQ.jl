@@ -7,6 +7,8 @@ struct ComplexPlane <: Domain{ComplexF64} end
 Base.in(x, d::ComplexPlane) = true
 
 const ℂ = ComplexPlane()
+
+canonicaldomain(d::ComplexPlane) = d
 Base.reverse(C::ComplexPlane) = C
 
 Base.intersect(a::ComplexPlane,b::ComplexPlane) = a
