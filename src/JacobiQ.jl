@@ -98,6 +98,9 @@ function istieltjes(f::Fun{<:SumSpace})
     Fun(is,PiecewiseSpace)
 end
 
+istieltjes(f::Fun{<:SumSpace{<:Tuple{<:Any,<:ConstantSpace}}}) =
+    istieltjes(component(f,1))
+
 
 
 
