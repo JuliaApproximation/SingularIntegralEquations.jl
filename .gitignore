@@ -5,3 +5,4 @@ deps/**/*.dll
 deps/**/*.dylib
 deps/**/*.so
 deps/liblhelmfs.dylib
+.DS_Store
