@@ -207,7 +207,7 @@ S=PiecewiseSpace(map(d->isa(d,Circle) ? Fourier(d) : JacobiWeight(0.5,0.5,Ultras
 
 
 # This is a temporary work around as DefiniteLineIntegral is not implemented for curves
-B=ApproxFun.SpaceOperator(ApproxFun.BasisFunctional(3),S,ApproxFun.ConstantSpace(Float64))
+B=ApproxFunBase.SpaceOperator(ApproxFunBase.BasisFunctional(3),S,ApproxFunBase.ConstantSpace(Float64))
 
 
 

@@ -15,7 +15,7 @@ for op in (:(stieltjes),:(cauchy),:(logkernel),:(stieltjesintegral),:(cauchyinte
         $op(S::PiecewiseSpace,v,z) = mapreduce(f->$op(f,z),+,components(Fun(S,v)))
         function $op(f::Fun{S,T}) where {S<:PiecewiseSpace,T}
             v = map($op,components(f))
-            Fun(ApproxFun.SumSpace(map(space,v)),vec(permutedims(coefficientmatrix(v))))
+            Fun(SumSpace(map(space,v)),vec(permutedims(coefficientmatrix(v))))
         end
         $op(S::PiecewiseSpace,v) = depiece($op(components(Fun(S,v))))
 

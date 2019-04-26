@@ -36,11 +36,11 @@ using ApproxFun, SingularIntegralEquations, Test
     F=(G-I)[:,1]
     F̃ = vec(F)
 
-    C2=ApproxFun.promotedomainspace(C.ops[2],space(F))
+    C2=promotedomainspace(C.ops[2],space(F))
 
-    ApproxFun.testblockbandedoperator(Hilbert(space(F)[1]))
-    ApproxFun.testblockbandedoperator(Hilbert(space(F)))
-    ApproxFun.testblockbandedoperator(C2)
+    testblockbandedoperator(Hilbert(space(F)[1]))
+    testblockbandedoperator(Hilbert(space(F)))
+    testblockbandedoperator(C2)
 
 
     @test norm((C*F - [C*F[1];C*F[2]]).coefficients) == 0
@@ -53,8 +53,8 @@ using ApproxFun, SingularIntegralEquations, Test
     Ṽ1 = A\F̃
 
 
-    A1=ApproxFun.choosespaces(A,(G-I)[:,1])
-    A2=ApproxFun.choosespaces(A,Fun((G-I)[:,1]))
+    A1=choosespaces(A,(G-I)[:,1])
+    A2=choosespaces(A,Fun((G-I)[:,1]))
 
     @test A1\Fun((G-I)[:,1])  == V1
     @test A1\(G-I)[:,1]  == V1

@@ -1,4 +1,4 @@
-import ApproxFun: weight, dimension
+import ApproxFunBase: weight, dimension
 
 export JacobiQWeight
 

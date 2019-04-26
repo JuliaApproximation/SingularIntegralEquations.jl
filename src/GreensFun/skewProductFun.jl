@@ -30,7 +30,7 @@ function skewProductFun(f::DFunction,sp::TensorSpace{Tuple{Laurent{D1},Laurent{D
 end
 
 function skewProductFun(f::DFunction,S::TensorSpace,M::Integer,N::Integer;tol=100eps())
-    xy = ApproxFun.checkpoints(S)
+    xy = checkpoints(S)
     T = promote_type(eltype(f(first(xy)...)),eltype(S))
     ptsx,ptsy=skewpoints(S,M,N)
     vals=T[f(ptsx[k,j],ptsy[k,j]) for k=1:size(ptsx,1), j=1:size(ptsx,2)]

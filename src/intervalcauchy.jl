@@ -1,4 +1,4 @@
-import ApproxFun: dotu
+import ApproxFunBase: dotu
 
 # This solves via forward substitution
 function forwardsubstitution!(ret,B,μ1,μ2,filter=identity)

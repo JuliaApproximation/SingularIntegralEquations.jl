@@ -1,5 +1,5 @@
 using ApproxFun, SingularIntegralEquations, Test
-    import ApproxFun: testbandedoperator, testraggedbelowoperator, testblockbandedoperator
+    import ApproxFunBase: testbandedoperator, testraggedbelowoperator, testblockbandedoperator
 
 include("runtests.jl")
 
@@ -25,13 +25,13 @@ include("runtests.jl")
 
     Ai = [Operator(Fun(ones(component(Γ,1)),Γ)) Fun(ones(component(Γ,2)),Γ) Fun(ones(component(Γ,3)),Γ) real(H)]
 
-    @test ApproxFun.israggedbelow(Ai)
-    @test ApproxFun.israggedbelow(Ai.ops[4])
-    @test ApproxFun.israggedbelow(Ai.ops[4].op)
+    @test israggedbelow(Ai)
+    @test israggedbelow(Ai.ops[4])
+    @test israggedbelow(Ai.ops[4].op)
 
 
 
-    B=ApproxFun.SpaceOperator(ApproxFun.BasisFunctional(3),S,ApproxFun.ConstantSpace(Float64))
+    B=SpaceOperator(BasisFunctional(3),S,ConstantSpace(Float64))
 
     Ai=[Operator(0)                 0                 0                 B;
         Fun(ones(component(Γ,1)),Γ) Fun(ones(component(Γ,2)),Γ) Fun(ones(component(Γ,3)),Γ) real(H)]

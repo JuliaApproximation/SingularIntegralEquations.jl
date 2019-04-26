@@ -72,7 +72,7 @@ Base.promote_rule(::Type{GreensFun{K,T}},::Type{GreensFun{K1,T1}}) where {K,T,K1
 getindex(⨍::Operator,G::GreensFun) = mapreduce(f->⨍[f],+,G.kernels)
 
 # avoid ambiguity
-for TYP in (:(ApproxFun.DefiniteLineIntegralWrapper),:DefiniteLineIntegral)
+for TYP in (:(DefiniteLineIntegralWrapper),:DefiniteLineIntegral)
     @eval function getindex(⨍::$TYP,B::Matrix{F}) where F<:BivariateFun
         m,n = size(B)
         wsp = domainspace(⨍)

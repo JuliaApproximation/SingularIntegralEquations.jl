@@ -1,5 +1,5 @@
 using ApproxFun, SingularIntegralEquations, Test
-    import ApproxFun: choosedomainspace, promotedomainspace, ConstantSpace, interlace,
+import ApproxFunBase: choosedomainspace, promotedomainspace, ConstantSpace, interlace,
                         testraggedbelowoperator, testblockbandedoperator, blocklengths
 
 @testset "Ideal Fluid Flow" begin
@@ -8,16 +8,16 @@ using ApproxFun, SingularIntegralEquations, Test
     z = Fun(Γ)
     α = exp(-π*k/50im)
 
-    @test ApproxFun.choosedomainspace(Hilbert(),z) == JacobiWeight(-0.5,-0.5,ChebyshevDirichlet{1,1}(Γ))
+    @test choosedomainspace(Hilbert(),z) == JacobiWeight(-0.5,-0.5,ChebyshevDirichlet{1,1}(Γ))
 
     Ai=[1 Hilbert()]
 
-    @test ApproxFun.choosedomainspace(Ai.ops[1],space(z)) isa ApproxFun.ConstantSpace
+    @test choosedomainspace(Ai.ops[1],space(z)) isa ConstantSpace
 
     S = choosedomainspace(Ai,space(z))
-    @test component(S,1) isa ApproxFun.ConstantSpace
-    @test component(S,2) isa ApproxFun.JacobiWeight{ApproxFun.ChebyshevDirichlet{1,1,ApproxFun.Segment{Complex{Float64}},Float64},
-                                                            ApproxFun.Segment{Complex{Float64}},Float64,Float64}
+    @test component(S,1) isa ConstantSpace
+    @test component(S,2) isa JacobiWeight{ChebyshevDirichlet{1,1,Segment{Complex{Float64}},Float64},
+                                                            Segment{Complex{Float64}},Float64,Float64}
 
 
 
@@ -40,11 +40,11 @@ using ApproxFun, SingularIntegralEquations, Test
 
     Ai = [1 PseudoHilbert()]
 
-    @test isa(ApproxFun.choosedomainspace(Ai.ops[1],space(z)),ApproxFun.ConstantSpace)
-    @test isa(component(ApproxFun.choosedomainspace(Ai,space(z)),1),ApproxFun.ConstantSpace)
-    @test isa(component(ApproxFun.choosedomainspace(Ai,space(z)),2),
-                ApproxFun.JacobiWeight{ApproxFun.ChebyshevDirichlet{1,1,ApproxFun.Arc{Float64,Float64,Complex{Float64}},Float64},
-                                                                        ApproxFun.Arc{Float64,Float64,Complex{Float64}},Float64})
+    @test isa(choosedomainspace(Ai.ops[1],space(z)),ConstantSpace)
+    @test isa(component(choosedomainspace(Ai,space(z)),1),ConstantSpace)
+    @test isa(component(choosedomainspace(Ai,space(z)),2),
+                JacobiWeight{ChebyshevDirichlet{1,1,Arc{Float64,Float64,Complex{Float64}},Float64},
+                                                                        Arc{Float64,Float64,Complex{Float64}},Float64})
 
     S = choosedomainspace(Ai,space(z))
     AiS = promotedomainspace(Ai,S)
@@ -74,15 +74,15 @@ using ApproxFun, SingularIntegralEquations, Test
 
 
 
-    S = ApproxFun.choosedomainspace(Ai,space([Fun(0.);z]))
+    S = choosedomainspace(Ai,space([Fun(0.);z]))
 
-    @test isa(component(S,1),ApproxFun.ConstantSpace)
+    @test isa(component(S,1),ConstantSpace)
     @test component(S,2) == Fourier(Γ)
 
-    @test domainspace(ApproxFun.promotedomainspace(Ai,S)) == S
+    @test domainspace(promotedomainspace(Ai,S)) == S
 
 
-    A=ApproxFun.promotedomainspace(Ai,S)
+    A=promotedomainspace(Ai,S)
 
     testraggedbelowoperator(A)
 
@@ -128,7 +128,7 @@ using ApproxFun, SingularIntegralEquations, Test
 
 
     QR = qrfact(Ai)
-          ApproxFun.resizedata!(QR, :, ApproxFun.Block(10)) # check for bug in resizedata!
+          resizedata!(QR, :, Block(10)) # check for bug in resizedata!
 
 
     @time a,b,ui = [ones(component(Γ,1))+zeros(component(Γ,2)) zeros(component(Γ,1))+ones(component(Γ,2)) Hilbert(S)] \ [imag(α*z)]

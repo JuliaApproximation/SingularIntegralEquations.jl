@@ -14,9 +14,9 @@ export PseudoHilbert,Hilbert,SingularIntegral
 #############
 
 
-ApproxFun.@calculus_operator(PseudoHilbert)
-ApproxFun.@calculus_operator(Hilbert)
-ApproxFun.@calculus_operator(SingularIntegral)
+@calculus_operator(PseudoHilbert)
+@calculus_operator(Hilbert)
+@calculus_operator(SingularIntegral)
 
 for Op in (:PseudoHilbert,:Hilbert,:SingularIntegral)
     ConcOp=Meta.parse("Concrete"*string(Op))

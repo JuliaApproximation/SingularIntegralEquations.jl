@@ -12,7 +12,7 @@ order(C::CauchyWeight{O}) where {O} = O
 domain(C::CauchyWeight) = domain(C.space)
 ncomponents(C::CauchyWeight) = ncomponents(C.space)
 component(C::CauchyWeight, k::Integer) = CauchyWeight(component(C.space,k),order(C))
-ApproxFun.columnspace(C::CauchyWeight, _) = C[1]
+columnspace(C::CauchyWeight, _) = C[1]
 component(C::CauchyWeight{O,Tuple{PWS1,PWS2}},i,j) where {O,PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace} =
     CauchyWeight(component(C.space,i,j),O)
 
@@ -62,8 +62,8 @@ end
 ## TODO: for different domains, should be OffOp instead of ⨍
 ## This will change for v0.0.2 with the switch to ChebyshevDirichlet{1,1} bases
 
-for (Func,Op) in ((:(ApproxFun.DefiniteIntegral),:Hilbert),
-                    (:(ApproxFun.DefiniteLineIntegral),:SingularIntegral))
+for (Func,Op) in ((:DefiniteIntegral,:Hilbert),
+                    (:DefiniteLineIntegral,:SingularIntegral))
     @eval begin
         function Base.getindex(⨍::$Func,f::ProductFun{S,V,CauchyWeight{O,Tuple{S,V},T2,DD},T}) where {S,V,O,T,T2,DD}
             if domain(factor(f.space.space,1)) == domain(factor(f.space.space,2))

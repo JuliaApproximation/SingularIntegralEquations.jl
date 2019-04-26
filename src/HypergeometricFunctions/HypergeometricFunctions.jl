@@ -5,7 +5,7 @@ This module calculates (generalized) hypergeometric functions:
 """
 module HypergeometricFunctions
     using DualNumbers, SpecialFunctions
-import ApproxFun: @clenshaw, real, eps, reverseorientation
+import ApproxFunBase: @clenshaw, real, eps, reverseorientation
 import FastTransforms: pochhammer
 import SingularIntegralEquations: undirected, Directed
 

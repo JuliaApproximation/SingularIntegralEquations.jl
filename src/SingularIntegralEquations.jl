@@ -1,8 +1,7 @@
 
-__precompile__()
 module SingularIntegralEquations
-    using Base, BandedMatrices, ApproxFun, DualNumbers, RecipesBase, DomainSets,
-            LinearAlgebra, Random, SpecialFunctions, LowRankApprox, InteractiveUtils
+    using Base, BlockBandedMatrices, BandedMatrices, BlockArrays, InfiniteArrays, ApproxFun, DualNumbers, RecipesBase, DomainSets,
+            LinearAlgebra, SpecialFunctions, LowRankApprox, InteractiveUtils
 
 export cauchy, cauchyintegral, stieltjes, logkernel,
        stieltjesintegral, hilbert, pseudohilbert, pseudocauchy,
@@ -17,29 +16,37 @@ import Base.Broadcast: broadcasted, DefaultArrayStyle
 
 import LinearAlgebra: ldiv!, mul!, rank, cond, qr
 
-import ApproxFun
 import DomainSets: UnionDomain, TypedEndpointsInterval
 
-import ApproxFun: bandwidths, blockbandwidths, SpaceOperator, bilinearform, linebilinearform,dotu, blocklengths,
+import ApproxFunBase: bandwidths, blockbandwidths, SpaceOperator, bilinearform, linebilinearform,dotu, blocklengths,
                   plan_transform,plan_itransform,transform,itransform,transform!,itransform!,
                   rangespace, domainspace, promotespaces, InterlaceOperator, coefficientmatrix,
                   canonicalspace, domain, space, Space, promotedomainspace, promoterangespace, AnyDomain, CalculusOperator,
                   ConcreteDefiniteIntegral, ConcreteDefiniteLineIntegral,
                   SumSpace,PiecewiseSpace, interlace,Multiplication, VectorSpace, ArraySpace,
-                  BandedMatrix,ChebyshevDirichlet,PolynomialSpace,AbstractProductSpace,evaluate,order,
+                  BandedMatrix,  AbstractProductSpace,evaluate,
                   UnsetSpace, MultivariateFun, BivariateFun,linesum,complexlength,
-                  Fun, ProductFun, LowRankFun, mappoint, JacobiZ, prectype,
+                  Fun, ProductFun, LowRankFun, mappoint, prectype,
                   real, UnivariateSpace, RealUnivariateSpace, setdomain, eps, choosedomainspace, isapproxinteger,
-                  ConstantSpace,ReOperator,DirectSumSpace, ArraySpace, ZeroSpace,
-                  LowRankPertOperator, LaurentDirichlet, setcanonicaldomain, SubSpace,
-                  IntervalCurve, PeriodicCurve, reverseorientation, @wrapper, mobius,
-                  defaultgetindex, WeightSpace, pochhammer, spacescompatible, ∞, LowRankMatrix, SubOperator,
-                  Block, BlockBandedMatrix, BandedBlockBandedMatrix, DFunction, Infinity,
+                  ConstantSpace, DirectSumSpace, ArraySpace, ZeroSpace,
+                  LowRankPertOperator,  setcanonicaldomain, SubSpace,
+                  reverseorientation, @wrapper, mobius,
+                  defaultgetindex, WeightSpace, spacescompatible, ∞, LowRankMatrix, SubOperator,
+                  DFunction, 
                   component, ncomponents, factor, nfactors, components, factors, rangetype,
                   VFun, Point, dynamic, pieces, npieces, piece, cfstype, isreal, IntervalOrSegmentDomain,
-                  IntervalOrSegment, canonicaldomain
+                  IntervalOrSegment, canonicaldomain,
+                  testbandedoperator,
+                  columnspace,
+                  DefiniteLineIntegralWrapper, DefiniteIntegral, DefiniteLineIntegral, @calculus_operator, 
+                  checkpoints, SumSpace
 
-import ApproxFun: testbandedoperator
+import ApproxFunOrthogonalPolynomials: ChebyshevDirichlet, PolynomialSpace, IntervalCurve,
+                                        recA, recB, recC, recα, recβ, recγ,
+                                        jacobirecA, jacobirecB, jacobirecC, jacobirecα, jacobirecβ, jacobirecγ,
+                                        order, JacobiZ
+
+import ApproxFunFourier: LaurentDirichlet, PeriodicCurve
 
 import DualNumbers: dual
 
@@ -186,10 +193,6 @@ include("curve.jl")
 include("asymptotics.jl")
 
 
-# if isdir(Pkg.dir("TikzGraphs"))
-#     include("introspect.jl")
-# end
-
 include("Extras/Extras.jl")
 
 
@@ -199,7 +202,7 @@ function testsieoperators(S::Space)
     testbandedoperator(SingularIntegral(S,0))
     testbandedoperator(SingularIntegral(S,1))
     testbandedoperator(Hilbert(S))
-    p=ApproxFun.checkpoints(S)[1] # random point on contour
+    p=checkpoints(S)[1] # random point on contour
     x=Fun(domain(S))
     z=2.12312231+1.433453443534im # random point not on contour
 
@@ -212,7 +215,7 @@ end
 
 
 function testsieeval(S::Space;posdirection=im)
-    p=ApproxFun.checkpoints(S)[1] # random point on contour
+    p=checkpoints(S)[1] # random point on contour
     x=Fun(domain(S))
     z=2.12312231+1.433453443534im # random point not on contour
 

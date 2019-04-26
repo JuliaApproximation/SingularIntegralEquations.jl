@@ -1,5 +1,5 @@
 using Test, ApproxFun, DomainSets, SingularIntegralEquations, LinearAlgebra
-    import ApproxFun: ∞, testbandedoperator, testfunctional, testblockbandedoperator, testraggedbelowoperator,
+    import ApproxFunBase: ∞, testbandedoperator, testfunctional, testblockbandedoperator, testraggedbelowoperator,
                         setcanonicaldomain
     import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, sqrtx2, Directed
 
@@ -76,7 +76,7 @@ using Test, ApproxFun, DomainSets, SingularIntegralEquations, LinearAlgebra
 
 
     @testset "Stieltjes" begin
-        ds1 = JacobiWeight(-0.5,-0.5,ApproxFun.ChebyshevDirichlet{1,1}())
+        ds1 = JacobiWeight(-0.5,-0.5,ChebyshevDirichlet{1,1}())
         ds2 = JacobiWeight(-.5,-.5,Chebyshev())
         rs = Chebyshev(Segment(2,4+3im))
         f1 = Fun(x->exp(x)/sqrt(1-x^2),ds1)
@@ -106,7 +106,7 @@ using Test, ApproxFun, DomainSets, SingularIntegralEquations, LinearAlgebra
         # Function 0.661642255728541 - 0.0im
     end
     @testset "Stieltjes integral" begin
-        ds1 = JacobiWeight(-.5,-.5,ApproxFun.ChebyshevDirichlet{1,1}())
+        ds1 = JacobiWeight(-.5,-.5,ChebyshevDirichlet{1,1}())
         ds2 = JacobiWeight(-.5,-.5,Chebyshev())
         rs = Chebyshev(2..4)
         f1 = Fun(x->exp(x)/sqrt(1-x^2),ds1)
@@ -182,8 +182,8 @@ using Test, ApproxFun, DomainSets, SingularIntegralEquations, LinearAlgebra
         f=Fun([Fun(z->z^(-1),component(Γ,1)),Fun(z->z,component(Γ,2))],PiecewiseSpace)
         A=I-(f-Fun(one,space(f)))*Cauchy(-1)
 
-        S=ApproxFun.choosedomainspace(A,(f-Fun(one,space(f))))
-        AS=ApproxFun.promotedomainspace(A,S)
+        S=choosedomainspace(A,(f-Fun(one,space(f))))
+        AS=promotedomainspace(A,S)
 
 
         @time testblockbandedoperator(AS)
@@ -276,7 +276,7 @@ using Test, ApproxFun, DomainSets, SingularIntegralEquations, LinearAlgebra
     @testset "LogKernel is real" begin
         Γ = Interval(-1 , 0) , Interval(1,2)
         S = ∪(JacobiWeight.(-0.5,-0.5,Chebyshev.(Γ))...)
-        @test OffSingularIntegral(S, ConstantSpace(ApproxFun.Point(3.0+im)), 0) isa Operator{Float64}
+        @test OffSingularIntegral(S, ConstantSpace(Point(3.0+im)), 0) isa Operator{Float64}
     end
 
 
