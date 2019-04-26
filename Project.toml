@@ -1,5 +1,6 @@
 name = "SingularIntegralEquations"
 uuid = "e094c991-5a90-5477-8896-c1e4c9552a1a"
+version = "0.4.2"
 
 [deps]
 ApproxFun = "28f2ccd6-bb30-5033-b560-165f7b14dc2f"
@@ -15,12 +16,12 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
-ApproxFun = "≥ 0.10.0"
-BandedMatrices = "≥ 0.7.1"
-DomainSets = "≥ 0.0.1"
+ApproxFun = "0.11.0"
+BandedMatrices = "0.9"
+DomainSets = "0.0.1"
 DualNumbers = "≥ 0.5.0"
 FastTransforms = "≥ 0.4.1"
-LowRankApprox = "≥ 0.2.0"
+LowRankApprox = "0.2.0"
 RecipesBase = "≥ 0.1.0"
 SpecialFunctions = "≥ 0.7.0"
-julia = "≥ 0.7.0"
+julia = "0.7, 1"
