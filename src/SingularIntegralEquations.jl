@@ -127,7 +127,7 @@ for OP in (:stieltjes,:stieltjesintegral,:pseudostieltjes)
     @eval $OP(f::Fun,z) = $OP(space(f),coefficients(f),z)
 end
 
-stieltjes(s::SumSpace, c::AbstractVector, z) =
+stieltjes(s::SumSpace, c::AbstractVector, z::Number) =
     sum(stieltjes.(components(Fun(s,c)), z))
 
 hilbert(f) = Hilbert()*f

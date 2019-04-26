@@ -1,5 +1,5 @@
-using ApproxFun,SingularIntegralEquations,Test
-    import SingularIntegralEquations:stieltjesmoment,stieltjesjacobimoment
+using ApproxFun, SingularIntegralEquations, Test
+import SingularIntegralEquations: stieltjesmoment, stieltjesjacobimoment
 
 @testset "Stieljes moments" begin
     c = [0.9731840665678853,0.11644664868790366,0.8961305368364185,0.30663942299763747,
@@ -26,7 +26,7 @@ using ApproxFun,SingularIntegralEquations,Test
         f = Fun(WeightedJacobi(0.123,0.456),c)
         @test stieltjes(f)(z) ≈ sum(f/(z-x))
 
-        f = Fun(identity,Domain(-1..1) \ 0)
+        f = Fun(identity, (-1..1) \ 0)
         @test cauchy(sqrt(Fun(one,space(f))-f^2))(z) ≈ cauchy(sqrt(1-Fun()^2),z)
     end
 

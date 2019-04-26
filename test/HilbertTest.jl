@@ -1,7 +1,7 @@
 using Test, ApproxFun, DomainSets, SingularIntegralEquations, LinearAlgebra
-    import ApproxFunBase: ∞, testbandedoperator, testfunctional, testblockbandedoperator, testraggedbelowoperator,
-                        setcanonicaldomain
-    import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, sqrtx2, Directed
+import ApproxFunBase: ∞, testbandedoperator, testfunctional, testblockbandedoperator, testraggedbelowoperator,
+                    setcanonicaldomain, choosedomainspace, promotedomainspace
+import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, sqrtx2, Directed
 
 @testset "Hilbert" begin
     for d in (ChebyshevInterval(), (-2)..(-1), Segment(im,1))

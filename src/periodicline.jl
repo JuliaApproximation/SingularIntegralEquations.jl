@@ -3,13 +3,23 @@
 ## stieltjes
 
 
-function stieltjes(S::Space{<:PeriodicLine},f,z::Number)
+function stieltjes(S::Space{<:PeriodicLine},f::AbstractVector,z::Number)
     S2=setdomain(S,Circle())
     stieltjes(S2,f,mappoint(domain(S),Circle(),z))+hilbert(S2,f,-1)*π
 end
 
 
-function hilbert(S::Space{<:PeriodicLine},f,z::Number)
+function hilbert(S::Space{<:PeriodicLine},f::AbstractVector,z::Number)
+    S2=setdomain(S,Circle())
+    hilbert(S2,f,mappoint(domain(f),Circle(),z))-hilbert(S2,f,-1)
+end
+
+function stieltjes(S::SumSpace{<:Any,<:PeriodicLine},f::AbstractVector,z::Number)
+    S2=setdomain(S,Circle())
+    stieltjes(S2,f,mappoint(domain(S),Circle(),z))+hilbert(S2,f,-1)*π
+end
+
+function hilbert(S::SumSpace{<:Any,<:PeriodicLine},f::AbstractVector,z::Number)
     S2=setdomain(S,Circle())
     hilbert(S2,f,mappoint(domain(f),Circle(),z))-hilbert(S2,f,-1)
 end
