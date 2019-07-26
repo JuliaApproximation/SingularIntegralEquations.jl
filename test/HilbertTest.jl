@@ -4,7 +4,7 @@ import ApproxFunBase: ∞, testbandedoperator, testfunctional, testblockbandedop
 import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, sqrtx2, Directed
 
 @testset "Hilbert" begin
-    for d in (ChebyshevInterval(), (-2)..(-1), Segment(im,1))
+    @time for d in (ChebyshevInterval(), (-2)..(-1), Segment(im,1))
         testsies(d)
     end
 
@@ -49,7 +49,7 @@ import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, 
     H=Hilbert(d)
     B=ldirichlet(d)
 
-    for a in [sqrt(sqrt(5)-2)/2,1.,10.]
+    @time for a in [sqrt(sqrt(5)-2)/2,1.,10.]
         L=H[w]+1/a/sqrt(1+a^2)*x
         u=[B,L]\[1.,0]
         usol = (1+a^2)/(x^2+a^2)
@@ -83,7 +83,7 @@ import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, 
         f2 = Fun(x->exp(x)/sqrt(1-x^2),ds2)
         S = Stieltjes(ds1,rs)
 
-        testbandedoperator(S)
+        @time testbandedoperator(S)
 
         z = 3+1.5im
         @test (S*f1)(z) ≈ stieltjes(f2,z) #val,err = quadgk(x->f1(x)./(z-x),-1.,1.)
