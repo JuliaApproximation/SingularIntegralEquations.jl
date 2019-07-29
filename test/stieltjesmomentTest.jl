@@ -30,10 +30,16 @@ import SingularIntegralEquations: stieltjesmoment, stieltjesjacobimoment
         @test cauchy(sqrt(Fun(one,space(f))-f^2))(z) ≈ cauchy(sqrt(1-Fun()^2),z)
     end
 
-    x=Fun(identity,Segment(im,0) ∪ Segment(0,1))
-    w=2/(sqrt(1-x)*sqrt(1+im*x))
+    x = Fun(identity,Segment(im,0) ∪ Segment(0,1))
+    w = 2/(sqrt(1-x)*sqrt(1+im*x))
 
     for x in (0.9im,0.4im,0.4,0.9)
         #@test cauchy(w,x,true)-cauchy(w,x,false) ≈ w(x)
+    end
+
+    @testset "High Legendre near interval" begin
+        @test stieltjes(Fun(Legendre(),[zeros(256);1]),1.06) == 0
+        @test stieltjes(Fun(Legendre(),[zeros(256);1]),1.001) ≈ 7.643611577855717E-6 atol=1E-13
+        @test stieltjes(Fun(Legendre(),[zeros(1000);1]),1.001) == 0
     end
 end

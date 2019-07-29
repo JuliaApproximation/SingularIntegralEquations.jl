@@ -41,13 +41,14 @@ hilbertforward(sp::Space,n,z) = forwardsubstitution(JacobiZ(sp,z),n,
                                                     hilbertmoment(sp,0,z),
                                                     hilbertmoment(sp,1,z))
 
-
+function usestieltjesforward(s,n,z)
+    tol=1/(5floor(Int,n))
+    (abs(real(z)) ≤ 1+tol) && (abs(imag(z)) ≤ tol)
+end
 
 function stieltjesmoment!(ret,S::PolynomialSpace{<:IntervalOrSegment},z,filter=identity)
     if domain(S) == ChebyshevInterval()
-        n = length(ret)
-        tol = 1/floor(Int,sqrt(n))
-        if (abs(real(z)) ≤ 1+tol) && (abs(imag(z)) ≤ tol)
+        if usestieltjesforward(S,length(ret),z)
             cfs = stieltjesforward!(ret,S,z,filter)
         else
             cfs = stieltjesbackward!(ret,S,z)
@@ -61,11 +62,11 @@ end
 
 
 function stieltjesintervalrecurrence(S,f::AbstractVector,z)
-    tol=1/floor(Int,sqrt(length(f)))
+    n = length(f)
     if isinf(z)
         zero(promote_type(typeof(z), eltype(f)))
-    elseif (abs(real(z)) ≤ 1+tol) && (abs(imag(z)) ≤ tol)
-        cfs = stieltjesforward(S,length(f),z)
+    elseif usestieltjesforward(S,n,z)
+        cfs = stieltjesforward(S,n,z)
         dotu(cfs,f)
     else
         cfs = stieltjesbackward(S,undirected(z))
