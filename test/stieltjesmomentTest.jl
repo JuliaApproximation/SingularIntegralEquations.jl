@@ -1,5 +1,5 @@
 using ApproxFun, SingularIntegralEquations, Test
-import SingularIntegralEquations: stieltjesmoment, stieltjesjacobimoment
+import SingularIntegralEquations: stieltjesmoment, stieltjesmoment!, stieltjesjacobimoment
 
 @testset "Stieljes moments" begin
     c = [0.9731840665678853,0.11644664868790366,0.8961305368364185,0.30663942299763747,
@@ -41,5 +41,14 @@ import SingularIntegralEquations: stieltjesmoment, stieltjesjacobimoment
         @test stieltjes(Fun(Legendre(),[zeros(256);1]),1.06) == 0
         @test stieltjes(Fun(Legendre(),[zeros(256);1]),1.001) ≈ 7.643611577855717E-6 atol=1E-13
         @test stieltjes(Fun(Legendre(),[zeros(1000);1]),1.001) == 0
+    end
+
+    @testset "stieljesmoment!" begin
+        z = 1+im
+        @test stieltjesmoment!(Vector{ComplexF64}(undef, 10), Legendre(), z)[end] ≈ 
+            stieltjes(Fun(Legendre(),[zeros(9);1]),z)
+        sp = JacobiWeight(0.1,0.2,Jacobi(0.1,0.2))
+        @test stieltjesmoment!(Vector{ComplexF64}(undef, 10), sp, z)[end] ≈ 
+            stieltjes(Fun(sp,[zeros(9);1]),z)
     end
 end

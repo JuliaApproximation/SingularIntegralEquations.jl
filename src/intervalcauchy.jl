@@ -46,7 +46,7 @@ function usestieltjesforward(s,n,z)
     (abs(real(z)) ≤ 1+tol) && (abs(imag(z)) ≤ tol)
 end
 
-function stieltjesmoment!(ret,S::PolynomialSpace{<:IntervalOrSegment},z,filter=identity)
+function stieltjesmoment!(ret,S::Space{<:IntervalOrSegment},z,filter=identity)
     if domain(S) == ChebyshevInterval()
         if usestieltjesforward(S,length(ret),z)
             cfs = stieltjesforward!(ret,S,z,filter)
@@ -59,7 +59,6 @@ function stieltjesmoment!(ret,S::PolynomialSpace{<:IntervalOrSegment},z,filter=i
         stieltjesmoment!(ret,setdomain(S,ChebyshevInterval()),mobius(S,z),filter)
     end
 end
-
 
 function stieltjesintervalrecurrence(S,f::AbstractVector,z)
     n = length(f)
