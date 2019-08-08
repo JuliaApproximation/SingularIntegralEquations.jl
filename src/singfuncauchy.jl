@@ -81,8 +81,8 @@ function stieltjes(sp::JacobiWeight{<:PolynomialSpace,<:IntervalOrSegment},u,z)
         z=mobius(sp,z)
 
         sx2z=sqrtx2(z)
-        sx2zi=1/sx2z
-        Jm=1/(undirected(z)+sx2z)  # joukowskyinverse(true,z)
+        sx2zi= inv(sx2z)
+        Jm=inv(undirected(z)+sx2z)  # joukowskyinverse(true,z)
 
 
         if length(cfs) ≥1
