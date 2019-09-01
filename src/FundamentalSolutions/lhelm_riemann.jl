@@ -1,6 +1,6 @@
 const NMAX = 100
 
-for TYP in subtypes(AbstractFloat)
+for TYP in (:BigFloat,:Float16,:Float32,:Float64)
     A = Meta.parse("A"*string(TYP))
     @eval begin
         const $A = Array{Complex{$TYP}}(undef,NMAX,NMAX)

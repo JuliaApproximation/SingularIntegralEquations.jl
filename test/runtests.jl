@@ -1,9 +1,9 @@
-using ApproxFun, SingularIntegralEquations, SpecialFunctions, LinearAlgebra, Test
-    import SingularIntegralEquations: x̄sqrtx2real, sqrtx2, joukowskyinverse,
-            joukowskyinversereal, joukowskyinverseabs, ⁺, ⁻, logabslegendremoment,
-            stieltjeslegendremoment, stieltjesjacobimoment, stieltjesmoment, Directed,
-            HypergeometricFunctions
-    import SingularIntegralEquations.HypergeometricFunctions: _₂F₁general,_₂F₁Inf
+using ApproxFun, SingularIntegralEquations, HypergeometricFunctions, SpecialFunctions, LinearAlgebra, Test
+import SingularIntegralEquations: x̄sqrtx2real, sqrtx2, joukowskyinverse,
+        joukowskyinversereal, joukowskyinverseabs, ⁺, ⁻, logabslegendremoment,
+        stieltjeslegendremoment, stieltjesjacobimoment, stieltjesmoment, Directed,
+        HypergeometricFunctions
+import HypergeometricFunctions: _₂F₁general,_₂F₁Inf
 
 
 ## Special functions

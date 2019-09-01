@@ -1,7 +1,7 @@
 
 module SingularIntegralEquations
-    using Base, BlockBandedMatrices, BandedMatrices, BlockArrays, InfiniteArrays, ApproxFun, DualNumbers, RecipesBase, DomainSets,
-            LinearAlgebra, SpecialFunctions, LowRankApprox, InteractiveUtils
+    using Base, BandedMatrices, ApproxFun, DualNumbers, DomainSets,
+            LinearAlgebra, SpecialFunctions, LowRankApprox, HypergeometricFunctions
 
 export cauchy, cauchyintegral, stieltjes, logkernel,
        stieltjesintegral, hilbert, pseudohilbert, pseudocauchy,
@@ -120,7 +120,50 @@ Base.sqrt(x::Directed{false}) = real(x.x) ≥ 0 ? sqrt(complex(x.x)) : im*sqrt(-
 
 dual(a::Directed{s},b) where {s} = Directed{s}(dual(undirected(a),b))
 
+# Support for _2F1
+import HypergeometricFunctions: log1pover, logandpoly, mxa_₂F₁, _₂F₁general, abeqcd, log1p, _₂F₁maclaurin, _₂F₁Inf, _₂F₁one, _₂F₁taylor, speciallog
 
+speciallog(x::Directed) = (s = sqrt(-x); 3(s-atan(s))/s^3)
+log1pover(s::Directed) = log1p(s)/undirected(s)
+logandpoly(x::Directed) = undirected(x) == 0 ? one(x) : 6*(-2undirected(x)+(undirected(x)-2)*log1p(-x))/undirected(x)^3
+
+function mxa_₂F₁(a,b,c,z::Directed)
+    if isequal(c,2)
+        if abeqcd(a,b,1) # 6. 15.4.1
+            return log1p(-z)
+        end
+    elseif isequal(c,4)
+        if abeqcd(a,b,2)
+            return 6*(-2 + (1-2/undirected(z))*log1p(-z))
+        end
+    end
+    undirected(-z)^a*_₂F₁(a,b,c,z)
+end
+
+function _₂F₁general(a::Number,b::Number,c::Number,z::Directed)
+    T = promote_type(typeof(a),typeof(b),typeof(c),typeof(undirected(z)))
+
+    real(b) < real(a) && (return _₂F₁general(b,a,c,z))
+    real(c) < real(a)+real(b) && (return exp((c-a-b)*log1p(-z))*_₂F₁general(c-a,c-b,c,z))
+
+    if abs(z) ≤ ρ || -a ∈ ℕ₀ || -b ∈ ℕ₀
+        _₂F₁maclaurin(a,b,c,undirected(z))
+    elseif abs(z/(z-1)) ≤ ρ
+        exp(-a*log1p(-z))_₂F₁maclaurin(a,c-b,c,undirected(z/(z-1)))
+    elseif abs(inv(z)) ≤ ρ
+        _₂F₁Inf(a,b,c,z)
+    elseif abs(1-inv(z)) ≤ ρ
+        exp(-a*log1p(-z))*_₂F₁Inf(a,c-b,c,reverseorientation(z/(z-1)))
+    elseif abs(1-z) ≤ ρ
+        _₂F₁one(a,b,c,z)
+    elseif abs(inv(1-z)) ≤ ρ
+        exp(-a*log1p(-z))*_₂F₁one(a,c-b,c,reverseorientation(z/(z-1)))
+    else
+        _₂F₁taylor(a,b,c,undirected(z))
+    end
+end
+
+### Stieltjes
 
 for OP in (:stieltjes,:stieltjesintegral,:pseudostieltjes)
     @eval $OP(f::Fun) = $OP(space(f),coefficients(f))
@@ -173,7 +216,6 @@ stieltjes(sp::SubSpace,v,z) = stieltjes(sp.space,coefficients(v,sp,sp.space),z)
 
 include("Operators/Operators.jl")
 include("FundamentalSolutions/FundamentalSolutions.jl")
-include("HypergeometricFunctions/HypergeometricFunctions.jl")
 
 include("JacobiQWeight.jl")
 include("JacobiQ.jl")
