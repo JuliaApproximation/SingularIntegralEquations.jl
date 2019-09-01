@@ -18,7 +18,7 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
-ApproxFun = "0.11.5"
+ApproxFun = "0.11.4"
 ApproxFunBase = "0.1.5"
 ApproxFunFourier = "0.1.2"
 ApproxFunOrthogonalPolynomials = "0.2"
