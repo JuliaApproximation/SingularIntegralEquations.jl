@@ -127,7 +127,7 @@ speciallog(x::Directed) = (s = sqrt(-x); 3(s-atan(s))/s^3)
 log1pover(s::Directed) = log1p(s)/undirected(s)
 logandpoly(x::Directed) = undirected(x) == 0 ? one(x) : 6*(-2undirected(x)+(undirected(x)-2)*log1p(-x))/undirected(x)^3
 
-function mxa_₂F₁(a,b,c,z::Directed)
+function directed_mxa_₂F₁(a,b,c,z)
     if isequal(c,2)
         if abeqcd(a,b,1) # 6. 15.4.1
             return log1p(-z)
@@ -140,7 +140,7 @@ function mxa_₂F₁(a,b,c,z::Directed)
     undirected(-z)^a*_₂F₁(a,b,c,z)
 end
 
-function _₂F₁general(a::Number,b::Number,c::Number,z::Directed)
+function directed_₂F₁general(a::Number,b::Number,c::Number,z)
     T = promote_type(typeof(a),typeof(b),typeof(c),typeof(undirected(z)))
 
     real(b) < real(a) && (return _₂F₁general(b,a,c,z))
@@ -162,6 +162,9 @@ function _₂F₁general(a::Number,b::Number,c::Number,z::Directed)
         _₂F₁taylor(a,b,c,undirected(z))
     end
 end
+
+mxa_₂F₁(a,b,c,z::Directed) = directed_mxa_₂F₁(a,b,c,z)
+_₂F₁general(a::Number,b::Number,c::Number,z::Directed) = directed_₂F₁general(a,b,c,z)
 
 ### Stieltjes
 
