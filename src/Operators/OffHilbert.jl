@@ -15,7 +15,7 @@ export OffHilbert,OffSingularIntegral,Stieltjes,Cauchy
 for Op in (:OffHilbert,:OffSingularIntegral)
     @eval begin
         struct $Op{D<:Space,R<:Space,T} <: Operator{T}
-            data::BandedMatrix{T,Matrix{T}}
+            data::BandedMatrix{T,Matrix{T},Base.OneTo{Int}}
             domainspace::D
             rangespace::R
             order::Int
