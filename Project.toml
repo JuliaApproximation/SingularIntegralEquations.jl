@@ -1,6 +1,6 @@
 name = "SingularIntegralEquations"
 uuid = "e094c991-5a90-5477-8896-c1e4c9552a1a"
-version = "0.5"
+version = "0.5.1"
 
 [deps]
 ApproxFun = "28f2ccd6-bb30-5033-b560-165f7b14dc2f"
@@ -19,7 +19,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 ApproxFun = "0.11.6"
-ApproxFunBase = "0.1.6"
+ApproxFunBase = "0.1.6, 0.2"
 ApproxFunFourier = "0.1.5"
 ApproxFunOrthogonalPolynomials = "0.2.2"
 ApproxFunSingularities = "0.1.1"
