@@ -36,7 +36,7 @@ import SingularIntegralEquations: testsies, testsieeval, stieltjesmoment, Direct
         @test (H*f)(3.5+0.5im) ≈ logkernel(f,3.5+0.5im)
     end
 
-    @testset "Circle" begin 
+    @testset "Circle" begin
         d=Circle(0.2,3.0)
         S=Fourier(d)
         ζ=Fun(d)
@@ -52,7 +52,7 @@ import SingularIntegralEquations: testsies, testsieeval, stieltjesmoment, Direct
         z=0.2+3im;@test (H*f)(z) ≈ logkernel(f,z)
     end
 
-    @testset "Legendre and Jacobi on intervel" begin
+    @testset "Legendre and Jacobi on interval" begin
         x=Fun()
         f=exp(x)
 
