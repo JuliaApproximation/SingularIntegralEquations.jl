@@ -6,3 +6,4 @@ deps/**/*.dylib
 deps/**/*.so
 deps/liblhelmfs.dylib
 .DS_Store
+Manifest.toml
