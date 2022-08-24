@@ -1,5 +1,5 @@
 using ApproxFun, SingularIntegralEquations, LinearAlgebra, Test
-    import ApproxFunBase: ∞, testbandedoperator, testblockbandedoperator, testfunctional
+import ApproxFunBase: ∞, testbandedoperator, testblockbandedoperator, testfunctional
 
 @testset "Curve" begin
     @testset "quadratic" begin
