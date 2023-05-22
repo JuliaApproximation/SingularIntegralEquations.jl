@@ -1,6 +1,6 @@
 name = "SingularIntegralEquations"
 uuid = "e094c991-5a90-5477-8896-c1e4c9552a1a"
-version = "0.7"
+version = "0.7.1"
 
 [deps]
 ApproxFun = "28f2ccd6-bb30-5033-b560-165f7b14dc2f"
@@ -19,10 +19,10 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 ApproxFun = "0.11.8, 0.12, 0.13"
-ApproxFunBase = "0.2.3, 0.3, 0.4.4, 0.5"
-ApproxFunFourier = "0.2"
-ApproxFunOrthogonalPolynomials = "0.3, 0.4"
-ApproxFunSingularities = "0.1.6, 0.2"
+ApproxFunBase = "0.2.3, 0.3, 0.4.4, 0.5, 0.6, 0.7"
+ApproxFunFourier = "0.2, 0.3"
+ApproxFunOrthogonalPolynomials = "0.3, 0.4, 0.5"
+ApproxFunSingularities = "0.1.6, 0.2, 0.3"
 BandedMatrices = "0.14.2, 0.15, 0.16, 0.17"
 DomainSets = "0.1, 0.2, 0.3, 0.4, 0.5"
 DualNumbers = "0.6"
