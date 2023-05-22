@@ -130,10 +130,7 @@ end
 
 ## Constructors
 
-GreensFun(f::Function,args...;kwds...) = GreensFun(dynamic(f),args...;kwds...)
-GreensFun(f::Function,g::Function,args...;kwds...) = GreensFun(dynamic(f),dynamic(g),args...;kwds...)
-
-function GreensFun(f::DFunction,ss::SS;method::Symbol=:lowrank,kwds...) where SS<:AbstractProductSpace
+function GreensFun(f::Function,ss::SS;method::Symbol=:lowrank,kwds...) where SS<:AbstractProductSpace
     if method == :standard
         F = ProductFun(f,ss,kwds...)
     elseif method == :convolution
@@ -163,7 +160,7 @@ function GreensFun(f::DFunction,ss::SS;method::Symbol=:lowrank,kwds...) where SS
     GreensFun(F)
 end
 
-function GreensFun(f::DFunction,g::DFunction,ss::SS;method::Symbol=:unsplit,kwds...) where SS<:AbstractProductSpace
+function GreensFun(f::Function,g::Function,ss::SS;method::Symbol=:unsplit,kwds...) where SS<:AbstractProductSpace
     if method == :unsplit
         # Approximate Riemann function of operator.
         G = skewProductFun(g,ss.space;kwds...)
@@ -183,7 +180,7 @@ end
 
 # Array of GreensFun on TensorSpace of PiecewiseSpaces
 
-function GreensFun(f::DFunction,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...) where {PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}
+function GreensFun(f::Function,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:lowrank,tolerance::Symbol=:absolute,kwds...) where {PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}
     M,N = ncomponents(factor(ss,1)),ncomponents(factor(ss,2))
     @assert M == N
     G = Array{GreensFun}(undef,N,N)
@@ -239,7 +236,7 @@ function GreensFun(f::DFunction,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};metho
     G
 end
 
-function GreensFun(f::DFunction,g::DFunction,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:unsplit,tolerance::Symbol=:absolute,kwds...) where {PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}
+function GreensFun(f::Function,g::Function,ss::AbstractProductSpace{Tuple{PWS1,PWS2}};method::Symbol=:unsplit,tolerance::Symbol=:absolute,kwds...) where {PWS1<:PiecewiseSpace,PWS2<:PiecewiseSpace}
     M,N = ncomponents(factor(ss.space,1)),ncomponents(factor(ss.space,2))
     @assert M == N
     G = Array{GreensFun}(undef,N,N)
