@@ -1,5 +1,5 @@
 using ApproxFun, SingularIntegralEquations, LinearAlgebra, Test
-import ApproxFunBase: ∞, testbandedoperator, testblockbandedoperator, testfunctional
+import ApproxFunBase: ∞, testblockbandedoperator, testfunctional
 
 @testset "Curve" begin
     @testset "quadratic" begin
@@ -20,8 +20,6 @@ import ApproxFunBase: ∞, testbandedoperator, testblockbandedoperator, testfunc
         @test cauchy(w,2.) ≈ sum(w/(x-2.))/(2π*im)
         @test logkernel(w,2.) ≈ linesum(w*logabs(x-2.))/π
 
-        testbandedoperator(SingularIntegral(space(w),0))
-        testbandedoperator(Hilbert(space(w)))
 
         @test (SingularIntegral(0)*w)(fromcanonical(d,0.1)) ≈ logkernel(w,fromcanonical(d,0.1))
         @test (Hilbert()*w)(fromcanonical(d,0.1)) ≈ hilbert(w,fromcanonical(d,0.1)) ≈
@@ -51,8 +49,6 @@ import ApproxFunBase: ∞, testbandedoperator, testblockbandedoperator, testfunc
 
         w=1/(sqrt(abs(leftendpoint(d)-x))*sqrt(abs(rightendpoint(d)-x)))
 
-        testbandedoperator(SingularIntegral(space(w),0))
-        testbandedoperator(Hilbert(space(w)))
 
         @test cauchy(w,2.) ≈ sum(w/(x-2.))/(2π*im)
         @test logkernel(w,2.) ≈ linesum(w*logabs(x-2.))/π
@@ -83,15 +79,10 @@ import ApproxFunBase: ∞, testbandedoperator, testblockbandedoperator, testfunc
         @test logkernel(w,2.) ≈ linesum(w*logabs(x-2.))/π
 
 
-        testbandedoperator(SingularIntegral(space(w),0))
-        testbandedoperator(Hilbert(space(w)))
         testblockbandedoperator(SingularIntegral(space(w),0))
         testblockbandedoperator(Hilbert(space(w)))
 
         w=1/(sqrt(abs(leftendpoint(d)-x))*sqrt(abs(rightendpoint(d)-x)))
-
-        testbandedoperator(SingularIntegral(space(w),0))
-        testbandedoperator(Hilbert(space(w)))
 
         @test cauchy(w,2.) ≈ sum(w/(x-2.))/(2π*im)
         @test logkernel(w,2.) ≈ linesum(w*logabs(x-2.))/π
@@ -105,9 +96,6 @@ import ApproxFunBase: ∞, testbandedoperator, testblockbandedoperator, testfunc
         x=Fun(d)
         w=sqrt(abs(leftendpoint(d)-x))*sqrt(abs(rightendpoint(d)-x))
 
-        testbandedoperator(SingularIntegral(space(w),0))
-        testbandedoperator(Hilbert(space(w)))
-
         z=10.;
         @test sum(w/(x-z))/(2π*im) ≈ cauchy(w,z)
         @test sum(w*log(z-x))/(-2π*im) ≈ cauchyintegral(w,z)
@@ -115,7 +103,6 @@ import ApproxFunBase: ∞, testbandedoperator, testblockbandedoperator, testfunc
 
         w=1/(sqrt(abs(leftendpoint(d)-x))*sqrt(abs(rightendpoint(d)-x)))
 
-        testbandedoperator(SingularIntegral(space(w),0))
 
         @test sum(w/(x-z))/(2π*im) ≈ cauchy(w,z)
         @test sum(w*log(z-x))/(-2π*im) ≈ cauchyintegral(w,z)

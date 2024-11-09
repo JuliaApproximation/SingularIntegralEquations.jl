@@ -1,5 +1,5 @@
 using Test, ApproxFun, SingularIntegralEquations
-import ApproxFunBase: ∞, testbandedoperator, testfunctional, testblockbandedoperator, testraggedbelowoperator
+import ApproxFunBase: ∞, testfunctional, testblockbandedoperator, testraggedbelowoperator
 import ApproxFunOrthogonalPolynomials: JacobiZ
 import SingularIntegralEquations: testsies, testsieeval, stieltjesmoment, Directed, _₂F₁, ⁺, ⁻
 

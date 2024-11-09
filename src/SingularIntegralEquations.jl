@@ -32,11 +32,9 @@ import ApproxFunBase: bandwidths, blockbandwidths, SpaceOperator, bilinearform, 
                   LowRankPertOperator,  setcanonicaldomain, SubSpace,
                   reverseorientation, @wrapper, mobius,
                   defaultgetindex, WeightSpace, spacescompatible, ∞, LowRankMatrix, SubOperator,
-                  DFunction, 
                   component, ncomponents, factor, nfactors, components, factors, rangetype,
                   VFun, Point, dynamic, pieces, npieces, piece, cfstype, isreal, IntervalOrSegmentDomain,
                   IntervalOrSegment, canonicaldomain,
-                  testbandedoperator,
                   columnspace,
                   DefiniteLineIntegralWrapper, DefiniteIntegral, DefiniteLineIntegral, @calculus_operator, 
                   checkpoints, SumSpace
@@ -49,8 +47,6 @@ import ApproxFunOrthogonalPolynomials: ChebyshevDirichlet, PolynomialSpace, Inte
 import ApproxFunFourier: LaurentDirichlet, PeriodicCurve
 
 import DualNumbers: dual
-
-import LowRankApprox: refactorsvd!
 
 export ⁺, ⁻
 
@@ -72,6 +68,7 @@ convert(::Type{Directed{s,T}},x::Directed{s}) where {s,T} = Directed{s,T}(T(x.x)
 convert(::Type{Directed{s,T}},x::T) where {s,T} = Directed{s,T}(x)
 convert(::Type{Directed{s,T}},x::Real) where {s,T} = Directed{s,T}(T(x))
 convert(::Type{Directed{s,T}},x::Complex) where {s,T} = Directed{s,T}(T(x))
+Base.float(D::Directed{s}) where s = Directed{s}(float(D.x))
 
 const ⁺ = Directed{true}(true)
 const ⁻ = Directed{false}(true)
@@ -244,9 +241,6 @@ include("Extras/Extras.jl")
 using Test
 
 function testsieoperators(S::Space)
-    testbandedoperator(SingularIntegral(S,0))
-    testbandedoperator(SingularIntegral(S,1))
-    testbandedoperator(Hilbert(S))
     p=checkpoints(S)[1] # random point on contour
     x=Fun(domain(S))
     z=2.12312231+1.433453443534im # random point not on contour
