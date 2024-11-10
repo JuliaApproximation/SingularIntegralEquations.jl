@@ -1,6 +1,6 @@
 using Test, ApproxFun, DomainSets, SingularIntegralEquations, LinearAlgebra
-import ApproxFunBase: ∞, testfunctional, testblockbandedoperator, testraggedbelowoperator,
-                    setcanonicaldomain, choosedomainspace, promotedomainspace
+import ApproxFunBase: ∞, setcanonicaldomain, choosedomainspace, promotedomainspace
+import ApproxFunBase.TestUtils:  testbandedoperator, testfunctional, testblockbandedoperator, testraggedbelowoperator
 import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, sqrtx2, Directed
 
 @testset "Hilbert" begin
@@ -61,12 +61,16 @@ import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, 
     w = 1/sqrt(1-x^2)
     H = Hilbert(space(w))
 
+    testbandedoperator(H[w])
+
     @test  (H[w]*exp(x))(.1) ≈ hilbert(w*exp(x))(.1)
 
 
     x = Fun(identity)
     w = sqrt(1-x^2)
     H = Hilbert(space(w))
+
+    testbandedoperator(H[w])
 
     @test (H[w]*exp(x))(.1) ≈ hilbert(w*exp(x))(.1)
 
@@ -79,6 +83,7 @@ import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, 
         f2 = Fun(x->exp(x)/sqrt(1-x^2),ds2)
         S = Stieltjes(ds1,rs)
 
+        @time testbandedoperator(S)
 
         z = 3+1.5im
         @test (S*f1)(z) ≈ stieltjes(f2,z) #val,err = quadgk(x->f1(x)./(z-x),-1.,1.)
@@ -93,7 +98,7 @@ import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, 
         f2 = Fun(x->exp(x)*sqrt(1-x^2),ds2)
         S = Stieltjes(ds1,rs)
 
-        
+        testbandedoperator(S)
 
         z = 3.
         @test (S*f1)(z) ≈ stieltjes(f2,z) #val,err = quadgk(x->f1(x)./(z-x),-1.,1.;reltol=eps())
@@ -108,7 +113,7 @@ import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, 
         f2 = Fun(x->exp(x)/sqrt(1-x^2),ds2)
         S = Stieltjes(ds1,rs,0)
 
-        
+        testbandedoperator(S)
 
         z = 3.
         @test (S*f1)(z) ≈ SingularIntegralEquations.stieltjesintegral(f2,z)
@@ -122,7 +127,7 @@ import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, 
         f2 = Fun(x->exp(x)*sqrt(1-x^2),ds2)
         S = Stieltjes(ds1,rs,0)
 
-        
+        testbandedoperator(S)
 
         z = 3.0
         @test (S*f1)(z) ≈ SingularIntegralEquations.stieltjesintegral(f2,z)
@@ -132,7 +137,7 @@ import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, 
 
     @testset "Circle Hilbert" begin
         H = Hilbert(Fourier(Circle()))
-        
+        testbandedoperator(H)
         @test bandwidths(H) == (1,1)
     end
 
@@ -160,7 +165,7 @@ import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, 
         @test cauchy(f,0.5exp(0.2im)) ≈ -cauchy(reverseorientation(Fun(f,Fourier)),0.5exp(0.2im))
         @test cauchy(f,0.5exp(0.2im)) ≈ (OffHilbert(space(f),Laurent(Circle(0.5)))*f)(0.5exp(0.2im))/(2im)
 
-        
+        @time testbandedoperator(OffHilbert(space(f),Laurent(Circle(0.5))))
 
         f=Fun(z->exp(exp(0.1im)*z+1/(z-1.)),Laurent(Circle(1.,0.5)))
         @test cauchy(f,0.5exp(0.2im)) ≈ cauchy(Fun(f,Fourier),0.5exp(0.2im))
@@ -168,8 +173,8 @@ import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, 
         @test cauchy(f,0.5exp(0.2im)) ≈ -cauchy(reverseorientation(Fun(f,Fourier)),0.5exp(0.2im))
 
 
-        
-        
+        @time testbandedoperator(Hilbert(Laurent(Circle())))
+        @time testbandedoperator(Hilbert(Fourier(Circle())))
     end
 
     @testset "Two circle test 1" begin
@@ -200,12 +205,12 @@ import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, 
         z=Fun(identity,d2);
         C=Cauchy(Space(d1),Space(d2))
 
-        
+        @time testbandedoperator(C)
 
         @test norm((C*Fun(exp,d1)-Fun(exp,d2)).coefficients)<100eps()
 
         C2=Cauchy(Space(d2),Space(d1))
-        
+        @time testbandedoperator(C2)
 
         @test norm((C2*Fun(z->exp(1/z)-1,d2)+Fun(z->exp(1/z)-1,d1)).coefficients)<100000eps()
     end
@@ -216,6 +221,8 @@ import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, 
         d1=Circle(c1,r1)
         d2=Circle(c2,r2)
         @test norm((Cauchy(d1,d2)*Fun(z->exp(1/z)-1,d1)+Fun(z->exp(1/z)-1,d2)).coefficients)<2000eps()
+
+        @time testbandedoperator(Cauchy(d1,d2))
     end
 
     @testset "Legendre" begin
@@ -254,6 +261,8 @@ import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, 
         z=exp(.1im)
 
         @test (H*f)(z) ≈ hilbert(f,z)
+
+        testbandedoperator(Hilbert(space(f)))
     end
 
     @testset "Piecewise singularintegral" begin
