@@ -7,3 +7,4 @@ deps/**/*.so
 deps/liblhelmfs.dylib
 .DS_Store
 Manifest.toml
+test/.DS_Store
