@@ -1,6 +1,6 @@
 using ApproxFun, SingularIntegralEquations, Test
-import ApproxFunBase: choosedomainspace, promotedomainspace, ConstantSpace, interlace,
-                        testraggedbelowoperator, testblockbandedoperator, blocklengths
+import ApproxFunBase: choosedomainspace, promotedomainspace, ConstantSpace, interlace, blocklengths
+import ApproxFunBase.TestUtils: testraggedbelowoperator, testblockbandedoperator
 
 @testset "Ideal Fluid Flow" begin
     k = 50

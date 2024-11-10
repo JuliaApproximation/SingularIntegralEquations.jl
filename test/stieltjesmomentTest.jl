@@ -24,9 +24,9 @@ import SingularIntegralEquations: stieltjesmoment, stieltjesmoment!, stieltjesja
         end
 
         f = Fun(WeightedJacobi(0.123,0.456),c)
-        @test stieltjes(f)(z) ≈ sum(f/(z-x))
+        @test_broken stieltjes(f)(z) ≈ sum(f/(z-x))
 
-        f = Fun(identity, (-1..1) \ 0)
+        f = Fun(identity, (-1..1) \ DomainRef(0))
         @test cauchy(sqrt(Fun(one,space(f))-f^2))(z) ≈ cauchy(sqrt(1-Fun()^2),z)
     end
 

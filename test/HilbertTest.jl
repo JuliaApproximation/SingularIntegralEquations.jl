@@ -1,6 +1,6 @@
 using Test, ApproxFun, DomainSets, SingularIntegralEquations, LinearAlgebra
-import ApproxFunBase: ∞, testbandedoperator, testfunctional, testblockbandedoperator, testraggedbelowoperator,
-                    setcanonicaldomain, choosedomainspace, promotedomainspace
+import ApproxFunBase: ∞, setcanonicaldomain, choosedomainspace, promotedomainspace
+import ApproxFunBase.TestUtils:  testbandedoperator, testfunctional, testblockbandedoperator, testraggedbelowoperator
 import SingularIntegralEquations: testsies, ⁺, ⁻, mobius, joukowskyinverse, sqrtx2, Directed
 
 @testset "Hilbert" begin

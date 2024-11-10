@@ -1,5 +1,5 @@
 using ApproxFun, SingularIntegralEquations, Test
-    import ApproxFunBase: testbandedoperator, testraggedbelowoperator, testblockbandedoperator
+import ApproxFunBase.TestUtils: testbandedoperator, testraggedbelowoperator, testblockbandedoperator
 
 include("runtests.jl")
 

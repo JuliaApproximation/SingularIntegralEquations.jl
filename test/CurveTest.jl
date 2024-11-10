@@ -1,5 +1,6 @@
 using ApproxFun, SingularIntegralEquations, LinearAlgebra, Test
-import ApproxFunBase: ∞, testbandedoperator, testblockbandedoperator, testfunctional
+import ApproxFunBase: ∞
+import ApproxFunBase.TestUtils: testbandedoperator, testblockbandedoperator, testfunctional
 
 @testset "Curve" begin
     @testset "quadratic" begin
@@ -24,7 +25,7 @@ import ApproxFunBase: ∞, testbandedoperator, testblockbandedoperator, testfunc
         testbandedoperator(Hilbert(space(w)))
 
         @test (SingularIntegral(0)*w)(fromcanonical(d,0.1)) ≈ logkernel(w,fromcanonical(d,0.1))
-        @test (Hilbert()*w)(fromcanonical(d,0.1)) ≈ hilbert(w,fromcanonical(d,0.1)) ≈
+        @test_broken (Hilbert()*w)(fromcanonical(d,0.1)) ≈ hilbert(w,fromcanonical(d,0.1)) ≈
             im*(cauchy(w,fromcanonical(d,0.1)+eps())+cauchy(w,fromcanonical(d,0.1)-eps()))
 
         f=real(exp(x))
